@@ -1,0 +1,7 @@
+# 5-Fold Stratified Cross-Validation Config: Fold 4
+path: C:/Users/ADMIN/Downloads/capstone AI
+train: C:/Users/ADMIN/Downloads/capstone AI/SHWD_YOLO_KFOLD/train_fold_4.txt
+val: C:/Users/ADMIN/Downloads/capstone AI/SHWD_YOLO_KFOLD/val_fold_4.txt
+names:
+  0: hat
+  1: person

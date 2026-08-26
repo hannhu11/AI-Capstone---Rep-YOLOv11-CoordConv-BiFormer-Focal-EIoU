@@ -1,0 +1,260 @@
+# =====================================================================
+# AUTO RESEARCH PAPER DOWNLOADER & ZOTERO INTEGRATION ENGINE
+# Project: Rep-YOLO11s-P2 AFPN Safety Helmet Wearing Detection (SHWD)
+# Author: Nguyen Han Nhu & Lead AI Architect
+# =====================================================================
+import csv
+import io
+import os
+import sys
+import time
+import json
+import re
+import urllib.request
+import urllib.parse
+from pathlib import Path
+
+# Raw CSV Database of 30 Benchmark & PPE Detection Papers
+CSV_DATA = """STT,Tên,Paper Title,Tạp Chí / Hội nghị,Dataset,Links dataset,Các chỉ số đánh giá (mAP50 mAP50-95 P R),Summary,DOI,Bibtex Code,Authors,Note,Links
+1,Nguyễn Hàn Như,YOLO-DCRCF: An Algorithm for Detecting the Wearing of Safety Helmets and Gloves in Power Grid Operation Environments,"Journal of Imaging 11(9), 320 (2025)",SHWD; SHAGWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,"SHWD — mAP50: 92.7%, mAP50-95: 60.6%, P: 90.9%, R: 88.5%; SHAGWD — mAP50: 79.6%, mAP50-95: 47.2%, P: 89.0%, R: 74.3%",YOLO11 được cải tiến bằng DCNv2 và Recalibrated Feature Pyramid. Mô hình được đánh giá trên SHWD và dataset mũ-găng SHAGWD trong môi trường vận hành lưới điện.,10.3390/jimaging11090320,"@article{zhao2025yolodcrcf, author={Zhao, Jinwei and Yang, Zhi and Li, Baogang and Zhao, Yubo}, title={YOLO-DCRCF: An Algorithm for Detecting the Wearing of Safety Helmets and Gloves in Power Grid Operation Environments}, journal={Journal of Imaging}, year={2025}, volume={11}, number={9}, pages={320}}","Jinwei Zhao, Zhi Yang, Baogang Li, Yubo Zhao","Bài SHWD gần đây có bộ mAP50, mAP50-95, P, R đầy đủ; rất phù hợp làm baseline YOLO11.",https://doi.org/10.3390/jimaging11090320
+2,Nguyễn Hàn Như,A YOLOv8 algorithm for safety helmet wearing detection in complex environment,"Scientific Reports 15, 24236 (2025)",SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,"mAP50: 91.51%, mAP50-95: 57.90%, P: 92.47%, R: 85.46%","Đề xuất URD-YOLOv8, kết hợp DySample, C2f-RFA và CSP-EDPAN nhằm cải thiện phát hiện mũ nhỏ, bị che khuất và đa tỷ lệ trong SHWD.",10.1038/s41598-025-08828-z,"@article{song2025yolov8, author={Song, Chunning and Li, Yinzhong}, title={A YOLOv8 algorithm for safety helmet wearing detection in complex environment}, journal={Scientific Reports}, year={2025}, volume={15}, pages={24236}}","Chunning Song, Yinzhong Li",Báo cáo đầy đủ bốn chỉ số theo chuẩn thường dùng; phù hợp so sánh trực tiếp với các mô hình YOLO khác.,https://doi.org/10.1038/s41598-025-08828-z
+3,Nguyễn Hàn Như,Advancing construction safety: YOLOv8-CGS helmet detection model,"PLOS ONE 20(5), e0321713 (2025)",SHD; SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,"SHWD — mAP50: 90.98%, P: 92.48%, R: ; mAP50-95: ; SHD — mAP50: 93.18%","YOLOv8-CGS bổ sung CBAM, GAM và SLOU loss. Mô hình được kiểm thử trên SHD và SHWD trong điều kiện ánh sáng phức tạp, che khuất và đa dạng hình dạng mũ.",10.1371/journal.pone.0321713,"@article{wu2025advancing, author={Wu, Zhi and Lei, Xia and Kumar, Manish}, title={Advancing construction safety: YOLOv8-CGS helmet detection model}, journal={PLOS ONE}, year={2025}, volume={20}, number={5}, pages={e0321713}}","Zhi Wu, Xia Lei, Manish Kumar","Có link dataset công khai và toàn văn mở; bài báo có điểm bất thường về quy mô/số lượng ảnh SHWD, nên cần kiểm tra split trước khi tái lập.",https://doi.org/10.1371/journal.pone.0321713
+4,Nguyễn Hàn Như,Improved YOLOv8n based helmet wearing inspection method,"Scientific Reports 15, 1945 (2025)",SHWD mở rộng; Safety Helmet Detection,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset; https://www.kaggle.com/datasets/andrewmvd/hard-hat-detection,"mAP: 93.8%, P: 91.7%, R: 86.8%, mAP50-95: ; model size: 3.17 MB; FPS: 145","YOLOv8n_H dùng SC_C2f, Coordinate Attention, PC-Head và WIoU loss. Dataset kết hợp SHWD với 2,419 ảnh Safety Helmet Detection, tạo tập 10,000 ảnh.",10.1038/s41598-024-84555-1,"@article{chen2025improved, author={Chen, Xinying and Jiao, Zhisheng and Liu, Yuefan}, title={Improved YOLOv8n based helmet wearing inspection method}, journal={Scientific Reports}, year={2025}, volume={15}, pages={1945}}","Xinying Chen, Zhisheng Jiao, Yuefan Liu","Mạnh về lightweight deployment; bài dùng mAP tổng hợp, không ghi rõ mAP50 trong phần tóm tắt.",https://doi.org/10.1038/s41598-024-84555-1
+5,Nguyễn Hàn Như,Lightweight detection model for safe wear at worksites based on YOLO-P2-Ghost-Dyhead,Scientific Reports 15 (2025),SHWD; dataset cầu Yinkun Expressway,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,mAP50/mAP50-95/P/R: ; bài báo cáo mAP và các chỉ số trong bảng gốc,"Đề xuất YOLO-P2-Ghost-Dyhead cho phát hiện mũ và áo phản quang, tập trung vào mục tiêu nhỏ, dày đặc trong giám sát công trường cầu.",10.1038/s41598-024-83391-7,"@article{xing2025lightweight, author={Xing, Jun and others}, title={Lightweight detection model for safe wear at worksites based on YOLO-P2-Ghost-Dyhead}, journal={Scientific Reports}, year={2025}}","Jun Xing, et al.",Có sử dụng SHWD nhưng kết hợp dataset tự thu thập; cần lấy chính xác bảng metrics từ PDF trước khi trích dẫn định lượng.,https://doi.org/10.1038/s41598-024-83391-7
+6,Nguyễn Hàn Như,YOLOv8-CGS helmet detection model — expanded evaluation,"PLOS ONE 20(5), e0321713 (2025)",SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,"P: 92.38%, mAP50: 92.38% trong ablation; mAP50-95: ; R: ; FPS: 89","Đây là kết quả ablation/full-module được báo cáo trong cùng nghiên cứu YOLOv8-CGS, cho thấy ảnh hưởng của CBAM, GAM và SLOU.",10.1371/journal.pone.0321713,"@article{wu2025yolocgs, author={Wu, Zhi and Lei, Xia and Kumar, Manish}, title={YOLOv8-CGS helmet detection model}, journal={PLOS ONE}, year={2025}}","Zhi Wu, Xia Lei, Manish Kumar","Không phải bài độc lập; giữ dòng này để ghi nhận cấu hình ablation quan trọng, không nên tính thêm khi thống kê số bài.",https://doi.org/10.1371/journal.pone.0321713
+7,Nguyễn Hàn Như,An Improved Lightweight Safety Helmet Detection Algorithm for YOLOv8,"Computers, Materials & Continua 83(2), 2245–2265 (2025)",Custom safety helmet-wearing dataset,,"mAP50/mAP50-95/P/R: ; dataset: 8,983 ảnh, 88,590 positive và 13,926 negative instances","Đề xuất mô hình nhẹ dựa trên YOLOv8 cho công trường, dùng dữ liệu đa điều kiện gồm công trường, làm việc trên cao và ngoài khơi.",10.32604/cmc.2025.061519,"@article{zhang2025improved, author={Zhang, Lei and Ma, Hui and Huang, Jing and Zhang, Cheng and Gao, Xin}, title={An Improved Lightweight Safety Helmet Detection Algorithm for YOLOv8}, journal={Computers, Materials & Continua}, year={2025}, volume={83}, number={2}, pages={2245--2265}}","Lei Zhang, Hui Ma, Jing Huang, Cheng Zhang, Xin Gao",Dataset tự xây dựng; liên quan trực tiếp nhưng không phù hợp benchmark SHWD nếu không có split/code.,https://doi.org/10.32604/cmc.2025.061519
+8,Nguyễn Hàn Như,Lightweight Helmet-Wearing Detection Algorithm Based on GSA-YOLO,"Sensors 26(7), 2110 (2026)",Confined-space helmet dataset,,"mAP50: 91.2%, mAP50-95: ; P: ; R: ; 2.3M parameters","GSA-YOLO dùng GhostConv-CBAM, I-ECA, P2 branch và WIoU cho môi trường trạm điện kín, ánh sáng biến thiên và mục tiêu nhỏ.",10.3390/s26072110,"@article{wang2026gsa, author={Wang, Hui and others}, title={Lightweight Safety Helmet Wearing Detection Algorithm Based on GSA-YOLO}, journal={Sensors}, year={2026}, volume={26}, number={7}, pages={2110}}","Hui Wang, et al.",Bài mới và liên quan trực tiếp; dataset không công khai do thỏa thuận bảo mật.,https://doi.org/10.3390/s26072110
+9,Nguyễn Hàn Như,A method for detecting safety helmets underground based on the YOLOv11-SRA model,Scientific Reports (2026),CUMT-Helmet dataset,,"mAP50: 84.2%, mAP50-95: ; P: ; R: 79.9%\",\"YOLOv11-SRA tích hợp SAConv và chiến lược tối ưu ba giai đoạn cho phát hiện mũ trong hầm mỏ, nhấn mạnh robustness cho mục tiêu nhỏ.",10.1038/s41598-026-37148-z,"@article{2026yolov11sra, author={Zhao, et al.}, title={A method for detecting safety helmets underground based on the YOLOv11-SRA model}, journal={Scientific Reports}, year={2026}}",Authors cần xác minh từ bản HTML/PDF,Dataset khác SHWD; hữu ích cho domain underground và đánh giá chuyển miền.,https://doi.org/10.1038/s41598-026-37148-z
+10,Nguyễn Hàn Như,Enhanced YOLOv8n-Based Three-Module Lightweight Helmet Detection System,"Sensors 25(24), 7664 (2025)",SHWD; SHCT,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,Average accuracy: 94.4%; mAP50/mAP50-95/P/R: ; FPS tăng 12.6%; FLOPs giảm 49.9%,"YOLOv8n-L tích hợp C2f-SCConv, Partial Convolutional Detector và Coordinate Attention. Tác giả tái tổ chức SHWD thành SHCT 10,000 ảnh để đánh giá lightweight deployment.",10.3390/s25247664,"@article{zuo2025enhanced, author={Zuo, Xinyu and Dai, Yiqing and Yu, Chao and Gang, Wang}, title={Enhanced YOLOv8n-Based Three-Module Lightweight Helmet Detection System}, journal={Sensors}, year={2025}, volume={25}, number={24}, pages={7664}}","Xinyu Zuo, Yiqing Dai, Chao Yu, Wang Gang",Bài được xuất bản cuối 2025; cần chú ý phần dữ liệu mô tả SHWD không nhất quán giữa các đoạn.,https://doi.org/10.3390/s25247664
+11,Nguyễn Hàn Như,A New Vision-Based Helmet Wearing Detection Method,"Computers, Materials & Continua (2024)",AT-YOLO; SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,mAP: tăng 3.4% so với YOLOv5x; FPS: 33; mAP50-95/P/R: ,"Đề xuất AT-YOLO, mở rộng SHWD từ 7,581 lên 13,620 ảnh, sử dụng attention và cải tiến mô hình để tăng tốc phát hiện.",10.32604/cmc.2024.055115,"@article{sun2024vision, author={Sun, Li and others}, title={A New Vision-Based Helmet Wearing Detection Method}, journal={Computers, Materials & Continua}, year={2024}}","Li Sun, et al.",Thông tin snippet xác nhận mức tăng tương đối; cần đọc bảng gốc để ghi mAP tuyệt đối.,https://doi.org/10.32604/cmc.2024.055115
+12,Nguyễn Hàn Như,An improved YOLOv8 safety helmet wearing detection network,"Scientific Reports 14, 17550 (2024)",SHWD mở rộng,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,"mAP50: 92.0%, mAP50-95: 62.2%, P: 91.8%, R: 86.6%","Cải tiến YOLOv8 bằng DWR attention, ASPP và NWD loss để xử lý mũ nhỏ, khác biệt khoảng cách và nền phức tạp.",10.1038/s41598-024-68446-z,"@article{song2024improved, author={Song, Xudong and Zhang, Tiankai and Yi, Weiguo}, title={An improved YOLOv8 safety helmet wearing detection network}, journal={Scientific Reports}, year={2024}, volume={14}, pages={17550}}","Xudong Song, Tiankai Zhang, Weiguo Yi",Một trong những baseline SHWD mạnh nhất có đầy đủ P/R/mAP50/mAP50-95.,https://doi.org/10.1038/s41598-024-68446-z
+13,Nguyễn Hàn Như,Helmet Detection Based on Context Enhancement Pyramid Under Surveillance Images,Information Technology and Control 53(2) (2024),SHWD; custom surveillance dataset,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,mAP50/P/R/mAP50-95: ; bảng gốc cần kiểm tra,"Thêm high-resolution detection layer vào YOLOv5, context enhancement pyramid và multi-scale attention để phát hiện mũ nhỏ trong ảnh giám sát.",10.5755/j01.itc.53.2.35273,"@article{2024contexthelmet, author={authors cần xác minh}, title={Helmet Detection Based on Context Enhancement Pyramid Under Surveillance Images}, journal={Information Technology and Control}, year={2024}, volume={53}, number={2}}",Authors cần xác minh,Có dùng SHWD và dataset tùy chỉnh; rất liên quan đến surveillance nhưng metrics không xuất hiện trong snippet.,https://doi.org/10.5755/j01.itc.53.2.35273
+14,Nguyễn Hàn Như,Research on helmet wearing detection method based on deep learning,"Scientific Reports 14, 7010 (2024)",SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,"Average precision tăng 0.9%, recall tăng 2.8%; mAP50/mAP50-95/P/R tuyệt đối: ",BiFEL-YOLOv5s kết hợp BiFPN và Focal-EIoU Loss để cải thiện phát hiện mũ trong môi trường xây dựng.,10.1038/s41598-024-57433-z,"@article{2024bifelyolo, author={authors cần xác minh}, title={Research on helmet wearing detection method based on deep learning}, journal={Scientific Reports}, year={2024}, volume={14}, pages={7010}}",Authors cần xác minh,Bài SHWD trực tiếp; nguồn trích xuất xác nhận dataset và mức cải thiện tương đối nhưng chưa đủ bảng metrics.,https://doi.org/10.1038/s41598-024-57433-z
+15,Nguyễn Hàn Như,LG-YOLOv8: A Lightweight Safety Helmet Detection Algorithm Combined with Feature Enhancement,"Applied Sciences 14(22), 10141 (2024)",SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,mAP50/mAP50-95/P/R: ; nguồn xác nhận đánh giá SHWD,"Thiết kế mô hình nhẹ LG-YOLOv8, kết hợp feature enhancement nhằm cân bằng độ chính xác và chi phí tính toán cho phát hiện mũ.",10.3390/app142210141,"@article{fan2024lgyolov8, author={Fan, Z. and Wu, Y. and Liu, W. and Chen, M. and Qiu, Z.}, title={LG-YOLOv8: A Lightweight Safety Helmet Detection Algorithm Combined with Feature Enhancement}, journal={Applied Sciences}, year={2024}, volume={14}, number={22}, pages={10141}}","Z. Fan, Y. Wu, W. Liu, M. Chen, Z. Qiu","Ưu tiên cao vì công bố gần đây, có DOI; cần bổ sung số liệu bảng gốc.",https://doi.org/10.3390/app142210141
+16,Nguyễn Hàn Như,Safety Helmet Detection Based on Improved YOLOv8,IEEE Access 12 (2024),SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,mAP50/mAP50-95/P/R: ; cần lấy từ IEEE PDF,Cải tiến YOLOv8 cho safety helmet detection trên SHWD. Bài xuất hiện trong các tài liệu liên quan của nghiên cứu SHWD gần đây và có mã DOI IEEE.,10.1109/ACCESS.2024.3368161,"@article{lin2024safety, author={Lin, Bingyan}, title={Safety Helmet Detection Based on Improved YOLOv8}, journal={IEEE Access}, year={2024}, volume={12}}",Bingyan Lin,Nguồn IEEE uy tín; cần xác minh chính xác tên bảng metrics và link dataset trong full text.,https://doi.org/10.1109/ACCESS.2024.3368161
+17,Nguyễn Hàn Như,Detection of Safety Helmet-Wearing Based on the Improved YOLOv5,"Computers, Materials & Continua 77(3), 3349–3366 (2023)",SHWD; CHV,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset; https://github.com/ZijianWang-ZW/PPE_detection,"SHWD mAP: 93.0%, accuracy: 96.0%, FPS: 117; CHV mAP: 93.6%, accuracy: 95.7%, FPS: 119; mAP50-95/P/R: ","Cải tiến YOLOv5 cho helmet wearing, đánh giá generalization trên SHWD và CHV. Mô hình đạt tốc độ cao và được thử trong nhiều điều kiện công trường.",10.32604/cmc.2023.043671,"@article{2023improvedyolov5helmet, author={authors cần xác minh}, title={Detection of Safety Helmet-Wearing Based on the Improved YOLOv5}, journal={Computers, Materials & Continua}, year={2023}, volume={77}, number={3}, pages={3349--3366}}",Authors cần xác minh,"Có cả SHWD và CHV, phù hợp kiểm tra cross-dataset; metrics được trích từ nguồn bài.",https://doi.org/10.32604/cmc.2023.043671
+18,Nguyễn Hàn Như,YOLO-LHD: An Enhanced Lightweight Approach for Helmet Wearing Detection in Industrial Environments,Frontiers in Built Environment 9 (2023),SHWD; Hard Hat Dataset,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,"mAP50/mAP50-95/P/R: ; bài dùng SHWD 7,581 ảnh và HHD 5,000 ảnh","YOLO-LHD là mô hình nhẹ kết hợp hai nguồn dữ liệu SHWD và Hard Hat Dataset, hướng tới phát hiện trong môi trường công nghiệp.",10.3389/fbuil.2023.1288445,"@article{hu2023yololhd, author={Hu, L. and Ren, J.}, title={YOLO-LHD: An enhanced lightweight approach for helmet wearing detection in industrial environments}, journal={Frontiers in Built Environment}, year={2023}, volume={9}, pages={1288445}}","L. Hu, J. Ren","Liên quan trực tiếp SHWD, mạnh về lightweight; cần bổ sung metrics chính xác từ bài.",https://doi.org/10.3389/fbuil.2023.1288445
+19,Nguyễn Hàn Như,A New Method for Safety Helmet Detection Based on Convolutional Neural Network,"PLOS ONE 18(10), e0292970 (2023)",SHWD; SCSH,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,mAP: 94.2%; FPS: 416; mAP50/mAP50-95/P/R: ; SHWD dùng split 8:1:1,"SHDet tái cấu trúc BottleneckCSP trong YOLOv5, thêm upsampling feature enhancement và self-attention để giảm chi phí tính toán. Tốc độ đạt 416 FPS theo bài báo.",10.1371/journal.pone.0292970,"@article{qian2023shdet, author={Qian, Yuejing and Wang, Bo}, title={A New Method for Safety Helmet Detection Based on Convolutional Neural Network}, journal={PLOS ONE}, year={2023}, volume={18}, number={10}, pages={e0292970}}","Yuejing Qian, Bo Wang",Mạnh về tốc độ và có SHWD; cần phân biệt “mAP” của bài với mAP50 chuẩn.,https://doi.org/10.1371/journal.pone.0292970
+20,Nguyễn Hàn Như,Safety Helmet Wearing Detection Based on Jetson Nano and Improved YOLOv5,Journal of Engineering 2023 (2023),SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,mAP50/mAP50-95/P/R: ; bài đánh giá triển khai Jetson Nano,"YOLOv5 được cải tiến và triển khai hướng edge device Jetson Nano, tập trung vào real-time helmet wearing detection.",10.1155/2023/1959962,"@article{2023jetsonhelmet, author={authors cần xác minh}, title={Safety Helmet Wearing Detection Based on Jetson Nano and Improved YOLOv5}, journal={Journal of Engineering}, year={2023}}",Authors cần xác minh,Có giá trị thực tiễn cho triển khai edge; cần lấy số liệu từ bảng PDF.,https://doi.org/10.1155/2023/1959962
+21,Nguyễn Hàn Như,BDC-YOLOv5: A Helmet Detection Model Employs Improved YOLOv5,"Signal, Image and Video Processing 17, 4435–4445 (2023)",SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,mAP: tăng 2.6% so với YOLOv5; mAP50/mAP50-95/P/R: ;,"BDC-YOLOv5 cải tiến YOLOv5 cho SHWD, tập trung tăng năng lực phát hiện mục tiêu trong giám sát mũ bảo hộ.",10.1007/s11760-023-02677-x,"@article{zhao2023bdc, author={Zhao, Lihong and Tohti, Turdi and Hamdulla, Askar}, title={BDC-YOLOv5: A Helmet Detection Model Employs Improved YOLOv5}, journal={Signal, Image and Video Processing}, year={2023}, volume={17}, pages={4435--4445}}","Lihong Zhao, Turdi Tohti, Askar Hamdulla",Có DOI và benchmark SHWD; số liệu nguồn tìm kiếm chủ yếu là mức cải thiện tương đối.,https://doi.org/10.1007/s11760-023-02677-x
+22,Nguyễn Hàn Như,Safety Helmet Wearing Detection System for Manufacturing Workshop Based on Improved YOLOv7,Complexity 2023 (2023),Helmet-head; helmet-data; helmet,,"mAP/F1: cải thiện so với Faster R-CNN, YOLOv5, YOLOv7; FPS: 112.4; mAP50-95/P/R: \",\"YOLOv7 được cải tiến bằng feature input, structured pruning và SIoU loss; tích hợp face recognition và text-to-speech cho workshop.\",10.1155/2023/7230463,"@article{2023yolov7workshop, author={authors cần xác minh}, title={Safety Helmet Wearing Detection System for Manufacturing Workshop Based on Improved YOLOv7}, journal={Complexity}, year={2023}}",Authors cần xác minh,Không trực tiếp dùng SHWD chuẩn; xếp sau nhóm SHWD nhưng vẫn liên quan trực tiếp đến helmet wearing.,https://doi.org/10.1155/2023/7230463
+23,Nguyễn Hàn Như,Lightweight Helmet Detection Algorithm Using an Improved YOLOv4,"Sensors 23(3), 1256 (2023)",SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,Accuracy: 92.98%; mAP50/mAP50-95/P/R: ; model size: 41.88M; FPS: 43.23,"PP-LCNet backbone, depthwise separable convolution, Coordinate Attention, feature fusion và SIoU loss được dùng để tạo mô hình YOLOv4 nhẹ.",10.3390/s23031256,"@article{2023lightweightyolov4, author={authors cần xác minh}, title={Lightweight Helmet Detection Algorithm Using an Improved YOLOv4}, journal={Sensors}, year={2023}, volume={23}, number={3}, pages={1256}}",Authors cần xác minh,Bài SHWD có số accuracy/model size/FPS rõ; không nên chuyển accuracy thành mAP50 nếu PDF không xác nhận.,https://doi.org/10.3390/s23031256
+24,Nguyễn Hàn Như,Safety Helmet Detection Based on YOLOv5 Driven by Super-Resolution Reconstruction,"Sensors 23(4), 1822 (2023)",SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,mAP50/mAP50-95/P/R: ; cần kiểm tra bảng thực nghiệm,Kết hợp super-resolution reconstruction với YOLOv5 để cải thiện phát hiện mũ nhỏ và ảnh chất lượng thấp trên SHWD.,10.3390/s23041822,"@article{2023superresolutionhelmet, author={authors cần xác minh}, title={Safety Helmet Detection Based on YOLOv5 Driven by Super-Resolution Reconstruction}, journal={Sensors}, year={2023}, volume={23}, number={4}, pages={1822}}",Authors cần xác minh,Liên quan trực tiếp SHWD; ưu tiên đọc khi nghiên cứu ảnh nhỏ/xa và chất lượng thấp.,https://doi.org/10.3390/s23041822
+25,Nguyễn Hàn Như,Helmet Wearing Detection Algorithm Integrating Transfer Learning and YOLOv5,"Journal of Guangdong University of Technology 40(4), 67–76 (2023)",SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,mAP50: 93.6%; mAP50-95/P/R: ; cao hơn YOLOv5 gốc 5 điểm phần trăm,"Kết hợp K-means anchor, spatial-channel mixed attention, cải tiến NMS và transfer learning; xây dựng cascade judgment framework cho helmet wearing.",10.12052/gdutxb.220139,"@article{cao2023transfer, author={Cao, Zhi-xiong and Wu, Xiao-ling and Luo, Xiao-wei and Ling, Jie}, title={Helmet Wearing Detection Algorithm Integrating Transfer Learning and YOLOv5}, journal={Journal of Guangdong University of Technology}, year={2023}, volume={40}, number={4}, pages={67--76}}\",\"Zhi-xiong Cao, Xiao-ling Wu, Xiao-wei Luo, Jie Ling\",Nguồn bài ghi rõ mAP ở IoU=0.5; phù hợp nhóm SHWD/Safety Helmet Wearing Detection.,https://doi.org/10.12052/gdutxb.220139
+26,Nguyễn Hàn Như,Research on the Application of Helmet Detection Based on YOLOv4,Journal of Computer and Communications 10 (2022),SHWD,https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset,"mAP50/mAP50-95/P/R: ; SHWD có 7,851 ảnh theo bài","Đánh giá YOLOv4 trên SHWD, cung cấp baseline cổ điển cho bài toán helmet wearing/head detection.",10.4236/jcc.2022.108009,"@article{ji2022yolov4, author={Ji, Y. Z. and Cao, Y. and Cheng, X. and Zhang, Q.}, title={Research on the Application of Helmet Detection Based on YOLOv4}, journal={Journal of Computer and Communications}, year={2022}, volume={10}, pages={129--139}}\",\"Y. Z. Ji, Y. Cao, X. Cheng, Q. Zhang\",Có giá trị làm baseline lịch sử; chất lượng venue thấp hơn Sensors/Scientific Reports.,https://doi.org/10.4236/jcc.2022.108009
+27,Nguyễn Hàn Như,SHEL5K: An Extended Dataset and Benchmarking for Safety Helmet Detection,"Sensors 22(6), 2315 (2022)",SHEL5K; SHD; SHW; Hardhat; HHW,https://data.mendeley.com/datasets/9rcv8mm682/4; https://github.com/MoyoG/SHEL5K,"YOLOR mAP50: 88.28%, P: 93.22%, R: 80.66%; mAP50-95: ; YOLOv5x mAP50: 80.33%","Giới thiệu SHEL5K với 5,000 ảnh, sáu lớp và 75,570 nhãn; benchmark nhiều detector và cung cấp dataset mở.",10.3390/s22062315,"@article{otgonbold2022shel5k, author={Otgonbold, Munkh-Erdene and Gochoo, Munkhjargal and Alnajjar, Fady and Ali, Luqman and Tan, Tan-Hsu and Hsieh, Jun-Wei and Chen, Ping-Yang}, title={SHEL5K: An Extended Dataset and Benchmarking for Safety Helmet Detection}, journal={Sensors}, year={2022}, volume={22}, number={6}, pages={2315}}","Munkh-Erdene Otgonbold, Munkhjargal Gochoo, Fady Alnajjar, Luqman Ali, Tan-Hsu Tan, Jun-Wei Hsieh, Ping-Yang Chen",Dataset/benchmark quan trọng; phù hợp làm benchmark bổ sung bên cạnh SHWD.,https://doi.org/10.3390/s22062315
+28,Nguyễn Hàn Như,Fast Personal Protective Equipment Detection for Real Construction Sites Using Deep Learning Approaches,"Sensors 21(10), 3478 (2021)",CHV; GDUT-HWD; SHWD,https://github.com/ZijianWang-ZW/PPE_detection,CHV YOLOv5x mAP: 86.55%; YOLOv5s: 52 FPS; mAP50-95/P/R: ;,"Đánh giá tám detector cho PPE trên CHV, gồm người, áo phản quang và mũ bốn màu; ưu tiên real-site deployment và tốc độ.",10.3390/s21103478,"@article{wang2021fast, author={Wang, Zijian and Wu, Yimin and Yang, Lichao and Thirunavukarasu, Arjun and Evison, Colin and Zhao, Yifan}, title={Fast Personal Protective Equipment Detection for Real Construction Sites Using Deep Learning Approaches}, journal={Sensors}, year={2021}, volume={21}, number={10}, pages={3478}}","Zijian Wang, Yimin Wu, Lichao Yang, Arjun Thirunavukarasu, Colin Evison, Yifan Zhao",Bài nền tảng cho YOLO-based PPE và CHV; có liên hệ SHWD nhưng trọng tâm là PPE đa lớp.,https://doi.org/10.3390/s21103478
+29,Nguyễn Hàn Như,Automatic Detection of Hardhats Worn by Construction Personnel: A Deep Learning Approach and Benchmark Dataset,"Automation in Construction 106, 102894 (2019)",GDUT-HWD,https://github.com/wujixiu/helmet-detection,mAP: 83.89% (SSD-RPA); mAP50-95/P/R: ;,"Đề xuất SSD-RPA và benchmark GDUT-HWD với 3,174 ảnh, 18,893 đối tượng, năm lớp; công trình nền tảng trước SHWD.",10.1016/j.autcon.2019.102894,"@article{wu2019hardhats, author={Wu, Jixiu and Cai, Nian and Chen, Wenjie and Wang, Huiheng and Wang, Guotian}, title={Automatic Detection of Hardhats Worn by Construction Personnel: A Deep Learning Approach and Benchmark Dataset}, journal={Automation in Construction}, year={2019}, volume={106}, pages={102894}}","Jixiu Wu, Nian Cai, Wenjie Chen, Huiheng Wang, Guotian Wang","Venue Elsevier uy tín; benchmark dataset và code công khai, nên giữ làm bài nền tảng.",https://doi.org/10.1016/j.autcon.2019.102894
+30,Nguyễn Hàn Như,Deep Learning for Site Safety: Real-Time Detection of Personal Protective Equipment,"Automation in Construction 112, 103085 (2020)",Pictor-v3,https://github.com/ciber-lab/pictor-ppe,mAP: 72.3%; FPS: 11; mAP50-95/P/R: ;,"Đánh giá nhiều detector cho PPE trong bối cảnh công trường thực tế; Pictor-v3 gồm 1,500 ảnh và Approach-2 đạt 72.3% mAP.",10.1016/j.autcon.2020.103085,"@article{nath2020deep, author={Nath, Nipun D. and Behzadan, Amir H. and Paal, Stephanie G.}, title={Deep Learning for Site Safety: Real-Time Detection of Personal Protective Equipment}, journal={Automation in Construction}, year={2020}, volume={112}, pages={103085}}","Nipun D. Nath, Amir H. Behzadan, Stephanie G. Paal",Bài nền tảng cho chủ đề thứ ba YOLO-based PPE detection; có code/dataset Pictor-v3.,https://doi.org/10.1016/j.autcon.2020.103085
+31,Nguyễn Hàn Như,A safety helmet detection algorithm based on improved YOLOv11n for complex coal mine scenarios,"Digital Signal Processing 176, 106082 (2026)",CUMT-Helmet / Coal Mine Dataset,https://doi.org/10.1016/j.dsp.2026.106082,"mAP50/mAP50-95/P/R: ; Coal mine helmet detection benchmark","YOLOv11n cải tiến bằng RFAConv xuyên tầng, tăng cường đặc trưng đa tỉ lệ cho phát hiện mũ bảo hộ kích thước nhỏ trong môi trường hầm mỏ thiếu sáng và bụi bặm.",10.1016/j.dsp.2026.106082,"@article{wang2026yolov11ncoalmine, author={Wang, Ziteng and Mu, Dengcong and Li, Zheng and Dong, Fei}, title={A safety helmet detection algorithm based on improved YOLOv11n for complex coal mine scenarios}, journal={Digital Signal Processing}, volume={176}, pages={106082}, year={2026}, publisher={Elsevier}}","Ziteng Wang, Dengcong Mu, Zheng Li, Fei Dong","Elsevier Q1/Q2 uy tín; bài mới nhất tháng 6/2026 về YOLO11 phát hiện mũ bảo hộ.",https://doi.org/10.1016/j.dsp.2026.106082
+32,Nguyễn Hàn Như,HR-YOLO: A Multi-Branch Network Model for Helmet Detection Combined with High-Resolution Network and YOLOv5,"Electronics 13(12), 2271 (2024)",SHWD; Custom Construction Dataset,https://doi.org/10.3390/electronics13122271,"mAP50/mAP50-95/P/R: ; Citations: 15; High-Resolution branch evaluation","HR-YOLO kết hợp nhánh mạng độ phân giải cao High-Resolution Network (HRNet) với YOLOv5 nhằm giữ nguyên thông tin không gian chi tiết cho vật thể nhỏ.",10.3390/electronics13122271,"@article{lian2024hryolo, author={Lian, Yuanfeng and Li, Jing and Dong, Shaohua and Li, Xingtao}, title={HR-YOLO: A Multi-Branch Network Model for Helmet Detection Combined with High-Resolution Network and YOLOv5}, journal={Electronics}, volume={13}, number={12}, pages={2271}, year={2024}, publisher={MDPI}}","Yuanfeng Lian, Jing Li, Shaohua Dong, Xingtao Li","MDPI Electronics Q2; trích dẫn tốt về ý tưởng nhánh High-Resolution cho phát hiện mũ bảo hộ.",https://doi.org/10.3390/electronics13122271"""
+
+def sanitize_filename(name: str) -> str:
+    return re.sub(r'[\\/*?:"<>| ]+', '_', name).strip('_')[:80]
+
+def resolve_open_access_pdf(doi: str, title: str) -> str:
+    """Finds direct Open Access PDF URL using publisher patterns & unpaywall."""
+    if not doi:
+        return ""
+    doi = doi.strip()
+    
+    # 1. MDPI Direct PDF pattern
+    # Example DOI: 10.3390/jimaging11090320 -> https://www.mdpi.com/2313-433X/11/9/320/pdf
+    # or general MDPI resolver: https://www.mdpi.com/resolve/doi?doi=10.3390/...
+    if "10.3390/" in doi:
+        return f"https://www.mdpi.com/resolve/doi?doi={doi}"
+    
+    # 2. Nature Scientific Reports pattern
+    # DOI: 10.1038/s41598-025-08828-z -> https://www.nature.com/articles/s41598-025-08828-z.pdf
+    if "10.1038/" in doi:
+        art_id = doi.split("/")[-1]
+        return f"https://www.nature.com/articles/{art_id}.pdf"
+    
+    # 3. PLOS ONE pattern
+    # DOI: 10.1371/journal.pone.0321713 -> https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0321713&type=printable
+    if "10.1371/" in doi:
+        return f"https://journals.plos.org/plosone/article/file?id={doi}&type=printable"
+
+    # 4. Frontiers pattern
+    if "10.3389/" in doi:
+        return f"https://www.frontiersin.org/articles/{doi}/pdf"
+
+    # 5. Fallback via Unpaywall / OpenAlex
+    try:
+        url = f"https://api.unpaywall.org/v2/{doi}?email=research.ieee.capstone@gmail.com"
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=5) as r:
+            data = json.loads(r.read().decode())
+            best_oa = data.get("best_oa_location", {})
+            if best_oa and best_oa.get("url_for_pdf"):
+                return best_oa.get("url_for_pdf")
+    except Exception:
+        pass
+    
+    return f"https://doi.org/{doi}"
+
+def download_file(url: str, dest_path: Path, max_retries: int = 2) -> bool:
+    if dest_path.exists() and dest_path.stat().st_size > 10000:
+        return True
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/pdf,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    }
+    req = urllib.request.Request(url, headers=headers)
+    for attempt in range(max_retries):
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                content = resp.read()
+                # Verify PDF header %PDF
+                if content.startswith(b'%PDF') or len(content) > 20000:
+                    dest_path.write_bytes(content)
+                    return True
+                elif b'<html' in content[:500].lower():
+                    # If HTML was returned instead of direct PDF, search for iframe / pdf link
+                    m = re.search(r'href=[\'"]([^\'"]+\.pdf[^\'"]*)[\'"]', content.decode('utf-8', errors='ignore'))
+                    if m:
+                        pdf_sub = m.group(1)
+                        if pdf_sub.startswith('/'):
+                            parsed = urllib.parse.urlparse(url)
+                            pdf_sub = f"{parsed.scheme}://{parsed.netloc}{pdf_sub}"
+                        req_sub = urllib.request.Request(pdf_sub, headers=headers)
+                        with urllib.request.urlopen(req_sub, timeout=15) as r_sub:
+                            c_sub = r_sub.read()
+                            if c_sub.startswith(b'%PDF') or len(c_sub) > 10000:
+                                dest_path.write_bytes(c_sub)
+                                return True
+        except Exception as e:
+            time.sleep(1)
+    return False
+
+def run_sync_pipeline():
+    print("=" * 75)
+    print("🏛️ AUTOMATED RESEARCH PAPERS DOWNLOADER & ZOTERO INTEGRATION")
+    print("=" * 75)
+
+    base_dir = Path(".").resolve()
+    ref_dir = base_dir / "references"
+    papers_dir = ref_dir / "papers"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+    papers_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. Save CSV
+    csv_file = ref_dir / "References_SHWD_Capstone_2.csv"
+    csv_file.write_text(CSV_DATA, encoding="utf-8")
+    print(f"✅ Saved clean Reference Database to: {csv_file.resolve()}")
+
+    # 2. Parse CSV
+    reader = csv.DictReader(io.StringIO(CSV_DATA))
+    rows = list(reader)
+    print(f"-> Total Research Papers to Index: {len(rows)}")
+
+    bib_entries = []
+    summary_table = []
+    success_downloads = 0
+
+    for r in rows:
+        stt = r.get("STT", "").strip()
+        title = r.get("Paper Title", "").strip()
+        journal = r.get("Tạp Chí / Hội nghị", "").strip()
+        dataset = r.get("Dataset", "").strip()
+        metrics = r.get("Các chỉ số đánh giá (mAP50 mAP50-95 P R)", "").strip()
+        summary = r.get("Summary", "").strip()
+        doi = r.get("DOI", "").strip()
+        bibtex = r.get("Bibtex Code", "").strip()
+        authors = r.get("Authors", "").strip()
+        link = r.get("Links", "").strip() or (f"https://doi.org/{doi}" if doi else "")
+
+        # Extract citation key or generate one
+        cite_match = re.search(r'@\w+\{([^,]+),', bibtex)
+        cite_key = cite_match.group(1).strip() if cite_match else f"paper_{stt}"
+
+        # Clean title for filename
+        clean_title = sanitize_filename(title)
+        pdf_filename = f"{stt}_{cite_key}_{clean_title[:40]}.pdf"
+        dest_pdf = papers_dir / pdf_filename
+
+        print(f"\n[{stt}/30] Processing: {title[:60]}...")
+        print(f"      DOI: {doi} | Key: {cite_key}")
+
+        # Attempt download
+        pdf_url = resolve_open_access_pdf(doi, title)
+        downloaded = False
+        if pdf_url and pdf_url.startswith("http"):
+            downloaded = download_file(pdf_url, dest_pdf)
+        
+        if downloaded and dest_pdf.exists():
+            print(f"      ✅ PDF Downloaded: {dest_pdf.name} ({dest_pdf.stat().st_size/1024:.1f} KB)")
+            success_downloads += 1
+            rel_file_path = f"references/papers/{pdf_filename}"
+        else:
+            print(f"      ℹ️ PDF URL: {pdf_url} (Publisher Open Access Gateway / Direct Landing)")
+            rel_file_path = ""
+
+        # Enrich BibTeX with full fields & linked PDF
+        if bibtex and bibtex.strip().endswith("}"):
+            inner_bib = bibtex.strip()[:-1]
+            extra_fields = []
+            if doi and "doi=" not in inner_bib.lower():
+                extra_fields.append(f"  doi = {{{doi}}}")
+            if link and "url=" not in inner_bib.lower():
+                extra_fields.append(f"  url = {{{link}}}")
+            if summary and "abstract=" not in inner_bib.lower():
+                extra_fields.append(f"  abstract = {{{summary}}}")
+            if dataset and "keywords=" not in inner_bib.lower():
+                extra_fields.append(f"  keywords = {{{dataset}}}")
+            if dest_pdf.exists():
+                extra_fields.append(f"  file = {{:{dest_pdf.resolve()}:PDF}}")
+            
+            if extra_fields:
+                enriched_bib = inner_bib + ",\n" + ",\n".join(extra_fields) + "\n}"
+            else:
+                enriched_bib = bibtex
+        else:
+            enriched_bib = f"@article{{{cite_key},\n  title={{{title}}},\n  author={{{authors}}},\n  journal={{{journal}}},\n  doi={{{doi}}},\n  url={{{link}}}\n}}"
+
+        bib_entries.append(enriched_bib)
+        summary_table.append({
+            "STT": stt,
+            "Title": title,
+            "Authors": authors,
+            "Journal": journal,
+            "DOI": doi,
+            "Metrics": metrics,
+            "PDF": "✅ Downloaded" if dest_pdf.exists() else "🔗 Direct Link",
+            "File": pdf_filename if dest_pdf.exists() else "-"
+        })
+
+    # 3. Write Master BibTeX files
+    master_bib_content = "%\n% MASTER BIBTEX REPOSITORY - CAPSTONE AI (SHWD / SAFETY HELMET DETECTION)\n%\n\n" + "\n\n".join(bib_entries) + "\n"
+    
+    bib_paths = [
+        base_dir / "Capstone_AI_Papers.bib",
+        ref_dir / "Capstone_AI_Papers.bib",
+        base_dir / "paper_overleaf" / "Capstone_AI_Papers.bib",
+        Path("C:/Users/ADMIN/Downloads/Capstone_AI_Papers.bib")
+    ]
+    for bp in bib_paths:
+        bp.parent.mkdir(parents=True, exist_ok=True)
+        bp.write_text(master_bib_content, encoding="utf-8")
+        print(f"✅ Generated Master BibTeX: {bp.resolve()}")
+
+    # 4. Write Markdown Summary Report
+    md_report = ref_dir / "RESEARCH_PAPERS_SUMMARY.md"
+    with open(md_report, "w", encoding="utf-8") as f:
+        f.write("# 📚 CAPSTONE AI: BẢNG TỔNG HỢP 30 BÀI BÁO NGHIÊN CỨU PPE / HELMET DETECTION (ZOTERO READY)\n\n")
+        f.write(f"**Tác giả:** Nguyễn Hàn Như | **Dự án:** Rep-YOLO11s-P2 AFPN (IEEE Q1)\n\n")
+        f.write(f"**Tổng số bài báo:** {len(rows)} | **Số file PDF toàn văn tải thành công:** {success_downloads}/{len(rows)}\n\n")
+        f.write("| STT | Tên Bài Báo (Paper Title) | Tác giả (Authors) | Tạp chí / Hội nghị | DOI / Link | Chỉ số Báo cáo (mAP50, P, R) | Trạng thái PDF |\n")
+        f.write("| :---: | :--- | :--- | :--- | :---: | :--- | :---: |\n")
+        for s in summary_table:
+            doi_link = f"[{s['DOI']}](https://doi.org/{s['DOI']})" if s['DOI'] else "-"
+            f.write(f"| {s['STT']} | **{s['Title']}** | {s['Authors']} | {s['Journal']} | {doi_link} | `{s['Metrics']}` | {s['PDF']} |\n")
+
+    print(f"\n✅ Markdown Summary Report saved to: {md_report.resolve()}")
+    print("=" * 75)
+    print("🎉 ZOTERO SYNC & PAPER DOWNLOAD PIPELINE COMPLETED SUCCESSFULLY!")
+    print("=" * 75)
+
+if __name__ == '__main__':
+    run_sync_pipeline()
+

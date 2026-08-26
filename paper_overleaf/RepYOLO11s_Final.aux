@@ -1,0 +1,61 @@
+\relax 
+\citation{wang2023yolov7,wang2024yolov10,ultralytics2024yolo11}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Representative real-world construction surveillance scenario illustrating key challenges: distant tiny targets ($<20 \times 20$\,px), heavy structural occlusions, variable illumination, and visual confusion between yellow safety helmets and background construction machinery/materials.}}{1}{}\protected@file@percent }
+\newlabel{fig:site_overview}{{1}{1}{}{figure.1}{}}
+\citation{wang2023yolov7,wang2024yolov10,ultralytics2024yolo11}
+\citation{wang2024yolov10}
+\citation{ultralytics2024yolo11}
+\citation{ecyolov8_2024}
+\citation{yolocbf_2023}
+\citation{fuYolov8nFADSStudyEnhancing2024}
+\citation{ding2021repvgg}
+\citation{liu2018coordconv}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{2}{}\protected@file@percent }
+\newlabel{sec:related}{{II}{2}{}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Real-Time Object Detection Frameworks}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}Safety Helmet Detection in Complex Environments}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}Structural Re-parameterization and Spatial Encoding}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}Proposed Methodology}{2}{}\protected@file@percent }
+\newlabel{sec:method}{{III}{2}{}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Overall System Architecture}{2}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Comparative performance landscape showing $mAP_{50}$ and $mAP_{50-95}$ across standard YOLO backbones and custom re-parameterized variants on the SHWD benchmark.}}{3}{}\protected@file@percent }
+\newlabel{fig:architecture_overview}{{2}{3}{}{figure.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Structural Re-parameterization (RepConv) Mechanics}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Spatial Coordinate Convolution (CoordConv)}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Bi-Level Routing Attention (BiFormer)}{3}{}\protected@file@percent }
+\citation{zhang2021focal}
+\citation{ecyolov8_2024}
+\citation{yolocbf_2023}
+\citation{fuYolov8nFADSStudyEnhancing2024}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-E}}Focal EIoU Bounding Box Loss}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Experimental Setup \& Results}{4}{}\protected@file@percent }
+\newlabel{sec:experiments}{{IV}{4}{}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Dataset and Pre-processing}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Hardware and Implementation Details}{4}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Efficiency Frontier analysis displaying the trade-off between Pure GPU Inference Latency (ms) and $mAP_{50-95}$ performance across tested model families.}}{4}{}\protected@file@percent }
+\newlabel{fig:latency_frontier}{{3}{4}{}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Comparison with State-of-the-Art (SOTA)}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Ablation Study ($A_0 \rightarrow A_6$)}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {V}Real-World Deployment \& Pipeline Analysis}{4}{}\protected@file@percent }
+\newlabel{sec:deployment}{{V}{4}{}{section.5}{}}
+\bibstyle{IEEEtran}
+\bibdata{references}
+\bibcite{wang2023yolov7}{1}
+\bibcite{wang2024yolov10}{2}
+\bibcite{ultralytics2024yolo11}{3}
+\bibcite{ecyolov8_2024}{4}
+\bibcite{yolocbf_2023}{5}
+\bibcite{fuYolov8nFADSStudyEnhancing2024}{6}
+\bibcite{ding2021repvgg}{7}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Comprehensive Comparison with State-of-the-Art (SOTA) Models on the SHWD / VOC2028 Benchmark. Best results are highlighted in \textbf  {bold}, second-best results are \underline  {underlined}.}}{5}{}\protected@file@percent }
+\newlabel{tab:sota_comparison}{{I}{5}{}{table.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Systematic Ablation Analysis ($A_0 \to A_6$) of Architecture and Loss Components on YOLO11s.}}{5}{}\protected@file@percent }
+\newlabel{tab:ablation_study}{{II}{5}{}{table.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Failure Case Analysis}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion \& Future Work}{5}{}\protected@file@percent }
+\newlabel{sec:conclusion}{{VI}{5}{}{section.6}{}}
+\@writefile{toc}{\contentsline {section}{References}{5}{}\protected@file@percent }
+\bibcite{liu2018coordconv}{8}
+\bibcite{zhang2021focal}{9}
+\gdef \@abspage@last{6}

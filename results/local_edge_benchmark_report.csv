@@ -1,0 +1,7 @@
+Platform,Precision,Engine Size,Latency (ms),Throughput (FPS)
+Local GPU (RTX 3050),FP16,20.1 MB,1.51 ms,662.7 FPS
+Local GPU (RTX 3050),TensorRT INT8,10.4 MB,0.78 ms,1274.4 FPS
+Local CPU (2 Cores),FP32,20.1 MB,84.33 ms,11.9 FPS
+Local CPU (2 Cores),ONNX/VNNI INT8,10.4 MB,37.95 ms,26.4 FPS
+Local CPU (4 Cores),FP32,20.1 MB,63.48 ms,15.8 FPS
+Local CPU (4 Cores),ONNX/VNNI INT8,10.4 MB,28.56 ms,35.0 FPS

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>
+		Helmet Detection Based on Context Enhancement Pyramid Under Surveillance Images
+							| Information Technology and Control 
+			</title>
+
+	
+<link rel="icon" href="https://itc.ktu.lt/public/journals/13/favicon_en_US.png">
+<meta name="generator" content="Open Journal Systems 3.4.0.5">
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" />
+<meta name="DC.Creator.PersonalName" content="Zhigang Xu"/>
+<meta name="DC.Creator.PersonalName" content="Yugen Li"/>
+<meta name="DC.Date.created" scheme="ISO8601" content="2024-06-26"/>
+<meta name="DC.Date.dateSubmitted" scheme="ISO8601" content="2023-10-05"/>
+<meta name="DC.Date.issued" scheme="ISO8601" content="2024-06-25"/>
+<meta name="DC.Date.modified" scheme="ISO8601" content="2024-06-26"/>
+<meta name="DC.Description" xml:lang="en" content="Helmet detection is of great significance for realizing the automated management of industrial safety. To address the problem that existing object detection methods have insufficient ability to detect helmet small objects under surveillance images, this paper proposes a helmet detection based on context enhancement pyramid under surveillance images to realize the automatic detection task of helmet objects. The method helps the network improve position localization for small-scale helmet objects by adding a high-resolution detection layer to YOLOv5. Also, the proposed context enhancement pyramid reduces the semantic differences between different scale features and generates rich contextual features to enhance the network’s discriminative learning ability for helmet small object features. In addition, the proposed multi-scale attention module improves thefeature fusion effect in the pyramid network to further capture multi-scale features and expand the receptive field to enhance the network’s detection precision of helmet objects under surveillance images. The experimental analysis shows that the proposed method has good detection effect compared to existing object detection methods on the Safety Helmet Wearing Dataset (SHWD) as well as the customized dataset."/>
+<meta name="DC.Format" scheme="IMT" content="application/pdf"/>
+<meta name="DC.Identifier" content="35273"/>
+<meta name="DC.Identifier.pageNumber" content="453-469"/>
+<meta name="DC.Identifier.DOI" content="10.5755/j01.itc.53.2.35273"/>
+<meta name="DC.Identifier.URI" content="https://itc.ktu.lt/index.php/ITC/article/view/35273"/>
+<meta name="DC.Language" scheme="ISO639-1" content="en"/>
+<meta name="DC.Rights" content="Copyright (c) 2024 Information Technology and Control "/>
+<meta name="DC.Source" content="Information Technology and Control "/>
+<meta name="DC.Source.ISSN" content="2335-884X"/>
+<meta name="DC.Source.Issue" content="2"/>
+<meta name="DC.Source.Volume" content="53"/>
+<meta name="DC.Source.URI" content="https://itc.ktu.lt/index.php/ITC"/>
+<meta name="DC.Subject" xml:lang="en" content=" Surveillance images"/>
+<meta name="DC.Subject" xml:lang="en" content=" Helmet detection"/>
+<meta name="DC.Subject" xml:lang="en" content="YOLOv5"/>
+<meta name="DC.Subject" xml:lang="en" content="Context enhancement pyramid"/>
+<meta name="DC.Subject" xml:lang="en" content="Multi-scale attention"/>
+<meta name="DC.Title" content="Helmet Detection Based on Context Enhancement Pyramid Under Surveillance Images"/>
+<meta name="DC.Type" content="Text.Serial.Journal"/>
+<meta name="DC.Type.articleType" content="Articles"/>
+<meta name="gs_meta_revision" content="1.1"/>
+<meta name="citation_journal_title" content="Information Technology and Control "/>
+<meta name="citation_journal_abbrev" content="ITC"/>
+<meta name="citation_issn" content="2335-884X"/> 
+<meta name="citation_author" content="Zhigang Xu"/>
+<meta name="citation_author_institution" content="School of Computer and Communication, Lanzhou University of Technology, Lanzhou, 730050, China"/>
+<meta name="citation_author" content="Yugen Li"/>
+<meta name="citation_author_institution" content="School of Computer and Communication, Lanzhou University of Technology, Lanzhou, 730050, China; School of Information Engineering, Yangling Vocational &amp; Technical College, Yangling, 712100, China"/>
+<meta name="citation_title" content="Helmet Detection Based on Context Enhancement Pyramid Under Surveillance Images"/>
+<meta name="citation_language" content="en"/>
+<meta name="citation_date" content="2024/06/26"/>
+<meta name="citation_volume" content="53"/>
+<meta name="citation_issue" content="2"/>
+<meta name="citation_firstpage" content="453"/>
+<meta name="citation_lastpage" content="469"/>
+<meta name="citation_doi" content="10.5755/j01.itc.53.2.35273"/>
+<meta name="citation_abstract_html_url" content="https://itc.ktu.lt/index.php/ITC/article/view/35273"/>
+<meta name="citation_abstract" xml:lang="en" content="Helmet detection is of great significance for realizing the automated management of industrial safety. To address the problem that existing object detection methods have insufficient ability to detect helmet small objects under surveillance images, this paper proposes a helmet detection based on context enhancement pyramid under surveillance images to realize the automatic detection task of helmet objects. The method helps the network improve position localization for small-scale helmet objects by adding a high-resolution detection layer to YOLOv5. Also, the proposed context enhancement pyramid reduces the semantic differences between different scale features and generates rich contextual features to enhance the network’s discriminative learning ability for helmet small object features. In addition, the proposed multi-scale attention module improves thefeature fusion effect in the pyramid network to further capture multi-scale features and expand the receptive field to enhance the network’s detection precision of helmet objects under surveillance images. The experimental analysis shows that the proposed method has good detection effect compared to existing object detection methods on the Safety Helmet Wearing Dataset (SHWD) as well as the customized dataset."/>
+<meta name="citation_keywords" xml:lang="en" content=" Surveillance images"/>
+<meta name="citation_keywords" xml:lang="en" content=" Helmet detection"/>
+<meta name="citation_keywords" xml:lang="en" content="YOLOv5"/>
+<meta name="citation_keywords" xml:lang="en" content="Context enhancement pyramid"/>
+<meta name="citation_keywords" xml:lang="en" content="Multi-scale attention"/>
+<meta name="citation_pdf_url" content="https://itc.ktu.lt/index.php/ITC/article/download/35273/16449"/>
+<link rel="alternate" type="application/atom+xml" href="https://itc.ktu.lt/index.php/ITC/gateway/plugin/APP%5Cplugins%5Cgeneric%5CwebFeed%5CWebFeedGatewayPlugin/atom">
+<link rel="alternate" type="application/rdf+xml" href="https://itc.ktu.lt/index.php/ITC/gateway/plugin/APP%5Cplugins%5Cgeneric%5CwebFeed%5CWebFeedGatewayPlugin/rss">
+<link rel="alternate" type="application/rss+xml" href="https://itc.ktu.lt/index.php/ITC/gateway/plugin/APP%5Cplugins%5Cgeneric%5CwebFeed%5CWebFeedGatewayPlugin/rss2">
+	<link rel="stylesheet" href="https://itc.ktu.lt/index.php/ITC/$$$call$$$/page/page/css?name=stylesheet" type="text/css" /><link rel="stylesheet" href="https://itc.ktu.lt/index.php/ITC/$$$call$$$/page/page/css?name=font" type="text/css" /><link rel="stylesheet" href="https://itc.ktu.lt/lib/pkp/styles/fontawesome/fontawesome.css?v=3.4.0.5" type="text/css" />
+</head>
+<body class="pkp_page_article pkp_op_view has_site_logo" dir="ltr">
+
+	<div class="pkp_structure_page">
+
+				<header class="pkp_structure_head" id="headerNavigationContainer" role="banner">
+						
+ <nav class="cmp_skip_to_content" aria-label="Jump to content links">
+	<a href="#pkp_content_main">Skip to main content</a>
+	<a href="#siteNav">Skip to main navigation menu</a>
+		<a href="#pkp_content_footer">Skip to site footer</a>
+</nav>
+
+			<div class="pkp_head_wrapper">
+
+				<div class="pkp_site_name_wrapper">
+					<button class="pkp_site_nav_toggle">
+						<span>Open Menu</span>
+					</button>
+										<div class="pkp_site_name">
+																<a href="						https://itc.ktu.lt/index.php/ITC/index
+					" class="is_img">
+							<img src="https://itc.ktu.lt/public/journals/13/pageHeaderLogoImage_en_US.png" width="619" height="175" alt="ITC" />
+						</a>
+										</div>
+				</div>
+
+				
+				<nav class="pkp_site_nav_menu" aria-label="Site Navigation">
+					<a id="siteNav"></a>
+					<div class="pkp_navigation_primary_row">
+						<div class="pkp_navigation_primary_wrapper">
+																				<ul id="navigationPrimary" class="pkp_navigation_primary pkp_nav_list">
+								<li class="">
+				<a href="http://itc.ktu.lt/index.php/ITC">
+					Home
+				</a>
+							</li>
+								<li class="">
+				<a href="https://itc.ktu.lt/index.php/ITC/about">
+					About
+				</a>
+									<ul>
+																					<li class="">
+									<a href="https://itc.ktu.lt/index.php/ITC/about">
+										About the Journal
+									</a>
+								</li>
+																												<li class="">
+									<a href="https://itc.ktu.lt/index.php/ITC/about/submissions">
+										Submissions
+									</a>
+								</li>
+																												<li class="">
+									<a href="https://itc.ktu.lt/index.php/ITC/about/editorialTeam">
+										Editorial Team
+									</a>
+								</li>
+																												<li class="">
+									<a href="https://itc.ktu.lt/index.php/ITC/about/privacy">
+										Privacy Statement
+									</a>
+								</li>
+																												<li class="">
+									<a href="https://itc.ktu.lt/index.php/ITC/about/contact">
+										Contact
+									</a>
+								</li>
+																		</ul>
+							</li>
+								<li class="">
+				<a href="https://itc.ktu.lt/index.php/ITC/issue/current">
+					Current
+				</a>
+							</li>
+								<li class="">
+				<a href="https://itc.ktu.lt/index.php/ITC/issue/archive">
+					Archives
+				</a>
+							</li>
+			</ul>
+
+				
+
+																						<div class="pkp_navigation_search_wrapper">
+									<a href="https://itc.ktu.lt/index.php/ITC/search" class="pkp_search pkp_search_desktop">
+										<span class="fa fa-search" aria-hidden="true"></span>
+										Search
+									</a>
+								</div>
+													</div>
+					</div>
+					<div class="pkp_navigation_user_wrapper" id="navigationUserWrapper">
+							<ul id="navigationUser" class="pkp_navigation_user pkp_nav_list">
+								<li class="profile">
+				<a href="https://itc.ktu.lt/index.php/ITC/user/register">
+					Register
+				</a>
+							</li>
+								<li class="profile">
+				<a href="https://itc.ktu.lt/index.php/ITC/login">
+					Login
+				</a>
+							</li>
+										</ul>
+
+					</div>
+				</nav>
+			</div><!-- .pkp_head_wrapper -->
+		</header><!-- .pkp_structure_head -->
+
+						<div class="pkp_structure_content has_sidebar">
+			<div class="pkp_structure_main" role="main">
+				<a id="pkp_content_main"></a>
+
+<div class="page page_article">
+			<nav class="cmp_breadcrumbs" role="navigation" aria-label="You are here:">
+	<ol>
+		<li>
+			<a href="https://itc.ktu.lt/index.php/ITC/index">
+				Home
+			</a>
+			<span class="separator">/</span>
+		</li>
+		<li>
+			<a href="https://itc.ktu.lt/index.php/ITC/issue/archive">
+				Archives
+			</a>
+			<span class="separator">/</span>
+		</li>
+					<li>
+				<a href="https://itc.ktu.lt/index.php/ITC/issue/view/982">
+					Vol. 53 No. 2 (2024)
+				</a>
+				<span class="separator">/</span>
+			</li>
+				<li class="current" aria-current="page">
+			<span aria-current="page">
+									Articles
+							</span>
+		</li>
+	</ol>
+</nav>
+	
+		  	 <article class="obj_article_details">
+
+		
+		<h1 class="page_title">
+		Helmet Detection Based on Context Enhancement Pyramid Under Surveillance Images
+	</h1>
+
+	
+	<div class="row">
+		<div class="main_entry">
+
+							<section class="item authors">
+					<h2 class="pkp_screen_reader">Authors</h2>
+					<ul class="authors">
+											<li>
+							<span class="name">
+								Zhigang Xu
+							</span>
+															<span class="affiliation">
+									School of Computer and Communication, Lanzhou University of Technology, Lanzhou, 730050, China
+																	</span>
+																																		</li>
+											<li>
+							<span class="name">
+								Yugen Li
+							</span>
+															<span class="affiliation">
+									School of Computer and Communication, Lanzhou University of Technology, Lanzhou, 730050, China; School of Information Engineering, Yangling Vocational &amp; Technical College, Yangling, 712100, China
+																	</span>
+																																		</li>
+										</ul>
+				</section>
+			
+																	<section class="item doi">
+					<h2 class="label">
+												DOI:
+					</h2>
+					<span class="value">
+						<a href="https://doi.org/10.5755/j01.itc.53.2.35273">
+							https://doi.org/10.5755/j01.itc.53.2.35273
+						</a>
+					</span>
+				</section>
+			
+
+									<section class="item keywords">
+				<h2 class="label">
+										Keywords:
+				</h2>
+				<span class="value">
+											 Surveillance images, 											 Helmet detection, 											YOLOv5, 											Context enhancement pyramid, 											Multi-scale attention									</span>
+			</section>
+			
+										<section class="item abstract">
+					<h2 class="label">Abstract</h2>
+					<p>Helmet detection is of great significance for realizing the automated management of industrial safety. To address the problem that existing object detection methods have insufficient ability to detect helmet small objects under surveillance images, this paper proposes a helmet detection based on context enhancement pyramid under surveillance images to realize the automatic detection task of helmet objects. The method helps the network improve position localization for small-scale helmet objects by adding a high-resolution detection layer to YOLOv5. Also, the proposed context enhancement pyramid reduces the semantic differences between different scale features and generates rich contextual features to enhance the network’s discriminative learning ability for helmet small object features. In addition, the proposed multi-scale attention module improves the<br>feature fusion effect in the pyramid network to further capture multi-scale features and expand the receptive field to enhance the network’s detection precision of helmet objects under surveillance images. The experimental analysis shows that the proposed method has good detection effect compared to existing object detection methods on the Safety Helmet Wearing Dataset (SHWD) as well as the customized dataset.</p>
+				</section>
+			
+			
+
+						
+																										
+						
+		</div><!-- .main_entry -->
+
+		<div class="entry_details">
+
+						
+										<div class="item galleys">
+					<h2 class="pkp_screen_reader">
+						Downloads
+					</h2>
+					<ul class="value galleys_links">
+													<li>
+								
+	
+													
+
+<a class="obj_galley_link pdf" href="https://itc.ktu.lt/index.php/ITC/article/view/35273/16449">
+		
+	PDF
+
+	</a>
+							</li>
+											</ul>
+				</div>
+						
+						<div class="item published">
+				<section class="sub_item">
+					<h2 class="label">
+						Published
+					</h2>
+					<div class="value">
+																			<span>2024-06-26</span>
+																	</div>
+				</section>
+							</div>
+			
+						
+										<div class="item issue">
+
+											<section class="sub_item">
+							<h2 class="label">
+								Issue
+							</h2>
+							<div class="value">
+								<a class="title" href="https://itc.ktu.lt/index.php/ITC/issue/view/982">
+									Vol. 53 No. 2 (2024)
+								</a>
+							</div>
+						</section>
+					
+											<section class="sub_item">
+							<h2 class="label">
+								Section
+							</h2>
+							<div class="value">
+								Articles
+							</div>
+						</section>
+					
+									</div>
+			
+						
+			      													       							<div class="item copyright">
+					<h2 class="label">
+						License
+					</h2>
+					          					          					<p>Copyright terms are indicated in the Republic of Lithuania Law on Copyright and Related Rights, Articles 4-37.</p>
+					
+				</div>
+			       			
+
+		</div><!-- .entry_details -->
+	</div><!-- .row -->
+
+</article>
+
+	
+
+</div><!-- .page -->
+
+	</div><!-- pkp_structure_main -->
+
+									<div class="pkp_structure_sidebar left" role="complementary">
+				<div class="pkp_block block_custom" id="customblock-crossref2">
+	<h2 class="title pkp_screen_reader">crossref2</h2>
+	<div class="content">
+		<p><a style="background: none;" href="http://www.crossref.org/" target="_blank" rel="noopener"><img src="/styles/images/crossref.gif" alt="crossref" width="90" height="32" border="0"></a>&nbsp; &nbsp;&nbsp;<a style="background: none;" href="http://www.crossref.org/crosscheck/index.html" target="_blank" rel="noopener"><img src="/styles/images/crosscheck.gif" alt="crosscheck" width="90" height="32" border="0"></a></p>
+<p><a style="background: none;" href="http://research.ithenticate.com" target="_blank" rel="noopener"> <img src="/styles/images/ithenticate_1.png" alt="iThenticate" width="180" height="87" border="0"></a></p>
+<p><img src="https://itc.ktu.lt/public/site/images/testadmin/mceclip1.png" width="178" height="105"></p>
+	</div>
+</div>
+<div class="pkp_block block_custom" id="customblock-crossref">
+	<h2 class="title pkp_screen_reader">crossref</h2>
+	<div class="content">
+		<p><img src="https://itc.ktu.lt/public/site/images/testadmin/mceclip0v.jpg" alt="" width="202" height="418"></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+	</div>
+</div>
+<div class="pkp_block block_information">
+	<h2 class="title">Information</h2>
+	<div class="content">
+		<ul>
+							<li>
+					<a href="https://itc.ktu.lt/index.php/ITC/information/readers">
+						For Readers
+					</a>
+				</li>
+										<li>
+					<a href="https://itc.ktu.lt/index.php/ITC/information/authors">
+						For Authors
+					</a>
+				</li>
+										<li>
+					<a href="https://itc.ktu.lt/index.php/ITC/information/librarians">
+						For Librarians
+					</a>
+				</li>
+					</ul>
+	</div>
+</div>
+
+			</div><!-- pkp_sidebar.left -->
+			</div><!-- pkp_structure_content -->
+
+<div class="pkp_structure_footer_wrapper" role="contentinfo">
+	<a id="pkp_content_footer"></a>
+
+	<div class="pkp_structure_footer">
+
+					<div class="pkp_footer_content">
+				<p>Print ISSN: 1392-124X&nbsp;<br>Online ISSN: 2335-884X</p>
+			</div>
+		
+		<div class="pkp_brand_footer">
+			<a href="https://itc.ktu.lt/index.php/ITC/about/aboutThisPublishingSystem">
+				<img alt="More information about the publishing system, Platform and Workflow by OJS/PKP." src="https://itc.ktu.lt/templates/images/ojs_brand.png">
+			</a>
+		</div>
+	</div>
+</div><!-- pkp_structure_footer_wrapper -->
+
+</div><!-- pkp_structure_page -->
+
+<script src="https://itc.ktu.lt/lib/pkp/lib/vendor/components/jquery/jquery.min.js?v=3.4.0.5" type="text/javascript"></script><script src="https://itc.ktu.lt/lib/pkp/lib/vendor/components/jqueryui/jquery-ui.min.js?v=3.4.0.5" type="text/javascript"></script><script src="https://itc.ktu.lt/plugins/themes/default/js/lib/popper/popper.js?v=3.4.0.5" type="text/javascript"></script><script src="https://itc.ktu.lt/plugins/themes/default/js/lib/bootstrap/util.js?v=3.4.0.5" type="text/javascript"></script><script src="https://itc.ktu.lt/plugins/themes/default/js/lib/bootstrap/dropdown.js?v=3.4.0.5" type="text/javascript"></script><script src="https://itc.ktu.lt/plugins/themes/default/js/main.js?v=3.4.0.5" type="text/javascript"></script><script type="text/javascript">
+(function (w, d, s, l, i) { w[l] = w[l] || []; var f = d.getElementsByTagName(s)[0],
+j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true;
+j.src = 'https://www.googletagmanager.com/gtag/js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+function gtag(){dataLayer.push(arguments)}; gtag('js', new Date()); gtag('config', i); })
+(window, document, 'script', 'dataLayer', 'UA-27657212-1');
+</script>
+
+
+</body>
+</html>

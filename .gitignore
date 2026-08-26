@@ -1,0 +1,51 @@
+# =====================================================================
+# GITIGNORE FOR REVOLUTIONARY PPE RESEARCH PIPELINE (IEEE TPAMI / Q1)
+# =====================================================================
+# Ignore Raw and Standardized Datasets
+Dataset/
+SHWD_YOLO/
+STANDARDIZED/
+JPEGImages/
+Annotations/
+ImageSets/
+
+# Ignore Large Zip and Archive files (>100MB)
+*.zip
+*.tar.gz
+*.7z
+*.rar
+
+# Ignore Heavy Checkpoint Weights & Model Binaries
+*.pt
+*.pth
+*.onnx
+*.engine
+*.bin
+Output/
+runs/
+exported_engines/
+
+# Keep important metrics and code outputs
+!results/
+!results/*.csv
+!SHWD_YOLO_KFOLD/*.csv
+!SHWD_YOLO_KFOLD/*.md
+!references/*.csv
+!references/*.md
+!references/*.bib
+
+# Python & Environment
+__pycache__/
+*.py[cod]
+*.class
+.ipynb_checkpoints/
+.env
+.venv/
+env/
+venv/
+.DS_Store
+Thumbs.db
+
+video_test/
+*.mp4
+*.engine
