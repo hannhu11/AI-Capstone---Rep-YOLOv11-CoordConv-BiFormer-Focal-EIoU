@@ -274,7 +274,7 @@ def build_notebook():
             "for k, v in list(models_to_test.items())[:10]:\n",
             "    print(f'  🔹 {k} ({v.stat().st_size/1024/1024:.2f} MB)')\n",
             "\n",
-            "shwd_yamls = list(Path('.').rglob('shwd.yaml')) + list(Path('/kaggle/working').rglob('shwd.yaml'))\n",
+            "shwd_yamls = list(Path('/kaggle/input').rglob('shwd.yaml')) + list(Path('.').rglob('shwd.yaml')) + list(Path('/kaggle/working').rglob('shwd.yaml'))\n",
             "shwd_p = shwd_yamls[0] if shwd_yamls else None\n",
             "\n",
             "benchmarks = []\n",
