@@ -150,16 +150,15 @@ Dựa trên kiểm tra phần cứng thực tế của máy tác giả (**Intel 
 
 - [x] Tạo và đồng bộ hóa tệp `capstone_memory.md` với Framework "The Living Reference".
 - [x] Giải phẫu bệnh lý Fix-4 và hoàn thành huấn luyện Fix-5 (50 Epochs, $imgsz=1024$).
-- [x] Đo đạc số liệu thực nghiệm phần cứng cục bộ (RTX 3050 GPU FP16 = $1.51\text{ ms}$, CPU 4-Cores INT8 = $28.56\text{ ms}$).
-- [x] Phát hiện nguyên nhân gốc rễ `weights_only=True` chặn weight transfer và DDP isolation trong Fix-5.
+- [x] Đo đạc số liệu thực nghiệm phần cứng chuẩn mực (RTX 3050 FP16 = $1.51\text{ ms}$, CPU 4-Cores INT8 = $28.56\text{ ms}$, T4 FP16 = $2.14\text{ ms}$).
+- [x] Phát hiện và đính chính nguyên nhân số ảo 99,536 FPS trong bảng INT8 cũ: Do đo Non-blocking CPU queue mà không có `torch.cuda.synchronize()`.
+- [x] Khắc phục triệt để lỗi đường dẫn Dataset trên Kaggle (`Missing path C:/Users/ADMIN/...`): Chuyển sang cơ chế Dynamic Runtime YAML sinh trực tiếp tại runtime `/kaggle/working/RUNTIME_CONFIGS/`.
 - [x] Thiết lập hệ thống quản lý tài liệu tham khảo & tích hợp Zotero (32 Bài báo SOTA SHWD/PPE).
-- [x] Giải quyết triệt để lỗi DDP Loss Hook trên Kaggle (`TypeError: CustomInnerNWD_BboxLoss.forward() takes 8 positional arguments but 10 were given`).
-- [x] **Hoàn thành Thực nghiệm Fix-6 trên Kaggle Dual Tesla T4**:
-  * 50 Epochs Finetuning: **$mAP_{50} = 94.88\%$, Precision = $92.85\%$, Recall = $89.75\%$, $mAP_{50-95} = 60.97\%$**.
-  * 5-Fold Cross-Validation: **Mean $mAP_{50} = 96.64 \pm 0.32\%$ (Đỉnh cao Fold 3: $97.11\%$)**, Mean Precision = $94.94\%$, Mean Recall = $93.01\%$, Mean $mAP_{50-95} = 65.91\%$.
+- [x] Hoàn thành Thực nghiệm Fix-6 trên Kaggle Dual Tesla T4: 5-Fold Mean **$mAP_{50} = 96.64 \pm 0.32\%$ (Đỉnh cao Fold 3: $97.11\%$)**.
 - [x] Chuẩn hóa dữ liệu ngoại miền GDUT-HWD ($13,499$ ảnh) và SHEL5K ($5,000$ ảnh) theo không gian nhãn chuẩn tắc $\mathcal{C}^*$.
-- [x] Xây dựng Master Cross-Domain Benchmark Notebook: `shwd-cross-domain-benchmark-shel5k-gduthwd.ipynb`.
-- [ ] Chạy Zero-Shot Cross-Domain Benchmark trên Kaggle để lập bảng so sánh $\Delta \text{mAP}$ cho bài báo IEEE TPAMI.
+- [x] Đẩy toàn bộ mã nguồn sạch lên GitHub: `hannhu11/AI-Capstone---Rep-YOLOv11-CoordConv-BiFormer-Focal-EIoU`.
+- [ ] Chạy lại `shwd-cross-domain-benchmark-shel5k-gduthwd.ipynb` trên Kaggle (bật GPU T4 x1/x2) để lấy bảng LaTeX hoàn chỉnh.
+
 
 
 ---

@@ -1,0 +1,270 @@
+
+--- PAGE 1 ---
+SHWD-YOLO11s: Training-Policy Optimization
+and Cross-Domain Evaluation for Safety Helmet
+Detection
+Tuan Dung
+Affiliation and e-mail to be supplied before submission
+Abstract—Automated safety-helmet monitoring requires both
+accurate localization and real-time inference under substantial
+domain shift. This work studies two three-head YOLO11s vari-
+ants trained on the Safety Helmet Wearing Dataset (SHWD):
+SHWD-YOLO11s-DA, based on a data-augmentation fine-tuning
+policy, and SHWD-YOLO11s-LO, which modifies the box-loss
+weight, MixUp rate, and cosine learning-rate schedule. At 960-
+pixel validation resolution, the DA variant reaches 96.111%
+mAP50 and 63.513% mAP50–95, whereas LO reaches 96.148%
+and 63.760%, respectively. Measured batch-one PyTorch FP32
+throughput on a Kaggle Tesla T4 is 48.7 FPS for DA and 47.0
+FPS for LO. We further evaluate both checkpoints on five helmet-
+detection datasets using explicitly reported official, standardized,
+or deterministic-holdout protocols. LO improves mAP50–95 on
+four of five datasets, with its largest external-domain gain of
+1.63 percentage points on Hard Hat Workers, but performance
+remains limited on SHEL5K. These results show that training-
+policy optimization provides modest in-domain gains and non-
+uniform cross-domain benefits; they do not establish a universal
+improvement across domains.
+Index Terms—safety helmet detection, YOLO11s, data aug-
+mentation, loss optimization, cross-domain generalization, real-
+time inference
+I. INTRODUCTION
+Construction-site monitoring must identify both workers and
+protective helmets despite occlusion, crowding, illumination
+changes, and small object scale. A detector intended for
+operational use must therefore balance localization accuracy,
+recall, and inference throughput. YOLO11 provides a compact
+one-stage detection baseline suitable for this setting [1].
+This study does not introduce an unverified re-parameterized
+architecture. Instead, it examines two evidence-backed train-
+ing configurations applied to a checkpoint-native, three-head
+YOLO11s detector. The first configuration, SHWD-YOLO11s-
+DA, uses a hard-case augmentation fine-tuning policy. The sec-
+ond, SHWD-YOLO11s-LO, changes several training-policy
+factors: the box-loss weight increases from 7.5 to 10.0, MixUp
+changes from 0 to 0.15, and cosine learning-rate scheduling is
+enabled. Because these factors change jointly and execution of
+a custom Focal-EIoU implementation has not been indepen-
+dently verified on every distributed worker, we attribute the
+second configuration to policy-level loss optimization rather
+than to Focal-EIoU alone.
+The contributions are: (1) an artifact-grounded comparison
+of DA and LO at 960-pixel resolution; (2) measured deploy-
+ment results across GPU FP32, GPU FP16, CPU ONNX, and
+a CCTV-oriented code path; and (3) a protocol-aware cross-
+domain benchmark covering SHWD, GDUT-HWD, SHEL5K,
+Hard Hat Workers, and SFCHD.
+II. METHODOLOGY
+A. Model Variants
+Both variants retain the native YOLO11s detection topology
+and predict two classes, hat and person. SHWD-YOLO11s-DA
+uses box weight 7.5, no MixUp, and a non-cosine learning-
+rate schedule. SHWD-YOLO11s-LO uses box weight 10.0,
+MixUp probability 0.15, and cosine scheduling. Both recorded
+training configurations use an image size of 960 × 960 and
+device identifiers 0 and 1.
+B. Evaluation Metrics
+Precision P is the fraction of predicted positives that are
+correct, while recall R is the fraction of ground-truth objects
+recovered. AP is integrated over the precision–recall curve. We
+report mAP50 at IoU 0.5 and the stricter mAP50–95 averaged
+over IoU thresholds 0.50:0.05:0.95. The latter is the primary
+localization metric.
+C. Protocol Separation
+Internal validation metrics are read from the best row of
+each run’s results.csv, selected by mAP50–95. Cross-
+domain results use the protocol assigned to each dataset in
+the benchmark: official, standardized, or deterministic holdout.
+These protocol classes are not pooled into a single overall
+score because their splits and preprocessing are not necessarily
+exchangeable.
+III. EXPERIMENTS AND RESULTS
+A. Internal Validation and Runtime
+Table I presents the internal results. LO raises mAP50 by
+0.037 percentage points and mAP50–95 by 0.247 points rela-
+tive to DA. Its precision increases by 0.773 points, while recall
+decreases by 0.948 points. The result therefore represents a
+small localization/precision improvement rather than uniform
+dominance.
+The two variants remain above the conventional 30-FPS
+real-time threshold in GPU FP32. DA is 1.7 FPS faster in this
+path, whereas LO has the higher mAP50–95. Table II reports
+additional measured code paths. Because the CCTV and core-
+inference measurements follow different timing paths, their
+
+--- PAGE 2 ---
+TABLE I
+INTERNAL SHWD VALIDATION AND MEASURED GPU FP32 THROUGHPUT. FPS IS BATCH-ONE PYTORCH FP32 AT 960 × 960 ON A KAGGLE TESLA T4;
+IT IS NOT DUAL-GPU AGGREGATE THROUGHPUT.
+Model
+Precision (%)
+Recall (%)
+mAP50 (%)
+mAP50–95 (%)
+Best epoch
+FPS
+SHWD-YOLO11s-DA
+93.241
+92.886
+96.111
+63.513
+60
+48.7
+SHWD-YOLO11s-LO
+94.014
+91.938
+96.148
+63.760
+62
+47.0
+TABLE II
+MEASURED DEPLOYMENT THROUGHPUT (FPS) AT 960-PIXEL MODEL
+INPUT.
+Variant
+GPU FP32
+GPU FP16
+ONNX CPU 4T
+CCTV GPU
+DA
+48.7
+48.8
+2.9
+64.2
+LO
+47.0
+47.2
+3.3
+70.0
+latencies must not be added or interpreted as directly nested
+measurements.
+D. Cross-Domain Generalization Benchmark
+Table III reports all cross-domain outcomes. VOC2028
+(SHWD)
+is
+the
+source-domain
+official
+validation
+set.
+GDUT-HWD Standardized and SHEL5K Standardized use
+benchmark-normalized formats and class mappings. Hard Hat
+Workers [2] uses a deterministic holdout rather than an offi-
+cial split. SFCHD uses the official protocol recorded by the
+benchmark.
+On VOC2028, LO preserves mAP50 (+0.0001) and raises
+mAP50–95 by 0.0015; recall increases by 0.0059 while preci-
+sion falls by 0.0052. On GDUT-HWD, LO improves mAP50
+and mAP50–95 by 0.0067 and 0.0110, respectively, despite a
+0.0098 recall reduction. SHEL5K is the weakest domain: both
+variants have recall near 0.375 and mAP50–95 below 0.25. LO
+increases SHEL5K mAP50 by 0.0024 but reduces mAP50–95
+by 0.0062.
+The largest external localization gain occurs on Hard Hat
+Workers, where LO raises mAP50–95 by 0.0163 and mAP50
+by 0.0067, with a 0.0029 recall increase and a 0.0070 pre-
+cision reduction. On SFCHD, LO improves recall by 0.0060,
+mAP50 by 0.0074, and mAP50–95 by 0.0103, while precision
+decreases by 0.0165. Overall, LO improves mAP50–95 on four
+of five datasets but does not dominate every metric or every
+domain. The large source-to-external decline, particularly on
+SHEL5K, demonstrates unresolved domain shift.
+IV. THREATS TO VALIDITY
+The DA and LO configurations alter multiple training
+factors simultaneously; their difference is not a single-factor
+loss ablation. No causal Focal-EIoU claim is therefore made.
+Cross-domain rows employ heterogeneous protocols and must
+not be averaged without sample-aware normalization. The de-
+ployment report provides measured values, but core-inference
+and CCTV paths are separate benchmark implementations.
+Finally, model parameters and GFLOPs are omitted until they
+are measured from the exact archived checkpoints.
+V. CONCLUSION
+SHWD-YOLO11s-DA and SHWD-YOLO11s-LO both pro-
+vide real-time GPU FP32 inference at 960-pixel resolution. LO
+achieves the higher internal mAP50–95, with a modest 0.247-
+point gain over DA, and improves cross-domain mAP50–95
+on four of five evaluated datasets. These improvements are
+accompanied by small precision–recall trade-offs and do not
+eliminate the pronounced domain gap on SHEL5K. Future
+work should verify custom-loss execution on every distributed
+worker, perform paired multi-seed loss ablations, and analyze
+localization errors by object scale and occlusion.
+REFERENCES
+[1] Ultralytics, “Ultralytics yolo11 documentation,” https://docs.ultralytics.
+com/models/yolo11/, accessed 13 September 2026.
+[2] A. MVD, “Hard hat workers dataset,” Public dataset release, evaluated
+using a deterministic holdout in this study.
+
+--- PAGE 3 ---
+TABLE III
+CROSS-DOMAIN GENERALIZATION BENCHMARK. DA DENOTES DATAAUGMENTATION AND LO DENOTES LOSSOPTIMIZE. PROTOCOLS ARE REPORTED
+RATHER THAN POOLED.
+Model
+Dataset
+Protocol
+Prec.
+Rec.
+mAP50
+mAP50–95
+SHWD-YOLO11s-DA
+VOC2028 (SHWD)
+Official
+0.9213
+0.8871
+0.9332
+0.7229
+GDUT-HWD Standardized
+Standardized
+0.9418
+0.6775
+0.7359
+0.3801
+SHEL5K Standardized
+Standardized
+0.9315
+0.3755
+0.4072
+0.2498
+Hard Hat Workers (AndrewMVD)
+Deterministic holdout
+0.9393
+0.6870
+0.7373
+0.4222
+SFCHD
+Official
+0.8130
+0.5515
+0.6406
+0.3632
+SHWD-YOLO11s-LO
+VOC2028 (SHWD)
+Official
+0.9161
+0.8930
+0.9333
+0.7244
+GDUT-HWD Standardized
+Standardized
+0.9454
+0.6677
+0.7426
+0.3911
+SHEL5K Standardized
+Standardized
+0.9245
+0.3743
+0.4096
+0.2436
+Hard Hat Workers (AndrewMVD)
+Deterministic holdout
+0.9323
+0.6899
+0.7440
+0.4385
+SFCHD
+Official
+0.7965
+0.5575
+0.6480
+0.3735

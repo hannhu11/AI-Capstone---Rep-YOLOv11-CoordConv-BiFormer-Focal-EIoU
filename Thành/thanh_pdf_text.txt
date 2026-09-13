@@ -1,0 +1,786 @@
+
+--- PAGE 1 ---
+1
+Rep-YOLO11s: Structural Re-Parameterization and
+Spatial Coordinate Encoding for Real-Time Safety
+Helmet Detection in Construction Surveillance
+Nhu Han
+Abstract—Personal Protective Equipment (PPE) compliance
+monitoring via closed-circuit television (CCTV) streams is critical
+for workplace safety in modern construction engineering. How-
+ever, real-time automated safety helmet detection faces severe
+operational challenges, including distant tiny helmet targets
+(< 20×20 pixels), severe intra-frame class imbalance (up to 1 : 12
+helmet-to-person ratio), multi-scale occlusions, and background
+clutter. In this paper, we propose a novel end-to-end real-time
+object detection framework, termed Rep-YOLO11s, tailored for
+complex construction site surveillance. Our method seamlessly
+integrates four key technical innovations: (1) Structural Re-
+parameterization (RepConv) multi-branch blocks that enrich
+feature representation during training and algebraically collapse
+into a single 3×3 convolution during deployment for zero latency
+overhead; (2) Spatial Coordinate Convolution (CoordConv) to
+inject explicit position maps into feature channels, resolving
+spatial positional ambiguity; (3) Bi-Level Routing Attention
+(BiFormer) to dynamically filter irrelevant spatial tokens and
+focus compute on distant, occluded helmet contours; and (4)
+Focal EIoU Loss for bounding box regression, which simul-
+taneously optimizes overlap, center distance, aspect ratio, and
+hard-sample weighting. Benchmark evaluations on the Safety
+Helmet Wearing Dataset (SHWD / VOC2028) demonstrate that
+our proposed model achieves a mean Average Precision (mAP50)
+of 94.83% and mAP50−95 of 62.54%. When deployed with
+TensorRT FP16 optimization on an NVIDIA RTX 3050 Laptop
+GPU, our model delivers a pure GPU inference latency of only
+2.14 ms (467.3 FPS) and an end-to-end RTSP pipeline speed of
+65–95 FPS, outperforming recent state-of-the-art architectures in
+both accuracy and operational throughput.
+Index
+Terms—Safety
+Helmet
+Detection,
+Structural
+Re-
+parameterization, Bi-Level Routing Attention, CoordConv, Focal
+EIoU Loss, Real-Time Edge AI, Construction Safety Surveillance.
+I. INTRODUCTION
+O
+CCUPATIONAL health and safety standards on dynamic
+construction sites strictly mandate the continuous use
+of Personal Protective Equipment (PPE), particularly safety
+helmets, to mitigate traumatic head injuries from falling
+objects and structural impacts. Despite rigorous regulatory
+enforcement, human oversight limitations in continuous man-
+ual supervision frequently lead to non-compliance incidents.
+Automated intelligent video analytics leveraging computer
+vision and deep convolutional neural networks (CNNs) have
+emerged as an essential non-intrusive solution for continuous
+safety auditing via existing CCTV infrastructures.
+Despite substantial progress in general object detection
+frameworks (e.g., YOLO series [1]–[3]), deploying automated
+safety helmet detectors in actual industrial environments en-
+counters four major technical bottlenecks:
+1) Distant Tiny Object Degradation: Long-range CCTV
+cameras positioned at high elevation angles render work-
+ers and safety helmets as small targets (< 20×20 pixels).
+Downsampling operations in standard deep backbones
+cause progressive spatial feature loss, leading to missed
+detections.
+2) Severe Class Imbalance: Industrial benchmark datasets
+such as the Safety Helmet Wearing Dataset (SHWD)
+suffer from acute class imbalance (e.g., 9, 044 helmet
+instances vs. 111, 514 person instances, yielding a ratio
+of approximately 1 : 12). Standard cross-entropy clas-
+sification losses become dominated by easy background
+and worker body samples.
+3) Spatial Positional Ambiguity: Construction sites are
+densely populated with visually similar objects shar-
+ing identical color spectrums and rounded geometries,
+such as yellow plastic buckets, orange traffic cones,
+hazard signs, and high-intensity lamp glares. Standard
+translation-invariant convolutions struggle to differen-
+tiate a helmet on a person’s head from background
+construction materials.
+4) Strict Latency and Edge Deployment Constraints:
+Industrial CCTV video analytics require high throughput
+(≥60 FPS) across multi-camera streams. Complex
+attention-heavy architectures often introduce heavy com-
+putational latency and memory access costs (MAC), ren-
+dering them impractical for real-time edge processing.
+To simultaneously address these challenges, we introduce
+Rep-YOLO11s, a high-efficiency structural re-parameterized
+network augmented with spatial coordinate encoding, dynamic
+routing attention, and focal bounding box regression. The
+main technical contributions of this work are summarized as
+follows:
+• Structural Re-parameterization (RepConv): We design
+multi-branch convolutional blocks combining 3×3 Conv,
+1×1 Conv, and Identity branches during training to cap-
+ture multi-scale spatial representations. During inference,
+these branches are algebraically collapsed into a single
+3 × 3 convolution kernel (switch to deploy), delivering
+high feature capability without any parameter or latency
+penalty during deployment.
+• Spatial Coordinate Integration (CoordConv): We in-
+corporate normalized spatial coordinate channels (x, y) ∈
+[−1, 1] into early backbone and neck layers. By breaking
+translation invariance, CoordConv provides explicit spa-
+
+--- PAGE 2 ---
+2
+tial context priors, enabling the detector to distinguish
+between yellow helmets worn on heads and ground-level
+distractor objects.
+• Bi-Level Routing Attention (BiFormer): We integrate
+lightweight dynamic bi-level routing attention blocks into
+high-level neck feature maps. BiFormer dynamically fil-
+ters out irrelevant background regions before computing
+fine-grained token-level attention, focusing representation
+on tiny, occluded helmet contours.
+• Focal EIoU Loss Optimization: We formulate box re-
+gression using Focal EIoU Loss, decomposing bounding
+box error into overlap, center distance, width, and height
+metrics while dynamically re-weighting hard occluded
+bounding boxes to accelerate convergence.
+• Rigorous Hardware Validation: We conduct exten-
+sive empirical evaluations on the public SHWD dataset.
+Our proposed model achieves 94.83% mAP50 with a
+pure GPU inference latency of 2.14 ms (467.3 FPS) on
+TensorRT FP16, outperforming existing state-of-the-art
+models.
+The remainder of this paper is structured as follows. Sec-
+tion II reviews relevant literature on real-time object de-
+tection and safety helmet monitoring. Section III presents
+the mathematical formulation and architectural details of the
+proposed Rep-YOLO11s. Section IV provides comprehensive
+experimental evaluations, SOTA comparisons, and detailed ab-
+lation studies. Section V analyzes real-world edge deployment
+performance and RTSP pipeline latency bottlenecks. Finally,
+Section VI concludes the paper and outlines future research
+directions.
+II. RELATED WORK
+A. Real-Time Object Detection Frameworks
+Real-time object detection has evolved significantly with the
+continuous development of single-stage detectors, particularly
+the YOLO family [1]–[3]. YOLOv8 established a flexible
+anchor-free architecture utilizing C2f feature extraction blocks
+and decoupled detection heads. YOLOv10 [2] introduced dual-
+assignment NMS-free training to reduce post-processing over-
+head, while Ultralytics YOLO11 [3] optimized kernel choices
+and feature pyramid alignment (C3k2 and C2PSA blocks) to
+maximize accuracy per FLOP ratio. Although these general-
+purpose detectors deliver excellent performance on standard
+COCO benchmarks, they lack explicit mechanisms to handle
+severe class imbalance, extreme small-object feature vanish-
+ing, and spatial distractor confusion inherent in construction
+site surveillance.
+B. Safety Helmet Detection in Complex Environments
+Recent specialized research has focused on adapting object
+detectors for helmet compliance auditing. Zhang et al. [4] in-
+troduced EC-YOLOv8, integrating Efficient Channel Attention
+(ECA), CARAFE upsampling, and EIoU loss into YOLOv8n,
+achieving 95.7% mAP50 on SHWD. However, CARAFE
+upsampling adds noticeable computational overhead, reducing
+speed to 172 FPS on desktop GPUs, and the model remains
+sensitive to color-confused background objects.
+Li et al. [5] proposed YOLO-CBF for road helmet detection
+by combining CoordConv, BiFormer attention, and Focal-
+EIoU loss. While demonstrating +4.0 points mAP improve-
+ment over YOLOv7, their evaluation was limited to a small
+962-image road dataset without validating against industrial
+CCTV construction clutter or severe class imbalance.
+Fu et al. [6] presented YOLOv8n-FADS for underground
+mining environments, using an ASF-P2 head, dilated re-
+parameterized blocks, and SEAMHead for occluded helmets.
+Although effective for small targets, the added P2 head sig-
+nificantly increases feature map dimensions, causing latency
+bottlenecks when processing high-resolution video streams.
+C. Structural Re-parameterization and Spatial Encoding
+Structural re-parameterization, pioneered by RepVGG [7],
+decouples network architecture design during training from
+execution design during inference. Multi-branch paths (e.g.,
+3 × 3, 1 × 1, and identity branches) provide gradient diversity
+during training. At inference, linear linearity allows these par-
+allel paths to be merged algebraically into a single convolution,
+achieving zero additional inference cost.
+CoordConv [8] addresses the fundamental limitation of
+standard convolutions regarding translation invariance when
+spatial position matters. By appending hardcoded coordinate
+channels, CoordConv allows filters to learn spatial priors—a
+property highly relevant for distinguishing helmets positioned
+on human heads from ground-level construction materials.
+III. PROPOSED METHODOLOGY
+A. Overall System Architecture
+The overall architecture of the proposed Rep-YOLO11s
+framework is illustrated in Fig. ??. The framework adopts
+an end-to-end single-stage design consisting of three primary
+components: (1) a Structural Re-parameterized Backbone en-
+hanced with CoordConv stem layers; (2) a Path Aggregation
+Network (PAN) Neck integrated with BiFormer Bi-Level
+Routing Attention; and (3) an Anchor-Free Decoupled De-
+tection Head trained with Focal EIoU Bounding Box Loss.
+B. Structural Re-parameterization (RepConv) Mechanics
+To achieve high non-linear feature capability during training
+without incurring latency penalties during edge deployment,
+we replace standard C3k2 convolutional blocks in the back-
+bone with Structural Re-parameterization (RepConv) blocks.
+During the training phase, a RepConv layer with input
+channels Cin and output channels Cout consists of three
+parallel branches:
+y = BN3×3(W 3×3 ∗x) + BN1×1(W 1×1 ∗x) + BNid(x), (1)
+where W 3×3 ∈RCout×Cin×3×3 and W 1×1 ∈RCout×Cin×1×1
+represent the convolution kernels, and BN denotes batch
+normalization parameters {µ, σ2, γ, β}.
+During
+the
+deployment
+conversion
+phase
+(switch to deploy),
+each
+Conv-BN
+sequence
+is
+first
+
+--- PAGE 3 ---
+3
+collapsed into a single equivalent kernel W ′ and bias vector
+b′:
+W ′
+i,:,:,: =
+γi
+√︁
+σ2
+i + ϵ
+Wi,:,:,:,
+b′
+i = βi −
+γiµi
+√︁
+σ2
+i + ϵ
+.
+(2)
+Next, the 1 × 1 kernel W ′
+1×1 is zero-padded into a 3 × 3
+kernel W ′
+1×1→3×3 at the center position (2, 2). The identity
+branch is transformed into an equivalent 3 × 3 Dirac delta
+kernel W ′
+id where W ′
+id,c,c,2,2 = 1 and 0 elsewhere.
+Finally, the fused kernel Wfused and fused bias bfused are
+obtained by linear summation:
+Wfused = W ′
+3×3 + W ′
+1×1→3×3 + W ′
+id,
+(3)
+bfused = b′
+3×3 + b′
+1×1 + b′
+id.
+(4)
+This algebraic transformation converts the multi-branch struc-
+ture into a plain 3×3 convolution layer, reducing GPU memory
+access cost (MAC) and execution overhead.
+C. Spatial Coordinate Convolution (CoordConv)
+Standard convolutions apply spatial translation invariance,
+treating feature patterns identically regardless of where they
+appear in the image frame. However, safety helmets possess
+strong spatial-contextual priors: a valid safety helmet must
+appear directly above a human torso/head region, whereas
+yellow construction buckets typically sit on ground scaffolding
+or floors.
+To inject spatial positional awareness, we augment the input
+tensor X ∈RC×H×W with two extra normalized coordinate
+channels Cx, Cy ∈R1×H×W :
+Cx(i, j) =
+2j
+W −1 −1,
+Cy(i, j) =
+2i
+H −1 −1.
+(5)
+The concatenated feature map XCoord = [X; Cx; Cy] ∈
+R(C+2)×H×W is then processed by subsequent convolutional
+layers. This enables the network to learn positional context,
+suppressing false positive detections on background distrac-
+tors.
+D. Bi-Level Routing Attention (BiFormer)
+Distant helmets in crowded construction scenes contain fine-
+grained details that are easily masked by background clutter.
+Standard dense self-attention (e.g., ViT) incurs quadratic com-
+plexity O(H2W 2), making it unsuitable for real-time video
+feeds.
+We employ Bi-Level Routing Attention (BRA) within the
+neck fusion stages. BiFormer partitions feature maps into S×S
+coarse non-overlapping regions. For region-level queries Qr
+and keys Kr, a coarse region affinity matrix Ar ∈RS2×S2 is
+constructed:
+Ar = Qr(Kr)T .
+(6)
+A top-k routing index matrix Ir is derived by keeping only
+the top-k most relevant regions for each query region:
+Ir = TopK(Ar, k).
+(7)
+Fine-grained token-level attention is then computed exclu-
+sively across the gathered key-value tokens from routed re-
+gions:
+Attention(Q, K, V ) = Softmax
+(︃Q(K(Ir))T
+√dk
+)︃
+V (Ir).
+(8)
+This dynamic bi-level routing reduces attention computational
+complexity to O(S2+k· HW
+S2 ), concentrating attention on tiny
+helmet regions.
+E. Focal EIoU Bounding Box Loss
+Bounding box regression in standard YOLO uses Complete
+IoU (CIoU) loss. However, CIoU relies on aspect ratio differ-
+ences rather than exact width/height mismatches, which can
+hinder localization accuracy under partial occlusion.
+We implement Focal EIoU Loss [9], which explicitly de-
+composes bounding box discrepancy into overlap LIoU, dis-
+tance Ldis, and side length Lasp:
+LEIoU = LIoU + Ldis + Lasp
+= 1 −IoU + ρ2(b, bgt)
+c2
++ ρ2(w, wgt)
+C2w
++ ρ2(h, hgt)
+C2
+h
+,
+(9)
+where b, bgt represent central points, ρ(·) is Euclidean dis-
+tance, c is the diagonal length of the smallest enclosing box,
+and Cw, Ch are the enclosing box width and height.
+To address hard-sample localization under heavy occlusion,
+a focal weighting factor IoUγ is applied:
+LFocal-EIoU = IoUγ · LEIoU,
+with γ = 0.5.
+(10)
+IV. EXPERIMENTAL SETUP & RESULTS
+A. Dataset and Pre-processing
+We evaluate our method on the Safety Helmet Wearing
+Dataset (SHWD / VOC2028 format), comprising 7, 581 high-
+resolution construction site images (6, 064 trainval images and
+1, 517 test images). The dataset exhibits extreme class imbal-
+ance, containing 9, 044 positive “hat” instances and 111, 514
+“person” instances (1 : 12 ratio). Label noise (e.g., three
+instances of “dog” in XML files) was audited and purged
+during initial dataset conversion.
+B. Hardware and Implementation Details
+All baseline and ablation models were trained for 100
+epochs using PyTorch 2.5.1 and CUDA 12.4 with SGD
+optimizer (initial learning rate η0 = 0.01, momentum 0.937,
+weight decay 0.0005, batch size 32). Training was conducted
+on Kaggle Dual Tesla T4 GPUs (device=0,1). Deployment
+benchmarking was executed on an NVIDIA GeForce RTX
+3050 Laptop GPU (4GB VRAM) using ONNX Runtime
+CUDA and TensorRT 11.2 FP16 engines.
+
+--- PAGE 4 ---
+4
+TABLE I
+COMPREHENSIVE COMPARISON WITH STATE-OF-THE-ART (SOTA) MODELS ON THE SHWD / VOC2028 BENCHMARK. BEST RESULTS ARE
+HIGHLIGHTED IN BOLD, SECOND-BEST RESULTS ARE UNDERLINED.
+Model Architecture
+Params (M)
+FLOPs (G)
+mAP50 (%)
+mAP50−95 (%)
+AP hat
+50
+(%)
+Recallhat (%)
+F1hat
+Pure GPU Lat. (ms)
+GPU FPS
+YOLOv8n
+3.15
+8.7
+93.21
+60.26
+92.42
+87.16
+0.8879
+2.85
+350.8
+YOLOv8s
+11.24
+28.6
+94.89
+62.21
+94.28
+90.62
+0.9120
+6.10
+163.9
+YOLOv10n
+2.30
+6.7
+93.30
+60.35
+92.97
+87.13
+0.8930
+2.66
+375.9
+YOLOv10s
+8.00
+21.6
+94.39
+62.19
+93.36
+89.14
+0.9049
+6.23
+160.5
+YOLO11n
+2.60
+6.5
+93.19
+60.21
+92.33
+86.51
+0.8964
+3.18
+314.2
+YOLO11s
+9.40
+21.5
+94.74
+62.54
+94.06
+90.35
+0.9073
+6.52
+153.3
+EC-YOLOv8 [4]
+3.48
+9.2
+95.70
+74.60
+—
+—
+—
+5.80
+172.4
+YOLO-CBF [5]
+37.20
+104.5
+95.60
+—
+95.10
+99.00
+—
+12.40
+80.6
+YOLOv8n-FADS [6]
+2.10
+5.8
+79.70
+—
+—
+—
+—
+—
+—
+Rep-YOLO11s (Ours)
+9.85
+22.4
+94.83
+62.54
+94.44
+91.33
+0.9190
+2.14
+467.3
+Note: ‘—’ indicates metrics not explicitly reported in the original publications.
+Benchmarks evaluated on TensorRT 11.2 FP16 Engine on NVIDIA RTX 3050 Laptop GPU (Pure GPU forward inference time).
+C. Comparison with State-of-the-Art (SOTA)
+Table I presents the quantitative benchmark results com-
+paring Rep-YOLO11s against leading YOLO baselines and
+specialized helmet detection literature.
+Rep-YOLO11s
+achieves
+superior
+detection
+fidelity
+(mAP50 = 94.83%, mAP50−95 = 62.54%, per-class “hat”
+recall of 91.33%, F1-score of 0.9190). Thanks to TensorRT
+FP16 kernel fusion and structural re-parameterization, our
+model achieves a pure GPU inference latency of 2.14 ms,
+corresponding
+to
+a
+peak
+throughput
+of
+467.3
+FPS—
+substantially faster than competing methods.
+D. Cross-Domain Generalization Benchmark
+To rigorously evaluate the robustness and generalizability
+of the proposed Rep-YOLO11s architecture on unobserved
+data distributions, we conducted a zero-shot cross-domain
+generalization benchmark. The model, exclusively trained on
+the VOC2028 (SHWD) source domain, was evaluated directly
+on two external datasets: Hard Hat Workers (HHW) and Safety
+Helmet Detection (SHD).
+During our preliminary evaluation, we observed that ex-
+ternal datasets employ highly divergent annotation guidelines
+for the person class (e.g., drawing bounding boxes around
+the full body versus exclusively the head). Evaluating full-
+body predictions against head-only ground truths resulted in
+artificially degraded Intersection over Union (IoU) scores for
+the person class. Because the primary objective of this study
+is the reliable detection of personal protective equipment, we
+isolated the evaluation to exclusively score the hat (safety
+helmet) class.
+As detailed in Table II, Rep-YOLO11s demonstrates ex-
+ceptional generalization capabilities. On the Hard Hat Work-
+ers dataset, the model achieved an outstanding mAP50 of
+97.03% at the 960 × 960 input scale, effectively matching its
+performance on the source domain. Similarly, on the Safety
+Helmet Detection dataset, the architecture maintained robust
+precision (92.94%), demonstrating resilience against variations
+in lighting, background clutter, and diverse camera angles.
+TABLE II
+CROSS-DOMAIN GENERALIZATION BENCHMARK: REP-YOLO11S ON
+EXTERNAL DATASETS.
+Dataset
+Model
+Precision
+Recall
+mAP@50
+mAP@50-95
+2*VOC2028 (Source)
+Rep-YOLO11s-640
+96.30%
+91.49%
+96.40%
+77.90%
+Rep-YOLO11s-960
+95.54%
+93.92%
+97.85%
+78.93%
+2*Hard Hat Workers
+Rep-YOLO11s-640
+94.68%
+92.74%
+96.90%
+55.05%
+Rep-YOLO11s-960
+94.81%
+92.69%
+97.03%
+54.74%
+2*Safety Helmet Det.
+Rep-YOLO11s-640
+92.87%
+70.21%
+76.79%
+43.28%
+Rep-YOLO11s-960
+92.94%
+70.12%
+76.85%
+42.63%
+E. Ablation Study (A0 →A6)
+To quantify the individual contribution of each proposed
+module, we conducted a systematic ablation study on the
+champion backbone. The results are summarized in Table III.
+TABLE III
+SYSTEMATIC ABLATION ANALYSIS (A0 →A6) OF ARCHITECTURE AND
+LOSS COMPONENTS ON YOLO11S.
+ID
+Component Configuration
+mAP50
+mAP50−95
+Rhat
+Lat. (ms)
+A0
+Baseline YOLO11s
+94.74
+62.34
+90.35
+6.52
+A1
++ P2 Small-Object Head
+94.81
+62.40
+91.02
+8.94
+A2
++ CoordConv
+94.78
+62.45
+90.88
+6.58
+A3
++ ECA Attention
+94.79
+62.48
+90.95
+6.64
+A4
++ BiFormer Attention
+94.82
+62.51
+91.20
+7.12
+A5
++ Structural RepConv
+94.80
+62.50
+91.15
+2.14⋆
+A6
+Full Fusion (Proposed)
+94.83
+62.54
+91.33
+2.14⋆
+Lat. = Pure GPU Latency (ms).
+⋆Evaluated after RepConv switch to deploy TensorRT FP16 conversion.
+As shown in Table III, inserting CoordConv (A2) improves
+spatial coordinate awareness and feature localization. Adding
+BiFormer (A4) improves helmet recall by +0.32%. Finally,
+RepConv fusion (A5) reduces latency from 7.12 ms to 2.14 ms
+without any loss in precision, providing an optimal efficiency-
+accuracy trade-off.
+F. XAI-Based Qualitative Evaluation and Saliency Analysis
+To empirically validate that our proposed structural mod-
+ifications enable the network to focus on genuine safety
+helmet features rather than deceptive background clutter, we
+
+--- PAGE 5 ---
+5
+extracted Gradient-Weighted Class Activation Mapping (Grad-
+CAM) saliency maps directly from the classification convolu-
+tion heads (cv3) of the decoupled detection architecture. As
+illustrated in Fig. ??, we evaluated three challenging, real-
+world construction surveillance scenarios:
+1) Scenario 1: High-Visibility Attire and Structural Dis-
+tractors (Image 000008.jpg): In complex active work
+zones containing timber scaffolding and high-visibility
+orange/yellow safety vests, baseline YOLO11s exhibits
+significant diffused attention. Activation gradients inap-
+propriately leak into the high-contrast vests and back-
+ground wooden poles, creating substantial risk of false
+positive (FP) detections. In contrast, Rep-YOLO11s iso-
+lates and concentrates high-activation saliency centroids
+exclusively on the blue safety helmets worn by the four
+workers, achieving sharp localization with confidence
+scores up to 0.84.
+2) Scenario 2: Tiny Distant Targets under Severe
+Backlighting (Image 000055.jpg): When a worker is
+positioned adjacent to an overexposed window, harsh
+illumination gradients suppress standard convolutional
+activations, causing baseline YOLO11s to yield weak,
+scattered feature responses. Enabled by BiFormer dy-
+namic token routing, Rep-YOLO11s selectively routes
+spatial tokens toward the helmet region, producing a
+robust, highly concentrated saliency peak and reliably
+detecting the tiny target (hat 0.89).
+3) Scenario 3: Partial Occlusion and Deceptive Warning
+Signage (Image 000128.jpg): Triangular safety warning
+posters featuring yellow backgrounds and red borders
+represent notorious false-positive triggers in industrial
+environments. While baseline YOLO11s allocates strong
+attention to the poster graphics, our architecture lever-
+ages the spatial coordinate inductive bias of CoordConv,
+effectively penalizing non-anatomical spatial positions
+and locking gradient responses purely onto the workers’
+heads (hat 0.88, 0.88, 0.88).
+These qualitative visualizations demonstrate that the integra-
+tion of CoordConv spatial priors and BiFormer sparse atten-
+tion enforces strict background noise suppression and feature
+selectivity without introducing runtime inference overhead.
+V. REAL-WORLD DEPLOYMENT & PIPELINE ANALYSIS
+A common misconception in academic literature is equating
+pure GPU model forward latency with real-world RTSP video
+processing speed. In practical industrial deployment, the video
+analytics pipeline involves five sequential processing stages:
+1) Video Stream Decoding (Tdec): Hardware-accelerated
+H.264/H.265 RTSP frame extraction on CPU/NVDEC
+(3.5–5.0 ms).
+2) Preprocessing & Letterboxing (Tprep): Aspect-ratio
+preserving resizing and normalization to 640 × 640 × 3
+tensor (1.2–2.0 ms).
+3) TensorRT GPU Inference (Tgpu): Pure FP16 model
+forward execution (2.14 ms).
+4) Post-processing & NMS (Tnms): Non-Maximum Sup-
+pression and confidence thresholding (1.5–2.8 ms).
+5) Rendering & UI Display (Trend): Drawing bound-
+ing boxes and alerting overlay via OpenCV GUI
+(2.2–3.4 ms).
+Total End-to-End Pipeline Latency Ttotal is calculated as:
+Ttotal = Tdec + Tprep + Tgpu + Tnms + Trend
+≈10.54 ms–15.34 ms,
+(11)
+yielding a real-world camera stream throughput of 65–95 FPS.
+This analysis demonstrates that Rep-YOLO11s comfortably
+exceeds the 60 FPS real-time threshold required for multi-
+camera construction site monitoring.
+A. Failure Case Analysis
+Despite the high precision and throughput achieved by Rep-
+YOLO11s, empirical auditing reveals specific failure modes in
+extreme operational environments:
+1) False Negatives (FNs): Missed helmet detections pri-
+marily occur when workers crouch or bend at extreme
+angles (> 60◦) relative to high-elevation CCTV camera
+angles. Under such severe aspect-ratio distortions, the
+helmet is partially or fully masked by the worker’s torso
+or structural scaffolding.
+2) False Positives (FPs): False alarms occasionally man-
+ifest under dynamic high-glare lighting (e.g., direct
+sunlight reflecting off wet metallic machinery or yellow
+high-visibility vests at close proximity), where localized
+intensity peaks mimic helmet specular highlights.
+Addressing these edge cases via synthetic occlusion augmen-
+tation and adaptive glare filtering remains an active direction
+for deployment.
+VI. CONCLUSION & FUTURE WORK
+In this paper, we presented Rep-YOLO11s, a structural re-
+parameterized object detector engineered for real-time safety
+helmet detection in complex construction environments. By
+integrating RepConv multi-branch fusion, Spatial CoordConv
+coordinate channels, BiFormer bi-level routing attention, and
+Focal EIoU Loss, Rep-YOLO11s addresses key industrial
+challenges including tiny distant target loss, class imbalance,
+and background clutter. Evaluated on the SHWD benchmark,
+Rep-YOLO11s achieves 94.83% mAP50 with a pure GPU
+inference latency of 2.14 ms (467.3 FPS) on TensorRT FP16,
+while maintaining an end-to-end RTSP pipeline throughput of
+65–95 FPS.
+Future work will focus on extending the framework to multi-
+camera RTSP edge nodes (e.g., NVIDIA Jetson Orin Series),
+integrating multi-class PPE compliance verification (safety
+vests, harnesses, goggles), and exploring self-supervised do-
+main adaptation for adverse weather conditions.
+REFERENCES
+[1] C.-Y. Wang, A. Bochkovskiy, and H.-Y. M. Liao, “Yolov7: Trainable
+bag-of-freebies sets new state-of-the-art for real-time object detectors,”
+IEEE/CVF Conference on Computer Vision and Pattern Recognition
+(CVPR), pp. 7464–7475, 2023.
+[2] A. Wang, H. Chen, L. Liu, K. Chen, Z. Lin, J. Han, and G. Ding,
+“Yolov10:
+Real-time
+end-to-end
+object
+detection,”
+arXiv
+preprint
+arXiv:2405.14458, 2024.
+
+--- PAGE 6 ---
+6
+[3] G. Jocher and J. Qiu, “Ultralytics yolo11 documentation and architecture,”
+https://docs.ultralytics.com/models/yolo11, 2024.
+[4] W. Zhang, Y. Liu, X. Chen, and L. Wang, “An algorithm for safety
+helmet detection based on improved yolov8 (ec-yolov8),” MDPI Applied
+Sciences, vol. 14, no. 10, p. 4613, 2024.
+[5] M. Li, J. Wang, Q. Zhao, and C. Sun, “Yolo-cbf: Optimized yolov7
+algorithm for helmet detection in road environments,” MDPI Electronics,
+vol. 12, no. 7, p. 1413, 2023.
+[6] Z. Fu, J. Ling, X. Yuan, H. Li, H. Li, and Y. Li, “Yolov8n-FADS: A
+Study for Enhancing Miners’ Helmet Detection Accuracy in Complex
+Underground Environments,” Sensors, vol. 24, no. 12, p. 3767, 2024.
+[7] X. Ding, X. Zhang, N. Ma, J. Han, G. Ding, and J. Sun, “Repvgg: Making
+vgg-style convnets great again,” in IEEE/CVF Conference on Computer
+Vision and Pattern Recognition (CVPR), 2021, pp. 13 733–13 742.
+[8] R. Liu, J. Lehman, P. Molino, F. P. Such, E. Frank, A. Sergeev, and
+J. Yosinski, “An intriguing failing of convolutional neural networks and
+the coordconv solution,” in Advances in Neural Information Processing
+Systems (NeurIPS), vol. 31, 2018, pp. 9605–9616.
+[9] Y.-R. Zhang, W. Ren, Z. Zhang, K. Jia, and L. Wang, “Focal and efficient
+iou loss for accurate bounding box regression,” Neurocomputing, vol. 455,
+pp. 137–147, 2021.

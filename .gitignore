@@ -49,3 +49,4 @@ Thumbs.db
 video_test/
 *.mp4
 *.engine
+~$*.docx

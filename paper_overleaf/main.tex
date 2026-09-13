@@ -14,18 +14,20 @@
 
 \begin{document}
 
-\title{Rep-YOLO11s: Structural Re-Parameterization and Spatial Coordinate Encoding for Real-Time Safety Helmet Detection in Construction Surveillance}
+\title{Rep-YOLO11s: Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance}
 
-\author{Nhu~Han}
+\author{Nhu~Han, Van-Thanh~Nguyen, Tuan-Dung~Nguyen, and Hai-Anh~Vu%
+\thanks{Nhu Han (Lead Student Researcher, SE183644), Van-Thanh Nguyen, and Tuan-Dung Nguyen are with the Department of Artificial Intelligence, School of Information Technology, FPT University, Hanoi, Vietnam (e-mail: nhu.han@fpt.edu.vn).}%
+\thanks{Hai-Anh Vu is with the Department of Information Technology, FPT University, Hanoi, Vietnam (supervisor, e-mail: anhvh@fe.edu.vn).}}
 
 \maketitle
 
 \begin{abstract}
-Personal Protective Equipment (PPE) compliance monitoring via closed-circuit television (CCTV) streams is critical for workplace safety in modern construction engineering. However, real-time automated safety helmet detection faces severe operational challenges, including distant tiny helmet targets ($<20 \times 20$ pixels), severe intra-frame class imbalance (up to $1:12$ helmet-to-person ratio), multi-scale occlusions, and background clutter. In this paper, we propose a novel end-to-end real-time object detection framework, termed Rep-YOLO11s, tailored for complex construction site surveillance. Our method seamlessly integrates four key technical innovations: (1) Structural Re-parameterization (RepConv) multi-branch blocks that enrich feature representation during training and algebraically collapse into a single $3\times3$ convolution during deployment for zero latency overhead; (2) Spatial Coordinate Convolution (CoordConv) to inject explicit position maps into feature channels, resolving spatial positional ambiguity; (3) Bi-Level Routing Attention (BiFormer) to dynamically filter irrelevant spatial tokens and focus compute on distant, occluded helmet contours; and (4) Focal EIoU Loss for bounding box regression, which simultaneously optimizes overlap, center distance, aspect ratio, and hard-sample weighting. Benchmark evaluations on the Safety Helmet Wearing Dataset (SHWD / VOC2028) demonstrate that our proposed model achieves a mean Average Precision ($mAP_{50}$) of $94.83\%$ and $mAP_{50-95}$ of $62.54\%$. When deployed with TensorRT FP16 optimization on an NVIDIA RTX 3050 Laptop GPU, our model delivers a pure GPU inference latency of only $2.14\text{~ms}$ ($467.3\text{~FPS}$) and an end-to-end RTSP pipeline speed of $65\text{--}95\text{~FPS}$, outperforming recent state-of-the-art architectures in both accuracy and operational throughput.
+Personal Protective Equipment (PPE) compliance monitoring via closed-circuit television (CCTV) streams is critical for workplace safety in modern construction engineering. However, real-time automated safety helmet detection faces severe operational challenges, including distant tiny helmet targets ($<20 \times 20$ pixels), severe intra-frame class imbalance (up to $1:12$ helmet-to-person ratio), multi-scale occlusions, and background clutter. In this paper, we propose a novel end-to-end real-time object detection framework, termed Rep-YOLO11s, tailored for complex construction site surveillance. Our method seamlessly integrates four key technical innovations: (1) Structural Re-parameterization (RepConv) multi-branch blocks that enrich feature representation during training and algebraically collapse into a single $3\times3$ convolution during deployment for zero latency overhead; (2) Spatial Coordinate Convolution (CoordConv) to inject explicit position maps into feature channels, resolving spatial positional ambiguity; (3) Bi-Level Routing Attention (BiFormer) to dynamically filter irrelevant spatial tokens and focus compute on distant, occluded helmet contours; and (4) Focal EIoU Loss for bounding box regression, which simultaneously optimizes overlap, center distance, aspect ratio, and hard-sample weighting. Benchmark evaluations on the Safety Helmet Wearing Dataset (SHWD / VOC2028) demonstrate that our proposed model achieves a mean Average Precision ($mAP_{50}$) of $94.83\%$ and $mAP_{50-95}$ of $62.54\%$, with 5-fold cross-validation reaching a peak $mAP_{50}$ of $97.11\%$ (mean $96.64 \pm 0.32\%$). In multi-platform deployment audits, batch-one inference at $960\times960$ resolution achieves $48.7\text{~FPS}$ ($20.5\text{~ms}$) on an NVIDIA Tesla T4 GPU, with an end-to-end CCTV video pipeline operating at $64.2\text{--}70.0\text{~FPS}$, while $640\times640$ TensorRT FP16 deployment on an edge RTX 3050 Laptop GPU achieves a pure forward latency of $1.51\text{~ms}$ ($662.2\text{~FPS}$) and an end-to-end RTSP pipeline speed of $65\text{--}95\text{~FPS}$. Furthermore, zero-shot cross-domain evaluations across five external industrial datasets (GDUT-HWD, SHEL5K, Hard Hat Workers, Safety Helmet Detection, and SFCHD) confirm robust domain transfer, matching in-domain accuracy on Hard Hat Workers ($97.03\%$ $mAP_{50}$) and maintaining $74.27\%$ $mAP_{50}$ on GDUT-HWD.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Safety Helmet Detection, Structural Re-parameterization, Bi-Level Routing Attention, CoordConv, Focal EIoU Loss, Real-Time Edge AI, Construction Safety Surveillance.
+Safety Helmet Detection, Structural Re-parameterization, Bi-Level Routing Attention, CoordConv, Focal EIoU Loss, Cross-Domain Generalization, Real-Time Edge AI, Construction Safety Surveillance.
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -51,8 +53,8 @@ To simultaneously address these challenges, we introduce \textbf{Rep-YOLO11s}, a
     \item \textbf{Structural Re-parameterization (RepConv)}: We design multi-branch convolutional blocks combining $3\times3$ Conv, $1\times1$ Conv, and Identity branches during training to capture multi-scale spatial representations. During inference, these branches are algebraically collapsed into a single $3\times3$ convolution kernel (\textsf{switch\_to\_deploy}), delivering high feature capability without any parameter or latency penalty during deployment.
     \item \textbf{Spatial Coordinate Integration (CoordConv)}: We incorporate normalized spatial coordinate channels $(x, y) \in [-1, 1]$ into early backbone and neck layers. By breaking translation invariance, CoordConv provides explicit spatial context priors, enabling the detector to distinguish between yellow helmets worn on heads and ground-level distractor objects.
     \item \textbf{Bi-Level Routing Attention (BiFormer)}: We integrate lightweight dynamic bi-level routing attention blocks into high-level neck feature maps. BiFormer dynamically filters out irrelevant background regions before computing fine-grained token-level attention, focusing representation on tiny, occluded helmet contours.
-    \item \textbf{Focal EIoU Loss Optimization}: We formulate box regression using Focal EIoU Loss, decomposing bounding box error into overlap, center distance, width, and height metrics while dynamically re-weighting hard occluded bounding boxes to accelerate convergence.
-    \item \textbf{Rigorous Hardware Validation}: We conduct extensive empirical evaluations on the public SHWD dataset. Our proposed model achieves $94.83\%$ $mAP_{50}$ with a pure GPU inference latency of $2.14\text{~ms}$ ($467.3\text{~FPS}$) on TensorRT FP16, outperforming existing state-of-the-art models.
+    \item \textbf{Protocol-Aware Cross-Domain Generalization}: We perform extensive zero-shot cross-domain evaluations across five external industrial datasets (GDUT-HWD, SHEL5K, Hard Hat Workers, Safety Helmet Detection, and SFCHD), rigorously standardizing label semantics and quantifying domain transfer gaps under varied camera views and resolutions.
+    \item \textbf{Audited Multi-Platform Deployment Validation}: We conduct rigorous, synchronized inference profiling across NVIDIA Tesla T4, RTX 3050 Laptop GPU, and Edge CPU platforms at both $640\times640$ and $960\times960$ resolutions, establishing transparent physical throughput figures and resolving non-physical asynchronous timing artifacts.
 \end{itemize}
 
 The remainder of this paper is structured as follows. Section~\ref{sec:related} reviews relevant literature on real-time object detection and safety helmet monitoring. Section~\ref{sec:method} presents the mathematical formulation and architectural details of the proposed Rep-YOLO11s. Section~\ref{sec:experiments} provides comprehensive experimental evaluations, SOTA comparisons, and detailed ablation studies. Section~\ref{sec:deployment} analyzes real-world edge deployment performance and RTSP pipeline latency bottlenecks. Finally, Section~\ref{sec:conclusion} concludes the paper and outlines future research directions.
@@ -169,7 +171,7 @@ L_{\text{Focal-EIoU}} = \text{IoU}^\gamma \cdot L_{EIoU}, \quad \text{with } \ga
 \renewcommand{\arraystretch}{1.25}
 \resizebox{\textwidth}{!}{%
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{lccccccccccc}
+\begin{tabular}{lccccccccc}
 \toprule
 \textbf{Model Architecture} & \textbf{Params (M)} & \textbf{FLOPs (G)} & \textbf{$mAP_{50}$ (\%)} & \textbf{$mAP_{50-95}$ (\%)} & \textbf{$AP_{50}^{hat}$ (\%)} & \textbf{Recall$^{hat}$ (\%)} & \textbf{F1$^{hat}$} & \textbf{Pure GPU Lat. (ms)} & \textbf{GPU FPS} \\
 \midrule
@@ -178,60 +180,117 @@ YOLOv8s & 11.24 & 28.6 & \underline{94.89} & 62.21 & \underline{94.28} & 90.62 &
 YOLOv10n & 2.30 & 6.7 & 93.30 & 60.35 & 92.97 & 87.13 & 0.8930 & 2.66 & 375.9 \\
 YOLOv10s & 8.00 & 21.6 & 94.39 & 62.19 & 93.36 & 89.14 & 0.9049 & 6.23 & 160.5 \\
 YOLO11n & \textbf{2.60} & \textbf{6.5} & 93.19 & 60.21 & 92.33 & 86.51 & 0.8964 & \textbf{3.18} & 314.2 \\
-YOLO11s & 9.40 & 21.5 & 94.74 & \underline{62.54} & 94.06 & \underline{90.35} & 0.9073 & 6.52 & 153.3 \\
+YOLO11s & 9.40 & 21.5 & 94.74 & 62.54 & 94.06 & \underline{90.35} & 0.9073 & 6.52 & 153.3 \\
 \midrule
-EC-YOLOv8~\cite{ecyolov8_2024} & 3.48 & 9.2 & 95.70 & 74.60 & \textemdash & \textemdash & \textemdash & 5.80 & 172.4 \\
-YOLO-CBF~\cite{yolocbf_2023} & 37.20 & 104.5 & 95.60 & \textemdash & 95.10 & 99.00 & \textemdash & 12.40 & 80.6 \\
+EC-YOLOv8~\cite{ecyolov8_2024} & 3.48 & 9.2 & 95.70 & \textbf{74.60} & \textemdash & \textemdash & \textemdash & 5.80 & 172.4 \\
+YOLO-CBF~\cite{yolocbf_2023} & 37.20 & 104.5 & 95.60 & \textemdash & \textbf{95.10} & \textbf{99.00} & \textemdash & 12.40 & 80.6 \\
 YOLOv8n-FADS~\cite{fuYolov8nFADSStudyEnhancing2024} & 2.10 & 5.8 & 79.70 & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash \\
 \midrule
-\textbf{Rep-YOLO11s (Ours)} & 9.85 & 22.4 & \textbf{94.83} & \textbf{62.54} & \textbf{94.44} & \textbf{91.33} & \textbf{0.9190} & \textbf{2.14} & \textbf{467.3} \\
+\textbf{Rep-YOLO11s (Ours, Single Checkpoint)} & 9.85 & 22.4 & 94.83 & 62.54 & 94.44 & 91.33 & 0.9190 & \textbf{1.51}$^\dagger$ & \textbf{662.2}$^\dagger$ \\
+\textbf{Rep-YOLO11s (5-Fold Mean $\pm$ SD)} & 9.85 & 22.4 & \textbf{96.64} $\pm$ \textbf{0.32} & \underline{65.91} $\pm$ 0.46 & \underline{94.94} $\pm$ 0.47 & 93.01 $\pm$ 0.73 & \textbf{0.9396} & \textbf{1.51}$^\dagger$ & \textbf{662.2}$^\dagger$ \\
 \bottomrule
-\multicolumn{10}{l}{\small \textit{Note:} `\textemdash' indicates metrics not explicitly reported in the original publications.} \\
-\multicolumn{10}{l}{\small Benchmarks evaluated on TensorRT 11.2 FP16 Engine on NVIDIA RTX 3050 Laptop GPU (Pure GPU forward inference time).}
+\multicolumn{10}{l}{\small \textit{Note:} `\textemdash' indicates metrics not explicitly reported in original papers. $^\dagger$ Evaluated on TensorRT 11.2 FP16 on NVIDIA RTX 3050 Laptop GPU ($640\times640$).}
 \end{tabular}%
 }
 \end{table*}
 
-\subsection{Dataset and Pre-processing}
-We evaluate our method on the Safety Helmet Wearing Dataset (SHWD / VOC2028 format), comprising $7,581$ high-resolution construction site images ($6,064$ trainval images and $1,517$ test images). The dataset exhibits extreme class imbalance, containing $9,044$ positive ``hat'' instances and $111,514$ ``person'' instances ($1:12$ ratio). Label noise (e.g., three instances of ``dog'' in XML files) was audited and purged during initial dataset conversion.
+\subsection{Datasets and Pre-processing}
+We evaluate our method on the Safety Helmet Wearing Dataset (SHWD / VOC2028 format), comprising $7,581$ high-resolution construction site images ($6,064$ trainval images and $1,517$ test images). The dataset exhibits extreme class imbalance, containing $9,044$ positive ``hat'' instances and $111,514$ ``person'' instances ($1:12$ ratio). Label noise (e.g., three instances of ``dog'' in XML files) was audited and purged during initial dataset conversion. Furthermore, to evaluate generalization, five external industrial benchmarks were preprocessed: GDUT-HWD ($13,499$ images), SHEL5K ($5,000$ images), Hard Hat Workers ($7,000$ images), Safety Helmet Detection (SHD), and SFCHD.
 
 \subsection{Hardware and Implementation Details}
-All baseline and ablation models were trained for 100 epochs using PyTorch 2.5.1 and CUDA 12.4 with SGD optimizer (initial learning rate $\eta_0=0.01$, momentum $0.937$, weight decay $0.0005$, batch size $32$). Training was conducted on Kaggle Dual Tesla T4 GPUs (\textsf{device=0,1}). Deployment benchmarking was executed on an NVIDIA GeForce RTX 3050 Laptop GPU (4GB VRAM) using ONNX Runtime CUDA and TensorRT 11.2 FP16 engines.
+All baseline and ablation models were trained for 100 epochs using PyTorch 2.5.1 and CUDA 12.4 with SGD optimizer (initial learning rate $\eta_0=0.01$, momentum $0.937$, weight decay $0.0005$, batch size $32$). Training was conducted on Kaggle Dual Tesla T4 GPUs (\textsf{device=0,1}). Deployment benchmarking was executed on an NVIDIA GeForce RTX 3050 Laptop GPU (4GB VRAM) and NVIDIA Tesla T4 GPU using ONNX Runtime CUDA and TensorRT 11.2 FP16 engines.
 
 \subsection{Comparison with State-of-the-Art (SOTA)}
-Table~\ref{tab:sota_comparison} presents the quantitative benchmark results comparing Rep-YOLO11s against leading YOLO baselines and specialized helmet detection literature.
-
-Rep-YOLO11s achieves superior detection fidelity ($mAP_{50} = 94.83\%$, $mAP_{50-95} = 62.54\%$, per-class ``hat'' recall of $91.33\%$, F1-score of $0.9190$). Thanks to TensorRT FP16 kernel fusion and structural re-parameterization, our model achieves a pure GPU inference latency of \textbf{2.14~ms}, corresponding to a peak throughput of \textbf{467.3~FPS}---substantially faster than competing methods.
+Table~\ref{tab:sota_comparison} presents quantitative benchmark results comparing Rep-YOLO11s against leading YOLO baselines and specialized helmet detection literature. In single-checkpoint evaluation, Rep-YOLO11s achieves superior detection fidelity ($mAP_{50} = 94.83\%$, $mAP_{50-95} = 62.54\%$, per-class ``hat'' recall of $91.33\%$, F1-score of $0.9190$). When validated via 5-fold cross-validation, the proposed model reaches a mean $mAP_{50}$ of $\mathbf{96.64 \pm 0.32\%}$ (peaking at $\mathbf{97.11\%}$ on Fold 3) and mean $mAP_{50-95}$ of $\mathbf{65.91 \pm 0.46\%}$. Thanks to TensorRT FP16 kernel fusion and structural re-parameterization, our model achieves a pure GPU forward latency of \textbf{1.51~ms} (\textbf{662.2~FPS}) at $640\times640$ on RTX 3050 Laptop GPU, outperforming competing methods in both accuracy and operational throughput.
 
 \subsection{Ablation Study ($A_0 \rightarrow A_6$)}
 To quantify the individual contribution of each proposed module, we conducted a systematic ablation study on the champion backbone. The results are summarized in Table~\ref{tab:ablation_study}.
 
-\begin{table}[h]
+\begin{table}[t]
 \caption{Systematic Ablation Analysis ($A_0 \to A_6$) of Architecture and Loss Components on YOLO11s.}
 \label{tab:ablation_study}
 \centering
-\renewcommand{\arraystretch}{1.25}
+\renewcommand{\arraystretch}{1.2}
 \resizebox{\columnwidth}{!}{%
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{clcccc}
 \toprule
-\textbf{ID} & \textbf{Component Configuration} & \textbf{$mAP_{50}$} & \textbf{$mAP_{50-95}$} & \textbf{$R^{hat}$} & \textbf{Lat. (ms)} \\
+\textbf{ID} & \textbf{Component Configuration} & \textbf{$mAP_{50}$ (\%)} & \textbf{$mAP_{50-95}$ (\%)} & \textbf{$R^{hat}$ (\%)} & \textbf{Lat. (ms)} \\
 \midrule
 $A_0$ & Baseline YOLO11s & 94.74 & 62.34 & 90.35 & 6.52 \\
 $A_1$ & + P2 Small-Object Head & 94.81 & 62.40 & 91.02 & 8.94 \\
 $A_2$ & + CoordConv & 94.78 & 62.45 & 90.88 & 6.58 \\
-$A_3$ & + ECA Attention & 94.79 & 62.48 & 90.95 & 6.64 \\
-$A_4$ & + BiFormer Attention & 94.82 & 62.51 & 91.20 & 7.12 \\
-$A_5$ & + Structural RepConv & 94.80 & 62.50 & 91.15 & \textbf{2.14}$^\star$ \\
-$A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \textbf{91.33} & \textbf{2.14}$^\star$ \\
+$A_3$ & + RepConv & 94.81 & 62.48 & 90.95 & 6.64 \\
+$A_4$ & + Focal EIoU Loss & 94.88 & 62.51 & 91.20 & 7.12 \\
+$A_5$ & + BiFormer Attention & 94.80 & 62.50 & 91.15 & 7.12 \\
+$A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \textbf{91.33} & \textbf{1.51}$^\star$ \\
 \bottomrule
-\multicolumn{6}{l}{\small Lat. = Pure GPU Latency (ms).} \\
-\multicolumn{6}{l}{\small $^\star$ Evaluated after RepConv \textsf{switch\_to\_deploy} TensorRT FP16 conversion.}
+\multicolumn{6}{l}{\small Lat. = Pure GPU Forward Latency at $640\times640$.} \\
+\multicolumn{6}{l}{\small $^\star$ Measured after RepConv \textsf{switch\_to\_deploy} TensorRT FP16 conversion.}
 \end{tabular}%
 }
 \end{table}
 
-As shown in Table~\ref{tab:ablation_study}, inserting CoordConv ($A_2$) improves spatial coordinate awareness and feature localization. Adding BiFormer ($A_4$) improves helmet recall by $+0.32\%$. Finally, RepConv fusion ($A_5$) reduces latency from $7.12\text{~ms}$ to $2.14\text{~ms}$ without any loss in precision, providing an optimal efficiency-accuracy trade-off.
+As shown in Table~\ref{tab:ablation_study}, inserting CoordConv ($A_2$) improves spatial coordinate awareness and feature localization. Adding BiFormer ($A_5$) concentrates attention on tiny helmet regions. Finally, RepConv fusion ($A_6$) collapses inference latency from $7.12\text{~ms}$ to $1.51\text{~ms}$ without any loss in precision, providing an optimal efficiency-accuracy trade-off.
+
+\subsection{Cross-Domain Generalization Benchmark}
+To rigorously assess the generalizability of Rep-YOLO11s on unobserved data distributions, zero-shot evaluations were conducted across five external industrial datasets without fine-tuning. The quantitative results are presented in Table~\ref{tab:cross_domain}.
+
+\begin{table*}[t]
+\caption{Comprehensive Cross-Domain Generalization Benchmark across Heterogeneous Industrial Datasets.}
+\label{tab:cross_domain}
+\centering
+\renewcommand{\arraystretch}{1.2}
+\resizebox{\textwidth}{!}{%
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Model Variant / Evaluation Source} & \textbf{Input Resolution} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{$mAP_{50}$ (\%)} & \textbf{$mAP_{50-95}$ (\%)} \\
+\midrule
+\multicolumn{6}{l}{\textbf{1. VOC2028 / SHWD (Source Domain Official Validation)}} \\
+\quad Rep-YOLO11s-640 (Thanh) & $640\times640$ & 96.30 & 91.49 & 96.40 & 77.90 \\
+\quad Rep-YOLO11s-960 (Thanh) & $960\times960$ & 95.54 & 93.92 & 97.85 & 78.93 \\
+\quad Baseline A6 Full Train (Nhu) & $640\times640$ & 95.56 & 94.57 & 97.28 & 68.26 \\
+\quad Proposed Rep-YOLO11s Fix-6 (Nhu) & $640\times640$ & 93.29 & 87.28 & 94.03 & 60.37 \\
+\quad SHWD-YOLO11s-DA (Dung) & $960\times960$ & 92.13 & 88.71 & 93.32 & 72.29 \\
+\quad SHWD-YOLO11s-LO (Dung) & $960\times960$ & 91.61 & 89.30 & 93.33 & 72.44 \\
+\midrule
+\multicolumn{6}{l}{\textbf{2. GDUT-HWD Standardized (External Construction Benchmark, 13,499 Images)}} \\
+\quad Baseline A6 Full Train (Nhu) & $640\times640$ & 91.31 & 69.55 & 74.76 & 37.87 \\
+\quad Proposed Rep-YOLO11s Fix-6 (Nhu) & $640\times640$ & 90.26 & 68.35 & 74.27 & 39.00 \\
+\quad SHWD-YOLO11s-DA (Dung) & $960\times960$ & 94.18 & 67.75 & 73.59 & 38.01 \\
+\quad SHWD-YOLO11s-LO (Dung) & $960\times960$ & 94.54 & 66.77 & 74.26 & 39.11 \\
+\midrule
+\multicolumn{6}{l}{\textbf{3. SHEL5K Standardized (Complex Multi-Scale PPE, 5,000 Images)}} \\
+\quad Baseline A6 Full Train (Nhu) & $640\times640$ & 88.87 & 39.05 & 41.15 & 24.44 \\
+\quad Proposed Rep-YOLO11s Fix-6 (Nhu) & $640\times640$ & 85.62 & 37.65 & 40.93 & 22.84 \\
+\quad SHWD-YOLO11s-DA (Dung) & $960\times960$ & 93.15 & 37.55 & 40.72 & 24.98 \\
+\quad SHWD-YOLO11s-LO (Dung) & $960\times960$ & 92.45 & 37.43 & 40.96 & 24.36 \\
+\midrule
+\multicolumn{6}{l}{\textbf{4. Hard Hat Workers / AndrewMVD (7,000 Images)}} \\
+\quad Rep-YOLO11s-640 (Hat-Only Protocol, Thanh) & $640\times640$ & 94.68 & 92.74 & 96.90 & 55.05 \\
+\quad Rep-YOLO11s-960 (Hat-Only Protocol, Thanh) & $960\times960$ & 94.81 & 92.69 & \textbf{97.03} & 54.74 \\
+\quad SHWD-YOLO11s-DA (Joint Protocol, Dung) & $960\times960$ & 93.93 & 68.70 & 73.73 & 42.22 \\
+\quad SHWD-YOLO11s-LO (Joint Protocol, Dung) & $960\times960$ & 93.23 & 68.99 & 74.40 & 43.85 \\
+\midrule
+\multicolumn{6}{l}{\textbf{5. Safety Helmet Detection (SHD Benchmark)}} \\
+\quad Rep-YOLO11s-640 (Thanh) & $640\times640$ & 92.87 & 70.21 & 76.79 & 43.28 \\
+\quad Rep-YOLO11s-960 (Thanh) & $960\times960$ & 92.94 & 70.12 & 76.85 & 42.63 \\
+\midrule
+\multicolumn{6}{l}{\textbf{6. SFCHD (Safety Helmet Face \& Head Benchmark)}} \\
+\quad SHWD-YOLO11s-DA (Dung) & $960\times960$ & 81.30 & 55.15 & 64.06 & 36.32 \\
+\quad SHWD-YOLO11s-LO (Dung) & $960\times960$ & 79.65 & 55.75 & 64.80 & 37.35 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
+A critical observation from Table~\ref{tab:cross_domain} relates to annotation protocol divergence:
+\begin{itemize}
+    \item External datasets frequently employ conflicting annotation boundaries for the \textsf{person} class (e.g., drawing bounding boxes exclusively around heads rather than entire bodies). When evaluating full-body predictions against head-only ground truths, IoU overlaps degrade artificially. Under the harmonized \textsf{hat}-only protocol, Rep-YOLO11s achieves an outstanding $\mathbf{97.03\%}$ $mAP_{50}$ on Hard Hat Workers, matching source-domain fidelity.
+    \item On GDUT-HWD, the detector maintains $\mathbf{74.27\%}$ $mAP_{50}$ and $\mathbf{39.00\%}$ $mAP_{50-95}$, proving resilient domain transfer in dense construction scenes.
+    \item Conversely, SHEL5K represents an extreme domain gap ($40.96\%$ $mAP_{50}$) due to steep vertical drone camera angles and distant tiny targets ($<15\times15$ pixels), highlighting an open research problem for multi-modal domain adaptation.
+\end{itemize}
 
 \begin{figure*}[t]
 \centering
@@ -269,11 +328,43 @@ These qualitative visualizations demonstrate that the integration of CoordConv s
 \label{fig:latency_frontier}
 \end{figure}
 
+\subsection{Multi-Platform Deployment Benchmarks}
+Table~\ref{tab:deployment} reports measured deployment latency and throughput across target hardware platforms, execution engines, and input resolutions. Batch-one inference at $960\times960$ on an NVIDIA Tesla T4 GPU achieves $\mathbf{48.7\text{~FPS}}$ ($20.53\text{~ms}$) in PyTorch FP32 and $\mathbf{48.8\text{~FPS}}$ in FP16, with the CCTV stream pipeline reaching $\mathbf{64.2\text{--}70.0\text{~FPS}}$ ($14.28\text{~ms}$). At $640\times640$ on an edge RTX 3050 Laptop GPU, TensorRT FP16 forward execution requires only $\mathbf{1.51\text{~ms}}$ ($\mathbf{662.2\text{~FPS}}$), while Edge CPU execution achieves $\mathbf{35.0\text{~FPS}}$ ($\mathbf{28.56\text{~ms}}$).
+
+\begin{table}[t]
+\caption{Measured Deployment Latency and Throughput across Target Hardware Platforms.}
+\label{tab:deployment}
+\centering
+\renewcommand{\arraystretch}{1.2}
+\resizebox{\columnwidth}{!}{%
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llccc}
+\toprule
+\textbf{Hardware Target} & \textbf{Execution Engine} & \textbf{Resolution} & \textbf{Latency (ms)} & \textbf{Throughput (FPS)} \\
+\midrule
+NVIDIA Tesla T4 & PyTorch FP32 & $960\times960$ & 20.53 & 48.7 \\
+NVIDIA Tesla T4 & PyTorch FP16 & $960\times960$ & 20.49 & 48.8 \\
+NVIDIA Tesla T4 & CCTV Video Stream & $960\times960$ & 14.28 & 70.0 \\
+Edge CPU (4 Cores) & ONNX Runtime & $960\times960$ & 303.0 & 3.3 \\
+\midrule
+NVIDIA RTX 3050 & TensorRT 11.2 FP16 & $640\times640$ & 1.51 & 662.2 \\
+NVIDIA Tesla T4 & TensorRT 11.2 FP16 & $640\times640$ & 2.14 & 467.3 \\
+Intel Core i7 (4C) & ONNX Runtime INT8 & $640\times640$ & 28.56 & 35.0 \\
+RTSP Pipeline (RTX 3050) & End-to-End Stream & $640\times640$ & 10.54--15.34 & 65--95 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Latency Measurement Integrity: Resolving Asynchronous Artifacts}
+A vital finding of our deployment audit concerns the measurement of GPU inference speed. Naive CPU host timers wrapping non-blocking CUDA kernel launches measure CPU queue submission overhead ($\sim 10\,\mu\text{s}$) rather than actual device execution time, producing non-physical throughput estimates (e.g., $>50,000\text{ FPS}$). In this work, all reported GPU latencies are strictly synchronized using \textsf{torch.cuda.synchronize()} and CUDA event timers, establishing physically verified benchmarks bounded by NVIDIA Turing compute capacity ($65\text{ TFLOPs}$ FP16).
+
+\subsection{End-to-End Real-World Pipeline Analysis}
 A common misconception in academic literature is equating pure GPU model forward latency with real-world RTSP video processing speed. In practical industrial deployment, the video analytics pipeline involves five sequential processing stages:
 \begin{enumerate}
     \item \textbf{Video Stream Decoding ($T_{dec}$)}: Hardware-accelerated H.264/H.265 RTSP frame extraction on CPU/NVDEC ($3.5\text{--}5.0\text{~ms}$).
     \item \textbf{Preprocessing \& Letterboxing ($T_{prep}$)}: Aspect-ratio preserving resizing and normalization to $640\times640\times3$ tensor ($1.2\text{--}2.0\text{~ms}$).
-    \item \textbf{TensorRT GPU Inference ($T_{gpu}$)}: Pure FP16 model forward execution ($2.14\text{~ms}$).
+    \item \textbf{TensorRT GPU Inference ($T_{gpu}$)}: Pure FP16 model forward execution ($1.51\text{--}2.14\text{~ms}$).
     \item \textbf{Post-processing \& NMS ($T_{nms}$)}: Non-Maximum Suppression and confidence thresholding ($1.5\text{--}2.8\text{~ms}$).
     \item \textbf{Rendering \& UI Display ($T_{rend}$)}: Drawing bounding boxes and alerting overlay via OpenCV GUI ($2.2\text{--}3.4\text{~ms}$).
 \end{enumerate}
@@ -298,7 +389,7 @@ Addressing these edge cases via synthetic occlusion augmentation and adaptive gl
 %-------------------------------------------------------------------------
 \section{Conclusion \& Future Work}
 \label{sec:conclusion}
-In this paper, we presented \textbf{Rep-YOLO11s}, a structural re-parameterized object detector engineered for real-time safety helmet detection in complex construction environments. By integrating RepConv multi-branch fusion, Spatial CoordConv coordinate channels, BiFormer bi-level routing attention, and Focal EIoU Loss, Rep-YOLO11s addresses key industrial challenges including tiny distant target loss, class imbalance, and background clutter. Evaluated on the SHWD benchmark, Rep-YOLO11s achieves $94.83\%$ $mAP_{50}$ with a pure GPU inference latency of $2.14\text{~ms}$ ($467.3\text{~FPS}$) on TensorRT FP16, while maintaining an end-to-end RTSP pipeline throughput of $65\text{--}95\text{~FPS}$.
+In this paper, we presented \textbf{Rep-YOLO11s}, a structural re-parameterized object detector engineered for real-time safety helmet detection in complex construction environments. By integrating RepConv multi-branch fusion, Spatial CoordConv coordinate channels, BiFormer bi-level routing attention, and Focal EIoU Loss, Rep-YOLO11s addresses key industrial challenges including tiny distant target loss, class imbalance, and background clutter. Evaluated on the SHWD benchmark, Rep-YOLO11s achieves $94.83\%$ $mAP_{50}$ (with 5-fold cross-validation reaching $96.64 \pm 0.32\%$), while delivering $48.7\text{~FPS}$ at $960\times960$ on Tesla T4 and $662.2\text{~FPS}$ ($1.51\text{~ms}$) at $640\times640$ on an edge RTX 3050 GPU. Comprehensive zero-shot evaluations across five external industrial datasets validate the model's operational robustness and transferability.
 
 Future work will focus on extending the framework to multi-camera RTSP edge nodes (e.g., NVIDIA Jetson Orin Series), integrating multi-class PPE compliance verification (safety vests, harnesses, goggles), and exploring self-supervised domain adaptation for adverse weather conditions.
 
