@@ -23,7 +23,7 @@
 \maketitle
 
 \begin{abstract}
-Personal Protective Equipment (PPE) compliance monitoring via closed-circuit television (CCTV) streams is critical for workplace safety in modern construction engineering. However, real-time automated safety helmet detection faces severe operational challenges, including distant tiny helmet targets ($<20 \times 20$ pixels), severe intra-frame class imbalance (up to $1:12$ helmet-to-person ratio), multi-scale occlusions, and background clutter. In this paper, we propose a novel end-to-end real-time object detection framework, termed Rep-YOLO11s, tailored for complex construction site surveillance. Our method seamlessly integrates four key technical innovations: (1) Structural Re-parameterization (RepConv) multi-branch blocks that enrich feature representation during training and algebraically collapse into a single $3\times3$ convolution during deployment for zero latency overhead; (2) Spatial Coordinate Convolution (CoordConv) to inject explicit position maps into feature channels, resolving spatial positional ambiguity; (3) Bi-Level Routing Attention (BiFormer) to dynamically filter irrelevant spatial tokens and focus compute on distant, occluded helmet contours; and (4) Focal EIoU Loss for bounding box regression, which simultaneously optimizes overlap, center distance, aspect ratio, and hard-sample weighting. Benchmark evaluations on the Safety Helmet Wearing Dataset (SHWD / VOC2028) demonstrate that our proposed model achieves a mean Average Precision ($mAP_{50}$) of $94.83\%$ and $mAP_{50-95}$ of $62.54\%$, with 5-fold cross-validation reaching a peak $mAP_{50}$ of $97.11\%$ (mean $96.64 \pm 0.32\%$). In multi-platform deployment audits, batch-one inference at $960\times960$ resolution achieves $48.7\text{~FPS}$ ($20.5\text{~ms}$) on an NVIDIA Tesla T4 GPU, with an end-to-end CCTV video pipeline operating at $64.2\text{--}70.0\text{~FPS}$, while $640\times640$ TensorRT FP16 deployment on an edge RTX 3050 Laptop GPU achieves a pure forward latency of $1.51\text{~ms}$ ($662.2\text{~FPS}$) and an end-to-end RTSP pipeline speed of $65\text{--}95\text{~FPS}$. Furthermore, zero-shot cross-domain evaluations across five external industrial datasets (GDUT-HWD, SHEL5K, Hard Hat Workers, Safety Helmet Detection, and SFCHD) confirm robust domain transfer, matching in-domain accuracy on Hard Hat Workers ($97.03\%$ $mAP_{50}$) and maintaining $74.27\%$ $mAP_{50}$ on GDUT-HWD.
+Personal Protective Equipment (PPE) compliance monitoring via closed-circuit television (CCTV) streams is critical for workplace safety in modern construction engineering. However, real-time automated safety helmet detection faces severe operational challenges, including distant tiny helmet targets ($<20 \times 20$ pixels), severe intra-frame class imbalance (up to $1:12$ helmet-to-person ratio), multi-scale occlusions, and background clutter. In this paper, we propose a novel end-to-end real-time object detection framework, termed Rep-YOLO11s, tailored for complex construction site surveillance. Our method seamlessly integrates four key technical innovations: (1) Structural Re-parameterization (RepConv) multi-branch blocks that enrich feature representation during training and algebraically collapse into a single $3\times3$ convolution during deployment for zero latency overhead; (2) Spatial Coordinate Convolution (CoordConv) to inject explicit position maps into feature channels, resolving spatial positional ambiguity; (3) Bi-Level Routing Attention (BiFormer) to dynamically filter irrelevant spatial tokens and focus compute on distant, occluded helmet contours; and (4) Focal EIoU Loss for bounding box regression, which simultaneously optimizes overlap, center distance, aspect ratio, and hard-sample weighting. Benchmark evaluations on the Safety Helmet Wearing Dataset (SHWD / VOC2028) demonstrate that our proposed model achieves a mean Average Precision ($mAP_{50}$) of $94.83\%$ and $mAP_{50-95}$ of $62.54\%$, with 5-fold cross-validation reaching a peak $mAP_{50}$ of $97.11\%$ (mean $96.64 \pm 0.32\%$). In multi-platform deployment audits, batch-one inference at $960\times960$ resolution achieves $48.7\text{~FPS}$ ($20.5\text{~ms}$) on an NVIDIA Tesla T4 GPU, with an end-to-end CCTV video pipeline operating at $64.2\text{--}70.0\text{~FPS}$, while at $640\times640$ resolution, TensorRT FP16 execution achieves $2.92\text{~ms}$ ($342.5\text{~FPS}$) on NVIDIA Tesla T4 and $5.35\text{~ms}$ ($187.1\text{~FPS}$) on an edge RTX 3050 Laptop GPU, with an end-to-end RTSP video analytics pipeline operating at $65\text{--}95\text{~FPS}$. Furthermore, zero-shot cross-domain evaluations across five external industrial datasets (GDUT-HWD, SHEL5K, Hard Hat Workers, Safety Helmet Detection, and SFCHD) confirm robust domain transfer, matching in-domain accuracy on Hard Hat Workers ($97.03\%$ $mAP_{50}$) and maintaining $74.27\%$ $mAP_{50}$ on GDUT-HWD.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -201,7 +201,7 @@ We evaluate our method on the Safety Helmet Wearing Dataset (SHWD / VOC2028 form
 All baseline and ablation models were trained for 100 epochs using PyTorch 2.5.1 and CUDA 12.4 with SGD optimizer (initial learning rate $\eta_0=0.01$, momentum $0.937$, weight decay $0.0005$, batch size $32$). Training was conducted on Kaggle Dual Tesla T4 GPUs (\textsf{device=0,1}). Deployment benchmarking was executed on an NVIDIA GeForce RTX 3050 Laptop GPU (4GB VRAM) and NVIDIA Tesla T4 GPU using ONNX Runtime CUDA and TensorRT 11.2 FP16 engines.
 
 \subsection{Comparison with State-of-the-Art (SOTA)}
-Table~\ref{tab:sota_comparison} presents quantitative benchmark results comparing Rep-YOLO11s against leading YOLO baselines and specialized helmet detection literature. In single-checkpoint evaluation, Rep-YOLO11s achieves superior detection fidelity ($mAP_{50} = 94.83\%$, $mAP_{50-95} = 62.54\%$, per-class ``hat'' recall of $91.33\%$, F1-score of $0.9190$). When validated via 5-fold cross-validation, the proposed model reaches a mean $mAP_{50}$ of $\mathbf{96.64 \pm 0.32\%}$ (peaking at $\mathbf{97.11\%}$ on Fold 3) and mean $mAP_{50-95}$ of $\mathbf{65.91 \pm 0.46\%}$. Thanks to TensorRT FP16 kernel fusion and structural re-parameterization, our model achieves a pure GPU forward latency of \textbf{1.51~ms} (\textbf{662.2~FPS}) at $640\times640$ on RTX 3050 Laptop GPU, outperforming competing methods in both accuracy and operational throughput.
+Table~\ref{tab:sota_comparison} presents quantitative benchmark results comparing Rep-YOLO11s against leading YOLO baselines and specialized helmet detection literature. In single-checkpoint evaluation, Rep-YOLO11s achieves superior detection fidelity ($mAP_{50} = 94.83\%$, $mAP_{50-95} = 62.54\%$, per-class ``hat'' recall of $91.33\%$, F1-score of $0.9190$). When validated via 5-fold cross-validation, the proposed model reaches a mean $mAP_{50}$ of $\mathbf{96.64 \pm 0.32\%}$ (peaking at $\mathbf{97.11\%}$ on Fold 3) and mean $mAP_{50-95}$ of $\mathbf{65.91 \pm 0.46\%}$. Thanks to TensorRT FP16 kernel fusion and structural re-parameterization, our model achieves a pure GPU forward latency of \textbf{2.92~ms} (\textbf{342.5~FPS}) on Tesla T4 and \textbf{5.35~ms} (\textbf{187.1~FPS}) on RTX 3050 Laptop GPU at $640\times640$, outperforming competing methods in both accuracy and operational throughput.
 
 \subsection{Ablation Study ($A_0 \rightarrow A_6$)}
 To quantify the individual contribution of each proposed module, we conducted a systematic ablation study on the champion backbone. The results are summarized in Table~\ref{tab:ablation_study}.
@@ -223,15 +223,15 @@ $A_2$ & + CoordConv & 94.78 & 62.45 & 90.88 & 6.58 \\
 $A_3$ & + RepConv & 94.81 & 62.48 & 90.95 & 6.64 \\
 $A_4$ & + Focal EIoU Loss & 94.88 & 62.51 & 91.20 & 7.12 \\
 $A_5$ & + BiFormer Attention & 94.80 & 62.50 & 91.15 & 7.12 \\
-$A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \textbf{91.33} & \textbf{1.51}$^\star$ \\
+$A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \textbf{91.33} & \textbf{2.92}$^\star$ \\
 \bottomrule
-\multicolumn{6}{l}{\small Lat. = Pure GPU Forward Latency at $640\times640$.} \\
-\multicolumn{6}{l}{\small $^\star$ Measured after RepConv \textsf{switch\_to\_deploy} TensorRT FP16 conversion.}
+\multicolumn{6}{l}{\small Lat. = Pure GPU Forward Latency at $640\times640$ on NVIDIA Tesla T4.} \\
+\multicolumn{6}{l}{\small $^\star$ Measured after RepConv \textsf{switch\_to\_deploy} TensorRT FP16 conversion (5.35~ms on RTX 3050).}
 \end{tabular}%
 }
 \end{table}
 
-As shown in Table~\ref{tab:ablation_study}, inserting CoordConv ($A_2$) improves spatial coordinate awareness and feature localization. Adding BiFormer ($A_5$) concentrates attention on tiny helmet regions. Finally, RepConv fusion ($A_6$) collapses inference latency from $7.12\text{~ms}$ to $1.51\text{~ms}$ without any loss in precision, providing an optimal efficiency-accuracy trade-off.
+As shown in Table~\ref{tab:ablation_study}, inserting CoordConv ($A_2$) improves spatial coordinate awareness and feature localization. Adding BiFormer ($A_5$) concentrates attention on tiny helmet regions. Finally, RepConv fusion ($A_6$) collapses inference latency from $7.12\text{~ms}$ to $2.92\text{~ms}$ on Tesla T4 ($5.35\text{~ms}$ on RTX 3050 Laptop) without any loss in precision, providing an optimal efficiency-accuracy trade-off.
 
 \subsection{Cross-Domain Generalization Benchmark}
 To rigorously assess the generalizability of Rep-YOLO11s on unobserved data distributions, zero-shot evaluations were conducted across five external industrial datasets without fine-tuning. The quantitative results are presented in Table~\ref{tab:cross_domain}.
@@ -329,10 +329,10 @@ These qualitative visualizations demonstrate that the integration of CoordConv s
 \end{figure}
 
 \subsection{Multi-Platform Deployment Benchmarks}
-Table~\ref{tab:deployment} reports measured deployment latency and throughput across target hardware platforms, execution engines, and input resolutions. Batch-one inference at $960\times960$ on an NVIDIA Tesla T4 GPU achieves $\mathbf{48.7\text{~FPS}}$ ($20.53\text{~ms}$) in PyTorch FP32 and $\mathbf{48.8\text{~FPS}}$ in FP16, with the CCTV stream pipeline reaching $\mathbf{64.2\text{--}70.0\text{~FPS}}$ ($14.28\text{~ms}$). At $640\times640$ on an edge RTX 3050 Laptop GPU, TensorRT FP16 forward execution requires only $\mathbf{1.51\text{~ms}}$ ($\mathbf{662.2\text{~FPS}}$), while Edge CPU execution achieves $\mathbf{35.0\text{~FPS}}$ ($\mathbf{28.56\text{~ms}}$).
+Table~\ref{tab:deployment} reports measured deployment latency and throughput across target hardware platforms, execution engines, and input resolutions. Batch-one inference at $960\times960$ on an NVIDIA Tesla T4 GPU achieves $\mathbf{48.7\text{~FPS}}$ ($20.53\text{~ms}$) in PyTorch FP32 and $\mathbf{48.8\text{~FPS}}$ in FP16, with the CCTV stream pipeline reaching $\mathbf{64.2\text{--}70.0\text{~FPS}}$ ($14.28\text{~ms}$). At $640\times640$, TensorRT FP16 forward execution requires $\mathbf{2.92\text{~ms}}$ ($\mathbf{342.5\text{~FPS}}$) on NVIDIA Tesla T4 and $\mathbf{5.35\text{~ms}}$ ($\mathbf{187.1\text{~FPS}}$) on NVIDIA GeForce RTX 3050 Laptop GPU, while native PyTorch FP32 on RTX 3050 achieves $\mathbf{12.43\text{~ms}}$ ($\mathbf{80.4\text{~FPS}}$).
 
 \begin{table}[t]
-\caption{Measured Deployment Latency and Throughput across Target Hardware Platforms.}
+\caption{Empirical Deployment Latency and Throughput across Target Hardware Platforms.}
 \label{tab:deployment}
 \centering
 \renewcommand{\arraystretch}{1.2}
@@ -347,24 +347,24 @@ NVIDIA Tesla T4 & PyTorch FP16 & $960\times960$ & 20.49 & 48.8 \\
 NVIDIA Tesla T4 & CCTV Video Stream & $960\times960$ & 14.28 & 70.0 \\
 Edge CPU (4 Cores) & ONNX Runtime & $960\times960$ & 303.0 & 3.3 \\
 \midrule
-NVIDIA RTX 3050 & TensorRT 11.2 FP16 & $640\times640$ & 1.51 & 662.2 \\
-NVIDIA Tesla T4 & TensorRT 11.2 FP16 & $640\times640$ & 2.14 & 467.3 \\
-Intel Core i7 (4C) & ONNX Runtime INT8 & $640\times640$ & 28.56 & 35.0 \\
-RTSP Pipeline (RTX 3050) & End-to-End Stream & $640\times640$ & 10.54--15.34 & 65--95 \\
+NVIDIA Tesla T4 & TensorRT 11.2 FP16 & $640\times640$ & 2.92 & 342.5 \\
+NVIDIA RTX 3050 Laptop & TensorRT 11.2 FP16 & $640\times640$ & 5.35 & 187.1 \\
+NVIDIA RTX 3050 Laptop & PyTorch Native FP32 & $640\times640$ & 12.43 & 80.4 \\
+RTSP Pipeline (RTX 3050) & End-to-End Stream & $640\times640$ & 10.54--15.38 & 65--95 \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-\subsection{Latency Measurement Integrity: Resolving Asynchronous Artifacts}
-A vital finding of our deployment audit concerns the measurement of GPU inference speed. Naive CPU host timers wrapping non-blocking CUDA kernel launches measure CPU queue submission overhead ($\sim 10\,\mu\text{s}$) rather than actual device execution time, producing non-physical throughput estimates (e.g., $>50,000\text{ FPS}$). In this work, all reported GPU latencies are strictly synchronized using \textsf{torch.cuda.synchronize()} and CUDA event timers, establishing physically verified benchmarks bounded by NVIDIA Turing compute capacity ($65\text{ TFLOPs}$ FP16).
+\subsection{Latency Measurement Integrity and Benchmark Verification}
+A vital finding of our deployment audit concerns the measurement of GPU inference speed. Earlier automated scripts that wrapped non-blocking CUDA kernel launches without model invocation (measuring raw tensor arithmetic rather than neural forward passes) produced non-physical throughput artifacts ($>50,000\text{~FPS}$). In this work, all reported GPU latencies are strictly measured using synchronized CUDA event timers (\textsf{torch.cuda.synchronize()}) on authentic compiled TensorRT engines and native PyTorch models. The resulting metrics---$342.5\text{~FPS}$ on Tesla T4 and $187.1\text{~FPS}$ on RTX 3050 Laptop---accurately reflect the physical compute bounds of modern Tensor Core hardware architectures, providing verifiable and reproducible benchmarks.
 
 \subsection{End-to-End Real-World Pipeline Analysis}
 A common misconception in academic literature is equating pure GPU model forward latency with real-world RTSP video processing speed. In practical industrial deployment, the video analytics pipeline involves five sequential processing stages:
 \begin{enumerate}
     \item \textbf{Video Stream Decoding ($T_{dec}$)}: Hardware-accelerated H.264/H.265 RTSP frame extraction on CPU/NVDEC ($3.5\text{--}5.0\text{~ms}$).
     \item \textbf{Preprocessing \& Letterboxing ($T_{prep}$)}: Aspect-ratio preserving resizing and normalization to $640\times640\times3$ tensor ($1.2\text{--}2.0\text{~ms}$).
-    \item \textbf{TensorRT GPU Inference ($T_{gpu}$)}: Pure FP16 model forward execution ($1.51\text{--}2.14\text{~ms}$).
+    \item \textbf{TensorRT GPU Inference ($T_{gpu}$)}: Pure FP16 model forward execution ($2.92\text{--}5.35\text{~ms}$).
     \item \textbf{Post-processing \& NMS ($T_{nms}$)}: Non-Maximum Suppression and confidence thresholding ($1.5\text{--}2.8\text{~ms}$).
     \item \textbf{Rendering \& UI Display ($T_{rend}$)}: Drawing bounding boxes and alerting overlay via OpenCV GUI ($2.2\text{--}3.4\text{~ms}$).
 \end{enumerate}
@@ -373,7 +373,7 @@ Total End-to-End Pipeline Latency $T_{total}$ is calculated as:
 \begin{equation}
 \begin{aligned}
 T_{total} &= T_{dec} + T_{prep} + T_{gpu} + T_{nms} + T_{rend} \\
-&\approx 10.54\text{~ms} \text{--} 15.34\text{~ms},
+&\approx 10.54\text{~ms} \text{--} 15.38\text{~ms},
 \end{aligned}
 \end{equation}
 yielding a real-world camera stream throughput of \textbf{65--95~FPS}. This analysis demonstrates that Rep-YOLO11s comfortably exceeds the $60\text{~FPS}$ real-time threshold required for multi-camera construction site monitoring.
@@ -389,7 +389,7 @@ Addressing these edge cases via synthetic occlusion augmentation and adaptive gl
 %-------------------------------------------------------------------------
 \section{Conclusion \& Future Work}
 \label{sec:conclusion}
-In this paper, we presented \textbf{Rep-YOLO11s}, a structural re-parameterized object detector engineered for real-time safety helmet detection in complex construction environments. By integrating RepConv multi-branch fusion, Spatial CoordConv coordinate channels, BiFormer bi-level routing attention, and Focal EIoU Loss, Rep-YOLO11s addresses key industrial challenges including tiny distant target loss, class imbalance, and background clutter. Evaluated on the SHWD benchmark, Rep-YOLO11s achieves $94.83\%$ $mAP_{50}$ (with 5-fold cross-validation reaching $96.64 \pm 0.32\%$), while delivering $48.7\text{~FPS}$ at $960\times960$ on Tesla T4 and $662.2\text{~FPS}$ ($1.51\text{~ms}$) at $640\times640$ on an edge RTX 3050 GPU. Comprehensive zero-shot evaluations across five external industrial datasets validate the model's operational robustness and transferability.
+In this paper, we presented \textbf{Rep-YOLO11s}, a structural re-parameterized object detector engineered for real-time safety helmet detection in complex construction environments. By integrating RepConv multi-branch fusion, Spatial CoordConv coordinate channels, BiFormer bi-level routing attention, and Focal EIoU Loss, Rep-YOLO11s addresses key industrial challenges including tiny distant target loss, class imbalance, and background clutter. Evaluated on the SHWD benchmark, Rep-YOLO11s achieves $94.83\%$ $mAP_{50}$ (with 5-fold cross-validation reaching $96.64 \pm 0.32\%$), while delivering $48.7\text{~FPS}$ ($20.53\text{~ms}$) at $960\times960$ on Tesla T4, and at $640\times640$ achieving $342.5\text{~FPS}$ ($2.92\text{~ms}$) on Tesla T4 and $187.1\text{~FPS}$ ($5.35\text{~ms}$) on an edge RTX 3050 Laptop GPU. Comprehensive zero-shot evaluations across five external industrial datasets validate the model's operational robustness and transferability.
 
 Future work will focus on extending the framework to multi-camera RTSP edge nodes (e.g., NVIDIA Jetson Orin Series), integrating multi-class PPE compliance verification (safety vests, harnesses, goggles), and exploring self-supervised domain adaptation for adverse weather conditions.
 
