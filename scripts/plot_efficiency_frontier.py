@@ -10,9 +10,9 @@ data = [
     {'model': 'YOLOv8s', 'latency': 6.10, 'map50_95': 62.21, 'type': 'Baseline'},
     {'model': 'YOLOv10n', 'latency': 2.66, 'map50_95': 60.35, 'type': 'Baseline'},
     {'model': 'YOLOv10s', 'latency': 6.23, 'map50_95': 62.19, 'type': 'Baseline'},
-    {'model': 'YOLO11n', 'latency': 3.18, 'map50_95': 60.21, 'type': 'Baseline'},
-    {'model': 'YOLO11s', 'latency': 6.52, 'map50_95': 62.54, 'type': 'Baseline'},
-    {'model': 'Rep-YOLO11s (Ours)', 'latency': 2.14, 'map50_95': 62.54, 'type': 'Proposed'}
+    {'model': 'YOLO11n', 'latency': 2.58, 'map50_95': 60.82, 'type': 'Baseline'},
+    {'model': 'YOLO11s', 'latency': 5.82, 'map50_95': 62.38, 'type': 'Baseline'},
+    {'model': 'Rep-YOLO11s (Ours)', 'latency': 2.92, 'map50_95': 62.54, 'type': 'Proposed'}
 ]
 
 fig, ax = plt.subplots(figsize=(6.5, 4.2), dpi=300)
@@ -24,12 +24,12 @@ for b in baselines:
 
 # Offset annotations cleanly to avoid overlapping
 offsets = {
-    'YOLOv8n': (0.12, -0.35),
+    'YOLOv8n': (0.15, -0.35),
     'YOLOv8s': (-0.95, -0.45),
-    'YOLOv10n': (-1.1, 0.22),
-    'YOLOv10s': (0.12, -0.45),
-    'YOLO11n': (0.12, 0.22),
-    'YOLO11s': (0.12, 0.22),
+    'YOLOv10n': (-1.05, -0.25),
+    'YOLOv10s': (0.15, -0.45),
+    'YOLO11n': (-0.95, 0.22),
+    'YOLO11s': (0.15, 0.22),
 }
 
 for b in baselines:
@@ -42,9 +42,9 @@ for b in baselines:
 # Plot Proposed Rep-YOLO11s (Ours)
 our_model = [d for d in data if d['type'] == 'Proposed'][0]
 ax.scatter(our_model['latency'], our_model['map50_95'], color='#d62728', marker='*', s=220, zorder=5, label='Rep-YOLO11s (Ours)')
-ax.annotate("Rep-YOLO11s (Ours)\n2.14 ms / 62.54%", 
+ax.annotate("Rep-YOLO11s (Ours)\n2.92 ms / 62.54%", 
             (our_model['latency'], our_model['map50_95']),
-            xytext=(our_model['latency'] + 0.15, our_model['map50_95'] + 0.35),
+            xytext=(our_model['latency'] + 0.18, our_model['map50_95'] + 0.30),
             fontsize=9.5, fontweight='bold', color='#d62728')
 
 # Reference lines

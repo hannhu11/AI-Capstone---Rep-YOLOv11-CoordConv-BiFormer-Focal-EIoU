@@ -1,5 +1,6 @@
 """
 Generate IEEE Q1 Publication-Quality System Pipeline Diagram for Rep-YOLO11s.
+Aligned with empirical benchmarks (TensorRT FP16, 2.92 ms T4 / 5.35 ms RTX 3050, 65-95 FPS E2E).
 Outputs both 300 DPI PNG and Vector PDF in paper_overleaf/figures and root directory.
 """
 
@@ -42,7 +43,7 @@ def create_pipeline_diagram():
     ax.add_patch(title_box)
     ax.text(7.75, 6.78, "END-TO-END INDUSTRIAL PPE COMPLIANCE & SAFETY HELMET SURVEILLANCE PIPELINE",
             ha='center', va='center', color='#FFFFFF', fontsize=11.5, fontweight='bold')
-    ax.text(7.75, 6.48, "Real-Time Multi-Stream RTSP Ingestion • CoordConv Spatial Bias • Structural RepConv • TensorRT INT8 Engine (909.1 FPS)",
+    ax.text(7.75, 6.48, "Real-Time Multi-Stream RTSP Ingestion • CoordConv Spatial Bias • Structural RepConv • TensorRT FP16 Acceleration (342.5 FPS)",
             ha='center', va='center', color='#94A3B8', fontsize=8.5, fontweight='normal')
 
     # 5 Major Stages Definition
@@ -75,14 +76,14 @@ def create_pipeline_diagram():
         },
         {
             "id": "STAGE 3 (CORE)",
-            "title": "Rep-YOLO11s\nTensorRT Engine",
-            "time": "1.10 ms (INT8) / 2.14 ms (FP16)",
+            "title": "Rep-YOLO11s\nTensorRT FP16 Engine",
+            "time": "2.92 ms (Tesla T4) / 5.35 ms (RTX 3050)",
             "x": 6.4, "w": 3.2,
             "items": [
                 ("Structural RepConv (3x3 Fused)", True),  # Novelty
-                ("BiFormer Sparse Routing Attn", True),   # Novelty
-                ("Distilled via YOLO11x (KL Loss)", True), # Novelty
-                ("INT8 Entropy Calibrator v2", True),      # Novelty
+                ("BiFormer Dynamic Routing Attn", True),   # Novelty
+                ("FP16 Half-Precision Engine", True),      # Novelty
+                ("switch_to_deploy() Zero Overhead", True),# Novelty
             ],
             "tensor": "Feature: (B, 6, 8400)"
         },
@@ -102,7 +103,7 @@ def create_pipeline_diagram():
         {
             "id": "STAGE 5",
             "title": "Edge Monitoring &\nIndustrial Alerting",
-            "time": "65 - 95 FPS End-to-End",
+            "time": "2.2 - 3.4 ms",
             "x": 12.75, "w": 2.35,
             "items": [
                 ("Bbox & ID Tag Overlay", False),
@@ -189,14 +190,12 @@ def create_pipeline_diagram():
         ax.text(x + w/2, 1.50, "PROCESSING LATENCY" if not is_core else "PURE INFERENCE SPEED",
                 ha='center', va='center', color='#B45309' if is_core else c_text_muted, fontsize=6.8, fontweight='bold')
         ax.text(x + w/2, 1.30, s["time"], ha='center', va='center',
-                color='#92400E' if is_core else c_dark, fontsize=8.2, fontweight='bold')
+                color='#92400E' if is_core else c_dark, fontsize=8.0, fontweight='bold')
 
     # Draw Connecting Arrows between Stages
-    arrow_props = dict(boxstyle="square", fc="#3B82F6", ec="none")
     for i in range(len(stages) - 1):
         x1 = stages[i]["x"] + stages[i]["w"]
         x2 = stages[i+1]["x"]
-        mid_x = (x1 + x2) / 2
         
         # Draw Arrow
         ax.annotate(
@@ -231,15 +230,15 @@ def create_pipeline_diagram():
     tag2 = patches.FancyBboxPatch((7.7, 0.28), 3.4, 0.35, boxstyle="round,pad=0.02,rounding_size=0.04",
                                   facecolor='#FEF3C7', edgecolor='#F59E0B', linewidth=0.8)
     ax.add_patch(tag2)
-    ax.text(9.4, 0.45, "[!] SOTA Pareto Frontier: 909.1 FPS @ 94.55% mAP50", ha='center', va='center',
-            color='#92400E', fontsize=7.5, fontweight='bold')
+    ax.text(9.4, 0.45, "[!] GPU Throughput: 342.5 FPS (T4) / 187.1 FPS (RTX 3050)", ha='center', va='center',
+            color='#92400E', fontsize=7.2, fontweight='bold')
 
     # Tag 3: Multi-Stream Throughput
     tag3 = patches.FancyBboxPatch((11.3, 0.28), 3.5, 0.35, boxstyle="round,pad=0.02,rounding_size=0.04",
                                   facecolor='#EFF6FF', edgecolor='#2563EB', linewidth=0.8)
     ax.add_patch(tag3)
-    ax.text(13.05, 0.45, "Multi-Stream Throughput: 65 - 95 FPS End-to-End", ha='center', va='center',
-            color='#1E40AF', fontsize=7.5, fontweight='bold')
+    ax.text(13.05, 0.45, "Multi-Camera Pipeline: 65 - 95 FPS (10.5 - 15.4 ms E2E)", ha='center', va='center',
+            color='#1E40AF', fontsize=7.2, fontweight='bold')
 
     plt.tight_layout()
 
