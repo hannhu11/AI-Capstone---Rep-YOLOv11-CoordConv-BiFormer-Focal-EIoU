@@ -1,0 +1,226 @@
+================================================================================
+MASTER PROMPT GENSPARK AI SLIDES (ENGLISH SLIDES VERSION)
+TOPIC: ARTIFICIAL INTELLIGENCE CAPSTONE PROGRESS REPORT (STAGE 1: PROPOSAL & FEASIBILITY)
+PROJECT: REP-YOLO11s — REAL-TIME SAFETY HELMET DETECTION IN CONSTRUCTION SURVEILLANCE
+INSTITUTION: FPT UNIVERSITY · DEPARTMENT OF ARTIFICIAL INTELLIGENCE
+================================================================================
+
+[HOW TO USE IN GENSPARK AI SLIDES]
+1. Copy everything below [START PROMPT] and paste into Genspark AI Slides.
+2. Recommended Settings:
+   - Output Language: 100% English (International academic computer vision style).
+   - Theme: Light / Academic (Warm Ivory background #FAF8F5, Pure White cards #FFFFFF, Dark Navy text #0F172A, Safety Orange #EA580C).
+   - Layout Priority: Minimal text (short punchy bullet points, NO wall-of-text paragraphs).
+   - Visual Focus: Allocate 55% - 65% of each slide to large technical diagrams and benchmark figures.
+   - FORBIDDEN WORDS: NEVER use "IEEE", "iees", "Review", "Reviews", "Review 1", "Review 2", "Review 3".
+3. Upload and attach the 10 high-resolution images from the "figures/" directory into the designated placeholders:
+   - Slide 2: Fig1_site_overview_challenges.jpg (Construction site challenges)
+   - Slide 5: Fig2_rep_yolo11s_neural_architecture.png (5-stage Rep-YOLO11s architecture)
+   - Slide 6: Fig_RepConv_Architecture.png (RepConv algebraic fusion mechanism)
+   - Slide 7: Fig_CoordConv_Concept.png (CoordConv coordinate injection concept)
+   - Slide 8: Fig_BiFormer_Sparse_Attention.png (BiFormer bi-level routing attention)
+   - Slide 9: Fig_Focal_EIoU_Decomposition.png (Focal EIoU geometric decomposition)
+   - Slide 12: Fig6_ablation_A0_A6_tradeoff.png (A0-A6 ablation tradeoff chart)
+   - Slide 13: Fig5_efficiency_frontier_latency_vs_map.png (Pareto efficiency frontier)
+   - Slide 14: Fig3_gradcam_xai_saliency_comparison.png (Grad-CAM XAI 3-scenario panel)
+   - Slide 17: Fig4_industrial_rtsp_surveillance_pipeline.png (End-to-end RTSP pipeline)
+
+================================================================================
+[START PROMPT]
+================================================================================
+
+Create a high-impact, professional 18-slide academic presentation for an Artificial Intelligence Capstone Defense (Stage 1: Proposal & Feasibility Evaluation) in 100% ENGLISH.
+
+DESIGN & FORMATTING REQUIREMENTS:
+1. Palette (Light Academic):
+   - Background: Warm Ivory (#FAF8F5 or #F8FAFC). Do NOT use dark mode.
+   - Content Containers: Crisp White cards (#FFFFFF) with subtle drop shadows and 1px soft borders (#E2E8F0).
+   - Accent Colors: Safety Orange (#EA580C), Technical Blue (#2563EB), Success Green (#16A34A), Deep Slate Title (#0F172A).
+2. Layout & Information Density:
+   - Minimal Text: Use short, punchy bullet points (max 10-15 words per bullet). Zero long prose paragraphs.
+   - Asymmetric 2-Column Layout: Left column for key takeaways (35-45%), Right column for prominent diagrams/figures (55-65%).
+   - Prominent Hero Metrics: Highlight breakthrough numbers (97.11%, 2.92 ms, 342.5 FPS, 27.8 FPS, 51.9%) with large bold typography (36pt - 44pt).
+3. Terminology:
+   - STRICTLY AVOID: "IEEE", "iees", "Review", "Reviews", "Review 1", "Review 2", "Review 3".
+   - USE FORMAL TERMS: "FPT University AI Capstone Defense", "Stage 1: Proposal & Feasibility Evaluation", "Stage 2", "Stage 3".
+
+--------------------------------------------------------------------------------
+18 SLIDE SPECIFICATIONS:
+--------------------------------------------------------------------------------
+
+SLIDE 1: TITLE SLIDE
+- Header Badge: "FPT UNIVERSITY · ARTIFICIAL INTELLIGENCE CAPSTONE DEFENSE"
+- Main Title: "Rep-YOLO11s"
+- Subtitle: "Real-Time Safety Helmet Detection in Construction Surveillance: Structural Re-parameterization, Coordinate Encoding & Multi-Domain Generalization"
+- Hero Metric Box (Right):
+  * 5-FOLD CV PEAK mAP50: 97.11% (Outperforms Baseline +0.47%)
+  * Tesla T4 Latency: 2.92 ms (342.5 FPS)
+  * Budget Laptop MX230 (2GB VRAM): 36.0 ms (27.8 FPS Real-Time)
+  * Harmonized Benchmark: > 33,000 Multi-Domain Images
+- 3 Info Cards (Bottom):
+  * Research Team: Nhu Nguyen-Han (Lead · SE183644), Thanh Nguyen-Van (SE183645), Dung Nguyen-Tuan (SE183646). Role: Model Architecture, TensorRT Acceleration & RTSP Pipeline.
+  * Academic Advisor: M.Sc. Hai-Anh Vu (anhvh@fe.edu.vn) — Dept. of Artificial Intelligence, FPT University Hanoi.
+  * Publication Target: Top-Tier International Venue (Industrial Informatics & Machine Vision).
+
+SLIDE 2: CRITERION 1 - SITE CONTEXT & 4 TECHNICAL BOTTLENECKS
+- Title: "Real Construction Context & 4 Technical Bottlenecks"
+- Left Column (4 Cards):
+  01. Distant Tiny Objects (<20 px): 15–30m high-angle cameras cause severe feature attenuation across deep strides.
+  02. Extreme Class Imbalance (1:12): 9,044 helmets vs. 111,514 worker bodies; gradients dominated by worker instances.
+  03. Color Noise & False Alarms: Yellow buckets, cones, and caution signs trigger false positives due to CNN translation invariance.
+  04. Edge Hardware Constraints: Demands >= 25 FPS real-time throughput on budget edge laptops without cloud servers.
+- Right Column: [Insert Fig1_site_overview_challenges.jpg]
+  * Caption: "Fig. 1: Real construction site surveillance — High-angle camera, distant tiny targets, scaffolding occlusions, and severe specular surface glare."
+
+SLIDE 3: CRITERION 3 - LITERATURE REVIEW & SOTA RESEARCH GAP
+- Title: "Literature Review of 32 Works & SOTA Research Gap"
+- 5 Comparison Rows:
+  * Standard YOLO (v8 / 11): 94.74% mAP50 | 6.52 ms (153.3 FPS) | Coordinate-agnostic; frequent false alarms on ground yellow buckets.
+  * EC-YOLOv8 (2024): 95.70% mAP50 | 5.80 ms (172.4 FPS) | CARAFE operator enhances features but incurs heavy latency overhead.
+  * YOLO-CBF (2023): 95.60% mAP50 | 12.40 ms (80.6 FPS) | Integrates CoordConv & BiFormer but balloons to 37.2M params and 104.5 GFLOPs.
+  * YOLOv8n-FADS (2024): 79.70% mAP50 | Edge Bottleneck | P2 branch expansion causes computational explosion and low empirical precision.
+  * Rep-YOLO11s (Proposed): 94.83% - 97.11% | 2.92 ms (342.5 FPS) | Zero-overhead W_fused fusion; coordinate encoding suppresses false alarms; 27.8 FPS on MX230.
+- Bottom Box:
+  * ★ RESEARCH GAP: No existing framework achieves high tiny-object accuracy WITHOUT incurring severe inference latency or parameter explosion during edge deployment.
+
+SLIDE 4: CRITERION 2 - SCOPE & 5 COMMITTED DELIVERABLES
+- Title: "Project Scope & 5 Concrete Committed Deliverables"
+- 5 Deliverable Cards:
+  01. SCIENTIFIC REPORT: 9-page formal monograph with analytical proofs, SOTA benchmarks, Ablation A0–A6 & Grad-CAM XAI.
+  02. REP-YOLO11s MODEL: Trained weights achieving 94.83% Single Test, 96.64% 5-Fold, 97.03% on Hard Hat Workers.
+  03. SOFTWARE PROTOTYPE: Multi-stream RTSP surveillance pipeline with circular buffering, 65–95 FPS on RTX 3050.
+  04. COMPILED ENGINES: TensorRT 11.2 FP16, ONNX Runtime INT8, and OpenVINO packages ready for cross-platform edge chips.
+  05. STANDARDIZED BENCHMARK: >33,000 images harmonized across 6 industrial domains with cleaned VOC2028 annotations.
+- Bottom Banner:
+  * ✓ PROJECT STATUS: All 5/5 committed deliverables are completed, reaching ~90% of entire capstone engineering scope in Stage 1!
+
+SLIDE 5: PROPOSED METHOD - COMPREHENSIVE 5-STAGE NEURAL ARCHITECTURE
+- Title: "Comprehensive 5-Stage Neural Architecture of Rep-YOLO11s"
+- Central Diagram: [Insert Fig2_rep_yolo11s_neural_architecture.png]
+- 3 Subsystem Highlights (Bottom):
+  * 1. SPATIAL BACKBONE: CSPDarknet with CoordConv coordinate injection (Cx, Cy) and multi-branch RepConv feature blocks.
+  * 2. SPARSE ROUTING NECK: PAN architecture embedded with BiFormer 2-level routing attention, reducing complexity to linear O(HW).
+  * 3. DECOUPLED HEAD & LOSS: Anchor-free Decoupled Head paired with Focal EIoU loss decoupling bounding box dimension errors.
+
+SLIDE 6: TECHNICAL INNOVATION 1 - STRUCTURAL RE-PARAMETERIZATION (REPCONV)
+- Title: "Innovation 1: Structural Re-parameterization (RepConv) & Algebraic Fusion"
+- Diagram: [Insert Fig_RepConv_Architecture.png]
+- 3 Key Takeaways:
+  * MULTI-BRANCH TRAINING: 3 parallel branches (3x3, 1x1, Identity) enrich gradient diversity and feature representation space.
+  * ALGEBRAIC FUSION switch_to_deploy(): Fuses BN, zero-pads 1x1 conv, and transforms identity into Dirac delta into a single 3x3 conv layer.
+  * EMPIRICAL DEPLOYMENT IMPACT: 55.2% latency reduction (7.12 ms -> 2.92 ms), 342.5 FPS on T4 with numerical error Delta < 10^-5.
+
+SLIDE 7: TECHNICAL INNOVATION 2 - COORDCONV SPATIAL COORDINATE INJECTION
+- Title: "Innovation 2: CoordConv Spatial Encoding Suppresses False Alarms"
+- Diagram: [Insert Fig_CoordConv_Concept.png]
+- 3 Mechanisms:
+  * BREAKING TRANSLATION INVARIANCE: Augments input RGB tensor with normalized coordinates Cx, Cy in [-1, 1] (forming 5 channels).
+  * SITE GEOMETRIC AXIOM: Forces kernels to learn anatomical priors: Helmets reside on worker heads (Cy < 0), never on the ground.
+  * FALSE ALARM SUPPRESSION: Eradicates >28% of false alarms triggered by yellow buckets, safety cones, and caution signs on the floor.
+
+SLIDE 8: TECHNICAL INNOVATION 3 - BIFORMER SPARSE ROUTING ATTENTION
+- Title: "Innovation 3: BiFormer 2-Level Sparse Routing Attention"
+- Diagram: [Insert Fig_BiFormer_Sparse_Attention.png]
+- 3 Mechanisms:
+  * REGION ROUTING (S x S): Partitions feature maps into S x S regions (S=7), builds region affinity graph, filters Top-k (k=4).
+  * LINEAR COMPLEXITY O(HW): Eliminates standard Transformer O((HW)^2) bottleneck, preventing VRAM overflow on edge devices.
+  * TINY TARGET SALIENCY: Prunes 80% background context, concentrating computation on distant helmet tokens, raising Recall to 91.15%.
+
+SLIDE 9: TECHNICAL INNOVATION 4 - FOCAL EIOU LOSS & DECOUPLED HEAD
+- Title: "Innovation 4: Focal EIoU Loss & Small Target Optimization"
+- Diagram: [Insert Fig_Focal_EIoU_Decomposition.png]
+- 3 Advantages:
+  * DECOUPLED DIMENSION PENALTY: Replaces CIoU aspect ratio penalty with explicit independent width (dw) and height (dh) loss.
+  * FOCAL HARD-SAMPLE MINING: IoU^0.5 weighting amplifies gradients for heavily occluded helmets obscured by scaffolding.
+  * MITIGATING 1:12 CLASS IMBALANCE: Combined with weighted BCE to prevent worker body instances from drowning helmet gradients.
+
+SLIDE 10: CRITERION 3 - CUSTOM CODE & CORE ARCHITECTURAL CONTRIBUTIONS
+- Title: "Independent Development: 4 Custom Mathematical Modules"
+- 4 Engineering Contributions:
+  01. 100% PURE PYTORCH CODE: custom_ablation_modules.py — 360 lines of self-developed native PyTorch code for CoordConv, RepConv, BiFormer, and Focal EIoU.
+  02. PHYSICAL LOSS INTERVENTION: Physical File Hard-Patch — Direct override in Ultralytics loss pipeline to bypass Kaggle DDP isolation limits.
+  03. PYTORCH 2.6 SECURITY BYPASS: add_safe_globals Integration — Resolved PyTorch 2.6 weights_only=True deserialization failure across 117 custom tensor layers.
+  04. HARMONIZED PPE PROTOCOL: Discovered and solved cross-dataset taxonomy conflict (full-body vs. head-only), restoring cross-domain helmet mAP to 97.03%.
+- Bottom Banner:
+  * ★ TECHNICAL AUTONOMY: Ultralytics serves as infrastructure; all 4 custom mathematical modules and low-level patches are 100% self-developed!
+
+SLIDE 11: CRITERION 3 - DATA ENGINEERING & MULTI-DOMAIN HARMONIZATION
+- Title: "Data Engineering: Multi-Domain Harmonization & Anomaly Cleaning"
+- Left Card:
+  * PRIMARY IN-DOMAIN DATASET (VOC2028 / SHWD): 7,581 real-world construction images. Strict 80/20 train/test split. Cleaned 142 noisy mislabeled annotations.
+- Right Card:
+  * 5 CROSS-DOMAIN BENCHMARKS (>25,000 IMAGES): GDUT-HWD (crowded 15-30 workers/frame), SHEL5K (vertical drone 70-90° view), Hard Hat Workers (ambient lighting), SHD & SFCHD.
+- Bottom Banner:
+  * ★ UNIFIED LABEL TAXONOMY C* = {0: "hat" (Safety Helmet), 1: "person" (Worker Body)} — Fully synchronized across 33,000+ images!
+
+SLIDE 12: CRITERION 4 - ABLATION STUDY A0–A6 EMPIRICAL VERIFICATION
+- Title: "Ablation Study (A0–A6): Rigorous Component Verification"
+- Left Card (Step-by-Step Breakdown):
+  * A0 (Baseline YOLO11s): 94.74% mAP50 · 6.52 ms latency.
+  * A1 (+ P2 Small Head): 94.81% mAP50 · Latency surged to 8.94 ms (+37%) -> Pruned as suboptimal.
+  * A2 (+ CoordConv): 94.78% mAP50 · Spatial awareness without latency overhead.
+  * A3 (+ RepConv): 94.81% mAP50 · Rich gradient representation in training.
+  * A4 (+ Focal EIoU): 94.88% mAP50 · Precise bounding box regression for tiny objects.
+  * A5 (+ BiFormer): 94.80% mAP50 · Peak helmet Recall reaching 91.15%.
+  * A6 (Full Fusion): 94.83% mAP50 · Latency plummets to a record 2.92 ms (-55.2%)!
+- Right: [Insert Fig6_ablation_A0_A6_tradeoff.png]
+  * Caption: "Fig. 6: Empirical Ablation Tradeoff (A0-A6) — Re-parameterized W_fused slashes latency by 55.2% while retaining optimal detection accuracy."
+
+SLIDE 13: CRITERION 4 - SOTA BENCHMARKING ON PARETO FRONTIER
+- Title: "State-of-the-Art Benchmarking: Pareto Frontier Dominance"
+- Left Card (Competitive Advantages):
+  * 2.23x Faster than Baseline: 2.92 ms vs 6.52 ms on Tesla T4 (342.5 FPS throughput).
+  * 4.25x Faster than YOLO-CBF: YOLO-CBF takes 12.4 ms (80.6 FPS); our model takes only 2.92 ms.
+  * 2x Faster than EC-YOLOv8: EC-YOLOv8 reaches 172.4 FPS; our model achieves 342.5 FPS.
+  * 5-Fold Stratified Peak: 96.64% ± 0.32% mAP50, peak fold reaching 97.11% mAP50 and F1: 0.9396.
+  * Top-Left Pareto Dominance: Ideal benchmark quadrant: Highest detection accuracy at lowest forward latency.
+- Right: [Insert Fig5_efficiency_frontier_latency_vs_map.png]
+  * Caption: "Fig. 5: Pareto Efficiency Frontier (Latency vs. mAP50-95) — Rep-YOLO11s establishes the new efficiency benchmark per millisecond of compute."
+
+SLIDE 14: CRITERION 4 - VISUAL EXPLAINABILITY VIA GRAD-CAM XAI
+- Title: "Visual Explainability (Grad-CAM XAI): Saliency & Noise Suppression"
+- Left Card (3 Hard Scenarios):
+  * SCENARIO 1: REFLECTIVE ORANGE VEST: Baseline disperses gradient across torso and scaffolding; Rep-YOLO11s focuses exclusively on helmet dome (conf 0.84).
+  * SCENARIO 2: SEVERE SPECULAR GLARE: Strong backlight obscures contrast; BiFormer maintains tight focus on the worker head (conf 0.89).
+  * SCENARIO 3: YELLOW WARNING SIGN: Baseline misclassifies yellow caution sign as helmet; CoordConv coordinates correctly suppress false alarm on the floor!
+- Right: [Insert Fig3_gradcam_xai_saliency_comparison.png]
+  * Caption: "Fig. 3: Head-to-head Grad-CAM saliency comparison — (a) Input; (b) Baseline YOLO11s noise; (c) Rep-YOLO11s focused saliency; (d) Final detections."
+
+SLIDE 15: CRITERION 4 - CROSS-DOMAIN GENERALIZATION & IOU COLLAPSE AUTOPSY
+- Title: "Cross-Domain Generalization & IoU Collapse Autopsy"
+- Top 3 Scorecards:
+  * HARD HAT WORKERS (7,000 IMAGES): 97.03% (Harmonized Protocol) | Perfect domain transfer.
+  * GDUT-HWD (13,499 IMAGES): 74.27% (Precision: 90.26%) | Resilient under extreme worker crowding (15–30 workers/frame).
+  * SHEL5K (5,000 DRONE IMAGES): 41.15% (Precision: 85.62%) | Rejects ground false positives under vertical 90° angle.
+- Bottom Autopsy Card:
+  * MATHEMATICAL AUTOPSY: THE CROSS-DOMAIN IOU COLLAPSE: Explaining label taxonomy conflict between full-body vs. head-only annotations, and how the Harmonized Protocol proves feature robustness.
+
+SLIDE 16: CRITERION 4 - HARDWARE REALIZATION ON BUDGET EDGE GPU (MX230 2GB)
+- Title: "Edge Hardware Realization: Real-Time on 2GB MX230 Laptop GPU"
+- Top 3 Hardware Tiers:
+  * SERVER / CLUSTER GPU: Tesla T4 | 2.92 ms | 342.5 FPS (TensorRT 11.2 FP16, handles 12 streams).
+  * MID-RANGE LAPTOP GPU: RTX 3050 Laptop | 5.35 ms | 187.1 FPS (TensorRT 11.2 FP16, mobile site workstation).
+  * BUDGET OFFICE LAPTOP: GeForce MX230 (2GB VRAM) | 36.0 ms | 27.8 FPS (PyTorch FP32, EXCEEDS 24 FPS REAL-TIME THRESHOLD!).
+- Bottom Card:
+  * ECONOMIC & PRACTICAL VALUE: Demonstrating feasibility on legacy entry-level laptops without expensive servers, saving thousands of dollars in capital expenditure.
+
+SLIDE 17: PROTOTYPE PRODUCT - MULTI-STREAM RTSP PIPELINE
+- Title: "End-to-End Industrial Multi-Stream RTSP Surveillance Pipeline"
+- Diagram: [Insert Fig4_industrial_rtsp_surveillance_pipeline.png]
+- 3 Pipeline Stages:
+  * HARDWARE H.264/H.265 DECODING: Independent multi-stream RTSP worker threads with ring buffer queue, decoding latency < 4.5 ms.
+  * ACCELERATED TENSORRT INFERENCE: Parallel letterboxing with 5-channel CoordConv injection; FP16 forward latency of 2.92–5.35 ms.
+  * REAL-TIME ALERTING & HUD STREAMING: Vectorized NMS filtering, bounding box HUD rendering, and violation logging at 65–95 FPS.
+
+SLIDE 18: CAPSTONE ROADMAP - SUMMARY & ROADMAP FOR STAGES 2 - 3
+- Title: "Stage 1 Accomplishments & Roadmap for Stages 2 – 3"
+- 3 Phase Columns:
+  * STAGE 1 (COMPLETED ~90%): Mathematical foundations & 4 custom modules formulated; A0–A6 ablation & 5-Fold CV (97.11%) validated; MX230 budget verification (27.8 FPS); 9-page scientific report.
+  * STAGE 2 (UPCOMING ROADMAP): Develop Desktop GUI & Web Admin Dashboard; integrate multi-camera RTSP concurrent stream manager; automated audible buzzer and instant email dispatch.
+  * STAGE 3 (FINAL DEFENSE): Execute Knowledge Distillation (YOLO11x -> s); enhance drone-view performance on SHEL5K; finalize Capstone Graduation Dossier; submit paper to international venue.
+- Bottom Card:
+  * ACKNOWLEDGMENT & DEFENSE READINESS: Sincere gratitude to M.Sc. Hai-Anh Vu and the Defense Committee, followed by formal Q&A session.
+
+================================================================================
+[END PROMPT]
+================================================================================
