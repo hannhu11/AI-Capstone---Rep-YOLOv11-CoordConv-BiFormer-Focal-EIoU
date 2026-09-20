@@ -1,0 +1,247 @@
+================================================================================
+MASTER PROMPT GENSPARK AI SLIDES (BẢN TIẾNG VIỆT CHUYÊN DỤNG)
+ĐỀ TÀI: BÁO CÁO TIẾN ĐỘ ĐỒ ÁN TỐT NGHIỆP KỸ SƯ TRÍ TUỆ NHÂN TẠO (GIAI ĐOẠN 1)
+MÔ HÌNH: REP-YOLO11s — GIÁM SÁT AN TOÀN LAO ĐỘNG CÔNG TRƯỜNG THỜI GIAN THỰC
+TRƯỜNG ĐẠI HỌC FPT · BỘ MÔN TRÍ TUỆ NHÂN TẠO
+================================================================================
+
+[HƯỚNG DẪN SỬ DỤNG CHO GENSPARK AI SLIDES]
+1. Copy toàn bộ nội dung từ dưới dòng [BẮT ĐẦU PROMPT] vào ô nhập lệnh của Genspark AI Slides.
+2. Thiết lập chế độ:
+   - Topic / Prompt Mode: Paste prompt này vào.
+   - Slide Theme: Light / Academic (Nền sáng màu kem ngà ngọc #FAF8F5).
+   - Ngôn ngữ đầu ra: 100% Tiếng Việt chuẩn học thuật.
+   - Text density: Rất ngắn gọn (bullet points xúc tích, tuyệt đối không viết đoạn văn dài).
+   - Visual priority: Ưu tiên tối đa không gian cho hình ảnh, sơ đồ kiến trúc và biểu đồ số liệu (chiếm 50% - 65% diện tích mỗi slide).
+   - Tuyệt đối KHÔNG xuất hiện các từ cấm: "IEEE", "iees", "Review", "Reviews", "Review 1", "Review 2", "Review 3".
+3. Sau khi Genspark dựng khung slide, upload kèm folder "figures/" chứa 10 hình ảnh chất lượng cao vào các slide tương ứng:
+   - Slide 2: Fig1_site_overview_challenges.jpg (Hiện trường công trường)
+   - Slide 5: Fig2_rep_yolo11s_neural_architecture.png (Kiến trúc 5 tầng Rep-YOLO11s)
+   - Slide 6: Fig_RepConv_Architecture.png (Cơ chế gộp nhánh đại số W_fused)
+   - Slide 7: Fig_CoordConv_Concept.png (Mã hóa tọa độ triệt tiêu xô vữa vàng)
+   - Slide 8: Fig_BiFormer_Sparse_Attention.png (Định tuyến chú ý thưa Top-k)
+   - Slide 9: Fig_Focal_EIoU_Decomposition.png (Phân rã hàm mất mát Focal EIoU)
+   - Slide 12: Fig6_ablation_A0_A6_tradeoff.png (Biểu đồ cắt bỏ A0-A6)
+   - Slide 13: Fig5_efficiency_frontier_latency_vs_map.png (Đường biên Pareto SOTA)
+   - Slide 14: Fig3_gradcam_xai_saliency_comparison.png (Bản đồ nhiệt Grad-CAM 3 kịch bản)
+   - Slide 17: Fig4_industrial_rtsp_surveillance_pipeline.png (Pipeline xử lý camera RTSP)
+
+================================================================================
+[BẮT ĐẦU PROMPT]
+================================================================================
+
+Hãy tạo một bộ slide báo cáo tiến độ đồ án tốt nghiệp Kỹ sư Trí tuệ Nhân tạo (Giai đoạn 1) gồm đúng 18 slide, trình bày bằng 100% TIẾNG VIỆT với phong cách thiết kế hiện đại, chuyên nghiệp, tối giản chữ và tập trung tối đa vào hình ảnh/biểu đồ kỹ thuật.
+
+NGUYÊN TẮC THIẾT KẾ VÀ TRÌNH BÀY BẮT BUỘC:
+1. Hệ màu sắc học thuật (Light Academic):
+   - Nền slide: Màu kem ngà ấm (#FAF8F5 hoặc #F8FAFC), tuyệt đối không dùng nền đen/dark mode.
+   - Thẻ nội dung (Cards): Nền trắng tinh khôi (#FFFFFF), đổ bóng mờ nhẹ 4-8px, viền xám siêu mảnh (#E2E8F0).
+   - Màu nhấn chủ đạo: Cam bảo hộ an toàn (#EA580C), Xanh kỹ thuật (#2563EB), Xanh lục thành công (#16A34A), Xanh đen tiêu đề (#0F172A).
+2. Quy tắc chữ và bố cục (Layout & Density):
+   - Ít chữ - Giàu thông tin: Mỗi slide chỉ dùng 3-4 gạch đầu dòng cực ngắn (tối đa 10-15 từ mỗi gạch). Tuyệt đối không để nguyên đoạn văn dài.
+   - Bố cục 2 cột bất đối xứng: Cột nội dung tóm tắt (35-45% bề ngang) và Khung chứa hình ảnh/sơ đồ kỹ thuật cỡ lớn (55-65% bề ngang).
+   - Số liệu nổi bật (Hero Stats): Các con số kỷ lục (97.11%, 2.92 ms, 342.5 FPS, 27.8 FPS, 51.9%) phải được làm nổi bật với font số lớn (36pt - 44pt), in đậm.
+3. Từ ngữ chuẩn mực:
+   - TUYỆT ĐỐI KHÔNG DÙNG: "IEEE", "iees", "Review", "Reviews", "Review 1", "Review 2", "Review 3".
+   - DÙNG ĐÚNG: "Báo cáo Đồ án Tốt nghiệp", "Giai đoạn 1 (Khởi tạo đề cương & Thẩm định tính khả thi)", "Giai đoạn 2", "Giai đoạn 3".
+
+--------------------------------------------------------------------------------
+CHI TIẾT NỘI DUNG 18 SLIDE:
+--------------------------------------------------------------------------------
+
+SLIDE 1: TRANG TIÊU ĐỀ (TITLE SLIDE)
+- Badge nhỏ phía trên: "ĐẠI HỌC FPT · BÁO CÁO TIẾN ĐỘ ĐỒ ÁN TỐT NGHIỆP KỸ SƯ AI"
+- Tiêu đề chính lớn: "Rep-YOLO11s"
+- Tiêu đề phụ: "Phát Hiện Mũ Bảo Hộ Thời Gian Thực Trong Giám Sát Công Trường: Tái Tham Số Hóa Cấu Trúc, Mã Hóa Tọa Độ & Khái Quát Hóa Đa Miền"
+- Khung Hero Stats bên phải:
+  * ĐỈNH 5-FOLD CV mAP50: 97.11% (Vượt trội baseline +0.47%)
+  * Độ trễ Tesla T4: 2.92 ms (342.5 FPS)
+  * Laptop phổ thông MX230 (2GB): 36.0 ms (27.8 FPS)
+  * Tập dữ liệu chuẩn hóa: > 33,000 ảnh đa miền
+- 3 Card thông tin bên dưới:
+  * Nhóm nghiên cứu: Nguyễn Hàn Như (Trưởng nhóm - SE183644), Nguyễn Văn Thành (SE183645), Nguyễn Tuấn Dũng (SE183646).
+  * Giảng viên hướng dẫn: ThS. Vũ Hải Anh (Bộ môn Trí tuệ Nhân tạo — ĐH FPT).
+  * Định hướng công bố: Kỷ yếu / Tạp chí Quốc tế chuyên ngành Tin học Công nghiệp & Thị giác Máy tính.
+
+SLIDE 2: TIÊU CHÍ 1 - BỐI CẢNH THỰC TẾ & 4 NÚT THẮT KỸ THUẬT
+- Tiêu đề: "Bối Cảnh Thực Tế Công Trường & 4 Nút Thắt Kỹ Thuật"
+- Cột trái (4 Card nút thắt):
+  01. Vi vật thể từ xa (<20 px): Camera góc cao 15–30m làm mờ nhòe đặc trưng mũ.
+  02. Mất cân bằng nhãn (1:12): 9,044 mũ vs 111,514 thân người, gradient bị thiên vị phông nền.
+  03. Nhiễu màu sắc & Báo động giả: Xô vữa vàng, cọc tiêu, biển báo bị nhận diện nhầm do CNN bất biến tịnh tiến.
+  04. Rào cản phần cứng biên: Đòi hỏi >= 25 FPS thời gian thực trên GPU laptop phổ thông giá rẻ.
+- Cột phải (Khung ảnh lớn): [Chèn ảnh: Fig1_site_overview_challenges.jpg]
+  * Chú thích: "Hình 1: Hiện trường thực tế — Góc camera trên cao, vi vật thể nhỏ, công nhân bị che khuất và bề mặt bê tông lóa sáng."
+
+SLIDE 3: TIÊU CHÍ 3 - KHẢO SÁT 32 BÀI BÁO & KHOẢNG TRỐNG KHOA HỌC
+- Tiêu đề: "Khảo Sát 32 Công Trình Quốc Tế & Khoảng Trống SOTA"
+- 4 Card phân tích dòng mô hình:
+  * YOLO Chuẩn (v8, v10, 11): Tốc độ cao nhưng thiếu tiên đề không gian; dễ nhận diện nhầm xô vữa vàng mặt đất thành mũ.
+  * EC-YOLOv8 (2024): Đạt 95.70% mAP nhưng dùng toán tử CARAFE nặng nề, thông lượng giảm xuống 172 FPS.
+  * YOLO-CBF (2023): Tích hợp CoordConv & BiFormer nhưng phình to 37.2M tham số, thông lượng chỉ còn 80.6 FPS.
+  * YOLOv8n-FADS (2024): Mở nhánh P2 giải quyết vi vật thể nhưng gây nghẽn độ trễ trên thiết bị biên.
+- Banner nổi bật dưới cùng:
+  * KHOẢNG TRỐNG KHOA HỌC (RESEARCH GAP): Chưa có công trình nào đạt đồng thời: Độ chính xác vi vật thể cao + Zero-overhead độ trễ suy luận + Khả năng khái quát hóa đa miền bền vững.
+
+SLIDE 4: TIÊU CHÍ 2 - PHẠM VI & 5 SẢN PHẨM BÀN GIAO CỤ THỂ
+- Tiêu đề: "Xác Định Phạm Vi & 5 Sản Phẩm Bàn Giao Hoàn Chỉnh"
+- Cột trái (5 Sản phẩm cam kết):
+  1. Báo cáo khoa học 9 trang chuẩn quốc tế: Viết bằng LaTeX, đầy đủ chứng minh giải tích và thực nghiệm.
+  2. Mô hình Rep-YOLO11s: Đạt 94.83% mAP50 đơn lẻ, 97.11% 5-Fold Cross-Validation.
+  3. Software Prototype: Giám sát video RTSP 65–95 FPS đa luồng trên card đồ họa phổ thông.
+  4. Bộ động cơ tối ưu: TensorRT 11.2 FP16, ONNX Runtime INT8, OpenVINO sẵn sàng tích hợp biên.
+  5. Bộ dữ liệu chuẩn hóa: 33,000+ ảnh, hợp nhất nhãn PPE công nghiệp và làm sạch lỗi gán nhãn.
+- Cột phải (Bảng chỉ số phần cứng thật):
+  * Tesla T4 (FP16): 2.92 ms | 342.5 FPS
+  * RTX 3050 Laptop (FP16): 5.35 ms | 187.1 FPS
+  * Geforce MX230 (2GB VRAM): 36.0 ms | 27.8 FPS (Đạt mốc thời gian thực trên máy rẻ)
+  * Đa luồng RTSP (E2E): 65 – 95 FPS
+
+SLIDE 5: ĐỀ XUẤT MÔ HÌNH - TỔNG QUAN KIẾN TRÚC 5 TẦNG REP-YOLO11s
+- Tiêu đề: "Sơ Đồ Kiến Trúc Toàn Diện 5 Tầng Của Rep-YOLO11s"
+- Khung sơ đồ kiến trúc cực lớn ở trung tâm: [Chèn ảnh: Fig2_rep_yolo11s_neural_architecture.png]
+- 3 Card tóm tắt nhanh dưới chân slide:
+  * 1. Backbone Không Gian: CSPDarknet tích hợp CoordConv (tiêm tọa độ Cx, Cy) và khối RepConv học đa nhánh.
+  * 2. Neck Định Tuyến Thưa: Mạng PAN nhúng cơ chế chú ý BiFormer định tuyến Top-k vùng, giảm độ phức tạp xuống tuyến tính O(HW).
+  * 3. Head & Loss Tối Ưu: Đầu dò Decoupled không anchor kết hợp hàm mất mát Focal EIoU phân rã sai số cạnh hộp bao.
+
+SLIDE 6: ĐIỂM MỚI 1 - TÁI THAM SỐ HÓA CẤU TRÚC (REPCONV)
+- Tiêu đề: "Điểm Mới 1: Tái Tham Số Hóa Cấu Trúc (RepConv) & Gộp Nhánh Đại Số"
+- Khung sơ đồ kỹ thuật lớn: [Chèn ảnh: Fig_RepConv_Architecture.png]
+- 3 Card thông điệp then chốt:
+  * Huấn Luyện Đa Nhánh: 3 nhánh song song (3x3, 1x1, Identity) làm giàu gradient và không gian đặc trưng.
+  * Gộp Đại Số switch_to_deploy(): Hợp nhất Batch Normalization, đệm zero kernel 1x1 và Dirac delta thành duy nhất 1 lớp 3x3 đơn lẻ.
+  * Hiệu Quả Vận Hành Thực Tế: Độ trễ giảm 55.2% (từ 7.12 ms xuống 2.92 ms), đạt 342.5 FPS trên T4 với sai số đại số delta < 10^-5.
+
+SLIDE 7: ĐIỂM MỚI 2 - MÃ HÓA TỌA ĐỘ KHÔNG GIAN (COORDCONV)
+- Tiêu đề: "Điểm Mới 2: Mã Hóa Tọa Độ CoordConv Dập Tắt Báo Động Giả"
+- Khung sơ đồ nguyên lý lớn: [Chèn ảnh: Fig_CoordConv_Concept.png]
+- 3 Card cơ chế hoạt động:
+  * Phá Vỡ Bất Biến Tịnh Tiến: Bổ sung 2 kênh tọa độ chuẩn hóa Cx, Cy in [-1, 1] vào ảnh RGB đầu vào (tạo tensor 5 kênh).
+  * Tiên Đề Hình Học Công Trường: Ép kernel học quy luật giải phẫu: Mũ bảo hộ luôn nằm trên đầu người (Cy < 0), không nằm ở mặt sàn.
+  * Triệt Tiêu Báo Động Giả: Loại bỏ hoàn toàn >28% cảnh báo sai vào xô vữa vàng, cọc tiêu và biển báo nguy hiểm dưới sàn bê tông.
+
+SLIDE 8: ĐIỂM MỚI 3 - CƠ CHẾ CHÚ Ý ĐỊNH TUYẾN THƯA 2 CẤP ĐỘ (BIFORMER)
+- Tiêu đề: "Điểm Mới 3: Chú Ý Định Tuyến Thưa BiFormer Bắt Dính Vi Vật Thể"
+- Khung sơ đồ thuật toán lớn: [Chèn ảnh: Fig_BiFormer_Sparse_Attention.png]
+- 3 Card cơ chế xử lý:
+  * Chia Lưới Khu Vực: Phân chia feature map thành các vùng S x S (S=7), tính đồ thị tương đồng affinity graph.
+  * Lọc Vùng Top-k: Chỉ giữ lại k=4 vùng có độ tương đồng cao nhất, loại bỏ 80% phông nền xà bần gây nhiễu.
+  * Chú Ý Token Chi Tiết: Giảm độ phức tạp từ bậc hai O((HW)^2) xuống bậc tuyến tính O(HW), duy trì tốc độ thời gian thực.
+
+SLIDE 9: ĐIỂM MỚI 4 - HÀM MẤT MÁT FOCAL EIOU & ĐẦU DÒ ANCHOR-FREE
+- Tiêu đề: "Điểm Mới 4: Hàm Mất Mát Focal EIoU & Giải Quyết Che Khuất Vi Vật Thể"
+- Khung sơ đồ phân rã hình học: [Chèn ảnh: Fig_Focal_EIoU_Decomposition.png]
+- 3 Card ưu điểm vượt trội:
+  * Phân Rã Kích Thước Độc Lập: Đo lường trực tiếp sai số chiều rộng dw và chiều cao dh thay vì tỉ lệ co w/h của CIoU.
+  * Trọng Số Focal Khai Thác Mẫu Khó: Tăng cường gradient cho các hộp vi vật thể bị giàn giáo hoặc bóng râm che khuất nghiêm trọng.
+  * Cân Bằng Nhãn Lệch 1:12: Kết hợp BCE Loss có trọng số giúp gradient của lớp mũ không bị nhấn chìm bởi lớp thân người.
+
+SLIDE 10: TIÊU CHÍ 3 - TỰ PHÁT TRIỂN & ĐÓNG GÓP MÃ NGUỒN LÕI
+- Tiêu đề: "Tự Phát Triển 4 Module Toán Học & Kế Thừa Framework Chuẩn"
+- Cột trái (Bảng đối sánh Tự phát triển vs Kế thừa):
+  * Kế Thừa: Framework Ultralytics chuẩn công nghiệp, cấu trúc backbone CSPDarknet, cơ chế nạp batch đa luồng.
+  * Tự Phát Triển 100%: Lớp CoordConv2d tùy biến tensor 5 kênh; Khối RepConv gộp nhánh switch_to_deploy(); Lớp BiFormerBlock định tuyến thưa; Hàm mất mát FocalEIoULoss phân rã giải tích.
+- Cột phải (Quy trình thẩm định tính đúng đắn):
+  * Kiểm thử Gradient: torch.autograd.gradcheck kiểm tra đạo hàm giải tích không bị bùng nổ hay triệt tiêu.
+  * Kiểm thử Sai số Đại số: Sai số giữa mô hình 3 nhánh và mô hình sau khi gộp nhánh đạt mức delta < 10^-5.
+  * Đóng gói mã nguồn: Modular hóa sạch sẽ, độc lập, dễ dàng tái lập trình trên mọi hệ thống.
+
+SLIDE 11: TIÊU CHÍ 3 - KỸ NGHỆ DỮ LIỆU & CHUẨN HÓA 33,000+ ẢNH
+- Tiêu đề: "Kỹ Nghệ Dữ Liệu: Hợp Nhất Đa Miền & Làm Sạch Nhãn Sai Lệch"
+- Cột trái (3 Card giải pháp dữ liệu):
+  * Hợp Nhất 6 Nguồn Công Trường: SHWD (7,581 ảnh), Hard Hat Workers (5,000 ảnh), CHVOC (2,028 ảnh), SHEL5K, Pictor v3, Roboflow PPE.
+  * Làm Sạch Nhiễm Bẩn Nhãn: Phát hiện và sửa đổi thủ công 142 nhãn sai lệch trong tập CHVOC (gán nhầm mũ thành phông nền).
+  * Khử Cân Bằng Cực Đoan: Áp dụng Mosaic Augmentation kết hợp ColorJitter và điều chỉnh kích thước ngẫu nhiên đa tỷ lệ.
+- Cột phải (Khung thống kê phân bố dữ liệu):
+  * Tổng số lượng ảnh: > 33,000 ảnh chuẩn hóa
+  * Tỉ lệ phân chia: 70% Train | 15% Validation | 15% Test
+  * Kiểm định chéo: 5-Fold Cross-Validation nghiêm ngặt để đảm bảo độ tin cậy tuyệt đối.
+
+SLIDE 12: TIÊU CHÍ 4 - THỰC NGHIỆM CẮT BỎ ABLATION (A0 – A6)
+- Tiêu đề: "Thực Nghiệm Cắt Bỏ (Ablation Study A0–A6): Minh Chứng Khoa Học"
+- Cột trái (Card tóm tắt từng bước cải tiến):
+  * A0 (Baseline YOLO11s): 94.74% mAP50 · 6.52 ms latency.
+  * A1 (+ P2 Small Head): 94.81% mAP50 · Trễ vọt lên 8.94 ms (+37%) -> Bị loại bỏ vì không tối ưu.
+  * A2 (+ CoordConv): 94.78% mAP50 · Tăng độ nhận diện không gian mà không tốn chi phí.
+  * A3 (+ RepConv): 94.81% mAP50 · Làm giàu gradient huấn luyện.
+  * A4 (+ Focal EIoU): 94.88% mAP50 · Bắt dính bounding box vi vật thể.
+  * A5 (+ BiFormer): 94.80% mAP50 · Đẩy Recall mũ lên đỉnh 91.15%.
+  * A6 (Full Fusion): 94.83% mAP50 · Độ trễ giảm kỷ lục còn 2.92 ms (-55.2%)!
+- Cột phải (Biểu đồ thực nghiệm): [Chèn ảnh: Fig6_ablation_A0_A6_tradeoff.png]
+  * Chú thích: "Hình 6: Biểu đồ đánh đổi thực nghiệm A0–A6 — Độ trễ giảm ngoạn mục sau khi gộp nhánh."
+
+SLIDE 13: TIÊU CHÍ 4 - ĐỐI SÁNH SOTA TRÊN ĐƯỜNG BIÊN PARETO
+- Tiêu đề: "Đối Sánh SOTA: Vị Trí Vượt Trội Trên Đường Biên Pareto"
+- Cột trái (Card đối sánh các đối thủ):
+  * YOLOv8s (93.8% mAP · 4.8ms): Rep-YOLO11s vượt +1.03% độ chính xác và nhanh hơn 1.6x.
+  * YOLOv10s (94.2% mAP · 3.8ms): Rep-YOLO11s vượt +0.63% mAP và nhanh hơn 1.3x.
+  * EC-YOLOv8 (95.7% mAP · 5.8ms): Rep-YOLO11s có độ trễ chỉ bằng một nửa (2.92ms vs 5.8ms).
+  * Kỷ Lục 5-Fold Cross-Validation: Rep-YOLO11s đạt 97.11% mAP50 đỉnh cao!
+- Cột phải (Biểu đồ Pareto Frontier): [Chèn ảnh: Fig5_efficiency_frontier_latency_vs_map.png]
+  * Chú thích: "Hình 5: Đường biên Pareto tối ưu — Rep-YOLO11s chiếm lĩnh góc trên-trái (Chính xác cao nhất & Độ trễ thấp nhất)."
+
+SLIDE 14: TIÊU CHÍ 4 - MINH BẠCH THỊ GIÁC VỚI GRAD-CAM XAI
+- Tiêu đề: "Giải Thích Thị Giác (Grad-CAM XAI): Dập Tắt Báo Động Giả"
+- Cột trái (3 Card giải thích kịch bản):
+  * Kịch bản 1: Áo cam phản quang — Baseline bị phân tán gradient vào ngực áo và giàn giáo; Rep-YOLO11s tập trung duy nhất vào vòm mũ xanh (conf 0.84).
+  * Kịch bản 2: Lóa sáng ngược nguy hiểm — Ánh sáng cửa kính làm mờ độ tương phản; BiFormer duy trì cụm kích hoạt đậm đặc tại đỉnh đầu (conf 0.89).
+  * Kịch bản 3: Biển báo tam giác vàng — Baseline kích hoạt nhầm biển báo nguy hiểm màu vàng; kênh tọa độ CoordConv dập tắt hoàn toàn báo động giả!
+- Cột phải (Panel Grad-CAM 3 kịch bản): [Chèn ảnh: Fig3_gradcam_xai_saliency_comparison.png]
+  * Chú thích: "Hình 3: Bản đồ nhiệt Grad-CAM đối sánh trực tiếp — Minh chứng AI tập trung đúng vùng mũ bảo hộ."
+
+SLIDE 15: TIÊU CHÍ 4 - TỔNG QUÁT HÓA ĐA MIỀN & GIẢI MÃ SỤP ĐỔ IOU
+- Tiêu đề: "Kiểm Thử Khái Quát Hóa Đa Miền & Hiện Tượng Sụp Đổ IoU"
+- 3 Card ma trận kiểm thử chéo:
+  * Thử Nghiệm Trên Tập Hard Hat Workers: Mô hình đạt 97.03% mAP50 mà không cần fine-tune thêm.
+  * Thử Nghiệm Trên Tập CHVOC Công Nghiệp: Đạt 86.81% mAP50 sau khi khử nhiễu nhãn.
+  * Thách Thức Trên Tập SHEL5K (Flycam): Đạt 53.40% mAP50 do góc quay vuông góc 90 độ làm vòm mũ trở thành hình tròn phẳng.
+- Banner phát hiện khoa học dưới cùng:
+  * HIỆN TƯỢNG SỤP ĐỔ IOU LIÊN MIỀN (CROSS-DOMAIN IOU COLLAPSE): Khi chuyển miền camera, mAP50 vẫn giữ trên 86-97% nhưng mAP50-95 bị sụt giảm. Nguyên nhân do sai lệch quy chuẩn dán nhãn bounding box giữa các bộ dữ liệu khác nhau.
+
+SLIDE 16: TIÊU CHÍ 4 - HIỆN THỰC HÓA TRÊN PHẦN CỨNG GIÁ RẺ (EDGE AI)
+- Tiêu đề: "Hiện Thực Hóa Trên Phần Cứng Biên Phổ Thông Giá Rẻ"
+- 3 Card cấu hình phần cứng đo đạc:
+  * Máy Trạm Công Trường (Tesla T4 / RTX 3050):
+    - FP16 Engine đạt 2.92 ms (342.5 FPS) trên T4; 5.35 ms (187.1 FPS) trên RTX 3050.
+    - Đáp ứng đồng thời 8–12 luồng camera RTSP giám sát liên tục.
+  * Laptop Sinh Viên Giá Rẻ (Geforce MX230 2GB VRAM):
+    - Đạt 36.0 ms (27.8 FPS) — Vượt ngưỡng thời gian thực 25 FPS mà không cần phần cứng đắt tiền!
+    - Lượng tiêu thụ VRAM chỉ vỏn vẹn 485 MB.
+  * Thiết Bị Nhúng CPU (Intel Core i5 / Jetson Edge):
+    - Tối ưu hóa INT8 lượng tử hóa đạt 28.56 ms (35.0 FPS).
+    - Tiết kiệm 51.9% số lượng tham số bộ nhớ.
+- Ghi chú: Toàn bộ số liệu được đo bằng CUDA Events đồng bộ phần cứng, loại bỏ 100% sai số bất đồng bộ.
+
+SLIDE 17: SẢN PHẨM PROTOTYPE - PIPELINE CAMERA RTSP TOÀN TRÌNH
+- Tiêu đề: "Hệ Thống Giám Sát Camera RTSP Đa Luồng Toàn Trình"
+- Khung sơ đồ pipeline hệ thống lớn: [Chèn ảnh: Fig4_industrial_rtsp_surveillance_pipeline.png]
+- 3 Card mô tả quy trình 5 bước:
+  * Giải Mã Phần Cứng H.264/H.265: Đọc luồng RTSP đa luồng độc lập, đệm vòng chống giật khung hình, duy trì độ trễ giải mã < 4.5 ms.
+  * Suy Luận TensorRT Tăng Tốc: Tiền xử lý Letterbox song song, nạp batch suy luận TensorRT FP16 với độ trễ forward 2.92 ms – 5.35 ms.
+  * Bật Báo Động & Vẽ HUD Thời Gian Thực: Hậu xử lý Non-Maximum Suppression (NMS), vẽ bounding box vi phạm và ghi log sự kiện ở tốc độ 65–95 FPS.
+
+SLIDE 18: TỔNG KẾT & KẾ HOẠCH GIAI ĐOẠN TIẾP THEO
+- Tiêu đề: "Tổng Kết Giai Đoạn 1 & Kế Hoạch Thực Hiện Giai Đoạn 2 - 3"
+- 3 Cột lộ trình rõ ràng:
+  * ĐÃ HOÀN THÀNH (GIAI ĐOẠN 1 - ĐÃ ĐẠT 90% KHỐI LƯỢNG):
+    ✓ Hoàn thiện cơ sở lý thuyết toán học & 4 module tùy biến.
+    ✓ Hoàn thành thực nghiệm A0–A6 & kiểm định 5-Fold (97.11%).
+    ✓ Chứng minh tính khả thi trên GPU phổ thông MX230 (27.8 FPS).
+    ✓ Đã viết hoàn chỉnh bản thảo báo cáo khoa học 9 trang.
+  * KẾ HOẠCH THỰC HIỆN (GIAI ĐOẠN 2 - TIẾP THEO):
+    ▸ Hoàn thiện giao diện phần mềm Desktop GUI & Web Dashboard.
+    ▸ Tích hợp tính năng quản lý nhiều camera RTSP đồng thời.
+    ▸ Hệ thống cảnh báo âm thanh và gửi email tự động khi có vi phạm.
+    ▸ Thử nghiệm vận hành thực tế tại công trường đối tác.
+  * MỤC TIÊU CUỐI KHÓA (GIAI ĐOẠN 3 - BẢO VỆ CHÍNH THỨC):
+    ▸ Triển khai Chưng cất Tri thức (Knowledge Distillation YOLO11x -> s).
+    ▸ Nâng cao độ chính xác nhận diện góc nhìn Flycam trên SHEL5K.
+    ▸ Hoàn thiện hồ sơ đồ án tốt nghiệp chính thức.
+    ▸ Nộp công bố bài báo khoa học ra hội nghị / tạp chí quốc tế.
+- Card Lời Cảm Ơn dưới cùng:
+  "Nhóm nghiên cứu xin chân thành cảm ơn ThS. Vũ Hải Anh đã tận tình hướng dẫn và Quý Thầy Cô Hội đồng đã lắng nghe bài báo cáo! Nhóm rất mong nhận được những nhận xét, đóng góp quý báu của Quý Thầy Cô để hoàn thiện đề tài trong các giai đoạn tiếp theo."
+
+================================================================================
+[KẾT THÚC PROMPT]
+================================================================================

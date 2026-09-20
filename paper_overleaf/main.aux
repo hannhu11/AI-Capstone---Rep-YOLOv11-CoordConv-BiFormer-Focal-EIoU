@@ -17,9 +17,6 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}Safety Helmet Detection in Complex Environments}{2}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}Structural Re-parameterization and Spatial Encoding}{2}{}\protected@file@percent }
 \citation{zhang2021focal}
-\citation{ecyolov8_2024}
-\citation{yolocbf_2023}
-\citation{fuYolov8nFADSStudyEnhancing2024}
 \@writefile{toc}{\contentsline {section}{\numberline {III}Proposed Methodology}{3}{}\protected@file@percent }
 \newlabel{sec:method}{{III}{3}{}{section.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Overall System Architecture}{3}{}\protected@file@percent }
@@ -27,6 +24,9 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Spatial Coordinate Convolution (CoordConv)}{3}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Bi-Level Routing Attention (BiFormer)}{3}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-E}}Focal EIoU Bounding Box Loss}{3}{}\protected@file@percent }
+\citation{ecyolov8_2024}
+\citation{yolocbf_2023}
+\citation{fuYolov8nFADSStudyEnhancing2024}
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Overall Neural Network Architecture of Rep-YOLO11s. The pipeline integrates CoordConv spatial prior generation, multi-scale CSPDarknet feature extraction, BiFormer dynamic routing attention, structural re-parameterization lifecycle (training multi-branch topology to single-path inference conversion), decoupled detection heads, and multi-task loss supervision with TensorRT FP16 acceleration.}}{4}{}\protected@file@percent }
 \newlabel{fig:architecture_overview}{{2}{4}{}{figure.2}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {IV}Experimental Setup \& Results}{4}{}\protected@file@percent }
@@ -41,21 +41,27 @@
 \newlabel{tab:ablation_study}{{II}{5}{}{table.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Cross-Domain Generalization Benchmark}{5}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-F}}XAI-Based Qualitative Evaluation and Saliency Analysis}{5}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {V}Real-World Deployment \& Pipeline Analysis}{5}{}\protected@file@percent }
-\newlabel{sec:deployment}{{V}{5}{}{section.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Multi-Platform Deployment Benchmarks}{5}{}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Comprehensive Cross-Domain Generalization Benchmark across Heterogeneous Industrial Datasets.}}{6}{}\protected@file@percent }
 \newlabel{tab:cross_domain}{{III}{6}{}{table.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Real-World Deployment \& Pipeline Analysis}{6}{}\protected@file@percent }
+\newlabel{sec:deployment}{{V}{6}{}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Multi-Platform Deployment Benchmarks}{6}{}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Empirical Deployment Latency and Throughput across Target Hardware Platforms.}}{6}{}\protected@file@percent }
 \newlabel{tab:deployment}{{IV}{6}{}{table.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Latency Measurement Integrity and Benchmark Verification}{6}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}End-to-End Real-World Pipeline Analysis}{6}{}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Visual Saliency Map Comparison using Grad-CAM across complex construction scenarios: Row 1 (Yellow Distractors), Row 2 (Distant Tiny Targets $<20\times 20$\,px), and Row 3 (Partial Occlusion). Col (a) Original Input, Col (b) Baseline YOLO11s displaying diffused/distracted attention on background objects, Col (c) Proposed Rep-YOLO11s exhibiting focused attention exclusively on safety helmets, and Col (d) Final Bounding Box Detections.}}{7}{}\protected@file@percent }
 \newlabel{fig:gradcam_comparison}{{3}{7}{}{figure.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}Failure Case Analysis}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Latency Measurement Integrity and Benchmark Verification}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}End-to-End Real-World Pipeline Analysis}{7}{}\protected@file@percent }
 \bibstyle{IEEEtran}
 \bibdata{references}
 \bibcite{wang2023yolov7}{1}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces End-to-End Industrial Safety Compliance and PPE Surveillance Pipeline Architecture. The framework integrates multi-stream RTSP hardware decoding, CoordConv spatial prior augmentation, structural re-parameterized Rep-YOLO11s inference accelerated with TensorRT FP16 (2.92~ms forward latency on Tesla T4, 5.35~ms on RTX 3050), and CUDA-accelerated post-processing yielding an end-to-end multi-camera throughput of 65--95~FPS.}}{8}{}\protected@file@percent }
+\newlabel{fig:system_pipeline}{{4}{8}{}{figure.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Efficiency Frontier analysis displaying the trade-off between Pure GPU Inference Latency (ms) and $mAP_{50-95}$ performance across tested model families.}}{8}{}\protected@file@percent }
+\newlabel{fig:latency_frontier}{{5}{8}{}{figure.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}Failure Case Analysis}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion \& Future Work}{8}{}\protected@file@percent }
+\newlabel{sec:conclusion}{{VI}{8}{}{section.6}{}}
 \bibcite{wang2024yolov10}{2}
 \bibcite{ultralytics2024yolo11}{3}
 \bibcite{ecyolov8_2024}{4}
@@ -64,11 +70,5 @@
 \bibcite{ding2021repvgg}{7}
 \bibcite{liu2018coordconv}{8}
 \bibcite{zhang2021focal}{9}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces End-to-End Industrial Safety Compliance and PPE Surveillance Pipeline Architecture. The framework integrates multi-stream RTSP hardware decoding, CoordConv spatial prior augmentation, structural re-parameterized Rep-YOLO11s inference accelerated with TensorRT FP16 (2.92~ms forward latency on Tesla T4, 5.35~ms on RTX 3050), and CUDA-accelerated post-processing yielding an end-to-end multi-camera throughput of 65--95~FPS.}}{8}{}\protected@file@percent }
-\newlabel{fig:system_pipeline}{{4}{8}{}{figure.4}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Efficiency Frontier analysis displaying the trade-off between Pure GPU Inference Latency (ms) and $mAP_{50-95}$ performance across tested model families.}}{8}{}\protected@file@percent }
-\newlabel{fig:latency_frontier}{{5}{8}{}{figure.5}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion \& Future Work}{8}{}\protected@file@percent }
-\newlabel{sec:conclusion}{{VI}{8}{}{section.6}{}}
-\@writefile{toc}{\contentsline {section}{References}{8}{}\protected@file@percent }
-\gdef \@abspage@last{8}
+\@writefile{toc}{\contentsline {section}{References}{9}{}\protected@file@percent }
+\gdef \@abspage@last{9}
