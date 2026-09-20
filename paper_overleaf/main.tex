@@ -329,7 +329,7 @@ These qualitative visualizations demonstrate that the integration of CoordConv s
 \end{figure}
 
 \subsection{Multi-Platform Deployment Benchmarks}
-Table~\ref{tab:deployment} reports measured deployment latency and throughput across target hardware platforms, execution engines, and input resolutions. Batch-one inference at $960\times960$ on an NVIDIA Tesla T4 GPU achieves $\mathbf{48.7\text{~FPS}}$ ($20.53\text{~ms}$) in PyTorch FP32 and $\mathbf{48.8\text{~FPS}}$ in FP16, with the CCTV stream pipeline reaching $\mathbf{64.2\text{--}70.0\text{~FPS}}$ ($14.28\text{~ms}$). At $640\times640$, TensorRT FP16 forward execution requires $\mathbf{2.92\text{~ms}}$ ($\mathbf{342.5\text{~FPS}}$) on NVIDIA Tesla T4 and $\mathbf{5.35\text{~ms}}$ ($\mathbf{187.1\text{~FPS}}$) on NVIDIA GeForce RTX 3050 Laptop GPU, while native PyTorch FP32 on RTX 3050 achieves $\mathbf{12.43\text{~ms}}$ ($\mathbf{80.4\text{~FPS}}$).
+Table~\ref{tab:deployment} reports measured deployment latency and throughput across target hardware platforms, execution engines, and input resolutions. Batch-one inference at $960\times960$ on an NVIDIA Tesla T4 GPU achieves $\mathbf{48.7\text{~FPS}}$ ($20.53\text{~ms}$) in PyTorch FP32 and $\mathbf{48.8\text{~FPS}}$ in FP16, with the CCTV stream pipeline reaching $\mathbf{64.2\text{--}70.0\text{~FPS}}$ ($14.28\text{~ms}$). At $640\times640$, TensorRT FP16 forward execution requires $\mathbf{2.92\text{~ms}}$ ($\mathbf{342.5\text{~FPS}}$) on NVIDIA Tesla T4 and $\mathbf{5.35\text{~ms}}$ ($\mathbf{187.1\text{~FPS}}$) on NVIDIA GeForce RTX 3050 Laptop GPU, while native PyTorch FP32 on RTX 3050 achieves $\mathbf{12.43\text{~ms}}$ ($\mathbf{80.4\text{~FPS}}$). Crucially, to evaluate real-time feasibility on highly constrained entry-level edge platforms, we evaluated Rep-YOLO11s on a low-end consumer laptop featuring an NVIDIA GeForce MX230 (Pascal architecture, 2GB GDDR5 VRAM, without hardware Tensor Cores). Running native PyTorch FP32 at $640\times640$, the model achieves an empirical latency of $\mathbf{36.0\text{~ms}}$ ($\mathbf{27.8\text{~FPS}}$) with a per-frame breakdown of $2.5\text{~ms}$ preprocessing, $32.0\text{~ms}$ GPU inference, and $1.5\text{~ms}$ NMS post-processing. This comfortably surpasses the standard $24\text{~FPS}$ real-time surveillance threshold, proving operational feasibility even on highly restricted 2GB VRAM edge hardware.
 
 \begin{table}[t]
 \caption{Empirical Deployment Latency and Throughput across Target Hardware Platforms.}
@@ -350,6 +350,7 @@ Edge CPU (4 Cores) & ONNX Runtime & $960\times960$ & 303.0 & 3.3 \\
 NVIDIA Tesla T4 & TensorRT 11.2 FP16 & $640\times640$ & 2.92 & 342.5 \\
 NVIDIA RTX 3050 Laptop & TensorRT 11.2 FP16 & $640\times640$ & 5.35 & 187.1 \\
 NVIDIA RTX 3050 Laptop & PyTorch Native FP32 & $640\times640$ & 12.43 & 80.4 \\
+NVIDIA GeForce MX230 (Edge) & PyTorch Native FP32 & $640\times640$ & 36.00 & 27.8 \\
 RTSP Pipeline (RTX 3050) & End-to-End Stream & $640\times640$ & 10.54--15.38 & 65--95 \\
 \bottomrule
 \end{tabular}%

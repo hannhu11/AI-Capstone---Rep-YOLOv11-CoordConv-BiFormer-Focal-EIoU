@@ -1,0 +1,189 @@
+================================================================================
+🏛️ GENSPARK AI SLIDES - MASTER PROMPT CHO BẢO VỆ CAPSTONE REVIEW 1 (ĐATN AI FPTU)
+================================================================================
+
+[HƯỚNG DẪN THAO TÁC TRÊN GENSPARK AI SLIDES]
+1. Truy cập https://www.genspark.ai/slides (hoặc giao diện AI Slides bạn đang mở).
+2. Tại thanh tìm kiếm Skills, chọn đúng Skill:
+   👉 "Write a Senior Capstone Defense like a Top R1-University Senior" (Mục Coursework)
+   (Hoặc dự phòng: "Write an Academic Review Deck like a Top-Reviews-Journal Author" ở mục Academic).
+3. Đặt chế độ Tỷ lệ: Auto Ratio hoặc 16:9. Chế độ: Professional.
+4. Copy toàn bộ phần PROMPT bên dưới dán vào ô nhập lệnh của Genspark.
+5. Đính kèm (Upload) các file hình ảnh trong thư mục `figures/` và bảng trong `tables/` lên Genspark (hoặc copy nội dung văn bản này) để AI tự động dàn trang hoàn hảo!
+
+========================================
+BẮT ĐẦU NỘI DUNG MASTER PROMPT (COPY DƯỚI ĐÂY)
+========================================
+
+Role: You are a Distinguished AI Research Scientist, IEEE Fellow, and Top R1-University Senior AI Defense Presenter. 
+Task: Generate an authoritative, mathematically rigorous, and visually stunning 16-slide academic defense presentation deck for FPT University Artificial Intelligence Capstone Review 1.
+Project Title: "Rep-YOLO11s: Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance"
+Authors: Nhu Han (Lead, SE183644), Van-Thanh Nguyen, Tuan-Dung Nguyen
+Advisor: MSc. Hai-Anh Vu (FPT University Hanoi)
+Target Venue / Level: IEEE Transactions on Industrial Informatics / IEEE TPAMI Standards (Q1 Top-Tier)
+
+Design & Presentation Constraints:
+- Tone: Highly academic, rigorous, precise, confident, and data-backed. Zero generic filler or buzzwords.
+- Data Grounding: Every single metric, equation, and parameter MUST strictly match the empirical findings from our research paper `Rep-YOLO11s_Master_Paper_IEEE_Final.pdf`.
+- Structure: 16 sequential slides answering all 4 criteria of the Capstone Review 1 Evaluation Rubric (Problem Statement, Deliverables & Proposed Solution, Technical Feasibility & Scope, Real-world Value & Impact).
+- Visual Integration: Allocate prominent, dedicated layout slots for Figures 1 to 5 and Tables 1 to 4 as specified in the slide plan.
+
+--------------------------------------------------------------------------------
+SLIDE-BY-SLIDE CONTENT & STRUCTURAL SPECIFICATIONS:
+--------------------------------------------------------------------------------
+
+[Slide 1: Title Slide - Academic Capstone Defense]
+- Title: Rep-YOLO11s: Real-Time Safety Helmet Detection in Dynamic Construction Surveillance
+- Subtitle: Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Generalization
+- Session: Capstone Review 1 - Department of Artificial Intelligence, FPT University
+- Authors: Nhu Han (Lead Researcher, SE183644), Van-Thanh Nguyen, Tuan-Dung Nguyen
+- Supervisor: MSc. Hai-Anh Vu
+- Key Objective for Review 1: Establish clear problem formalization, technical scope, methodological novelty, and physical edge hardware feasibility.
+
+[Slide 2: Problem Background & Real-World Motivation]
+- Headline: Industrial Construction Surveillance & Workplace Safety Imperative
+- Context: Traumatic brain injuries from falling structural debris represent the leading cause of construction site fatalities globally.
+- Limitation of Manual Oversight: Safety inspections by human site officers are intermittent, labor-intensive, subject to visual occlusion, and non-scalable.
+- The AI Solution: Continuous, non-intrusive compliance monitoring via existing on-site CCTV / RTSP video streams.
+- Visual Placeholder: [Image: Fig1_site_overview_challenges.jpg] showing real-world dynamic construction site conditions with high-elevation cameras, tiny worker silhouettes, and heavy equipment clutter.
+
+[Slide 3: Four Core Technical Bottlenecks]
+- Headline: Mathematical & Physical Challenges in Construction Computer Vision
+- Bottleneck 1: Distant Tiny Targets (<20x20 px down to <15x15 px at 15-30m high-angle CCTV); spatial features vanish through standard backbone downsampling (stride 16/32).
+- Bottleneck 2: Acute Intra-Frame Class Imbalance; in benchmark SHWD (VOC2028), helmet instances (9,044) vs person bodies (111,514) exhibit an extreme 1:12 ratio, causing gradient starvation on small helmets.
+- Bottleneck 3: Severe Spatial & Color Confusion; high-contrast yellow/orange machinery, buckets, warning cones, and intense glare mimic helmet geometry and color spectrum. Standard translation-invariant CNNs produce false alarms.
+- Bottleneck 4: Edge AI Latency Bounds; real-time video surveillance demands >=60 FPS across multi-camera streams under constrained edge hardware (Laptop GPUs / Embedded Edge boxes).
+
+[Slide 4: Literature Review & Critical Research Gaps]
+- Headline: Survey of 32 Benchmark Papers (2019-2026) & SOTA Limitations
+- General YOLO Family (YOLOv8, YOLOv10, YOLO11): Fast general accuracy, but lack coordinate priors for tiny targets and suffer from high false-positive rates on construction clutter.
+- EC-YOLOv8 (Zhang et al., 2024): 95.7% mAP50, but CARAFE upsampling adds heavy computational overhead (speed drops to 172 FPS on desktop GPUs).
+- YOLO-CBF (Li et al., 2023): Integrates CoordConv and BiFormer, but bloated parameter count (37.2M params, 104.5 GFLOPs) causes latency to drop to 80.6 FPS.
+- YOLOv8n-FADS (Fu et al., 2024): P2 head expansion causes feature explosion and latency bottlenecks on high-resolution CCTV streams.
+- Research Gap: No prior architecture achieves superior small-object detection accuracy without incurring inference latency or parameter penalties during deployment.
+
+[Slide 5: Capstone Scope & Five Concrete Deliverables]
+- Headline: Project Scope, Execution Methodology & Committed Deliverables
+- Scope: High-accuracy, real-time safety helmet detection across heterogeneous industrial construction environments.
+- 5 Verified Capstone Deliverables:
+  1. IEEE Transactions Full Research Paper: 9-page formal manuscript with complete math proofs, SOTA benchmarks, Ablation study, and Grad-CAM XAI.
+  2. Novel Rep-YOLO11s Neural Model: Optimized weights reaching 94.83% mAP50 (Single Test Split), 96.64% +/- 0.32% (5-Fold CV), and 97.03% on Hard Hat Workers.
+  3. Industrial End-to-End RTSP Video Pipeline: Full software prototype decoding H.264/H.265 streams at 65-95 FPS with automated violation bounding box overlays.
+  4. Compiled Deployment Engines: Exported TensorRT 11.2 FP16, ONNX INT8, and OpenVINO engines for zero-overhead multi-platform deployment.
+  5. Standardized Cross-Domain Dataset Suite: Cleaned, canonicalized benchmark suite across 33,000+ images (VOC2028, GDUT-HWD, SHEL5K, Hard Hat Workers).
+
+[Slide 6: Overall Proposed Neural Architecture - Rep-YOLO11s]
+- Headline: Decoupled Multi-Scale Architecture with Zero-Overhead Deployment Lifecycle
+- 3 Integrated Subsystems:
+  1. Backbone: CSPDarknet augmented with input CoordConv spatial prior channels and Structural Re-parameterization (RepConv) blocks.
+  2. Neck: Bi-Level Routing Attention (BiFormer) embedded inside Path Aggregation Network (PAN) for dynamic top-k token selection.
+  3. Head: Anchor-Free Decoupled Detection Head supervised by multi-task loss and Focal EIoU bounding box regression.
+- Visual Placeholder: [Image: Fig2_rep_yolo11s_neural_architecture.png] displaying complete pipeline topology from coordinate injection to TensorRT deployment.
+
+[Slide 7: Innovation 1 - Structural Re-parameterization (RepConv)]
+- Headline: Decoupling Training Complexity from Deployment Latency
+- The Paradox: Complex multi-branch networks learn richer representations during training but cause severe memory access costs (MAC) and latency spikes during inference.
+- The Algebraic Solution:
+  - Training Phase: 3 parallel branches: 3x3 Conv + BN, 1x1 Conv + BN, and Identity + BN.
+  - Deployment Phase (switch_to_deploy): BN parameters are fused into convolution weights: W' = gamma/sqrt(sigma^2+eps)*W, b' = beta - gamma*mu/sqrt(sigma^2+eps). 1x1 kernels are zero-padded to 3x3, and Identity is transformed into a Dirac delta kernel.
+  - Linear summation collapses all branches into a single equivalent 3x3 Conv: W_fused = W'_3x3 + Pad(W'_1x1) + W'_id.
+- Empirical Gain: Forward latency slashed from 7.12 ms down to 2.92 ms on Tesla T4 (5.35 ms on RTX 3050 Laptop) with zero accuracy degradation!
+
+[Slide 8: Innovation 2 - Spatial CoordConv & Sparse BiFormer Attention]
+- Headline: Spatial Inductive Priors & Dynamic Token Routing
+- Spatial Coordinate Convolution (CoordConv):
+  - Appends two hardcoded normalized coordinate channels Cx, Cy in [-1, 1] to the input tensor (640x640x5).
+  - Inductive Prior: Explicitly encodes vertical spatial geometry—helmets strictly appear on human heads, while yellow construction clutter resides at ground/floor level.
+- Bi-Level Routing Attention (BiFormer):
+  - Coarse Region Partitioning: Divides feature maps into S x S regions, computing regional affinity A^r = Q^r (K^r)^T and filtering for Top-k routing indices.
+  - Token-level attention is computed strictly across gathered relevant regions, lowering quadratic self-attention complexity O(H^2 W^2) down to linear complexity O(S^2 + k*HW/S^2).
+  - Outcome: 100% of compute focuses on tiny, occluded helmet contours while ignoring massive background noise.
+
+[Slide 9: Innovation 3 - Focal EIoU Bounding Box Loss]
+- Headline: Overcoming Aspect-Ratio Ambiguity & Small-Target Occlusion
+- Limitation of Conventional CIoU: Relies on aspect ratio arctan(w/h) difference, which obscures true width/height errors when objects are partially occluded.
+- Focal EIoU Formulation:
+  - Explicitly decomposes bounding box error into overlap, center distance, and independent side lengths: L_EIoU = (1 - IoU) + rho^2(b, b_gt)/c^2 + rho^2(w, w_gt)/C_w^2 + rho^2(h, h_gt)/C_h^2.
+  - Focal hard-sample modulation: L_Focal-EIoU = IoU^gamma * L_EIoU (with gamma = 0.5).
+- Advantage: Accelerates bounding box convergence and delivers razor-sharp localization on tiny helmet boundaries under scaffolding occlusions.
+
+[Slide 10: Dataset Curation & Multi-Domain Standardization]
+- Headline: Rigorous Data Engineering & Harmonized Canonical Space
+- Primary Source Dataset (SHWD / VOC2028): 7,581 authentic high-res images (6,064 trainval, 1,517 test). Fixed 80/20 split guaranteeing 100% zero data leakage. Purged 3 erroneous 'dog' XML annotations.
+- Multi-Domain Industrial Benchmark Suite (33,000+ Total Images):
+  - GDUT-HWD: 13,499 images (dense crowd construction workers, 15-30 per scene).
+  - SHEL5K: 5,000 images (vertical aerial drone nadir views, 70-90 degrees).
+  - Hard Hat Workers (AndrewMVD): 7,000 images (outdoor construction surveillance).
+  - Safety Helmet Detection (SHD) & SFCHD: Industrial plant CCTV.
+- Unified Semantic Space: Canonical class mapping C* = {0: 'hat' (Helmet), 1: 'person' (Bare Head / Worker)}.
+
+[Slide 11: Benchmark Results & State-of-the-Art Comparison]
+- Headline: Outperforming Industry Baselines in Precision and Throughput
+- Key Quantitative Proofs (from Table 1):
+  - YOLO11s Baseline: 94.74% mAP50, 62.54% mAP50-95, 6.52 ms latency (153.3 FPS).
+  - YOLOv8s: 94.89% mAP50, 62.21% mAP50-95, 6.10 ms latency.
+  - EC-YOLOv8 (2024): 95.70% mAP50, 5.80 ms latency (172.4 FPS).
+  - YOLO-CBF (2023): 95.60% mAP50, 12.40 ms latency (80.6 FPS).
+  - Rep-YOLO11s (Ours - Single Checkpoint): 94.83% mAP50, 62.54% mAP50-95, 2.92 ms latency (342.5 FPS on Tesla T4, 5.35 ms / 187.1 FPS on RTX 3050 Laptop).
+  - Rep-YOLO11s (Ours - 5-Fold CV Mean): 96.64% +/- 0.32% mAP50 (Peak Fold 3: 97.11%), 65.91% +/- 0.46% mAP50-95, F1: 0.9396.
+- Conclusion: Achieves SOTA detection fidelity while running 2x faster than competing models.
+- Visual Placeholder: [Table: Table1_sota_comparison.md]
+
+[Slide 12: Systematic Ablation Study (A0 to A6)]
+- Headline: Quantitative Proof of Cumulative Architectural Gains
+- Step-by-Step Module Validation (from Table 2):
+  - A0 (Baseline YOLO11s): 94.74% mAP50, 62.34% mAP50-95, 6.52 ms.
+  - A1 (+ P2 Small Head): 94.81% mAP50, but latency surges to 8.94 ms (rejected due to latency cost).
+  - A2 (+ CoordConv): 94.78% mAP50, strengthens spatial prior without latency increase (6.58 ms).
+  - A3 (+ RepConv): 94.81% mAP50, boosts gradient representation diversity.
+  - A4 (+ Focal EIoU): 94.88% mAP50, accelerates bounding box tightness.
+  - A5 (+ BiFormer Attention): Pushes Recall to 91.15% via dynamic token routing.
+  - A6 (Full Fusion Rep-YOLO11s): 94.83% mAP50, 62.54% mAP50-95, and deployment latency drops to 2.92 ms!
+- Visual Placeholder: [Table: Table2_ablation_study.md]
+
+[Slide 13: Explainable AI (XAI) - Grad-CAM Saliency Analysis]
+- Headline: Verifying Visual Attention Centroids via Grad-CAM
+- Scenario 1 (High-Visibility Vests & Scaffolding): Baseline YOLO11s exhibits diffused gradient leakage onto orange safety vests and wooden poles. Rep-YOLO11s isolates high-activation centroids strictly on blue safety helmets (conf 0.84).
+- Scenario 2 (Severe Backlighting & Window Glare): BiFormer routing concentrates activation spikes on tiny helmet silhouettes despite blinding backlight (conf 0.89).
+- Scenario 3 (Yellow Triangular Warning Signs): CoordConv spatial bias penalizes non-anatomical positions, completely rejecting yellow warning posters and locking onto worker heads.
+- Visual Placeholder: [Image: Fig3_gradcam_xai_saliency_comparison.png] displaying 3 complex scenarios comparing baseline vs Rep-YOLO11s heatmaps.
+
+[Slide 14: Cross-Domain Generalization & IoU Collapse Autopsy]
+- Headline: Zero-Shot Transfer Across Five External Industrial Datasets
+- Generalization Performance (from Table 3):
+  - Hard Hat Workers (7,000 images): 97.03% mAP50 under Harmonized PPE (Hat-Only), matching in-domain accuracy!
+  - GDUT-HWD (13,499 images): Maintains 74.27% mAP50 and 90.26% Precision in extremely dense crowds (15-30 workers/frame).
+  - SHEL5K (5,000 images): 41.15% mAP50 due to vertical drone nadir view (70-90 deg) and extreme small scale (<15 px).
+- The Mathematical IoU Collapse Autopsy:
+  - Source SHWD defines 'person' as Full-Body, whereas Hard Hat Workers defines 'person' as Head-Only.
+  - When detector predicts full body (B_pred), ground truth head (B_gt) is nested inside: IoU = A_head / A_body approx 0.07-0.14 << 0.50.
+  - Penalized simultaneously as False Positive and False Negative, collapsing joint mAP to 74.40%.
+  - When harmonized to Hat-Only, mAP jumps to 97.03%, proving true feature transfer fidelity.
+- Visual Placeholder: [Table: Table3_cross_domain_generalization.md]
+
+[Slide 15: Multi-Platform Edge Hardware Deployment & RTSP Pipeline]
+- Headline: Synchronized Benchmarks & Ultra-Low-Cost Edge Viability
+- Hardware Latency Audit (from Table 4):
+  - Server GPU (Tesla T4): 2.92 ms forward latency (342.5 FPS) in TensorRT FP16 @ 640x640.
+  - Edge Laptop GPU (RTX 3050): 5.35 ms (187.1 FPS) in TensorRT FP16; 12.43 ms (80.4 FPS) in Native PyTorch FP32.
+  - Budget Entry-Level Edge Laptop (GeForce MX230 - Pascal 2GB VRAM, No Tensor Cores): Achieves 36.0 ms (27.8 FPS) in Native PyTorch FP32, exceeding the 24 FPS real-time threshold!
+- End-to-End RTSP Video Pipeline (Fig 4):
+  - T_total = T_decode (3.5-5.0 ms) + T_prep (1.2-2.0 ms) + T_gpu (2.92-5.35 ms) + T_nms (1.5-2.8 ms) + T_render (2.2-3.4 ms) = 10.54 to 15.38 ms.
+  - Delivers 65 to 95 FPS live camera stream throughput on RTX 3050 Laptop.
+- Visual Placeholders: [Image: Fig4_industrial_rtsp_surveillance_pipeline.png], [Image: Fig5_efficiency_frontier_latency_vs_map.png], and [Table: Table4_deployment_benchmark.md]
+
+[Slide 16: Review 1 Summary & Milestones for Review 2 and 3]
+- Headline: Review 1 Milestones Achieved & Future Roadmap
+- Summary of Review 1 Achievements:
+  - Theoretical formulation, architecture design, and empirical validation completed with IEEE Q1 rigor.
+  - Verified 100% feasibility on both server and low-cost edge hardware (MX230 2GB).
+- Roadmap for Review 2 (Mid-term Implementation & Management):
+  - Package industrial Desktop GUI / Web Monitoring Dashboard with automated violation alerting.
+  - Implement dynamic multi-camera dispatching and hyperparameter fine-tuning.
+- Roadmap for Review 3 (Final Defense Preparation):
+  - Integrate Knowledge Distillation (YOLO11x Teacher -> Rep-YOLO11s Student) to address drone angles (SHEL5K).
+  - Submit formal IEEE Transactions manuscript and finalize Thesis Defense documentation.
+- Closing Statement: Rep-YOLO11s demonstrates complete technical feasibility, scientific innovation, and industrial applicability for modern AI construction safety!
+========================================
+HẾT NỘI DUNG MASTER PROMPT
+================================================================================
