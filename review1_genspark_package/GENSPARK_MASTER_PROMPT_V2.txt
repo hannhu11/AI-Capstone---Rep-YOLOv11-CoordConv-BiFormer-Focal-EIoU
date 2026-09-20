@@ -21,8 +21,8 @@
 BẮT ĐẦU PROMPT V2 (COPY TOÀN BỘ PHẦN DƯỚI ĐÂY DÁN VÀO GENSPARK)
 ================================================================================
 
-Role: Distinguished AI Research Scientist, IEEE Senior Member, and Top R1-University Senior Capstone Defense Presenter.
-Task: Generate an authoritative, mathematically rigorous, and visually stunning 16-slide academic defense presentation deck for FPT University Artificial Intelligence Capstone Review 1.
+Role: Distinguished AI Research Scientist, Senior Research Member, and Top R1-University Senior Capstone Defense Presenter.
+Task: Generate an authoritative, mathematically rigorous, and visually stunning 16-slide academic defense presentation deck for FPT University Artificial Intelligence CAPSTONE GIAI ĐOẠN 1.
 Project Title: "Rep-YOLO11s: Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance"
 Authors: Nhu Han (Lead, SE183644), Van-Thanh Nguyen, Tuan-Dung Nguyen
 Advisor: MSc. Hai-Anh Vu (FPT University Hanoi)
@@ -39,14 +39,14 @@ IMAGE & PLACEHOLDER INSTRUCTIONS:
 - Whenever a figure is indicated (e.g., [FIGURE PLACEHOLDER]), create a clear, dedicated prominent media frame/card with an explicit caption and an image replacement container so that actual high-resolution figures from the research paper can be uploaded without disturbing layout proportions.
 
 --------------------------------------------------------------------------------
-SLIDE 1: TITLE SLIDE (BẢO VỆ ĐỀ CƯƠNG & ĐỀ XUẤT ĐỒ ÁN - CAPSTONE REVIEW 1)
+SLIDE 1: TITLE SLIDE (BẢO VỆ ĐỀ CƯƠNG & ĐỀ XUẤT ĐỒ ÁN - CAPSTONE GIAI ĐOẠN 1)
 --------------------------------------------------------------------------------
 - Category: FPT University - Bachelor of Science in Artificial Intelligence
-- Presentation: Capstone Project Review 1 Defense
+- Presentation: Capstone Project Giai đoạn 1 Defense
 - Title: Rep-YOLO11s: Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance
 - Authors: Nhu Han (Lead, SE183644), Van-Thanh Nguyen, Tuan-Dung Nguyen
 - Supervisor: MSc. Hai-Anh Vu (Department of Artificial Intelligence)
-- Review 1 Scope: Problem Formalization, Theoretical Innovations, Dataset Harmonization, and Multi-Platform Edge Hardware Viability.
+- Giai đoạn 1 Scope: Problem Formalization, Theoretical Innovations, Dataset Harmonization, and Multi-Platform Edge Hardware Viability.
 
 --------------------------------------------------------------------------------
 SLIDE 2: PROBLEM BACKGROUND & REAL-WORLD MOTIVATION
@@ -67,9 +67,9 @@ SLIDE 3: FOUR CORE TECHNICAL BOTTLENECKS
 - Bottleneck 4 (Edge Compute Constraints): Real-time multi-stream RTSP processing requires >=60 FPS on resource-constrained edge hardware without expensive server clusters.
 
 --------------------------------------------------------------------------------
-SLIDE 4: LITERATURE REVIEW & CRITICAL RESEARCH GAPS
+SLIDE 4: Literature Survey & CRITICAL RESEARCH GAPS
 --------------------------------------------------------------------------------
-- Headline: SOTA Literature Review (32 Studies, 2019–2026) & Unresolved Trade-offs
+- Headline: SOTA Literature Survey (32 Studies, 2019–2026) & Unresolved Trade-offs
 - Standard YOLO Family (YOLOv8, YOLOv10, YOLO11): High baseline speed, but lack coordinate awareness, leading to high false positives on ground clutter.
 - EC-YOLOv8 (Zhang et al., 2024): 95.70% mAP50, but heavy CARAFE operators drop inference throughput to 172.4 FPS on desktop GPUs.
 - YOLO-CBF (Li et al., 2023): Integrates CoordConv & BiFormer, but bloated model (37.2M params, 104.5 GFLOPs) collapses speed to 80.6 FPS.
@@ -80,7 +80,7 @@ SLIDE 4: LITERATURE REVIEW & CRITICAL RESEARCH GAPS
 SLIDE 5: PROJECT SCOPE & 5 COMMITTED DELIVERABLES
 --------------------------------------------------------------------------------
 - Headline: Capstone Scope, Execution Methodology & Committed Deliverables
-- Deliverable 1: 9-Page IEEE Transactions Manuscript with complete mathematical proofs, ablation studies, and Grad-CAM interpretability.
+- Deliverable 1: 9-Page Top-Tier Q1 Journal Manuscript with complete mathematical proofs, ablation studies, and Grad-CAM interpretability.
 - Deliverable 2: Novel Rep-YOLO11s Neural Model achieving 94.83% mAP50 (Single Split), 96.64% +/- 0.32% (5-Fold CV), and 97.03% on Hard Hat Workers.
 - Deliverable 3: End-to-End Industrial RTSP Surveillance Pipeline decoding live video streams at 65–95 FPS with automated compliance alerting.
 - Deliverable 4: Multi-Engine Deployment Artefacts (TensorRT 11.2 FP16, ONNX INT8, OpenVINO) for zero-overhead multi-platform deployment.
@@ -209,18 +209,18 @@ SLIDE 15: EDGE HARDWARE DEPLOYMENT BENCHMARKS & RTSP PIPELINE
 - [FIGURE PLACEHOLDER]: RTSP hardware decoding pipeline diagram (`Fig4_rtsp_edge_surveillance_pipeline.png`).
 
 --------------------------------------------------------------------------------
-SLIDE 16: CAPSTONE REVIEW 1 DEFENSE SUMMARY & ROADMAP
+SLIDE 16: CAPSTONE GIAI ĐOẠN 1 DEFENSE SUMMARY & ROADMAP
 --------------------------------------------------------------------------------
-- Headline: Review 1 Milestones Achieved & Execution Roadmap for Review 2 & 3
-- Review 1 Milestones Fully Delivered:
-  * Theoretical formulation, mathematical proofs, and model architecture finalized to IEEE Q1 standards.
+- Headline: Giai đoạn 1 Milestones Achieved & Execution Roadmap for Giai đoạn 2 & 3
+- Giai đoạn 1 Milestones Fully Delivered:
+  * Theoretical formulation, mathematical proofs, and model architecture finalized to Q1 standards.
   * Verified 100% technical feasibility across both server and budget edge hardware (MX230 2GB).
-- Roadmap for Review 2 (Mid-term Implementation & Management):
+- Roadmap for Giai đoạn 2 (Mid-term Implementation & Management):
   * Packaging industrial Desktop GUI and Web-based Multi-Camera Monitoring Dashboard.
   * Multi-stream dynamic dispatching, automated violation logging, and alert triggers.
-- Roadmap for Review 3 (Final Defense Preparation):
+- Roadmap for Giai đoạn 3 (Final Defense Preparation):
   * Knowledge Distillation (YOLO11x Teacher -> Rep-YOLO11s Student) to address drone angles (SHEL5K).
-  * Submission to IEEE Transactions and final Capstone Thesis Defense.
+  * Submission to Top-Tier Q1 Journal and final Capstone Thesis Defense.
 ================================================================================
 HẾT MASTER PROMPT V2
 ================================================================================

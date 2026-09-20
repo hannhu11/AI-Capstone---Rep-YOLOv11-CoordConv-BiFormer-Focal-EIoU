@@ -1,12 +1,12 @@
 ================================================================================
-🏛️ GENSPARK AI SLIDES - MASTER PROMPT CHO BẢO VỆ CAPSTONE REVIEW 1 (ĐATN AI FPTU)
+🏛️ GENSPARK AI SLIDES - MASTER PROMPT CHO BẢO VỆ CAPSTONE GIAI ĐOẠN 1 (ĐATN AI FPTU)
 ================================================================================
 
 [HƯỚNG DẪN THAO TÁC TRÊN GENSPARK AI SLIDES]
 1. Truy cập https://www.genspark.ai/slides (hoặc giao diện AI Slides bạn đang mở).
 2. Tại thanh tìm kiếm Skills, chọn đúng Skill:
    👉 "Write a Senior Capstone Defense like a Top R1-University Senior" (Mục Coursework)
-   (Hoặc dự phòng: "Write an Academic Review Deck like a Top-Reviews-Journal Author" ở mục Academic).
+   (Hoặc dự phòng: "Write an Academic Thesis Deck like a Top-Journal Author" ở mục Academic).
 3. Đặt chế độ Tỷ lệ: Auto Ratio hoặc 16:9. Chế độ: Professional.
 4. Copy toàn bộ phần PROMPT bên dưới dán vào ô nhập lệnh của Genspark.
 5. Đính kèm (Upload) các file hình ảnh trong thư mục `figures/` và bảng trong `tables/` lên Genspark (hoặc copy nội dung văn bản này) để AI tự động dàn trang hoàn hảo!
@@ -15,17 +15,17 @@
 BẮT ĐẦU NỘI DUNG MASTER PROMPT (COPY DƯỚI ĐÂY)
 ========================================
 
-Role: You are a Distinguished AI Research Scientist, IEEE Fellow, and Top R1-University Senior AI Defense Presenter. 
-Task: Generate an authoritative, mathematically rigorous, and visually stunning 16-slide academic defense presentation deck for FPT University Artificial Intelligence Capstone Review 1.
+Role: You are a Distinguished AI Research Scientist, Senior Research Fellow, and Top R1-University Senior AI Defense Presenter. 
+Task: Generate an authoritative, mathematically rigorous, and visually stunning 16-slide academic defense presentation deck for FPT University Artificial Intelligence CAPSTONE GIAI ĐOẠN 1.
 Project Title: "Rep-YOLO11s: Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance"
 Authors: Nhu Han (Lead, SE183644), Van-Thanh Nguyen, Tuan-Dung Nguyen
 Advisor: MSc. Hai-Anh Vu (FPT University Hanoi)
-Target Venue / Level: IEEE Transactions on Industrial Informatics / IEEE TPAMI Standards (Q1 Top-Tier)
+Target Venue / Level: Top-Tier Q1 International Journals Standards (Q1 Top-Tier)
 
 Design & Presentation Constraints:
 - Tone: Highly academic, rigorous, precise, confident, and data-backed. Zero generic filler or buzzwords.
-- Data Grounding: Every single metric, equation, and parameter MUST strictly match the empirical findings from our research paper `Rep-YOLO11s_Master_Paper_IEEE_Final.pdf`.
-- Structure: 16 sequential slides answering all 4 criteria of the Capstone Review 1 Evaluation Rubric (Problem Statement, Deliverables & Proposed Solution, Technical Feasibility & Scope, Real-world Value & Impact).
+- Data Grounding: Every single metric, equation, and parameter MUST strictly match the empirical findings from our research paper `Rep-YOLO11s_Master_Paper_Q1_Final.pdf`.
+- Structure: 16 sequential slides answering all 4 criteria of the CAPSTONE GIAI ĐOẠN 1 Evaluation Rubric (Problem Statement, Deliverables & Proposed Solution, Technical Feasibility & Scope, Real-world Value & Impact).
 - Visual Integration: Allocate prominent, dedicated layout slots for Figures 1 to 5 and Tables 1 to 4 as specified in the slide plan.
 
 --------------------------------------------------------------------------------
@@ -35,10 +35,10 @@ SLIDE-BY-SLIDE CONTENT & STRUCTURAL SPECIFICATIONS:
 [Slide 1: Title Slide - Academic Capstone Defense]
 - Title: Rep-YOLO11s: Real-Time Safety Helmet Detection in Dynamic Construction Surveillance
 - Subtitle: Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Generalization
-- Session: Capstone Review 1 - Department of Artificial Intelligence, FPT University
+- Session: CAPSTONE GIAI ĐOẠN 1 - Department of Artificial Intelligence, FPT University
 - Authors: Nhu Han (Lead Researcher, SE183644), Van-Thanh Nguyen, Tuan-Dung Nguyen
 - Supervisor: MSc. Hai-Anh Vu
-- Key Objective for Review 1: Establish clear problem formalization, technical scope, methodological novelty, and physical edge hardware feasibility.
+- Key Objective for Giai đoạn 1: Establish clear problem formalization, technical scope, methodological novelty, and physical edge hardware feasibility.
 
 [Slide 2: Problem Background & Real-World Motivation]
 - Headline: Industrial Construction Surveillance & Workplace Safety Imperative
@@ -54,7 +54,7 @@ SLIDE-BY-SLIDE CONTENT & STRUCTURAL SPECIFICATIONS:
 - Bottleneck 3: Severe Spatial & Color Confusion; high-contrast yellow/orange machinery, buckets, warning cones, and intense glare mimic helmet geometry and color spectrum. Standard translation-invariant CNNs produce false alarms.
 - Bottleneck 4: Edge AI Latency Bounds; real-time video surveillance demands >=60 FPS across multi-camera streams under constrained edge hardware (Laptop GPUs / Embedded Edge boxes).
 
-[Slide 4: Literature Review & Critical Research Gaps]
+[Slide 4: Literature Survey & Critical Research Gaps]
 - Headline: Survey of 32 Benchmark Papers (2019-2026) & SOTA Limitations
 - General YOLO Family (YOLOv8, YOLOv10, YOLO11): Fast general accuracy, but lack coordinate priors for tiny targets and suffer from high false-positive rates on construction clutter.
 - EC-YOLOv8 (Zhang et al., 2024): 95.7% mAP50, but CARAFE upsampling adds heavy computational overhead (speed drops to 172 FPS on desktop GPUs).
@@ -66,7 +66,7 @@ SLIDE-BY-SLIDE CONTENT & STRUCTURAL SPECIFICATIONS:
 - Headline: Project Scope, Execution Methodology & Committed Deliverables
 - Scope: High-accuracy, real-time safety helmet detection across heterogeneous industrial construction environments.
 - 5 Verified Capstone Deliverables:
-  1. IEEE Transactions Full Research Paper: 9-page formal manuscript with complete math proofs, SOTA benchmarks, Ablation study, and Grad-CAM XAI.
+  1. Top-Tier Q1 Journal Full Research Paper: 9-page formal manuscript with complete math proofs, SOTA benchmarks, Ablation study, and Grad-CAM XAI.
   2. Novel Rep-YOLO11s Neural Model: Optimized weights reaching 94.83% mAP50 (Single Test Split), 96.64% +/- 0.32% (5-Fold CV), and 97.03% on Hard Hat Workers.
   3. Industrial End-to-End RTSP Video Pipeline: Full software prototype decoding H.264/H.265 streams at 65-95 FPS with automated violation bounding box overlays.
   4. Compiled Deployment Engines: Exported TensorRT 11.2 FP16, ONNX INT8, and OpenVINO engines for zero-overhead multi-platform deployment.
@@ -172,17 +172,17 @@ SLIDE-BY-SLIDE CONTENT & STRUCTURAL SPECIFICATIONS:
   - Delivers 65 to 95 FPS live camera stream throughput on RTX 3050 Laptop.
 - Visual Placeholders: [Image: Fig4_industrial_rtsp_surveillance_pipeline.png], [Image: Fig5_efficiency_frontier_latency_vs_map.png], and [Table: Table4_deployment_benchmark.md]
 
-[Slide 16: Review 1 Summary & Milestones for Review 2 and 3]
-- Headline: Review 1 Milestones Achieved & Future Roadmap
-- Summary of Review 1 Achievements:
-  - Theoretical formulation, architecture design, and empirical validation completed with IEEE Q1 rigor.
+[Slide 16: Giai đoạn 1 Summary & Milestones for Giai đoạn 2 and 3]
+- Headline: Giai đoạn 1 Milestones Achieved & Future Roadmap
+- Summary of Giai đoạn 1 Achievements:
+  - Theoretical formulation, architecture design, and empirical validation completed with Q1 rigor.
   - Verified 100% feasibility on both server and low-cost edge hardware (MX230 2GB).
-- Roadmap for Review 2 (Mid-term Implementation & Management):
+- Roadmap for Giai đoạn 2 (Mid-term Implementation & Management):
   - Package industrial Desktop GUI / Web Monitoring Dashboard with automated violation alerting.
   - Implement dynamic multi-camera dispatching and hyperparameter fine-tuning.
-- Roadmap for Review 3 (Final Defense Preparation):
+- Roadmap for Giai đoạn 3 (Final Defense Preparation):
   - Integrate Knowledge Distillation (YOLO11x Teacher -> Rep-YOLO11s Student) to address drone angles (SHEL5K).
-  - Submit formal IEEE Transactions manuscript and finalize Thesis Defense documentation.
+  - Submit formal Top-Tier Q1 Journal manuscript and finalize Thesis Defense documentation.
 - Closing Statement: Rep-YOLO11s demonstrates complete technical feasibility, scientific innovation, and industrial applicability for modern AI construction safety!
 ========================================
 HẾT NỘI DUNG MASTER PROMPT

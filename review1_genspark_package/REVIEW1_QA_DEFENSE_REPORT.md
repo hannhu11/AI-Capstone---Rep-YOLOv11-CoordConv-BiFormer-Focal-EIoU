@@ -1,14 +1,14 @@
-# 🏛️ BÁO CÁO GIẢI TRÌNH & BẢO VỆ CAPSTONE REVIEW 1 (NGÀNH TRÍ TUỆ NHÂN TẠO - FPT UNIVERSITY)
+# 🏛️ BÁO CÁO GIẢI TRÌNH & BẢO VỆ ĐỒ ÁN TỐT NGHIỆP KỸ SƯ AI — GIAI ĐOẠN 1 (TRƯỜNG ĐẠI HỌC FPT)
 ## ĐỀ TÀI: Rep-YOLO11s: Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance
 
 **Nhóm thực hiện:** Nhu Han (Lead Researcher, SE183644), Van-Thanh Nguyen, Tuan-Dung Nguyen  
 **Giảng viên Hướng dẫn:** ThS. Vũ Hà Anh (anhvh@fe.edu.vn)  
-**Hội đồng Giảng viên Review:** ThS. Nguyễn Trọng Tài, ThS. Lê Phú Nguyên, ThS. Nguyễn Quốc Trung, ThS. Nguyễn Hồng Hải, TS. Nguyễn Xuân Huy  
-**Tài liệu tham chiếu chuẩn:** `Rep-YOLO11s_Master_Paper_IEEE_Final.pdf` (Định dạng IEEE Transactions on Industrial Informatics / IEEE TPAMI)
+**Hội đồng Giảng viên Đánh giá:** ThS. Nguyễn Trọng Tài, ThS. Lê Phú Nguyên, ThS. Nguyễn Quốc Trung, ThS. Nguyễn Hồng Hải, TS. Nguyễn Xuân Huy  
+**Tài liệu tham chiếu chuẩn:** `Rep-YOLO11s_Master_Paper_Final.pdf` (Định dạng bài báo khoa học chuẩn Q1 quốc tế)
 
 ---
 
-## 📋 BẢNG TỔNG HỢP CÂU HỎI VÀ TRẢ LỜI ĐÁP ỨNG TIÊU CHÍ REVIEW 1
+## 📋 BẢNG TỔNG HỢP CÂU HỎI VÀ TRẢ LỜI ĐÁP ỨNG TIÊU CHÍ GIAI ĐOẠN 1
 
 ### TIÊU CHÍ 1: MỤC TIÊU CỦA ĐỀ TÀI (PROBLEM STATEMENT)
 #### ❓ Câu hỏi của Hội đồng: *Phát biểu bài toán có đủ rõ ràng hay không?*
@@ -30,7 +30,7 @@
 Nhóm cam kết bàn giao trọn vẹn **5 sản phẩm đầu ra (Deliverables)** đạt tiêu chuẩn cao nhất của một Đồ án Tốt nghiệp ngành TTNT:
 
 1. **Báo cáo Khoa học Hoàn chỉnh (Scientific Research Paper)**:
-   - Bài báo khoa học chuẩn IEEE Transactions dài **9 trang**, đầy đủ công thức toán học, chứng minh giải phẫu bệnh lý, so sánh SOTA, Ablation Study $A_0 \to A_6$, bản đồ nhiệt Grad-CAM XAI và Benchmark đa miền dữ liệu.
+   - Bài báo khoa học chuẩn quốc tế Q1 dài **9 trang**, đầy đủ công thức toán học, chứng minh giải phẫu bệnh lý, so sánh SOTA, Ablation Study $A_0 \to A_6$, bản đồ nhiệt Grad-CAM XAI và Benchmark đa miền dữ liệu.
    - Tệp nguồn LaTeX Overleaf chuẩn mực kèm bộ trích dẫn 32 tài liệu tham khảo chất lượng cao (BibTeX).
 2. **Mô hình Trí tuệ Nhân tạo Mới (Novel Deep Learning Model)**:
    - Mô hình mạng **Rep-YOLO11s** với trọng số tối ưu (`yolo11s_best.pt`), đạt $mAP_{50} = 94.83\%$ (Test cố định), $mAP_{50} = 96.64 \pm 0.32\%$ (5-Fold CV), và $97.03\%$ trên tập ngoại miền Hard Hat Workers.

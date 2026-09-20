@@ -1,21 +1,21 @@
-# 📊 KỊCH BẢN NỘI DUNG SLIDE CAPSTONE REVIEW 1 (SLIDE-BY-SLIDE DECK)
+# 📊 KỊCH BẢN NỘI DUNG SLIDE BÁO CÁO ĐỒ ÁN TỐT NGHIỆP GIAI ĐOẠN 1
 ## ĐỒ ÁN TỐT NGHIỆP NGÀNH TRÍ TUỆ NHÂN TẠO - FPT UNIVERSITY
 **Đề tài:** Rep-YOLO11s: Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance  
-**Nguồn trích xuất:** 100% từ `Rep-YOLO11s_Master_Paper_IEEE_Final.pdf`
+**Nguồn trích xuất:** 100% từ `Rep-YOLO11s_Master_Paper_Final.pdf`
 
 ---
 
 ### SLIDE 1: TRANG TIÊU ĐỀ (TITLE SLIDE)
 * **Tiêu đề chính:** Rep-YOLO11s: Phát hiện Mũ Bảo hộ Thời gian thực trong Giám sát Công trường
 * **Tiêu đề phụ:** Tái tham số hóa Cấu trúc, Mã hóa Tọa độ Không gian và Năng lực Tổng quát hóa Đa miền
-* **Bối cảnh:** Báo cáo Đồ án Tốt nghiệp Ngành Trí tuệ Nhân tạo - Đợt Review 1
+* **Bối cảnh:** Báo cáo Đồ án Tốt nghiệp Ngành Trí tuệ Nhân tạo — Giai đoạn 1
 * **Giảng viên hướng dẫn:** ThS. Vũ Hà Anh
 * **Thành viên nhóm:**
   - Nguyễn Hàn Như (Trưởng nhóm - SE183644)
   - Nguyễn Văn Thành
   - Nguyễn Tuấn Dũng
 * **Đơn vị:** Khoa Công nghệ Thông tin, Đại học FPT Hà Nội
-* **Mục tiêu Review 1:** Xác định tính rõ ràng của bài toán, phạm vi nghiên cứu, tính khả thi kiến trúc và giá trị khoa học/thực tiễn.
+* **Mục tiêu Giai đoạn 1:** Xác định tính rõ ràng của bài toán, phạm vi nghiên cứu, tính khả thi kiến trúc và giá trị khoa học/thực tiễn.
 
 ---
 
@@ -43,7 +43,7 @@
 
 ---
 
-### SLIDE 4: TỔNG QUAN NGHIÊN CỨU & KHOẢNG TRỐNG KHOA HỌC (LITERATURE REVIEW)
+### SLIDE 4: TỔNG QUAN NGHIÊN CỨU & KHOẢNG TRỐNG KHOA HỌC
 * **Khảo sát chuyên sâu 32 công trình nghiên cứu quốc tế (2019 – 2026):**
   - **YOLO Series (YOLOv8, YOLOv10, YOLO11):** Nhanh, độ chính xác tổng quát cao nhưng thiếu cơ chế chuyên biệt cho vật thể siêu nhỏ và dễ nhầm lẫn màu sắc môi trường công trường.
   - **EC-YOLOv8 (Zhang et al., 2024):** Đạt $95.7\%$ $mAP_{50}$ nhưng sử dụng CARAFE upsampling làm tăng độ phức tạp, tốc độ chỉ đạt $172$ FPS trên desktop GPU.
@@ -59,7 +59,7 @@
   - Tập trung vào bài toán phát hiện mũ bảo hộ (Safety Helmet Wearing Detection) từ luồng video CCTV công trường xây dựng.
   - Môi trường huấn luyện: Dual NVIDIA Tesla T4 GPUs (Kaggle). Môi trường suy luận: NVIDIA RTX 3050 Laptop, GeForce MX230 (2GB VRAM) và CPU Edge.
 * **5 Sản phẩm đầu ra cam kết (Deliverables):**
-  1. **Paper khoa học IEEE Transactions (9 trang):** Đầy đủ chứng minh toán học, Ablation Study, XAI Grad-CAM và Cross-domain.
+  1. **Paper khoa học chuẩn Q1 quốc tế (9 trang):** Đầy đủ chứng minh toán học, Ablation Study, XAI Grad-CAM và Cross-domain.
   2. **Mô hình Rep-YOLO11s:** Đạt $94.83\%$ $mAP_{50}$ (Test cố định), $96.64 \pm 0.32\%$ (5-Fold CV).
   3. **Ứng dụng Giám sát RTSP Hoàn chỉnh:** Xử lý end-to-end $65 - 95$ FPS trên RTX 3050.
   4. **Bộ Động cơ Biên dịch Triển khai Tối ưu:** TensorRT FP16, ONNX Runtime INT8.
@@ -189,14 +189,14 @@
 
 ---
 
-### SLIDE 16: KẾ HOẠCH CHO REVIEW 2, REVIEW 3 & KẾT LUẬN
-* **Tóm tắt đóng góp tại Review 1:**
+### SLIDE 16: KẾ HOẠCH TRIỂN KHAI GIAI ĐOẠN 2, 3 & KẾT LUẬN
+* **Tóm tắt đóng góp tại Giai đoạn 1:**
   - Hoàn thành trọn vẹn phát biểu bài toán, cơ sở lý thuyết, kiến trúc mạng mới Rep-YOLO11s và các chứng minh định lượng SOTA/Ablation/Deployment.
   - Khẳng định tính khả thi 100% với các đo đạc vật lý trên phần cứng thật.
-* **Kế hoạch triển khai cho Review 2:**
+* **Kế hoạch triển khai cho Giai đoạn 2:**
   - Hoàn thiện đóng gói phần mềm Desktop GUI / Web Dashboard giám sát cảnh báo vi phạm an toàn lao động.
   - Tích hợp thêm các bài toán quản trị dự án, tinh chỉnh tham số chuyên sâu và mở rộng thử nghiệm đa camera.
-* **Kế hoạch triển khai cho Review 3 & Bảo vệ Hội đồng:**
+* **Kế hoạch triển khai cho Giai đoạn 3 & Bảo vệ Hội đồng:**
   - Tích hợp chưng cất tri thức (Knowledge Distillation) cho góc máy Drone (SHEL5K).
-  - Hoàn tất báo cáo KLTN chính thức và nộp bài báo khoa học chuẩn IEEE.
+  - Hoàn tất báo cáo KLTN chính thức và nộp bài báo khoa học chuẩn quốc tế Q1.
 * **Cam kết nhóm:** Đảm bảo toàn bộ tiêu chí đánh giá loại Xuất sắc của Hội đồng ĐATN ngành Trí tuệ Nhân tạo FPT University!
