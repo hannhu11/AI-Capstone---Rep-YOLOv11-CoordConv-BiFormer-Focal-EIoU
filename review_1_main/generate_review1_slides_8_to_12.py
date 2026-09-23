@@ -13,10 +13,13 @@ from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 from pptx.enum.shapes import MSO_SHAPE
 
-def create_pptx_deck(output_pptx_path):
-    prs = pptx.Presentation()
-    prs.slide_width = Inches(13.333)
-    prs.slide_height = Inches(7.5)
+def create_pptx_deck(output_pptx_path, existing_prs=None):
+    if existing_prs is not None:
+        prs = existing_prs
+    else:
+        prs = pptx.Presentation()
+        prs.slide_width = Inches(13.333)
+        prs.slide_height = Inches(7.5)
     blank_layout = prs.slide_layouts[6]
 
     # Colors
@@ -443,10 +446,35 @@ def create_pptx_deck(output_pptx_path):
 
     add_bottom_banner(s12, "A comprehensive, publication-grade AI capstone delivering high-accuracy helmet surveillance, robust software, and IEEE Q1 contribution.")
 
+    # Ensure all text paragraphs use Calibri
+    for slide in [s8, s9, s10, s11, s12]:
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                for p in shape.text_frame.paragraphs:
+                    p.font.name = 'Calibri'
+
     prs.save(output_pptx_path)
     print(f"Successfully generated PowerPoint deck: {output_pptx_path}")
+
+def build_presentation(base_pptx=None, output_path=None):
+    if base_pptx and os.path.exists(base_pptx):
+        prs = pptx.Presentation(base_pptx)
+    else:
+        prs = pptx.Presentation()
+        prs.slide_width = Inches(13.333)
+        prs.slide_height = Inches(7.5)
+    
+    # Generate slides
+    create_pptx_deck(output_path, existing_prs=prs)
 
 if __name__ == '__main__':
     out_dir = os.path.join(os.getcwd(), 'review_1_main')
     pptx_path = os.path.join(out_dir, 'Slides_Muc_8_9_10_11_12.pptx')
     create_pptx_deck(pptx_path)
+
+    # Also generate merged deck for user convenience
+    base_file = os.path.join(out_dir, 'Capstone_Review_1.pptx')
+    if os.path.exists(base_file):
+        merged_path = os.path.join(out_dir, 'Capstone_Review_1_Merged_Muc_8_to_12.pptx')
+        merged_prs = pptx.Presentation(base_file)
+        create_pptx_deck(merged_path, existing_prs=merged_prs)
