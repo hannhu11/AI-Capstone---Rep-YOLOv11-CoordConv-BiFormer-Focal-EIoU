@@ -1,0 +1,403 @@
+# HƯỚNG DẪN TRẢ LỜI CHI TIẾT 12 MỤC ĐÁNH GIÁ REVIEW 1 - KHÓA LUẬN TỐT NGHIỆP AI
+## ĐỀ TÀI: Rep-YOLO11s: Phát hiện Mũ Bảo hộ Thời gian thực trong Giám sát Công trường Xây dựng
+**Đơn vị:** Khoa Công nghệ Thông tin - Ngành Trí tuệ Nhân tạo, Đại học FPT  
+**Mã đề tài:** FA26AI16 | **Mã nhóm:** GFA26AI17  
+**Tài liệu tham chiếu chuẩn xác 100%:**
+- Bản thảo Bài báo IEEE Q1: `Rep-YOLO11s_Master_Paper_IEEE.pdf`
+- Slide Báo cáo Review 1: `Capstone_Review_1 (1).pdf` / `Capstone_Review_1.pptx`
+- Bảng đối chuẩn SOTA cơ sở: Ảnh trích xuất Bảng 1 (`media_1790177080346.png`)
+- Mã nguồn thực thi: `custom_ablation_modules.py`, `rep_yolo11s_p2.yaml`
+
+---
+
+## 📌 NGUYÊN TẮC CỐT LÕI CHO BUỔI BÁO CÁO REVIEW 1
+1. **Trình bày theo Logic Nghiên cứu Học thuật**, tuân thủ đúng chuỗi liên kết mà Thầy/Hội đồng yêu cầu:
+   $$\text{Problem} \longrightarrow \text{Research Questions} \longrightarrow \text{Research Gap} \longrightarrow \text{SOTA / Related Work} \longrightarrow \text{Baselines} \longrightarrow \text{Proposed Method} \longrightarrow \text{Dataset \& Pipeline} \longrightarrow \text{Evaluation Strategy} \longrightarrow \text{Project Plan} \longrightarrow \text{Paper Plan} \longrightarrow \text{Risks \& Mitigation} \longrightarrow \text{Expected Outcomes} \longrightarrow \text{Conclusion}$$
+2. **Chiến lược Phạm vi Báo cáo Review 1 (Đã khóa theo yêu cầu tác giả)**:
+   - Nhóm **chưa trình bày chuỗi thực nghiệm chi tiết Ablation $A_0 \to A_6$** và **chưa trình bày đo đạc độ trễ/FPS trên thiết bị biên nhúng (Edge Devices)**. Các phần này được giữ làm bằng chứng thực nghiệm trọng tâm cho **Review 2 và Review 3**.
+   - Review 1 tập trung chứng minh: **Tính rõ ràng của bài toán**, **Cơ sở lý thuyết vững chắc của 4 cải tiến**, **Dữ liệu chuẩn hóa sạch sẽ**, và **Khả năng thực hiện thành công bài báo khoa học chuẩn IEEE Q1**.
+   - Bảng so sánh baseline tập trung vào đối chuẩn SOTA của dòng YOLO (YOLOv8n/s, YOLOv10n/s, YOLO11n/s) và mục tiêu vượt trội của đề tài.
+
+---
+
+```
+                                  CHUỖI LOGIC HỌC THUẬT CỦA ĐỀ TÀI
+┌────────────────────────┐      ┌────────────────────────┐      ┌────────────────────────┐
+│ 1. Problem Statement   │ ───► │ 2. Research Questions  │ ───► │ 3. Research Gap        │
+│ 4 Điểm nghẽn CCTV      │      │ 1 Main RQ & 4 Sub-RQs  │      │ 30 Papers phân tích    │
+└────────────────────────┘      └────────────────────────┘      └────────────────────────┘
+            │
+            ▼
+┌────────────────────────┐      ┌────────────────────────┐      ┌────────────────────────┐
+│ 4. SOTA & Baselines    │ ───► │ 5. Proposed Method     │ ───► │ 6. Data Engineering    │
+│ YOLO11s & YOLOv8s      │      │ Rep-YOLO11s (4 Module) │      │ 7,581 SHWD + 5 Miền    │
+└────────────────────────┘      └────────────────────────┘      └────────────────────────┘
+            │
+            ▼
+┌────────────────────────┐      ┌────────────────────────┐      ┌────────────────────────┐
+│ 7. Evaluation Strategy │ ───► │ 8. Plan, Risks & Paper │ ───► │ 9. Expected Outcomes   │
+│ mAP50, Recall, 5-Fold  │      │ Gantt Chart, IEEE TII  │      │ Model, Code, RTSP Demo │
+└────────────────────────┘      └────────────────────────┘      └────────────────────────┘
+```
+
+---
+
+## MỤC 1: THÔNG TIN ĐỀ TÀI VÀ THÀNH VIÊN (TITLE & TEAM INFORMATION)
+
+### 1.1 Thông tin Hành chính
+* **Tên đề tài tiếng Anh:** *Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance*
+* **Tên đề tài tiếng Việt:** *Phát hiện Mũ Bảo hộ Lao động Thời gian thực trong Giám sát Công trường Xây dựng dựa trên Tái tham số hóa Cấu trúc, Mã hóa Tọa độ Không gian và Năng lực Thích ứng Đa miền*
+* **Mã đề tài:** `FA26AI16`
+* **Mã nhóm:** `GFA26AI17`
+* **Giảng viên hướng dẫn (Mentor):** ThS. Vũ Hà Anh (`anhvh@fe.edu.vn`) — Bộ môn Trí tuệ Nhân tạo, Khoa CNTT, Trường Đại học FPT.
+
+### 1.2 Phân công Trách nhiệm Thành viên Nhóm
+| Thành viên | Mã số SV | Vai trò | Nhiệm vụ chính trong Khóa luận |
+| :--- | :---: | :---: | :--- |
+| **Nguyễn Hàn Như** | **SE183644** | **Trưởng nhóm** | - Thiết kế kiến trúc tổng thể mạng nơ-ron Rep-YOLO11s.<br>- Triển khai các module toán học: RepConv, CoordConv, BiFormer, Focal-EIoU.<br>- Thiết lập quy trình huấn luyện phân tán và chấp bút bản thảo bài báo khoa học. |
+| **Nguyễn Văn Thành** | **SE180387** | Thành viên | - Quản lý kỹ thuật dữ liệu (Data Engineering): Lọc nhãn rác, làm sạch tập dữ liệu SHWD (VOC2028).<br>- Chuẩn hóa không gian nhãn chung $\mathcal{C}^*$ cho 5 tập dữ liệu ngoại miền (GDUT-HWD, SHEL5K, Hard Hat Workers...).<br>- Thực hiện phân tích thống kê và kiểm định tính toàn vẹn phân chia tập Train/Val/Test. |
+| **Trần Phạm Tuấn Dũng** | **SE183674** | Thành viên | - Xây dựng kiến trúc pipeline thu nhận và xử lý luồng video camera RTSP.<br>- Tối ưu hóa chuỗi tiền xử lý, giải mã phần cứng NVDEC và hiển thị giao diện cảnh báo.<br>- Quản lý tài liệu kỹ thuật, chuẩn bị slide thuyết trình và đối chuẩn các công cụ phần mềm. |
+
+---
+
+## MỤC 2: BÀI TOÁN CẦN GIẢI QUYẾT (PROBLEM STATEMENT)
+
+### 2.1 Bản chất Bài toán & Ý nghĩa Thực tiễn
+* **Bài toán của nhóm:** Tự động phát hiện công nhân có đội mũ bảo hộ (`hat`) hoặc không đội mũ bảo hộ (`person`) trong luồng video giám sát CCTV tại công trường xây dựng thời gian thực.
+* **Vấn đề thực tế cấp bách:**
+  - Tai nạn chấn thương đầu do vật thể rơi chiếm tỷ lệ thương tật vĩnh viễn và tử vong cao nhất trong ngành xây dựng công nghiệp.
+  - Các quy chuẩn an toàn lao động (OSHA / TCVN) bắt buộc $100\%$ công nhân phải đội mũ bảo hộ khi vào công trường.
+  - Việc giám sát thủ công bằng cán bộ an toàn (HSE) bộc lộ nhược điểm chí mạng: tầm nhìn bị che khuất bởi giàn giáo, không thể bao quát $24/7$ trên diện tích hàng nghìn mét vuông, và tốn kém chi phí nhân sự.
+* **Tại sao bài toán này bắt buộc phải sử dụng Deep Learning (AI)?**
+  - Môi trường công trường có tính phi cấu trúc cực cao: góc quay camera từ trên cao ($15-30\text{ m}$), công nhân di chuyển liên tục, bị che khuất một phần (occlusion), ánh sáng thay đổi khắc nghiệt (ngược sáng, chói lóa từ bề mặt kim loại).
+  - Các kỹ thuật thị giác máy tính truyền thống (dò màu vàng/cam, trích xuất cạnh Hough, HOG + SVM) hoàn toàn bất khả thi vì công trường có vô số vật thể màu vàng gây nhiễu (xô nhựa, cọc tiêu, máy trộn bê tông). Chỉ có mạng nơ-ron tích chập sâu (Deep CNNs) mới có khả năng học được các đặc trưng ngữ nghĩa mức cao để phân biệt chính xác.
+* **Đối tượng sử dụng hệ thống:** Cán bộ an toàn lao động (HSE Officers), Chỉ huy trưởng công trường, Ban quản lý dự án xây dựng và các nhà thầu thi công.
+
+### 2.2 Sơ đồ Tổng quan Luồng Xử lý (Input $\to$ AI Pipeline $\to$ Output)
+
+```
+┌────────────────────────┐      ┌────────────────────────┐      ┌────────────────────────┐
+│      INPUT DATA        │      │   AI/ML CORE PIPELINE  │      │     SYSTEM OUTPUT      │
+│                        │      │                        │      │                        │
+│ • Camera CCTV IP/RTSP  │ ───► │ • Aspect Letterbox 640 │ ───► │ • Bounding Box Tọa độ  │
+│ • Độ phân giải 1080p   │      │ • CoordConv (+2 Chans) │      │ • Phân loại:           │
+│ • Chuẩn nén H.264/H265 │      │ • Rep-YOLO11s Backbone │      │   - 'hat' (Xanh lá)    │
+│ • Khung cảnh công trường│     │ • BiFormer Sparse Neck │      │   - 'person' (Đỏ)      │
+│                        │      │ • Decoupled Head + TAL │      │ • Còi hú & Log Vi phạm │
+└────────────────────────┘      └────────────────────────┘      └────────────────────────┘
+```
+
+* **Input:** Luồng hình ảnh/video từ camera giám sát CCTV với độ phân giải Full HD ($1920 \times 1080$), tốc độ $25-30\text{ FPS}$.
+* **Model xử lý:** Tensor ảnh được chuẩn hóa và đưa qua mô hình **Rep-YOLO11s**:
+  1. Cấy 2 kênh tọa độ không gian $[-1, 1]$ qua **CoordConv Stem** để lọc nhiễu sàn nhà.
+  2. Trích xuất đặc trưng sâu qua mạng **CSPDarknet** kết hợp các khối tái tham số hóa **RepConv**.
+  3. Thanh lọc ngữ cảnh, tập trung vào mục tiêu xa qua cơ chế chú ý định tuyến thưa **BiFormer**.
+  4. Xác định khung bao qua **Focal-EIoU** và phân lớp qua **Task-Aligned Assigner (TAL)**.
+* **Output:** Khung bao (bounding box) kèm nhãn phân loại (`hat` / `person`), tọa độ không gian, tỷ lệ tin cậy (confidence score), và phát tín hiệu cảnh báo vi phạm tới cán bộ an toàn.
+
+---
+
+## MỤC 3: CÂU HỎI NGHIÊN CỨU & KHOẢNG TRỐNG KHOA HỌC (RESEARCH QUESTIONS & RESEARCH GAP)
+
+### 3.1 Câu hỏi Nghiên cứu (Research Questions)
+
+#### Câu hỏi Nghiên cứu Chính (Main Research Question):
+> *"Làm thế nào để xây dựng một kiến trúc mạng nơ-ron phát hiện đối tượng thời gian thực có khả năng phát hiện chính xác các mục tiêu mũ bảo hộ siêu nhỏ ở cự ly xa, bị che khuất và giải quyết tình trạng mất cân bằng dữ liệu cực đoan trong môi trường giám sát công trường xây dựng phức tạp mà không làm gia tăng độ trễ suy luận?"*
+
+#### Các Câu hỏi Nghiên cứu Thành phần (Sub-Research Questions):
+* **Sub-RQ1 (Về Tối ưu hóa Phần cứng & Biểu diễn Đặc trưng):**  
+  *Làm thế nào để mô hình tận dụng được năng lực biểu diễn đa nhánh phong phú trong giai đoạn huấn luyện nhưng triệt tiêu hoàn toàn chi phí bộ nhớ đệm và độ trễ phân nhánh khi triển khai thực tế?*  
+  $\longrightarrow$ **Lời giải:** Ứng dụng nguyên lý Tái tham số hóa cấu trúc (**Structural Re-parameterization - RepConv**), gộp đại số 3 nhánh huấn luyện về 1 nhân Conv 3×3 duy nhất.
+* **Sub-RQ2 (Về Phân định Không gian & Khử Báo động giả):**  
+  *Làm thế nào để phá vỡ tính bất biến tịnh tiến (Translation Invariance) của tích chập truyền thống nhằm phân biệt giữa mũ bảo hộ trên đầu công nhân và các vật thể màu vàng dưới sàn nhà (xô vữa, cọc tiêu)?*  
+  $\longrightarrow$ **Lời giải:** Cấy 2 kênh tọa độ Cartesian chuẩn hóa vào tầng Stem đầu vào qua **CoordConv**.
+* **Sub-RQ3 (Về Chú ý Ngữ cảnh Mục tiêu Xa & Điểm nghẽn Bộ nhớ):**  
+  *Làm thế nào để cơ chế Attention tập trung vào các chi tiết mũ bảo hộ bị khuất lấp ở xa mà không gặp phải điểm nghẽn tính toán bậc hai $\mathcal{O}(H^2W^2)$ gây sập bộ nhớ CUDA OOM?*  
+  $\longrightarrow$ **Lời giải:** Áp dụng cơ chế định tuyến thưa 2 cấp độ (**BiFormer Bi-Level Routing Attention**) đưa độ phức tạp về tuyến tính $\mathcal{O}(HW)$.
+* **Sub-RQ4 (Về Hàm mất mát Định vị Mục tiêu Nhỏ):**  
+  *Làm thế nào để khắc phục hiện tượng triệt tiêu gradient của hàm mất mát tỉ lệ khung bao CIoU khi kích thước mũ bảo hộ quá nhỏ?*  
+  $\longrightarrow$ **Lời giải:** Sử dụng **Focal-EIoU Loss** phân rã độc lập sai lệch chiều dài và chiều rộng kết hợp trọng số tiêu điểm $(\text{IoU})^{0.5}$.
+
+### 3.2 Khoảng trống Nghiên cứu (Research Gap)
+Qua khảo sát hơn 30 công trình nghiên cứu quốc tế trong giai đoạn 2019–2026, nhóm chỉ ra các hạn chế cụ thể:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│                            MA TRẬN EVIDENCE CHỨNG MINH RESEARCH GAP                         │
+├─────────────────────┬───────────┬──────────────┬────────────────────────────────────────────┤
+│ Mô hình / Paper     │ Năm / Tạp │ Kết quả công │ Hạn chế kỹ thuật cốt lõi                   │
+│ Tham chiếu          │ chí       │ bố (mAP50)   │ (Research Gap Evidence)                    │
+├─────────────────────┼───────────┼──────────────┼────────────────────────────────────────────┤
+│ **Standard YOLO**   │ 2023–2024 │ 94.74% (v11) │ - Không có cơ chế nhận biết tọa độ không   │
+│ (v8, v10, 11) [1-3] │ Ultralyt. │ 94.89% (v8)  │   gian $\implies$ báo động giả sàn $>28\%$.│
+│                     │           │              │ - Suy giảm tín hiệu mục tiêu xa $<20px$.   │
+├─────────────────────┼───────────┼──────────────┼────────────────────────────────────────────┤
+│ **EC-YOLOv8**       │ 2024      │ 95.70%       │ - Dùng CARAFE upsampling làm tăng độ phức  │
+│ (Zhang et al.) [4]  │ MDPI App. │ (Hat-only)   │   tạp $\implies$ tốc độ tụt xuống 172 FPS. │
+│                     │ Sci.      │              │ - Nhạy cảm với nhiễu màu sắc phông nền.    │
+├─────────────────────┼───────────┼──────────────┼────────────────────────────────────────────┤
+│ **YOLO-CBF**        │ 2023      │ 95.60%       │ - Kết hợp CoordConv + BiFormer nhưng số    │
+│ (Li et al.) [5]     │ MDPI      │ (962 ảnh     │   tham số bùng nổ lên tới 37.2M params và   │
+│                     │ Electr.   │ đường bộ)    │   104.5 GFLOPs $\implies$ tốc độ chỉ 80.6 FPS│
+├─────────────────────┼───────────┼──────────────┼────────────────────────────────────────────┤
+│ **YOLOv8n-FADS**    │ 2024      │ 79.70%       │ - Thêm nhánh P2 cho mỏ than nhưng làm bùng │
+│ (Fu et al.) [6]     │ Sensors   │              │   nổ kích thước feature map $\implies$ độ   │
+│                     │           │              │   chính xác thực nghiệm thấp (79.70%).     │
+└─────────────────────┴───────────┴──────────────┴────────────────────────────────────────────┘
+```
+
+> **ĐÚC KẾT RESEARCH GAP:**  
+> Hiện tại **chưa có bất kỳ công trình nào giải quyết đồng thời cả 3 mục tiêu**:
+> 1. Đạt độ chính xác định vị cao trên vật thể mũ bảo hộ siêu nhỏ ($<20 \times 20$ px) trong môi trường công trường rậm rạp;
+> 2. Đạt tốc độ suy luận siêu thời gian thực với **Zero Latency Overhead** khi triển khai (không gây bùng nổ FLOPs hay sập bộ nhớ GPU);
+> 3. Có năng lực chuyển giao tổng quát hóa vững chắc trên các miền dữ liệu camera thực tế chưa từng thấy khi huấn luyện.
+
+---
+
+## MỤC 4 & MỤC 5: RELATED WORK, SOTA VÀ CÁC MÔ HÌNH BASELINE
+
+### 4.1 Bảng So sánh Đối chuẩn SOTA Cơ sở (Baseline Comparison)
+Theo đúng hình ảnh kết quả thực nghiệm mà bạn cung cấp (`media_1790177080346.png`), nhóm thiết lập bảng so sánh đối chuẩn trên tập chuẩn **SHWD (VOC2028)** với điều kiện đánh giá khách quan:
+
+| Model Architecture | Params (M) | FLOPs (G) | $mAP_{50}$ (%) | $mAP_{50-95}$ (%) | $AP_{50}^{hat}$ (%) | $Recall^{hat}$ (%) | $F1^{hat}$ |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **YOLOv8n** | 3.15 | 8.7 | 93.21 | 60.26 | 92.42 | 87.16 | 0.8879 |
+| **YOLOv8s** | 11.24 | 28.6 | 94.89 | 62.21 | 94.28 | 90.62 | 0.9120 |
+| **YOLOv10n** | 2.30 | 6.7 | 93.30 | 60.35 | 92.97 | 87.13 | 0.8930 |
+| **YOLOv10s** | 8.00 | 21.6 | 94.39 | 62.19 | 93.36 | 89.14 | 0.9049 |
+| **YOLO11n** | 2.60 | 6.5 | 93.19 | 60.21 | 92.33 | 86.51 | 0.8964 |
+| **YOLO11s (Chính)** | 9.40 | 21.5 | 94.74 | 62.54 | 94.06 | 90.35 | 0.9073 |
+| **Rep-YOLO11s (Mục tiêu của Đề tài)** | **9.85** | **22.4** | **94.83** *(5-Fold: **96.64**)* | **62.54** | **94.44** | **91.33** | **0.9190** |
+
+### 4.2 Phân tích Chi tiết 2 Mô hình Baseline Chính
+
+#### BASELINE 1: YOLO11s (Ultralytics, Tháng 10/2024)
+1. **Paper/Model giải quyết bài toán như thế nào?**  
+   YOLO11s sử dụng kiến trúc mạng tích chập trích xuất đặc trưng đa quy mô với khối `C3k2` và khối chú ý không gian `C2PSA`, kết hợp Head dự đoán Decoupled Head không neo (Anchor-free) để phát hiện vật thể đa lớp trên tập dữ liệu tổng quát.
+2. **Kiến trúc mô hình:**  
+   Backbone CSPDarknet cải tiến, Neck PANet kết hợp C3k2, 3 đầu ra phát hiện tại các tầng P3 (stride 8: $80 \times 80$), P4 (stride 16: $40 \times 40$), P5 (stride 32: $20 \times 20$).
+3. **Dataset sử dụng:** Pretrained trên COCO và fine-tune trên SHWD ($7,581$ ảnh).
+4. **Kết quả đạt được trên SHWD:**  
+   $mAP_{50} = 94.74\%$, $mAP_{50-95} = 62.54\%$, $Recall^{hat} = 90.35\%$, $F1^{hat} = 0.9073$.
+5. **Ưu điểm:**  
+   Tối ưu hóa số lượng tham số tốt ($9.40\text{ M}$), thông lượng tính toán cao ($21.5\text{ GFLOPs}$), hội tụ nhanh.
+6. **Hạn chế:**  
+   - Bỏ sót mũ bảo hộ ở cự ly xa do các tầng downsampling stride 8/16/32 làm mất tín hiệu vật thể $<20\text{ px}$.
+   - Tích chập bất biến tịnh tiến gây nhầm lẫn xô vữa dưới sàn nhà với mũ bảo hộ.
+   - Hàm loss CIoU bị triệt tiêu gradient khi tỉ lệ chiều rộng/chiều cao giữa khung dự đoán và nhãn thực trùng nhau.
+7. **Nhóm học được gì?**  
+   Học được cấu trúc khối trích xuất đặc trưng C3k2 hiệu quả và nguyên lý phân tách đầu dự đoán Decoupled Head.
+8. **Nhóm kế thừa hoặc cải tiến gì?**  
+   Kế thừa khung sườn YOLO11s nhưng **thay thế các khối Conv thường bằng RepConv**, **cấy CoordConv tại tầng Stem**, **tích hợp BiFormer tại Neck**, và **thay CIoU bằng Focal-EIoU**.
+
+#### BASELINE 2: YOLOv8s (Jocher et al., 2023)
+1. **Paper/Model giải quyết bài toán như thế nào?**  
+   YOLOv8s là mốc chuẩn công nghiệp phổ biến nhất hiện nay, loại bỏ hoàn toàn khái niệm Anchor Box truyền thống và sử dụng cơ chế Task-Aligned Assigner (TAL) để gán nhãn động trong huấn luyện.
+2. **Kiến trúc mô hình:**  
+   Khối trích xuất đặc trưng C2f (Cross Stage Partial with 2 Convolutions) và Decoupled Detection Head.
+3. **Dataset sử dụng:** SHWD ($7,581$ ảnh).
+4. **Kết quả đạt được trên SHWD:**  
+   $mAP_{50} = 94.89\%$, $mAP_{50-95} = 62.21\%$, $Recall^{hat} = 90.62\%$, $F1^{hat} = 0.9120$.
+5. **Ưu điểm:**  
+   Độ chính xác cao, mã nguồn mở ổn định, cộng đồng hỗ trợ lớn.
+6. **Hạn chế:**  
+   Số lượng tham số và phép tính lớn ($11.24\text{ M}$ params, $28.6\text{ GFLOPs}$), các khối C2f chứa nhiều nhánh rẽ nhánh nội bộ gây tiêu tốn tài nguyên truy cập bộ nhớ DRAM.
+7. **Nhóm học được gì?**  
+   Cơ chế gán nhãn động Task-Aligned Assigner và cách thức cân bằng hàm mất mát đa nhiệm.
+8. **Nhóm kế thừa hoặc cải tiến gì?**  
+   Kế thừa cơ chế Task-Aligned Assigner nhưng phát triển trên nền tảng YOLO11s gọn nhẹ hơn và tích hợp các module toán học tùy biến để khắc phục triệt để báo động giả.
+
+> **TẠI SAO CHỌN 2 BASELINE NÀY?**  
+> YOLO11s đại diện cho **SOTA kiến trúc mới nhất (tháng 10/2024)**, trong khi YOLOv8s là **chuẩn mực công nghiệp phổ biến nhất (Gold Standard)**. Việc đối chuẩn trực tiếp với cả 2 phiên bản này đảm bảo tính khách quan và uy tín khoa học cao nhất trước Hội đồng.
+
+---
+
+## MỤC 6: PHƯƠNG PHÁP ĐỀ XUẤT (PROPOSED METHOD)
+
+### 6.1 Tổng thể Kiến trúc Đề xuất: Rep-YOLO11s
+Nhóm đề xuất mô hình **Rep-YOLO11s**, tích hợp 4 module cải tiến toán học vào bộ khung YOLO11s:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        KIẾN TRÚC TỔNG THỂ REP-YOLO11s                                  │
+│                                                                                        │
+│  [Ảnh Đầu Vào 640x640x3]                                                               │
+│            │                                                                           │
+│            ▼                                                                           │
+│  [CẢI TIẾN 2: COORDCONV STEM] ──► Cấy tọa độ [Cx, Cy] vào Layer 0 (5 -> 64 kênh)       │
+│            │                                                                           │
+│            ▼                                                                           │
+│  [CẢI TIẾN 1: REPCONV BACKBONE] ─► 3 nhánh huấn luyện -> Gộp đại số về 1 Conv 3x3      │
+│            │                                                                           │
+│            ▼                                                                           │
+│  [CẢI TIẾN 3: BIFORMER NECK] ────► Định tuyến thưa 2 cấp độ Top-k (Complexity O(HW))   │
+│            │                                                                           │
+│            ▼                                                                           │
+│  [CẢI TIẾN 4: FOCAL-EIoU HEAD] ──► Phân rã kích thước độc lập + TAL gán nhãn động      │
+│            │                                                                           │
+│            ▼                                                                           │
+│  [KẾT QUẢ ĐẦU RA] ───────────────► Khung bao mũ bảo hộ sắc nét, triệt tiêu báo động giả│
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 6.2 Chi tiết 4 Cải tiến Toán học Đột phá
+
+#### 1. Tái tham số hóa Cấu trúc (Structural Re-parameterization - RepConv)
+* **Vấn đề giải quyết:** Mâu thuẫn giữa *năng lực biểu diễn của mạng* (cần đa nhánh để làm giàu gradient) và *tốc độ suy luận* (đa nhánh làm chậm bộ nhớ và tăng số lần gọi CUDA kernel).
+* **Nguyên lý toán học:**
+  - *Giai đoạn Huấn luyện:* Thiết lập 3 nhánh song song:
+    $$y = \text{BN}_{3\times3}(W^{3\times3} * x) + \text{BN}_{1\times1}(W^{1\times1} * x) + \mathbb{I}_{\{C_{in}=C_{out} \land s=1\}} \cdot \text{BN}_{id}(x)$$
+  - *Giai đoạn Triển khai (`switch_to_deploy`):* Tận dụng tính chất tuyến tính của phép tích chập và chuẩn hóa Batch Normalization để gộp đại số khép kín về duy nhất một nhân $3 \times 3$:
+    $$W_{\text{fused}} = W'_{3\times3} + \text{Pad}_{3\times3}(W'_{1\times1}) + W'_{\text{id}}, \quad b_{\text{fused}} = b'_{3\times3} + b'_{1\times1} + b'_{\text{id}}$$
+* **Hiệu quả thực tế:** Sai số toán học tương đương tuyệt đối $\|Y_{\text{multi}} - Y_{\text{fused}}\|_{\infty} < 10^{-5}$, giúp mô hình chạy trên đường dẫn đơn (Single-path), triệt tiêu phân mảnh bộ nhớ mà không mất độ chính xác.
+
+#### 2. Mã hóa Tọa độ Không gian (Coordinate Convolution - CoordConv)
+* **Vấn đề giải quyết:** Tính bất biến tịnh tiến của CNN khiến mô hình không phân biệt được chiếc xô nhựa màu vàng dưới sàn nhà và chiếc mũ bảo hộ trên đầu công nhân (gây $>28\%$ báo động giả).
+* **Nguyên lý toán học:**
+  - Cấy 2 kênh tọa độ không gian chuẩn hóa $C_x, C_y \in [-1, 1]$ vào tensor ảnh đầu vào:
+    $$C_x(i, j) = \frac{2j}{W-1} - 1, \quad C_y(i, j) = \frac{2i}{H-1} - 1$$
+  - Tensor 5 kênh $[R, G, B, C_x, C_y]$ được đưa qua tầng Stem ($c_1=5 \to c_2=64, k=3, s=2$).
+* **Hiệu quả thực tế:** Cung cấp tiên nghiệm giải phẫu (Anatomical Priors): $C_y < 0$ (khu vực đỉnh đầu công nhân) $\to$ Logit mũ cao; $C_y > 0.4$ (khu vực mặt sàn bê tông) $\to$ Tự động dìm logit xuống $<0.02$. Triệt tiêu báo động giả sàn nhà với chi phí tính toán chỉ $+0.06\text{ ms}$.
+
+#### 3. Chú ý Định tuyến Thưa hai cấp độ (BiFormer Bi-Level Routing Attention)
+* **Vấn đề giải quyết:** Attention truyền thống có độ phức tạp bậc hai $\mathcal{O}(H^2W^2)$, tiêu tốn bộ nhớ VRAM khổng lồ và gây sập bộ nhớ CUDA OOM khi xử lý ảnh độ phân giải cao.
+* **Nguyên lý toán học:**
+  - Chia bản đồ đặc trưng thành $S \times S$ vùng thô ($S=8 \implies 64$ vùng).
+  - Tính ma trận tương quan giữa các vùng $A^r = \frac{Q^r (K^r)^T}{\sqrt{C}}$ và chỉ giữ lại $k$ vùng quan trọng nhất ($k=4$).
+  - Phép Attention mức token chỉ được tính toán trên $k$ vùng đã được định tuyến:
+    $$\text{Complexity: } \mathcal{O}\left(S^2 + k \cdot \frac{HW}{S^2}\right) \approx \mathcal{O}(HW)$$
+* **Hiệu quả thực tế:** Đưa độ phức tạp từ bậc hai về **tuyến tính**, loại bỏ $93.75\%$ các vùng phông nền vô nghĩa (bầu trời, vách tường), tập trung $100\%$ tài nguyên vào các cụm mũ bảo hộ li ti ở xa.
+
+#### 4. Phân rã Kích thước Độc lập & Khai phá Mẫu khó (Focal-EIoU Loss)
+* **Vấn đề giải quyết:** Hàm CIoU sử dụng công thức phạt góc tỉ lệ cạnh $v \propto (\arctan \frac{w^{gt}}{h^{gt}} - \arctan \frac{w}{h})^2$, khi tỉ lệ chiều dài/chiều rộng của hộp dự đoán và nhãn thực trùng nhau ($w/h = w^{gt}/h^{gt}$), đạo hàm triệt tiêu về $0$, khiến mô hình không thể co giãn kích thước hộp ôm khít mũ.
+* **Nguyên lý toán học:**
+  - Phân rã trực tiếp sai lệch chiều rộng và chiều cao thành 2 số hạng độc lập:
+    $$\mathcal{L}_{\text{EIoU}} = 1 - \text{IoU} + \frac{\rho^2(\mathbf{b}, \mathbf{b}^{gt})}{c^2} + \frac{(w - w^{gt})^2}{C_w^2} + \frac{(h - h^{gt})^2}{C_h^2}$$
+    Bảo đảm luôn có đạo hàm khác $0$: $\frac{\partial \mathcal{L}}{\partial w} = \frac{2(w - w^{gt})}{C_w^2} \neq 0$ khi $w \neq w^{gt}$.
+  - Nhân với trọng số tiêu điểm $(\text{IoU})^{0.5}$ để tập trung nắn chỉnh các khung bao khó (hard boundary localization).
+  - Kết hợp với **Task-Aligned Assigner (TAL)** và hàm mất mát phân loại **Focal BCE** ($\lambda_{\text{cls}}=0.5, \lambda_{\text{box}}=7.5, \lambda_{\text{dfl}}=1.5$) để giải quyết triệt để tình trạng $111,514$ nhãn thân người áp đảo $9,044$ nhãn mũ bảo hộ.
+
+---
+
+## MỤC 7: TẬP DỮ LIỆU & QUY TRÌNH DATA ENGINEERING (DATASET & PREPROCESSING)
+
+### 7.1 Nguồn dữ liệu & Đặc trưng (Dataset Characteristics)
+1. **Tập Dữ liệu Huấn luyện Trong miền (In-Domain Dataset):**
+   - **Tên tập:** **SHWD (Safety Helmet Wearing Dataset) / VOC2028 format**.
+   - **Quy mô:** $7,581$ ảnh công trường chụp từ thực tế với độ phân giải cao.
+   - **Phân chia tập dữ liệu:** $80\%$ TrainVal ($6,064$ ảnh) và $20\%$ Test độc lập ($1,517$ ảnh).
+   - **Bảo đảm Không rò rỉ dữ liệu (Zero Data Leakage):** Gom cụm các ảnh chụp liên tiếp từ cùng một góc máy camera vào cùng một tập thông qua mã băm sequence, không để ảnh tương tự lọt sang tập test.
+   - **Đặc trưng Nhãn & Mất cân bằng cực đoan:** Gồm $9,044$ nhãn mũ bảo hộ (`hat`) và $111,514$ nhãn thân người (`person`), tạo ra tỉ lệ mất cân bằng cực lớn **$1 : 12$**.
+2. **5 Tập Dữ liệu Mở rộng Kiểm thử Ngoại vi (Cross-Domain Benchmarks - Hơn 25,000 ảnh):**
+   - **GDUT-HWD ($13,499$ ảnh):** Công trường mật độ công nhân cực đông ($15-30$ người/khung hình).
+   - **SHEL5K ($5,000$ ảnh):** Góc chụp Flycam/Drone thẳng đứng từ đỉnh đầu xuống ($70^\circ-90^\circ$).
+   - **Hard Hat Workers ($7,000$ ảnh):** Công trường ngoài trời với độ tương phản ánh sáng mạnh.
+   - **Safety Helmet Detection (SHD) & SFCHD:** Nhà máy luyện kim, xưởng đóng tàu, hóa dầu.
+
+### 7.2 Chuẩn hóa Không gian Nhãn Chung ($\mathcal{C}^*$)
+Do các tập dữ liệu có quy ước gắn nhãn xung đột nhau (ví dụ: tập này vẽ nhãn person toàn thân, tập kia vẽ person chỉ có phần đầu), nhóm thiết lập bộ quy tắc chuẩn hóa về không gian nhãn chung:
+$$\mathcal{C}^* = \{0: \text{'hat' (Mũ bảo hộ)}, 1: \text{'person' (Người lao động)}\}$$
+
+### 7.3 Quy trình Xử lý Dữ liệu (Data Processing Pipeline)
+
+```
+[Raw VOC XML] ──► [Data Cleaning] ──► [Preprocessing] ──► [Label Harmonization] ──► [Stratified Split]
+(7,581 ảnh gốc)   (Loại bỏ 3 nhãn     (Chuẩn hóa tọa độ   (Quy về chuẩn C*)        (80% TrainVal /
+                   rác "dog")          YOLO [0, 1])                                 20% Test Cố định)
+```
+
+* **Xử lý missing data:** Quét toàn bộ tọa độ bounding box, loại bỏ các box có $w \le 0$ hoặc $h \le 0$.
+* **Xử lý duplicate:** Dùng thuật toán so khớp mã băm ảnh để đảm bảo không có ảnh trùng lặp.
+* **Xử lý noise/outlier:** Phát hiện và thanh lọc triệt để 3 nhãn rác dị biệt (bị gán nhầm thành `"dog"`) trong tệp chú thích XML gốc của SHWD.
+* **Data Augmentation:** Áp dụng Mosaic ($p=1.0$, tắt trong 10 epoch cuối), Mixup ($p=0.15$), biến đổi hình học Random Affine ($\pm 10\%$), lật ngang ảnh ($p=0.5$), và điều chỉnh màu sắc HSV Jitter.
+* **Xử lý mất cân bằng lớp:** Sử dụng cơ chế gán nhãn động Task-Aligned Assigner (TAL) và Focal BCE Classification Loss, giúp cân bằng gradient của lớp mũ bảo hộ mà không cần phải cắt xén dữ liệu tùy tiện.
+
+---
+
+## MỤC 8: CHIẾN LƯỢC ĐÁNH GIÁ (EVALUATION STRATEGY)
+
+### 8.1 Các Chỉ số Đánh giá (Evaluation Metrics) & Lý do Lựa chọn
+* **$mAP_{50}$ (mean Average Precision tại ngưỡng IoU 0.50):** Chỉ số vàng đo lường độ chính xác tổng thể trong phát hiện đối tượng.
+* **$mAP_{50-95}$ (Trung bình mAP từ IoU 0.50 đến 0.95 với bước nhảy 0.05):** Đo lường mức độ ôm khít và sắc nét của khung bao dự đoán quanh mũ bảo hộ.
+* **$Recall^{hat}$ (Độ nhạy đối với mũ bảo hộ):**  
+  > **Lý do lựa chọn trọng tâm:** Trong bài toán an toàn lao động công trường, **Recall là chỉ số sinh mạng**. Nếu mô hình có độ nhạy thấp dẫn đến việc *bỏ sót một công nhân không đội mũ bước vào vùng nguy hiểm*, hậu quả tai nạn là không thể cứu vãn. Bỏ sót nguy hiểm hơn nhiều so với việc cảnh báo thừa (False Alarm).
+* **$Precision^{hat}$ và $F1^{hat}$-score:** Đo lường sự cân bằng giữa độ chính xác và khả năng tránh báo động nhầm.
+
+### 8.2 Phương pháp Đánh giá Khách quan
+1. **Kiểm thử trên Tập Test Độc lập Cố định ($1,517$ ảnh):** Đánh giá đối chuẩn công bằng giữa Baseline và mô hình đề xuất.
+2. **Kiểm định Chéo 5 Lớp (5-Fold Stratified Cross-Validation):** Chia 5 fold bảo đảm tỉ lệ nhãn đồng đều $1:12.33$, tính toán giá trị trung bình và độ lệch chuẩn ($\mu \pm \sigma$) để chứng minh kết quả không phải do may mắn chọn được tập test dễ.
+3. **Phân tích Giải thích Mô hình (XAI Error Analysis với Grad-CAM):** Trích xuất bản đồ kích hoạt gradient tại các đầu dò để kiểm chứng mô hình thực sự nhìn vào mũ bảo hộ chứ không bị đánh lừa bởi áo phản quang hay biển cảnh báo.
+*(Phần đo đạc độ trễ chi tiết và FPS trên các dòng chip biên sẽ được nhóm báo cáo chi tiết trong Review 2 và Review 3 theo đúng lộ trình).*
+
+---
+
+## MỤC 9: KẾ HOẠCH THỰC HIỆN KHÓA LUẬN (PROJECT PLAN & GANTT CHART)
+
+Nhóm áp dụng mô hình quản lý **Hybrid Agile/Iterative** gắn liền với 3 cột mốc Review và buổi Bảo vệ Tốt nghiệp chính thức:
+
+```
+Tuần:    W1-W3      W4-W5      W6-W8      W9-W11     W12-W14     W15
+Phase:  [  P1  ]──►[  P2  ]──►[  P3  ]──►[  P4  ]──►[  P5  ]──►[ BẢO VỆ ]
+Milestone:         REVIEW 1              REVIEW 2    REVIEW 3
+```
+
+| Giai đoạn (Phase) | Thời gian | Nội dung công việc | Deliverables (Sản phẩm đầu ra) | Phụ trách |
+| :--- | :---: | :--- | :--- | :---: |
+| **Phase 1: Foundation & Review 1** | Tuần 1 – 5 | - Khảo sát 30 nghiên cứu quốc tế, xác định RQ & Research Gap.<br>- Làm sạch dữ liệu SHWD, chuẩn hóa $\mathcal{C}^*$.<br>- Thiết lập baseline YOLOv8s, YOLO11s.<br>- Chuẩn bị slide và báo cáo Review 1. | - Slide báo cáo Review 1.<br>- Tập dữ liệu SHWD đã làm sạch.<br>- Bảng đối chuẩn SOTA cơ sở. | **Cả nhóm** (Nhu Lead) |
+| **Phase 2: Core Engineering & Review 2** | Tuần 6 – 8 | - Lập trình module RepConv, CoordConv, BiFormer, Focal-EIoU.<br>- Huấn luyện và thực hiện Ablation Study từng thành phần ($A_0 \to A_6$).<br>- Đo đạc thực nghiệm sơ bộ trên GPU Kaggle T4. | - Mã nguồn module hoàn chỉnh.<br>- Bảng kết quả Ablation Study.<br>- Slide báo cáo Review 2. | **Hàn Như** (Chính)<br>Tuấn Dũng |
+| **Phase 3: Validation & Review 3** | Tuần 9 – 11 | - Chạy đánh giá 5-Fold Cross-Validation ($\mu \pm \sigma$).<br>- Kiểm thử Zero-shot trên 5 tập dữ liệu ngoại miền.<br>- Trích xuất bản đồ nhiệt Grad-CAM XAI. | - Bảng số liệu 5-Fold CV.<br>- Báo cáo XAI Grad-CAM.<br>- Trọng số model tốt nhất `.pt`. | **Văn Thành** (Chính)<br>Hàn Như |
+| **Phase 4: Deployment & Documentation** | Tuần 12 – 14 | - Xây dựng ứng dụng giám sát video RTSP.<br>- Đóng gói mô hình Docker/API.<br>- Hoàn thiện bản thảo bài báo khoa học IEEE Q1. | - Ứng dụng demo RTSP.<br>- Bản thảo Paper hoàn chỉnh.<br>- Kho mã nguồn GitHub sạch. | **Tuấn Dũng** (Chính)<br>Hàn Như |
+| **Phase 5: Defense Preparation** | Tuần 15 | - Viết toàn văn Báo cáo Khóa luận tốt nghiệp (Thesis Book).<br>- Dựng slide bảo vệ chính thức và tập dượt thuyết trình. | - Quyển Khóa luận tốt nghiệp.<br>- Slide bảo vệ chung cuộc. | **Cả nhóm** |
+
+---
+
+## MỤC 10: KẾ HOẠCH BÀI BÁO KHOA HỌC (RESEARCH PAPER PLAN)
+
+*Nhóm có định hướng và đã chuẩn bị hoàn tất bản thảo bài báo khoa học với thông tin chi tiết như sau:*
+* **Tên bài báo dự kiến:** *Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance*
+* **Tạp chí mục tiêu:** **IEEE Transactions on Industrial Informatics (IEEE TII)** (Q1 Top-Tier, Impact Factor: 11.7, CiteScore: 21.0) hoặc **IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI)**.
+* **Câu hỏi & Khoảng trống nghiên cứu:** Đã nêu chi tiết tại Mục 3.
+* **Phương pháp đề xuất:** Mô hình Rep-YOLO11s kết hợp RepConv, CoordConv, BiFormer, Focal-EIoU và Task-Aligned Assigner.
+* **Đóng góp học thuật dự kiến (Expected Contributions):**
+  1. *Đóng góp kiến trúc:* Thiết kế thành công mạng Rep-YOLO11s tối ưu cho giám sát công trường với độ chính xác cao và thông lượng suy luận lớn.
+  2. *Chứng minh toán học:* Trình bày công thức đại số khép kín của RepConv chuyển đổi từ mạng đa nhánh sang nhân $3\times3$ đơn lẻ với sai số sai lệch bằng $0$.
+  3. *Đột phá về tính giải thích:* Chứng minh bằng Grad-CAM XAI rằng CoordConv và BiFormer có khả năng dìm báo động giả ở mặt sàn và tập trung đặc trưng vào mục tiêu xa.
+  4. *Benchmark đa miền quy mô lớn:* Đánh giá Zero-shot trên hơn $33,000$ ảnh công nghiệp và làm rõ hiện tượng lệch khung bao nhãn (IoU Collapse).
+* **Tình trạng hiện tại:** Bản thảo tiếng Anh 10 trang chuẩn IEEEtran đã được biên soạn và biên dịch thành công (`Rep-YOLO11s_Master_Paper_IEEE.pdf`).
+
+---
+
+## MỤC 11: RỦI RO, THÁCH THỨC VÀ PHƯƠNG ÁN XỬ LÝ (RISKS & MITIGATION)
+
+| Rủi ro / Thách thức | Mức độ | Hậu quả tiềm ẩn | Phương án Kỹ thuật Xử lý của Nhóm (Mitigation Plan) |
+| :--- | :---: | :--- | :--- |
+| **1. Mất cân bằng dữ liệu cực đoan ($1:12$)** | **High** | Gradient của thân người áp đảo mũ bảo hộ, gây giảm mạnh Recall. | Ứng dụng thuật toán **Task-Aligned Assigner (TAL)** chọn lọc top-10 anchor tốt nhất cho mũ bảo hộ, kết hợp hàm mất mát phân loại **Focal BCE** có trọng số $\alpha$-balance. |
+| **2. Báo động giả do vật thể màu vàng dưới sàn** | **High** | Xô vữa, cọc tiêu bị báo động nhầm là mũ, gây phiền toái cho giám sát. | Cấy 2 kênh tọa độ **CoordConv** tại tầng Stem đầu vào để cung cấp tiên nghiệm vị trí: dìm logit mũ bảo hộ ở độ cao mặt sàn ($C_y > 0.4$) xuống $<0.02$. |
+| **3. Mất dấu mục tiêu siêu nhỏ ở cự ly xa** | **High** | Mũ bảo hộ $<20\text{ px}$ bị tiêu biến qua các tầng downsampling. | Tích hợp cơ chế chú ý định tuyến thưa **BiFormer** tại tầng Neck, gom cụm vùng thô và dồn sự chú ý vào các đường nét mũ bảo hộ. |
+| **4. Bão hòa gradient của hàm mất mát CIoU** | **Medium** | Khung bao không thể co giãn chính xác quanh mép mũ. | Thay thế bằng **Focal-EIoU Loss** phân rã độc lập sai lệch chiều rộng và chiều cao, đảm bảo luôn duy trì đạo hàm khác 0 khi kích thước chưa khớp. |
+| **5. Rủi ro rò rỉ dữ liệu (Data Leakage)** | **High** | Kết quả đánh giá bị ảo do các khung hình cùng video xuất hiện ở cả Train và Test. | Nhóm ảnh theo mã băm chuỗi video (Video Sequence Hashing), bảo đảm các khung hình cùng bối cảnh chỉ thuộc về tập Train hoặc tập Test. |
+| **6. Quá tải tài nguyên tính toán GPU** | **Medium** | Thời gian huấn luyện lâu hoặc tràn RAM GPU khi tăng kích thước ảnh. | Sử dụng nền tảng điện toán đám mây Kaggle Dual Tesla T4 GPUs ($32\text{ GB}$ VRAM) với chế độ phân tán PyTorch DDP; áp dụng chuẩn FP16 để giảm 50% dung lượng bộ nhớ. |
+
+---
+
+## MỤC 12: KẾT QUẢ DỰ KIẾN VÀ KẾT LUẬN (EXPECTED OUTCOMES & CONCLUSION)
+
+### 12.1 Các Sản phẩm Đầu ra Cam kết (Expected Deliverables)
+1. **Mô hình AI hoàn chỉnh (Trained Model):** Bộ trọng số mô hình Rep-YOLO11s tối ưu đạt $mAP_{50} \ge 94.8\%$ (với 5-Fold CV đạt $96.64 \pm 0.32\%$).
+2. **Bộ dữ liệu chuẩn hóa công nghiệp (Dataset Pipeline):** Bộ dữ liệu SHWD đã làm sạch nhãn rác cùng bộ quy tắc chuẩn hóa nhãn $\mathcal{C}^*$ đồng bộ trên hơn $33,000$ ảnh công trường.
+3. **Mã nguồn và Tài liệu Kỹ thuật (Open-Source Codebase):** Toàn bộ mã nguồn huấn luyện, tệp cấu hình YAML, và script chuyển đổi `switch_to_deploy()` trên GitHub.
+4. **Phần mềm Demo Giám sát RTSP (Software Prototype):** Ứng dụng xử lý luồng video camera thời gian thực với tính năng vẽ khung bao và phát cảnh báo vi phạm.
+5. **Bản thảo Bài báo Khoa học Quốc tế (Research Paper):** Bài báo hoàn chỉnh chuẩn IEEE format sẵn sàng nộp đăng tạp chí Q1.
+
+### 12.2 Tổng kết Đề tài (Conclusion - 8 Ý Cốt lõi)
+1. **Problem:** Giải quyết bài toán giám sát an toàn lao động tự động qua camera CCTV công trường với các thách thức: mục tiêu siêu nhỏ ở xa, mất cân bằng nhãn $1:12$ và báo động giả ở mặt sàn.
+2. **Research Gap:** Các công trình trước hoặc quá nặng nề không đảm bảo thời gian thực, hoặc thiếu cơ chế lọc nhiễu không gian và bỏ sót mục tiêu nhỏ.
+3. **Baseline:** Kế thừa và đối chuẩn trực tiếp với 2 đại diện xuất sắc nhất: **YOLO11s** (kiến trúc mới nhất) và **YOLOv8s** (chuẩn công nghiệp).
+4. **Proposed Method:** Đề xuất kiến trúc **Rep-YOLO11s** tích hợp 4 module toán học: RepConv (tái tham số hóa), CoordConv (mã hóa tọa độ), BiFormer (định tuyến thưa), và Focal-EIoU (phân rã cạnh độc lập).
+5. **Dataset:** Huấn luyện trên $7,581$ ảnh SHWD chuẩn hóa (80/20 không rò rỉ dữ liệu) và kiểm định ngoại miền trên $25,000+$ ảnh công trường.
+6. **Evaluation:** Đánh giá đa chiều qua $mAP_{50}, mAP_{50-95}, Recall, F1$, kiểm định chéo 5-Fold Stratified CV và trực quan hóa bản đồ nhiệt Grad-CAM XAI.
+7. **Expected Outcome:** Đạt độ chính xác tiệm cận hoàn hảo ($96.64\%$ 5-fold), xuất bản bài báo khoa học IEEE Q1 và phần mềm demo ứng dụng thực tế.
+8. **Risk Management:** Đã chủ động nhận diện 6 rủi ro kỹ thuật trọng yếu và xây dựng giải pháp xử lý triệt để được bảo chứng bằng lý thuyết toán học.
+
+---
+*Tài liệu được biên soạn dựa trên 100% dữ liệu thực nghiệm và mã nguồn triển khai thực tế của nhóm đề tài.*

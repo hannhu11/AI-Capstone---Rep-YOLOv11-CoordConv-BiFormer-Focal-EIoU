@@ -287,6 +287,18 @@ Toàn bộ **32 bài báo nghiên cứu nền tảng và SOTA (2019–2026)** v�
   - Ghi nhận toàn bộ quyết sách học thuật vào `capstone_memory.md`.
   - Thực hiện commit và push toàn bộ thay đổi lên GitHub repository.
 
+### 8.5. Kế hoạch Chuẩn bị Review 1 theo Hướng dẫn của Thầy/Hội đồng (Session 2026-09-23)
+- [x] **Phân tích yêu cầu từ `REVIEW1.docx` (9 ảnh trong `review_1_main`)**:
+  - Hội đồng yêu cầu trình bày theo chuỗi logic học thuật: `Problem -> RQ -> Gap -> SOTA/Related Work -> Baseline -> Proposed Method -> Dataset -> Evaluation -> Expected Contribution`.
+  - 12 mục chi tiết đã được biên soạn đầy đủ tại:
+    - `review_1_main/HUONG_DAN_TRA_LOI_12_MUC_REVIEW_1.md`
+    - `review_1_main/HUONG_DAN_TRA_LOI_12_MUC_REVIEW_1.html`
+- [x] **Tuân thủ đúng phạm vi Review 1 theo chỉ đạo của tác giả**:
+  - Giữ lại phần chạy chi tiết độ trễ ms, FPS và chuỗi ablation $A_0 \to A_6$ cho **Review 2 & 3**.
+  - Review 1 tập trung đối chuẩn các mô hình cơ sở từ Bảng 1: YOLOv8n/s, YOLOv10n/s, YOLO11n/s so với mục tiêu đề tài.
+  - Khẳng định định hướng nộp bài báo khoa học chuẩn IEEE Q1 (IEEE TII) và không dùng thiết bị nhúng biên (Edge Device) cho lần báo cáo 1.
+
+
 
 
 
