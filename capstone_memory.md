@@ -309,3 +309,23 @@ Toàn bộ **32 bài báo nghiên cứu nền tảng và SOTA (2019–2026)** v�
     4. **Slide 11 (Mục 11 - Risks & Mitigation)**: `Slide_11_Risk_Assessment_Mitigation.png` (Ma trận 6 rủi ro kỹ thuật: Mất cân bằng 1:12, Báo động sàn, Mũ li ti xa, Triệt tiêu CIoU, Rò rỉ video, Giới hạn GPU).
     5. **Slide 12 (Mục 12 - Expected Outcomes & Conclusion)**: `Slide_12_Expected_Outcomes_Conclusion.png` (5 sản phẩm đầu ra cam kết: Weights, Dataset C*, Mã nguồn GitHub, RTSP demo, Paper IEEE + Tổng kết 8 ý cốt lõi).
   - Scripts tạo lập tự động: `review_1_main/generate_review1_slides_8_to_12.py`, `review_1_main/render_slides_as_images.py`.
+
+### 8.6. Xây dựng Hoàn chỉnh Bộ Slide Mục 4, 5 & Mục 6 (Session 2026-09-24)
+- [x] **Slide Mục 4.1 - Bảng So sánh Đối chuẩn SOTA Cơ sở (Baseline Comparison)**:
+  - Bảng số liệu chuẩn xác 100% khớp ảnh `media_1790204031545.png` (YOLOv8n/s, YOLOv10n/s, YOLO11n/s và Rep-YOLO11s).
+  - 3 Thẻ phân tích nhận định: Ưu thế Recall sinh mạng (91.33%), Cân bằng tham số (9.85M / 22.4G) và Độ ổn định 5-Fold (96.64%).
+  - Tệp ảnh 300 DPI: `review_1_main/slide_renders_4_5_6/Slide_04_1_Baseline_Comparison_Table.png`.
+- [x] **Slide Mục 4.2 - Phân tích Chi tiết 2 Mô hình Baseline Chính**:
+  - Baseline 1 (YOLO11s): Kiến trúc C3k2 + C2PSA, 3 điểm nghẽn cốt lõi, bài học kế thừa & cải tiến (`Slide_04_2_Baseline_1_YOLO11s.png`).
+  - Baseline 2 (YOLOv8s): Khối C2f, cơ chế gán nhãn động TAL, ưu điểm độ chính xác, hạn chế DRAM & 28.6 GFLOPs (`Slide_04_2_Baseline_2_YOLOv8s.png`).
+  - Bản đối chuẩn song song 2 Baseline trên cùng 1 slide kèm cơ sở khoa học lựa chọn (`Slide_04_2_Baselines_Combined_Comparison.png`).
+- [x] **Slide Mục 6.1 - Kiến trúc Tổng thể Đề xuất Rep-YOLO11s**:
+  - Sơ đồ Pipeline trực quan 6 khối khớp ảnh `media_1790204424086.png`: Ảnh đầu vào -> CoordConv Stem -> RepConv Backbone -> BiFormer Neck -> Focal-EIoU Head -> Kết quả đầu ra.
+  - 4 Thẻ đóng góp toán học: Tái tham số hóa đại số, Mã hóa tọa độ không gian, Chú ý định tuyến thưa $O(HW)$, Hàm mất mát phân rã kích thước độc lập.
+  - Tệp ảnh 300 DPI: `review_1_main/slide_renders_4_5_6/Slide_06_1_Proposed_Rep_YOLO11s_Architecture.png`.
+- [x] **Các Tệp Sản phẩm Bàn giao**:
+  - Bản PPTX tách rời: `review_1_main/Slides_Muc_4_5_6.pptx` (5 slide vector, font chuẩn Calibri).
+  - Bản PPTX gộp All-in-One Master: `review_1_main/Capstone_Review_1_All_In_One_Master.pptx` (37 slide bao gồm toàn bộ slide gốc + Mục 4, 5, 6 + Mục 8, 9, 10, 11, 12).
+  - Thư mục ảnh render 300 DPI: `review_1_main/slide_renders_4_5_6/`.
+  - Scripts tạo lập & render tự động: `review_1_main/generate_review1_slides_4_5_6.py`, `review_1_main/render_slides_4_5_6_as_images.py`.
+
