@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  20 SEP 2026 13:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  23 SEP 2026 15:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -313,18 +313,18 @@ Underfull \hbox (badness 2073) in paragraph at lines 56--57
 
 
 [2]
-<figures/shwd_architecture_pipeline.pdf, id=28, 1293.63306pt x 715.47299pt>
+<figures/shwd_architecture_pipeline.pdf, id=29, 1293.63306pt x 715.47299pt>
 File: figures/shwd_architecture_pipeline.pdf Graphic file (type pdf)
 <use figures/shwd_architecture_pipeline.pdf>
 Package pdftex.def Info: figures/shwd_architecture_pipeline.pdf  used on input line 87.
 (pdftex.def)             Requested size: 516.0pt x 285.37625pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 104--105
+Underfull \hbox (badness 10000) in paragraph at lines 107--108
 []\OT1/ptm/m/n/10 During the de-ploy-ment con-ver-sion phase
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 104--105
+Underfull \hbox (badness 10000) in paragraph at lines 107--108
 \OT1/ptm/m/n/10 (\OT1/phv/m/n/10 switch[]to[]deploy\OT1/ptm/m/n/10 ), each Conv-BN se-quence is first
  []
 
@@ -337,85 +337,93 @@ Underfull \hbox (badness 10000) in paragraph at lines 104--105
 
 
 [4 <./figures/shwd_architecture_pipeline.pdf>]
-<figures/shwd_gradcam_comparison.pdf, id=273, 770.88pt x 564.18782pt>
-File: figures/shwd_gradcam_comparison.pdf Graphic file (type pdf)
-<use figures/shwd_gradcam_comparison.pdf>
-Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 297.
-(pdftex.def)             Requested size: 516.0pt x 377.6423pt.
-
-
-<figures/shwd_system_pipeline.pdf, id=274, 1112.95805pt x 513.11702pt>
-File: figures/shwd_system_pipeline.pdf Graphic file (type pdf)
-<use figures/shwd_system_pipeline.pdf>
-Package pdftex.def Info: figures/shwd_system_pipeline.pdf  used on input line 319.
-(pdftex.def)             Requested size: 516.0pt x 237.89229pt.
-<figures/shwd_latency_vs_map.png, id=275, 469.755pt x 303.534pt>
-File: figures/shwd_latency_vs_map.png Graphic file (type png)
-<use figures/shwd_latency_vs_map.png>
-Package pdftex.def Info: figures/shwd_latency_vs_map.png  used on input line 326.
-(pdftex.def)             Requested size: 252.0pt x 162.83139pt.
-
-Underfull \hbox (badness 1584) in paragraph at lines 332--333
-\OT1/ptm/m/n/10 stream pipeline reach-ing $[]$ ($\OT1/cmr/m/n/10 14\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 28[]$\OT1/ptm/m/n/10 ). At
+Underfull \hbox (badness 6859) in paragraph at lines 217--218
+[]\OT1/ptm/m/n/10 In com-par-i-son to spe-cial-ized lit-er-a-ture, while EC-
  []
 
 
-Underfull \hbox (badness 2158) in paragraph at lines 332--333
-\OT1/cmr/m/n/10 640 \OMS/cmsy/m/n/10 ^^B \OT1/cmr/m/n/10 640$\OT1/ptm/m/n/10 , Ten-sorRT FP16 for-ward ex-e-cu-tion re-quires
- []
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
 [5]
-
-
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
+<figures/shwd_gradcam_comparison.pdf, id=277, 770.88pt x 564.18782pt>
+File: figures/shwd_gradcam_comparison.pdf Graphic file (type pdf)
+<use figures/shwd_gradcam_comparison.pdf>
+Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 313.
+(pdftex.def)             Requested size: 516.0pt x 377.6423pt.
+
+
 [6]
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
-Underfull \hbox (badness 1694) in paragraph at lines 370--371
-\OT1/ptm/m/n/10 ing boxes and alert-ing over-lay via OpenCV GUI
+
+<figures/shwd_system_pipeline.pdf, id=281, 1112.95805pt x 513.11702pt>
+File: figures/shwd_system_pipeline.pdf Graphic file (type pdf)
+<use figures/shwd_system_pipeline.pdf>
+Package pdftex.def Info: figures/shwd_system_pipeline.pdf  used on input line 335.
+(pdftex.def)             Requested size: 516.0pt x 237.89229pt.
+<figures/shwd_latency_vs_map.png, id=282, 469.755pt x 303.534pt>
+File: figures/shwd_latency_vs_map.png Graphic file (type png)
+<use figures/shwd_latency_vs_map.png>
+Package pdftex.def Info: figures/shwd_latency_vs_map.png  used on input line 342.
+(pdftex.def)             Requested size: 252.0pt x 162.83139pt.
+
+Underfull \hbox (badness 1584) in paragraph at lines 348--349
+\OT1/ptm/m/n/10 stream pipeline reach-ing $[]$ ($\OT1/cmr/m/n/10 14\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 28[]$\OT1/ptm/m/n/10 ). At
+ []
+
+
+Underfull \hbox (badness 2158) in paragraph at lines 348--349
+\OT1/cmr/m/n/10 640 \OMS/cmsy/m/n/10 ^^B \OT1/cmr/m/n/10 640$\OT1/ptm/m/n/10 , Ten-sorRT FP16 for-ward ex-e-cu-tion re-quires
  []
 
 
 
 [7 <./figures/shwd_gradcam_comparison.pdf>]
+Underfull \vbox (badness 5359) has occurred while \output is active []
 
-(./main.bbl
+
+
+
+Underfull \vbox (badness 1314) has occurred while \output is active []
+
+
 
 [8 <./figures/shwd_system_pipeline.pdf> <./figures/shwd_latency_vs_map.png>]
-Underfull \hbox (badness 3838) in paragraph at lines 27--28
+Underfull \hbox (badness 1694) in paragraph at lines 386--387
+\OT1/ptm/m/n/10 ing boxes and alert-ing over-lay via OpenCV GUI
+ []
+
+
+
+(./main.bbl
+Underfull \hbox (badness 2237) in paragraph at lines 27--28
 \OT1/ptm/m/n/8 ``Yolov10: Real-time end-to-end ob-ject de-tec-tion,'' \OT1/ptm/m/it/8 arXiv preprint
  []
 
 )
 
-
-
-[9
-
-] (./main.aux)
+[9] (./main.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-05-26>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4078 strings out of 469867
- 65912 string characters out of 5482749
- 509578 words of memory out of 5000000
- 32320 multiletter control sequences out of 15000+600000
+ 4079 strings out of 469867
+ 65926 string characters out of 5482749
+ 502289 words of memory out of 5000000
+ 32321 multiletter control sequences out of 15000+600000
  680708 words of font info for 138 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 57i,12n,65p,2563b,312s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,12n,65p,2741b,312s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (9 pages, 2377239 bytes).
+Output written on main.pdf (9 pages, 2390799 bytes).
 PDF statistics:
  545 PDF objects out of 1000 (max. 8388607)
  126 compressed objects within 2 object streams

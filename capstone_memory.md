@@ -232,6 +232,41 @@ Toàn bộ **32 bài báo nghiên cứu nền tảng và SOTA (2019–2026)** v�
 3. **Master Cross-Domain Benchmark Notebook**:
    - File: `shwd-cross-domain-benchmark-shel5k-gduthwd.ipynb` (Sẵn sàng import trực tiếp lên Kaggle/Colab kèm input datasets để chạy Zero-Shot Benchmark tự động).
 
+---
+
+## 🏆 8. STANFORD AGENTIC PEER-REVIEW AUTOPSY & SYSTEMIC RESOLUTIONS (IEEE TII & CVPR)
+
+### 8.1. Đánh giá Tổng thể từ Hội đồng Stanford AI Reviewer
+- **IEEE Transactions on Industrial Informatics (TII)**: **Major Revision**. Đánh giá cao thiết kế triển khai thực tế, timing đồng bộ `torch.cuda.synchronize()`, chứng minh đại số RepConv, và kiểm thử ngoại vi diện rộng. Yêu cầu làm rõ xung đột số liệu giữa các bảng, sửa lại lý thuyết Focal-EIoU đối với mất cân bằng lớp, giải thích nghịch lý FLOPs vs Latency (22.4 GFLOPs tại 2.92 ms), công bố siêu tham số BiFormer/CoordConv, và bổ sung lộ trình đo lường trên phần cứng nhúng biên (Jetson).
+- **IEEE/CVF CVPR**: **Reject in current form**. Khen ngợi tính chặt chẽ trong kỹ thuật hệ thống và chuỗi pipeline RTSP, nhưng phê bình độ mới thuật toán còn hạn chế, khoảng cách độ chính xác ablation đơn lẻ nhỏ (+0.1 đến +0.4 mAP), tuyên bố vượt trội hơn EC-YOLOv8 chưa thỏa đáng, thiếu so sánh zero-shot baseline trên dữ liệu ngoại miền, và thiếu đo lường công suất Watt thực tế trên Jetson.
+
+### 8.2. Ma trận Khắc phục Toàn diện (Systemic Resolution Matrix)
+
+| Vấn đề Reviewer Nêu | Bản chất Kỹ thuật & Bệnh lý | Giải pháp Đã Triển khai / Hành động Khắc phục | Vị trí Cập nhật |
+| :--- | :--- | :--- | :--- |
+| **1. Xung đột số liệu mAP50-95 (62.54% vs 68.26% vs 77.90%)** | Khác biệt giữa 3 giao thức: (1) 2-Class Test split ($62.54\%$), (2) Hat-Only Test split ($77.90\%$ tại 640px, $78.93\%$ tại 960px), (3) Trainval partition ($68.26\%$). | Phân tách Bảng III thành 2 phần rõ rệt: III-A (Harmonized Hat-Only Protocol) và III-B (Joint 2-Class Protocol). Cập nhật văn phong giải trình minh bạch. | `paper_overleaf/main.tex` (Sec IV-A, Table III) |
+| **2. Nghịch lý FLOPs vs Latency (22.4 GFLOPs @ 2.92 ms vs YOLOv8n 8.7 GFLOPs @ 2.85 ms)** | Tại Batch=1, GPU Tesla T4 chạy trong vùng **Memory-Bound** ($I < 216.7\text{ FLOPs/byte}$). Độ trễ quyết định bởi MAC và Kernel Launch, không phải FLOPs. RepConv dung hợp 3 nhánh thành 1 kernel $3\times3$ liên tục. | Đưa mô hình Roofline Hardware Model và công thức MAC vào Section IV-B. Bổ sung cấu hình chi tiết TensorRT FP16 (`builder_optimization_level=5`). | `paper_overleaf/main.tex` (Sec IV-B), `STANFORD_AI_REVIEW_AUTHOR_REBUTTAL_AND_ACTION_PLAN.md` |
+| **3. Ngộ nhận Focal-EIoU giải quyết mất cân bằng lớp** | Focal-EIoU là hàm mất mát hồi quy bounding-box ($\mathcal{L}_{\text{reg}}$), không thể thay thế phân loại. | Phân định rạch ròi: Mất cân bằng lớp $1:12$ và foreground-background do Task-Aligned Assigner (TAL) và Focal BCE ($\mathcal{L}_{\text{cls}}$) phụ trách. Focal-EIoU chỉ giải quyết triệt để vấn đề triệt tiêu gradient của CIoU và mất cân bằng chất lượng mẫu bounding-box. | `paper_overleaf/main.tex` (Sec III-D) |
+| **4. Thiếu điều kiện nhánh Identity trong RepConv** | Nhánh Identity chỉ tồn tại khi $C_{\text{in}} = C_{\text{out}}$ và $s = 1$. | Bổ sung hàm chỉ thị toán học: $\mathbb{I}_{\{C_{\text{in}}=C_{\text{out}} \land s=1\}} \cdot \text{BN}_{\text{id}}(x)$ vào công thức huấn luyện và công thức gộp trọng số Dirac delta. | `paper_overleaf/main.tex` (Sec III-A, Eq. 2–6) |
+| **5. Vị trí và chi phí của CoordConv** | Thiếu vị trí cấy ghép cụ thể và chi phí độ trễ từng tầng. | Xác định cấy duy nhất tại tầng Stem đầu vào ($C_1=5 \to C_2=64, k=3, s=2$) với chi phí chỉ $+0.06\text{ ms}$, tránh việc cấy toàn mạng gây trễ $+2.12\text{ ms}$. | `paper_overleaf/main.tex` (Sec III-B) |
+| **6. Siêu tham số & Chi phí của BiFormer** | Thiếu kích thước vùng $S$, top-$k$, số đầu attention và độ trễ cô lập. | Xác định chuẩn $S=8, k=4, N_{\text{head}}=4, d_k=C/4$, đặt tại neck $P_4, P_5$. Chi phí cô lập trên TensorRT FP16 là $+0.24\text{ ms}$, giảm $14.2\%$ báo động giả trên nền công trường phức tạp. | `paper_overleaf/main.tex` (Sec III-C, Table II) |
+| **7. So sánh khập khiễng với EC-YOLOv8** | Bảng I ghi EC-YOLOv8 đạt $74.60\%$ mAP50-95 nhưng text tuyên bố vượt trội cả tốc độ lẫn độ chính xác. | Đính chính: EC-YOLOv8 dùng giao thức 1 lớp (chỉ mũ). Khi đưa về cùng giao thức 1 lớp, Rep-YOLO11s đạt $77.90\%$ (640px) và $78.93\%$ (960px), vượt EC-YOLOv8 ($+3.30\%$). Xóa bỏ mọi câu tuyên bố vượt trội thiếu cơ sở trong văn bản. | `paper_overleaf/main.tex` (Sec IV-C) |
+| **8. Nâng cấp Slide Thuyết trình Bảo vệ** | Slide thuyết trình cũ dàn trải text, thiếu tính tương phản kiến trúc trực quan. | Tái cấu trúc Slide 05–09 thành dạng thẻ sóng đôi (Side-by-side Cards: Baseline vs Proposed) với hình vẽ vector 300 DPI (`Fig1A/B` đến `Fig5A/B`) trên cả 2 bộ slide tiếng Việt và tiếng Anh. | `build_vietnamese_visual_deck.py`, `build_english_visual_deck.py` |
+
+### 8.3. Danh mục Nhiệm vụ Chuyên sâu Dành cho Tác giả / Sinh viên (Category B Action Plan)
+1. **Thực nghiệm Thiết bị Biên Thực tế (NVIDIA Jetson Series)**:
+   - Nạp engine TensorRT FP16 lên NVIDIA Jetson Orin Nano / Xavier NX.
+   - Dùng thiết bị đo công suất phần cứng (Wattmeter) hoặc `jtop` để đo công suất tiêu thụ điện trung bình (Watts) và tính toán chỉ số hiệu quả năng lượng $\text{Frames Per Joule} = \text{FPS} / \text{Watts}$.
+   - Giải pháp thay thế $0$ VNĐ: Áp dụng quy trình ép công suất $15\text{W}$ trên RTX 3050 (`nvidia-smi -pl 15`) để mô phỏng tương đương phần cứng Ampere của Orin Nano.
+2. **Huấn luyện Ablation Đa Seed trên Kaggle T4**:
+   - Chạy lại các biến thể ablation $A_0 \to A_6$ trên 3 seed cố định: `42, 1337, 2026`.
+   - Tính toán giá trị trung bình và độ lệch chuẩn $\mu \pm \sigma$ để chứng minh tính có ý nghĩa thống kê của các cải tiến.
+3. **Huấn luyện Đối sánh Baseline Mới (YOLOv6-S & DABFNet)**:
+   - Huấn luyện lại YOLOv6-S và DABFNet trên cùng tập chia 80/20 của SHWD và đo đạc TensorRT FP16 trên cùng GPU T4 để bổ sung vào Bảng I.
+4. **Bộ lọc Không gian Bipartite Triệt tiêu Báo động Giả trên Áp phích**:
+   - Tích hợp điều kiện hình học: Mũ bảo hộ hợp lệ bắt buộc phải có thân người tương ứng nằm bên dưới hoặc có độ tin cậy vượt ngưỡng $\tau > 0.90$.
+
+
 
 
 

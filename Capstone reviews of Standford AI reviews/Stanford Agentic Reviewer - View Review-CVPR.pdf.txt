@@ -1,0 +1,350 @@
+--- PAGE 1 ---
+View Your Review
+Get detailed AI feedback on your research paper (free!)
+View Your Review
+Structural Re-Parameterization, Spatial
+Coordinate Encoding, and Cross-Domain
+Robustness for Real-Time Safety Helmet
+Detection in Construction Surveillance
+CVPR
+Submitted: September 20, 2026
+Summary
+The paper proposes Rep-YOLO11s, a real-time helmet detection framework for
+construction surveillance that integrates four known components: structural re-
+parameterization (RepConv) to fuse multi-branch convolutions at inference,
+CoordConv to inject spatial coordinates, BiFormer bi-level routing attention to
+focus computation on salient regions, and Focal-EIoU for bounding box
+regression. The authors report strong single-split and 5-fold results on SHWD,
+extensive zero-shot tests across several external PPE datasets, and multi-platform
+deployment benchmarks and pipeline breakdowns that emphasize end-to-end
+throughput and timing integrity.
+Strengths
+S
+paperreview.ai
+By Stanford ML Group
+Upload Paper
+View Review
+Tech Overview
+9/20/26, 2:04 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=yg9lcXa0vF7UUb3a5rXaGPNtFFVF4_QrqQpTthX0eRQ
+1/9
+--- PAGE 2 ---
+Technical novelty and innovation
+Experimental rigor and validation
+Clarity of presentation
+Significance of contributions
+Weaknesses
+Technical limitations or concerns
+Thoughtful engineering composition tailored to the PPE setting: RepConv
+for 
+efficient 
+deployment, 
+CoordConv 
+for 
+position-sensitive
+disambiguation, and BiFormer for sparse attention in clutter.
+•
+The structural re-parameterization lifecycle is well-articulated with correct
+algebra for fusing Conv+BN and padding 1×1/identity branches to 3×3
+for deployment.
+•
+Broad cross-domain evaluation across five external datasets and a useful
+discussion of annotation protocol mismatches (head-only vs whole-body
+“person” boxes).
+•
+Deployment audits across multiple hardware targets with synchronized
+CUDA timing and a clear pipeline-level latency breakdown (decoding,
+preprocessing, inference, NMS, rendering).
+•
+Clear motivation grounded in real construction surveillance challenges
+(tiny distant helmets, class imbalance, occlusion, distractors).
+•
+Concise mathematical presentation for RepConv fusion and Focal-EIoU,
+and an explicit description of coordinate channel normalization for
+CoordConv.
+•
+Practical relevance to an important safety application; emphasis on real-
+time, edge-suitable deployment and pipeline engineering likely of
+interest to practitioners.
+•
+The end-to-end throughput analysis addresses a common gap in
+academic work (model latency vs real-world video pipeline performance).
+•
+Limited methodological novelty: all four main components are known
+(RepVGG/RepConv, CoordConv, BiFormer, Focal-EIoU) and the paper
+•
+9/20/26, 2:04 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=yg9lcXa0vF7UUb3a5rXaGPNtFFVF4_QrqQpTthX0eRQ
+2/9
+--- PAGE 3 ---
+Experimental gaps or methodological issues
+Clarity or presentation issues
+Missing related work or comparisons
+mainly combines them for a specific application domain without
+introducing new algorithms or insights.
+Missing critical implementation specifics for BiFormer integration
+(number/placement of blocks, routing granularity S, top-k, number of
+heads), which impacts reproducibility and makes the complexity-accuracy
+trade-off hard to assess.
+•
+Very small accuracy deltas in ablations (A0→A6) that fall within typical
+run-to-run noise; no multiple seeds or statistical significance reported.
+•
+Claims of “outperforming competing methods in both accuracy and
+throughput” are not supported by Table I: YOLOv8s slightly exceeds the
+reported single-checkpoint mAP50 (94.89 vs 94.83), and EC-YOLOv8
+reports a much stronger mAP50-95 (74.6) than the proposed model
+(62.54) under unclear protocol parity.
+•
+Latency vs. FLOPs inconsistency: the proposed 22.4 GFLOPs model
+allegedly runs at 2.92 ms on T4 (TRT FP16) while YOLOv8n at 8.7 GFLOPs
+is 2.85 ms; without detailing TRT optimizations, layer fusion, tensor
+shapes, or plugin use, this appears implausible or at least insufficiently
+justified.
+•
+Cross-domain comparisons largely contrast variants of the proposed
+method rather than fair baselines (e.g., vanilla YOLOv8/YOLO11) under the
+same zero-shot protocols; this weakens generalization claims.
+•
+5-fold cross-validation is reported for the proposed method but not for
+baselines; the exact SHWD split protocol (official vs re-splits) is unclear,
+raising concerns about fairness and potential leakage.
+•
+Inconsistent naming (YOLOIIn/YOLOIls vs YOLO11n/YOLO11s), EIoU/EloU
+spelling, and some table entries with dashes or misalignments; such
+issues complicate interpretation.
+•
+Unspecified loss weights (λ1, λ2, λ3), final training augmentation details,
+head settings (DFL specifics vs TAA), and precise architectural
+modifications (which YOLO11 blocks replaced by RepConv and how
+many).
+•
+9/20/26, 2:04 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=yg9lcXa0vF7UUb3a5rXaGPNtFFVF4_QrqQpTthX0eRQ
+3/9
+--- PAGE 4 ---
+Detailed Comments
+Technical soundness evaluation
+Experimental evaluation assessment
+Little discussion of recent small-object detection techniques (e.g.,
+Uncertainty-Aware 
+Gradient 
+Stabilization; 
+large-kernel 
+re-
+parameterization variants like RepLKNet/modern ELAN-based reparam
+blocks 
+such 
+as 
+RepHELAN/MAF-YOLO) 
+and 
+advanced 
+PPE
+datasets/baselines (e.g., SFCHD with SCALE modules).
+•
+Open-vocabulary or VLM baselines for zero-shot helmet detection (e.g.,
+OWLv2-based cascaded/directed variants) are not considered despite
+being relevant to cross-domain claims.
+•
+Structural re-parameterization math (BN folding, 1×1 padding to 3×3,
+identity Dirac delta) is correct and matches standard RepVGG practice.
+The identity branch implies Cin=Cout; otherwise, a 1×1 projection is
+needed—this assumption should be stated.
+•
+CoordConv formulation is standard and appropriate for this domain
+where spatial priors matter (helmet above torso/head).
+•
+BiFormer summary aligns with the cited work (top-k routing at coarse
+level then fine-grained token attention). However, the paper does not fix
+key hyperparameters (S, k, number of layers/heads), nor quantify the
+added FLOPs/latency before re-parameterization; this makes it difficult to
+disentangle attention benefits from the rest of the pipeline.
+•
+The Focal-EIoU presentation is consistent with the literature; however, the
+impact relative to standard YOLO losses is not convincingly demonstrated
+by the tiny gains in Table II.
+•
+Ablation gains are marginal (+0.04 to +0.14 mAP50-95) and statistically
+fragile; multiple random seeds or confidence intervals are needed. The
+latency reduction in A6 conflates architectural fusion with engine change
+(TensorRT FP16) and is not an apples-to-apples ablation.
+•
+State-of-the-art comparison has inconsistencies: EC-YOLOv8’s mAP50-95
+(74.6) exceeds the proposed 62.54 significantly; if the protocols or
+•
+9/20/26, 2:04 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=yg9lcXa0vF7UUb3a5rXaGPNtFFVF4_QrqQpTthX0eRQ
+4/9
+--- PAGE 5 ---
+Comparison with related work (using the summaries provided)
+datasets differ, the paper should normalize or remove those rows.
+Similarly, the claim of superior accuracy vs YOLOv8/YOLO10/YOLO11 is
+not supported by the reported single-checkpoint mAP50; only the 5-fold
+numbers (unavailable for baselines) show gains.
+Latency claims require more detail. With ~22.4 GFLOPs, 2.92 ms (batch=1,
+640) on T4 is exceptionally fast; if achieved via aggressive TRT kernel
+fusion, persistent kernels, reduced precision, or plugin ops, these details
+should be disclosed, and the same optimizations applied to baselines.
+Reporting throughput with and without TensorRT for all models, and
+providing TRT engine build logs, would help.
+•
+Cross-domain evaluation is extensive but misses baseline comparisons
+under identical zero-shot settings (e.g., YOLOv8s or YOLO11s vanilla).
+Without them, it is hard to attribute robustness to the proposed
+components versus the base architecture or data choice. Also,
+person/helmet protocol harmonization is commendable, but unified
+reporting 
+(hat-only 
+metrics 
+across 
+datasets) 
+would 
+strengthen
+conclusions.
+•
+BiFormer: The integration matches the spirit of dynamic sparse attention
+(Related Work: 2303.08810), but the paper does not quantify
+computational savings or provide ablation isolating BiFormer’s effect on
+tiny-object AP or recall.
+•
+Focal-EIoU: Usage aligns with the original intent (Related Work:
+2101.08158); nonetheless, empirical gains here are minimal.
+•
+RepConv: The approach mirrors RepVGG’s structural re-parameterization
+(Related Work: 2101.03697), but the benefit to final accuracy is negligible
+while deployment speed improvements are emphasized—again, better
+baseline parity is needed to credit RepConv specifically.
+•
+Small-object and PPE literature: Methods like UGS (Related Work:
+2303.01803) or MAF-YOLO/RepHELAN (Related Work: 2407.04381)
+directly target small-object and multi-scale issues and should be
+discussed/compared. For cross-domain and dataset realism, SFCHD and
+SCALE (Related Work: 2306.02098) warrant deeper engagement,
+especially since SFCHD is evaluated.
+•
+Open-vocabulary/VLM baselines: Zero-shot hardhat detection via VLMs
+(Related Work: 2410.12225) offers a pertinent contrast in cross-domain
+•
+9/20/26, 2:04 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=yg9lcXa0vF7UUb3a5rXaGPNtFFVF4_QrqQpTthX0eRQ
+5/9
+--- PAGE 6 ---
+Broader impact and significance
+Questions for Authors
+1. Where exactly are BiFormer blocks inserted (which neck stages), and what are
+the concrete hyperparameters (S, top-k, heads, channels)? Please include
+FLOPs/latency 
+overhead 
+attributable 
+solely 
+to 
+BiFormer 
+before 
+re-
+parameterization.
+2. How do you reconcile the 2.92 ms latency at 640 for a 22.4 GFLOPs model with
+YOLOv8n’s 2.85 ms at 8.7 GFLOPs under TensorRT FP16? Were identical TRT
+build settings, plugins, and pre/post-processing applied? Please share TRT
+engine configs or build logs.
+3. The ablation improvements in Table II are within typical noise. Can you report
+results over multiple seeds and provide standard deviations/significance tests
+to substantiate each component’s contribution?
+4. Table I includes EC-YOLOv8 with substantially higher mAP50-95 (74.6) yet the
+text claims superiority. Are these results under comparable datasets/protocols?
+If not, please normalize or remove non-comparable entries; otherwise provide
+reconciled evaluations.
+5. Please provide complete training details: data augmentations, loss weights (λ1,
+λ2, λ3), DFL configuration, Task-Aligned Assigner settings, and any class
+reweighting used to mitigate imbalance.
+6. Clarify SHWD splits used for single-checkpoint vs 5-fold CV. Did the 5-fold
+protocol respect the official test separation, and were baselines also re-trained
+under the same folds for fair comparison?
+robustness; even a brief baseline would contextualize the proposed
+approach’s supervised zero-shot generalization.
+The emphasis on end-to-end pipeline latency and multi-platform
+profiling 
+is 
+valuable 
+for 
+practitioners 
+and 
+deployment 
+studies,
+highlighting realistic bottlenecks beyond pure model latency.
+•
+In terms of scientific contribution, the paper is primarily applied
+engineering; the lack of clear, significant accuracy gains and missing
+rigorous, fair SOTA comparisons limit its impact for a top-tier venue.
+•
+9/20/26, 2:04 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=yg9lcXa0vF7UUb3a5rXaGPNtFFVF4_QrqQpTthX0eRQ
+6/9
+--- PAGE 7 ---
+7. For cross-domain generalization, can you include zero-shot baselines for
+vanilla YOLOv8s/YOLO11s on all external datasets under harmonized protocols
+to isolate the effect of your modules?
+8. Is code (including TRT conversion, switch_to_deploy scripts, and pipeline)
+planned for release to enable independent verification of throughput and
+cross-domain results?
+Overall Assessment
+The paper addresses an important, practical problem and provides a detailed
+deployment-oriented study, including cross-domain evaluations and an end-to-
+end latency breakdown. However, methodological novelty is limited to a
+combination 
+of 
+established 
+components, 
+and 
+the 
+reported 
+accuracy
+improvements are very small and not convincingly isolated by ablations. Several
+claims of superiority over SOTA are not supported by the provided tables, and
+some latency numbers appear implausible without deeper detail and fair TensorRT
+parity for baselines. Key implementation details (e.g., BiFormer configuration) are
+missing, related work coverage on small-object/PPE detection is incomplete, and
+reproducibility is currently challenging. While the paper’s engineering perspective
+and deployment insights could be useful to practitioners, the scientific
+contribution falls short of CVPR standards. I recommend rejection in its current
+form; the work would be strengthened by rigorous, fair SOTA baselines under
+consistent protocols, clearer and statistically sound ablations, transparent TRT and
+pipeline reproducibility, and a more substantive methodological contribution.
+We Value Your Feedback
+How helpful is the review?
+9/20/26, 2:04 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=yg9lcXa0vF7UUb3a5rXaGPNtFFVF4_QrqQpTthX0eRQ
+7/9
+--- PAGE 8 ---
+Not helpful
+Helpful
+Very helpful
+Is there any critical error (excluding minor inconsistency) in the
+review?
+Yes
+No
+Does the review provide actionable suggestions for improvement?
+Yes
+No
+Additional comments (optional)
+Share any other thoughts or feedback...
+0 / 500 characters
+Your feedback is anonymous and helps us improve our service
+Note: Reviews are AI generated and may contain errors. Please use them as guidance and apply your own judgment.
+Submit Feedback
+9/20/26, 2:04 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=yg9lcXa0vF7UUb3a5rXaGPNtFFVF4_QrqQpTthX0eRQ
+8/9
+--- PAGE 9 ---
+Questions or feedback? Contact us at aireviewer@cs.stanford.edu
+9/20/26, 2:04 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=yg9lcXa0vF7UUb3a5rXaGPNtFFVF4_QrqQpTthX0eRQ
+9/9

@@ -1,0 +1,306 @@
+--- PAGE 1 ---
+View Your Review
+Get detailed AI feedback on your research paper (free!)
+View Your Review
+Structural Re-Parameterization, Spatial
+Coordinate Encoding, and Cross-Domain
+Robustness for Real-Time Safety Helmet
+Detection in Construction Surveillance
+IEEE Transactions on Industrial Informatics
+Submitted: September 20, 2026
+Summary
+The paper proposes Rep-YOLO11s, a real-time helmet detector for construction
+surveillance 
+that 
+integrates 
+four 
+known 
+components: 
+structural 
+re-
+parameterization (RepConv) to fuse multi-branch training blocks into single 3×3
+convolutions at inference, CoordConv to inject positional priors, BiFormer bi-level
+routing attention to emphasize salient tokens, and Focal EIoU for bounding-box
+regression. On SHWD, the authors report mAP50 up to 94.83% (single run) and
+96.64% (5-fold mean), strong throughput on GPUs (2.92–5.35 ms FP16 TensorRT at
+640×640), and zero-shot transfer to multiple external datasets. They also provide
+detailed deployment measurements and an end-to-end RTSP pipeline analysis.
+Strengths
+S
+paperreview.ai
+By Stanford ML Group
+Upload Paper
+View Review
+Tech Overview
+9/20/26, 2:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=RyPfC2zXyF1zuirH_xXH-Ouqb5lN5-c5YpY4o04Tc60
+1/8
+--- PAGE 2 ---
+Technical novelty and innovation
+Experimental rigor and validation
+Clarity of presentation
+Significance of contributions
+Weaknesses
+Technical limitations or concerns
+The paper combines structural re-parameterization, CoordConv, and
+BiFormer within a YOLO11s-style framework aimed at small, distant
+objects in cluttered industrial scenes.
+•
+Clear algebraic exposition of RepConv fusion steps (Conv+BN folding,
+1×1 padding, identity Dirac kernel) that is implementation-ready.
+•
+Practical attention to deployment (TensorRT FP16, CUDA synchronization)
+and pipeline bottlenecks is valuable for industrial informatics.
+•
+Broad set of evaluations: single-run and 5-fold cross-validation on SHWD,
+plus zero-shot tests across five external datasets.
+•
+Multi-platform benchmarking (T4, RTX 3050 Laptop GPU, CPU) with
+synchronized timing and per-stage pipeline latency breakdown is
+commendable.
+•
+Ablation study touches each added component (CoordConv, RepConv,
+Focal EIoU, BiFormer).
+•
+The architecture is explained step-by-step with equations and system-
+level diagrams; the deployment pipeline stages and timing are described
+in detail.
+•
+The discussion of synchronization pitfalls for GPU timing is practical and
+informative.
+•
+Addresses a relevant industrial safety problem where real-time
+performance and robustness to small objects/occlusions are critical.
+•
+The deployment-focused evaluation (including end-to-end RTSP pipeline)
+is aligned with IEEE TII’s emphasis on practical applicability.
+•
+9/20/26, 2:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=RyPfC2zXyF1zuirH_xXH-Ouqb5lN5-c5YpY4o04Tc60
+2/8
+--- PAGE 3 ---
+Experimental gaps or methodological issues
+Clarity or presentation issues
+Missing related work or comparisons
+Conceptual novelty is limited: all core components (RepConv, CoordConv,
+BiFormer, Focal EIoU) are established; the contribution is primarily an
+integration/tailoring to YOLO11s.
+•
+The claim that Focal EIoU resolves severe class imbalance is conceptually
+incorrect; it is a regression loss and does not address class-imbalance in
+classification directly.
+•
+The impact of BiFormer at inference is under-quantified; attention
+modules add compute and memory access, and cannot be “re-
+parameterized away” like RepConv.
+•
+Metric inconsistencies across tables are concerning (e.g., mAP50–95 on
+SHWD reported as 62.54% in Table I vs 77.90% in Table III without clear
+protocol differences), calling into question result comparability.
+•
+SOTA comparisons mix measurement conditions; it is unclear if all
+latencies were measured under identical engines/hardware and if models
+were re-trained under matched protocols.
+•
+EC-YOLOv8 is reported with much higher mAP50–95 (74.6%) than the
+proposed method (62.54%), yet the narrative claims superiority “in both
+accuracy and throughput,” which is not supported by the table.
+•
+The ablation gains are small and sometimes within noise; no
+variance/confidence intervals are reported for ablations.
+•
+Multiple typographical inconsistencies (YOLO1ls vs YOLO11s; “EloU” vs
+EIoU) and occasional contradictory statements (e.g., saliency analysis on
+posters) reduce clarity.
+•
+Lack of precise BiFormer hyperparameters (region size S, top-k) and
+insertion points; unclear where CoordConv is injected and at what cost
+across layers.
+•
+Important related/backbone work like YOLOv6/EfficientRep (rep-friendly
+backbones and necks for TensorRT/T4) and recent helmet detectors (e.g.,
+DABFNet) or reparameterized necks (e.g., MAF-YOLO) are not compared
+experimentally; this diminishes the context for claimed speed/accuracy
+trade-offs.
+•
+9/20/26, 2:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=RyPfC2zXyF1zuirH_xXH-Ouqb5lN5-c5YpY4o04Tc60
+3/8
+--- PAGE 4 ---
+Detailed Comments
+Technical soundness evaluation
+Experimental evaluation assessment
+No evaluation on prevalent embedded edge platforms for industrial
+deployment (e.g., NVIDIA Jetson series), which are highly relevant to the
+paper’s stated use case.
+•
+The RepConv derivation is standard and correct; merging Conv-BN,
+padding 1×1 to 3×3, and adding an identity Dirac kernel are well-
+described. CoordConv augmentation is consistent with prior art and
+relevant to spatial priors in PPE detection. Focal EIoU is correctly
+formulated for regression; however, the manuscript over-attributes class-
+imbalance benefits to it. BiFormer’s bi-level routing is briefly but correctly
+summarized; nonetheless, the practical cost at inference on GPU/edge is
+not isolated.
+•
+The integration choices (where in the neck to place attention; which
+layers receive CoordConv) should be specified precisely; these details
+matter for both performance and latency.
+•
+The breadth of experiments is a strength, especially the deployment
+profiling and pipeline-level latency accounting with synchronized CUDA
+timing. However, there are internal inconsistencies:
+•
+SHWD mAP50–95 varies drastically across tables without transparent
+protocol changes. This must be reconciled (e.g., different class sets,
+person-vs-hat evaluation, altered IoU thresholds, different test splits).
+Claims of being best in “both accuracy and throughput” are
+contradicted by Table I (e.g., EC-YOLOv8’s higher mAP50–95).
+Ablation improvements are marginal (≈0.1–0.2 points), and latency
+reporting mixes pre-deploy and post-deploy settings across variants;
+per-component inference-time costs on a single, consistent engine are
+needed.
+Cross-domain results are appreciated and realistic (substantial variation
+across datasets). The discussion on annotation protocol misalignment is
+•
+9/20/26, 2:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=RyPfC2zXyF1zuirH_xXH-Ouqb5lN5-c5YpY4o04Tc60
+4/8
+--- PAGE 5 ---
+Comparison with related work (using the summaries provided)
+Discussion of broader impact and significance
+Questions for Authors
+1. Please reconcile the discrepancies in SHWD mAP50–95 across tables (e.g.,
+62.54% vs 68.26% vs 77.90%). What exact evaluation protocols, class sets, and
+IoU thresholds were used in each table?
+2. Were all baseline latencies measured with the same engine (TensorRT
+version/precision), batch size, input resolution, and GPU? If not, please re-run
+or clearly annotate to ensure a fair apples-to-apples comparison.
+apt, but the exact harmonization rules and evaluation scripts should be
+provided for reproducibility.
+RepVGG/RepConv (2101.03697, YOLOv6/EfficientRep 2302.00386) show
+that rep-style single-path inference is excellent for real-time; a fair
+comparison against YOLOv6-N/S on Tesla T4/TensorRT would strengthen
+the case for Rep-YOLO11s.
+•
+BiFormer (2303.08810) is a reasonable choice for dynamic sparse
+attention; nevertheless, its practical latency overhead should be
+quantified relative to alternative light attention (e.g., ECA) and compared
+against DAHead/BWFPN (DABFNet, 2411.19071).
+•
+MAF-YOLO (2407.04381) and other re-parameterized small-object
+focused necks are relevant comparisons for small/distant targets; an
+empirical comparison would contextualize the claimed advantages.
+•
+The paper’s industrial value proposition is strong: real-time, cross-domain
+robustness, and careful deployment benchmarking. The integrity
+discussion about synchronized GPU timing addresses a common pitfall in
+the community.
+•
+To fully meet TII standards, the study should validate on representative
+embedded 
+edge 
+devices 
+(e.g., 
+Jetson 
+Orin/NX/Xavier) 
+with
+power/throughput trade-offs and, ideally, multi-camera scaling behavior
+in realistic conditions.
+•
+9/20/26, 2:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=RyPfC2zXyF1zuirH_xXH-Ouqb5lN5-c5YpY4o04Tc60
+5/8
+--- PAGE 6 ---
+3. What are the exact BiFormer hyperparameters (region size S, top-k), insertion
+points, and channel dimensions? Please report its isolated inference-time
+overhead on TensorRT/PyTorch and its ablation impact on both accuracy and
+latency.
+4. You state Focal EIoU addresses severe class imbalance. Since it is a regression
+loss, how does it mitigate classification imbalance? Did you consider focal
+classification loss or reweighting, and what were the effects?
+5. In Table II, “Full Fusion” shows a large latency drop after switch_to_deploy and
+TensorRT FP16. Could you provide per-component latencies measured with the
+same engine (e.g., TensorRT FP16 for all ablations) to cleanly attribute runtime
+costs?
+6. Please detail the 5-fold cross-validation setup: exact splits, class distribution
+per fold, and whether any hyperparameter/model selection used test folds (to
+avoid leakage).
+7. For cross-domain evaluations, what precise label harmonization steps were
+taken (e.g., person vs head vs hat)? Can you share the evaluation scripts and
+mapping rules to enable reproduction?
+8. The Grad-CAM discussion for signage/posters seems contradictory (detecting
+helmets on posters). How often are such FPs observed, and can you
+incorporate person–helmet spatial association constraints to suppress them?
+9. Could you add comparisons against YOLOv6/EfficientRep and recent helmet
+detectors (e.g., DABFNet, MAF-YOLO) on SHWD using identical training and
+evaluation settings?
+10. Please include results on Jetson-class devices (e.g., Orin NX/AGX) with
+measured power and batch=1 throughput to demonstrate real-world edge
+feasibility.
+11. Where specifically are CoordConv channels injected (which layers), and what is
+the incremental latency and memory overhead? Any ablation on that
+placement?
+12. Will you release code, trained weights, TensorRT engines, and the synchronized
+timing scripts to support reproducibility?
+9/20/26, 2:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=RyPfC2zXyF1zuirH_xXH-Ouqb5lN5-c5YpY4o04Tc60
+6/8
+--- PAGE 7 ---
+Overall Assessment
+This manuscript targets a timely and important industrial application and
+demonstrates commendable attention to real-world deployment details, including
+synchronized GPU timing and end-to-end pipeline profiling. The integration of
+rep-style blocks, CoordConv, and BiFormer is reasonable for small-object
+detection in cluttered scenes, and the extensive cross-domain evaluation is a
+welcome attempt to assess robustness. However, the work’s methodological
+novelty is modest, and several critical issues limit its suitability in its current form:
+internal inconsistencies in reported metrics, potentially unfair SOTA comparisons,
+over-claims 
+(e.g., 
+about 
+class-imbalance 
+mitigation), 
+and 
+incomplete
+quantification of attention overhead at inference. The ablation gains are small and
+lack statistical support, and key related baselines (e.g., YOLOv6/EfficientRep,
+recent helmet detectors) are not compared under a unified protocol. With a
+thorough cleanup of evaluation inconsistencies, standardized and fair baseline
+comparisons, precise reporting of attention hyperparameters/overhead, and
+added edge-device validation, this work could provide solid practical value. As
+submitted, I recommend a major revision.
+We Value Your Feedback
+How helpful is the review?
+Not helpful
+Helpful
+Very helpful
+Is there any critical error (excluding minor inconsistency) in the
+review?
+9/20/26, 2:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=RyPfC2zXyF1zuirH_xXH-Ouqb5lN5-c5YpY4o04Tc60
+7/8
+--- PAGE 8 ---
+Yes
+No
+Does the review provide actionable suggestions for improvement?
+Yes
+No
+Additional comments (optional)
+Share any other thoughts or feedback...
+0 / 500 characters
+Your feedback is anonymous and helps us improve our service
+Note: Reviews are AI generated and may contain errors. Please use them as guidance and apply your own judgment.
+Questions or feedback? Contact us at aireviewer@cs.stanford.edu
+Submit Feedback
+9/20/26, 2:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=RyPfC2zXyF1zuirH_xXH-Ouqb5lN5-c5YpY4o04Tc60
+8/8

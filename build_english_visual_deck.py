@@ -292,129 +292,217 @@ def build_english_deck():
     p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = GREEN_ACCENT
 
     # =========================================================================
-    # SLIDE 5: COMPREHENSIVE 5-STAGE NEURAL ARCHITECTURE (FIGURE 2)
+    # Helper for Side-by-Side Comparison Slides (Slides 05 to 09)
+    def add_side_by_side_slide(slide, title, category, slide_num,
+                               left_title, left_sub, left_img_name, left_bullets,
+                               right_title, right_sub, right_img_name, right_bullets):
+        add_header(slide, title, category, slide_num)
+        
+        card_w = 5.75
+        card_h = 5.85
+        top_pos = 1.25
+        sci_dir = os.path.join(fig_dir, 'scientific_exports')
+        
+        # LEFT CARD (Baseline / Flaw)
+        left_x = 0.80
+        add_card(slide, left_x, top_pos, card_w, card_h, CARD_BG, BORDER_COLOR, border_width=1.0)
+        
+        # Left Title Header Pill
+        add_card(slide, left_x + 0.15, top_pos + 0.12, card_w - 0.30, 0.48, LIGHT_ORANGE, ORANGE_ACCENT, border_width=1.0)
+        tb_lh = slide.shapes.add_textbox(Inches(left_x + 0.25), Inches(top_pos + 0.14), Inches(card_w - 0.50), Inches(0.44))
+        tf_lh = tb_lh.text_frame; tf_lh.word_wrap = True
+        tf_lh.margin_left = tf_lh.margin_right = tf_lh.margin_top = tf_lh.margin_bottom = 0
+        p = tf_lh.paragraphs[0]; p.text = left_title; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = ORANGE_ACCENT
+        p = tf_lh.add_paragraph(); p.text = left_sub; p.font.size = Pt(8.2); p.font.color.rgb = TEXT_MUTED
+        
+        # Left Picture
+        left_img_path = os.path.join(sci_dir, left_img_name)
+        if not os.path.exists(left_img_path):
+            left_img_path = os.path.join(fig_dir, left_img_name)
+        if os.path.exists(left_img_path):
+            slide.shapes.add_picture(left_img_path, Inches(left_x + 0.15), Inches(top_pos + 0.68), Inches(card_w - 0.30), Inches(2.95))
+            
+        # Left Bullets Box
+        add_card(slide, left_x + 0.15, top_pos + 3.72, card_w - 0.30, 1.98, RGBColor(254, 242, 242), RGBColor(252, 165, 165), border_width=0.8)
+        tb_lb = slide.shapes.add_textbox(Inches(left_x + 0.25), Inches(top_pos + 3.80), Inches(card_w - 0.50), Inches(1.82))
+        tf_lb = tb_lb.text_frame; tf_lb.word_wrap = True
+        tf_lb.margin_left = tf_lb.margin_right = tf_lb.margin_top = tf_lb.margin_bottom = 0
+        for i, (badge, text) in enumerate(left_bullets):
+            p = tf_lb.paragraphs[0] if i == 0 else tf_lb.add_paragraph()
+            p.text = f"{badge} "
+            p.font.size = Pt(9.0); p.font.bold = True; p.font.color.rgb = RGBColor(185, 28, 28)
+            run = p.add_run()
+            run.text = text
+            run.font.size = Pt(8.8); run.font.bold = False; run.font.color.rgb = TEXT_BODY
+            p.space_after = Pt(2)
+
+        # RIGHT CARD (Proposed / Innovation)
+        right_x = 6.78
+        add_card(slide, right_x, top_pos, card_w, card_h, CARD_BG, BORDER_COLOR, border_width=1.0)
+        
+        # Right Title Header Pill
+        add_card(slide, right_x + 0.15, top_pos + 0.12, card_w - 0.30, 0.48, LIGHT_GREEN, GREEN_ACCENT, border_width=1.0)
+        tb_rh = slide.shapes.add_textbox(Inches(right_x + 0.25), Inches(top_pos + 0.14), Inches(card_w - 0.50), Inches(0.44))
+        tf_rh = tb_rh.text_frame; tf_rh.word_wrap = True
+        tf_rh.margin_left = tf_rh.margin_right = tf_rh.margin_top = tf_rh.margin_bottom = 0
+        p = tf_rh.paragraphs[0]; p.text = right_title; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = GREEN_ACCENT
+        p = tf_rh.add_paragraph(); p.text = right_sub; p.font.size = Pt(8.2); p.font.color.rgb = TEXT_MUTED
+
+        # Right Picture
+        right_img_path = os.path.join(sci_dir, right_img_name)
+        if not os.path.exists(right_img_path):
+            right_img_path = os.path.join(fig_dir, right_img_name)
+        if os.path.exists(right_img_path):
+            slide.shapes.add_picture(right_img_path, Inches(right_x + 0.15), Inches(top_pos + 0.68), Inches(card_w - 0.30), Inches(2.95))
+
+        # Right Bullets Box
+        add_card(slide, right_x + 0.15, top_pos + 3.72, card_w - 0.30, 1.98, LIGHT_GREEN, RGBColor(134, 239, 172), border_width=0.8)
+        tb_rb = slide.shapes.add_textbox(Inches(right_x + 0.25), Inches(top_pos + 3.80), Inches(card_w - 0.50), Inches(1.82))
+        tf_rb = tb_rb.text_frame; tf_rb.word_wrap = True
+        tf_rb.margin_left = tf_rb.margin_right = tf_rb.margin_top = tf_rb.margin_bottom = 0
+        for i, (badge, text) in enumerate(right_bullets):
+            p = tf_rb.paragraphs[0] if i == 0 else tf_rb.add_paragraph()
+            p.text = f"{badge} "
+            p.font.size = Pt(9.0); p.font.bold = True; p.font.color.rgb = RGBColor(21, 128, 61)
+            run = p.add_run()
+            run.text = text
+            run.font.size = Pt(8.8); run.font.bold = False; run.font.color.rgb = TEXT_BODY
+            p.space_after = Pt(2)
+
+    # =========================================================================
+    # SLIDE 5: ARCHITECTURAL COMPARISON: YOLO11s (3 HEADS) VS. REP-YOLO11s-P2 (4 HEADS)
     # =========================================================================
     s5 = prs.slides.add_slide(blank_layout); set_slide_bg(s5)
-    add_header(s5, 'Comprehensive 5-Stage Neural Architecture of Rep-YOLO11s', 'Proposed Method · Neural Network Architecture', '05 / 18')
-
-    fig2_path = os.path.join(fig_dir, 'Fig2_rep_yolo11s_neural_architecture.png')
-    if os.path.exists(fig2_path):
-        add_card(s5, 0.8, 1.25, 11.7, 4.30, CARD_BG, BORDER_COLOR)
-        s5.shapes.add_picture(fig2_path, Inches(0.95), Inches(1.35), Inches(11.4), Inches(4.10))
-
-    subs = [
-        ('1. SPATIAL BACKBONE', 'CSPDarknet with CoordConv coordinate injection (Cx, Cy) and multi-branch RepConv feature blocks.', ORANGE_ACCENT),
-        ('2. SPARSE ROUTING NECK', 'PAN architecture embedded with BiFormer 2-level routing attention, reducing complexity to linear O(HW).', BLUE_ACCENT),
-        ('3. DECOUPLED HEAD & LOSS', 'Anchor-free Decoupled Head paired with Focal EIoU loss decoupling bounding box dimension errors.', GREEN_ACCENT)
-    ]
-    for idx, (h_txt, desc_txt, col) in enumerate(subs):
-        left_pos = 0.8 + idx * 4.0
-        add_card(s5, left_pos, 5.65, 3.8, 1.45)
-        tb = s5.shapes.add_textbox(Inches(left_pos + 0.15), Inches(5.72), Inches(3.5), Inches(1.30))
-        tf = tb.text_frame; tf.word_wrap = True
-        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-        p = tf.paragraphs[0]; p.text = h_txt; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = col; p.space_after = Pt(2)
-        p = tf.add_paragraph(); p.text = desc_txt; p.font.size = Pt(9.2); p.font.color.rgb = TEXT_BODY
+    add_side_by_side_slide(
+        s5,
+        title='Architectural Comparison: Baseline YOLO11s (3 Heads) vs. Proposed Rep-YOLO11s-P2 AFPN (4 Heads)',
+        category='PROPOSED METHOD · NEURAL NETWORK ARCHITECTURE',
+        slide_num='05 / 18',
+        left_title='BASELINE: VANILLA YOLO11s (3 HEADS)',
+        left_sub='Standard P3, P4, P5 Heads (Strides 8, 16, 32) · Distant Target Feature Vanishing',
+        left_img_name='Fig5A_Baseline_YOLO11s_Architecture.png',
+        left_bullets=[
+            ('[❌ Stride 32 Vanishing]', '32× downsampling collapses 16×16 px helmets into <0.5 px on feature map P5, erasing spatial details.'),
+            ('[❌ Distant Target Blindness]', 'Fails to detect distant workers at range >25m (Baseline Helmet Recall capped at 90.35%).'),
+            ('[❌ Missing Shallow Pathway]', 'Lacks direct shallow feature propagation from P2 to upper feature pyramid fusion stages.')
+        ],
+        right_title='PROPOSED: REP-YOLO11s-P2 AFPN (4 HEADS)',
+        right_sub='High-Resolution P2 Head (Stride 4, 160×160) · Full Micro-Scale Feature Preservation',
+        right_img_name='Fig5B_Proposed_RepYOLO11s_Architecture.png',
+        right_bullets=[
+            ('[✅ Stride 4 Micro-Resolution]', 'Maintains 160×160 feature maps where tiny helmet targets span 4×4 spatial feature cells.'),
+            ('[⚡ Helmet Recall Surge to 91.33%]', 'Dramatic boost in distant helmet detection sensitivity (peak 5-fold cross-validation reaches 93.34%).'),
+            ('[⚡ 51.9% Parameter Reduction]', 'Channel pruning and AFPN re-alignment cut parameters from 9.85M to 4.74M with higher accuracy.')
+        ]
+    )
 
     # =========================================================================
     # SLIDE 6: INNOVATION 1 - STRUCTURAL RE-PARAMETERIZATION (REPCONV)
     # =========================================================================
     s6 = prs.slides.add_slide(blank_layout); set_slide_bg(s6)
-    add_header(s6, 'Innovation 1: Structural Re-parameterization (RepConv) & Algebraic Fusion', 'Technical Innovation 1 · Inference Latency Optimization', '06 / 18')
-
-    rep_diag = os.path.join(fig_dir, 'Fig_RepConv_Architecture.png')
-    if os.path.exists(rep_diag):
-        add_card(s6, 0.8, 1.25, 11.7, 4.25, CARD_BG, BORDER_COLOR)
-        s6.shapes.add_picture(rep_diag, Inches(0.95), Inches(1.35), Inches(11.4), Inches(4.05))
-
-    takeaways_rep = [
-        ('MULTI-BRANCH TRAINING', '3 parallel branches (3x3, 1x1, Identity) enrich gradient diversity and feature representation space.', ORANGE_ACCENT),
-        ('ALGEBRAIC FUSION switch_to_deploy()', 'Fuses BN, zero-pads 1x1 conv, and transforms identity into Dirac delta into a single 3x3 conv layer.', BLUE_ACCENT),
-        ('EMPIRICAL DEPLOYMENT IMPACT', '55.2% latency reduction (7.12 ms -> 2.92 ms), 342.5 FPS on T4 with numerical error Δ < 10⁻⁵.', GREEN_ACCENT)
-    ]
-    for idx, (h_txt, desc_txt, col) in enumerate(takeaways_rep):
-        left_pos = 0.8 + idx * 4.0
-        add_card(s6, left_pos, 5.60, 3.8, 1.50)
-        tb = s6.shapes.add_textbox(Inches(left_pos + 0.15), Inches(5.68), Inches(3.5), Inches(1.35))
-        tf = tb.text_frame; tf.word_wrap = True
-        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-        p = tf.paragraphs[0]; p.text = h_txt; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = col; p.space_after = Pt(2)
-        p = tf.add_paragraph(); p.text = desc_txt; p.font.size = Pt(9.2); p.font.color.rgb = TEXT_BODY
+    add_side_by_side_slide(
+        s6,
+        title='Innovation 1: Structural Re-parameterization (RepConv) & Algebraic Fusion',
+        category='TECHNICAL INNOVATION 1 · INFERENCE LATENCY OPTIMIZATION',
+        slide_num='06 / 18',
+        left_title='BASELINE: MULTI-BRANCH TRAINING BOTTLENECK',
+        left_sub='3 Parallel Branches (3×3, 1×1, Identity) · High Memory Access Cost (MAC)',
+        left_img_name='Fig1A_Baseline_MultiBranch_Bottleneck.png',
+        left_bullets=[
+            ('[❌ Memory Access Cost]', 'GPU allocates 3 separate memory buffers per block, creating severe memory-bandwidth bottlenecks.'),
+            ('[❌ 3 Kernel Launches]', 'Incurs 3 sequential CUDA kernel launches per layer, triggering hardware cache thrashing.'),
+            ('[❌ 7.12 ms Inference Latency]', 'Low deployment throughput (only 140.4 FPS on Tesla T4), unsuitable for multi-stream 4K CCTV.')
+        ],
+        right_title='PROPOSED: REPCONV ALGEBRAIC FUSION LIFECYCLE',
+        right_sub='switch_to_deploy() Collapses All Branches into a Single 3×3 Conv Layer',
+        right_img_name='Fig1B_Proposed_RepConv_Algebraic_Fusion.png',
+        right_bullets=[
+            ('[✅ Closed-Form Fusion]', 'BatchNorm folding + 1×1 zero-padding + Dirac identity kernel (strictly when Cin==Cout, s=1).'),
+            ('[⚡ 55.2% Latency Reduction]', 'Forward latency plunges from 7.12 ms to 2.92 ms on Tesla T4 TRT FP16 (5.35 ms on RTX 3050 Laptop).'),
+            ('[⚡ 342.5 FPS Real-Time Speed]', 'Achieves super-real-time throughput with negligible numerical discrepancy Δ < 10⁻⁵ vs multi-branch.')
+        ]
+    )
 
     # =========================================================================
     # SLIDE 7: INNOVATION 2 - COORDCONV SPATIAL COORDINATE INJECTION
     # =========================================================================
     s7 = prs.slides.add_slide(blank_layout); set_slide_bg(s7)
-    add_header(s7, 'Innovation 2: CoordConv Spatial Encoding Suppresses False Alarms', 'Technical Innovation 2 · Breaking Translation Invariance', '07 / 18')
-
-    coord_diag = os.path.join(fig_dir, 'Fig_CoordConv_Concept.png')
-    if os.path.exists(coord_diag):
-        add_card(s7, 0.8, 1.25, 11.7, 4.25, CARD_BG, BORDER_COLOR)
-        s7.shapes.add_picture(coord_diag, Inches(0.95), Inches(1.35), Inches(11.4), Inches(4.05))
-
-    takeaways_coord = [
-        ('BREAKING TRANSLATION INVARIANCE', 'Augments input RGB tensor with normalized coordinates Cx, Cy ∈ [-1, 1] (forming 5 channels).', ORANGE_ACCENT),
-        ('SITE GEOMETRIC AXIOM', 'Forces kernels to learn anatomical priors: Helmets reside on worker heads (Cy < 0), never on the ground.', BLUE_ACCENT),
-        ('FALSE ALARM SUPPRESSION', 'Eradicates >28% of false alarms triggered by yellow buckets, safety cones, and caution signs on the floor.', GREEN_ACCENT)
-    ]
-    for idx, (h_txt, desc_txt, col) in enumerate(takeaways_coord):
-        left_pos = 0.8 + idx * 4.0
-        add_card(s7, left_pos, 5.60, 3.8, 1.50)
-        tb = s7.shapes.add_textbox(Inches(left_pos + 0.15), Inches(5.68), Inches(3.5), Inches(1.35))
-        tf = tb.text_frame; tf.word_wrap = True
-        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-        p = tf.paragraphs[0]; p.text = h_txt; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = col; p.space_after = Pt(2)
-        p = tf.add_paragraph(); p.text = desc_txt; p.font.size = Pt(9.2); p.font.color.rgb = TEXT_BODY
+    add_side_by_side_slide(
+        s7,
+        title='Innovation 2: CoordConv Spatial Encoding Suppresses False Alarms',
+        category='TECHNICAL INNOVATION 2 · BREAKING TRANSLATION INVARIANCE',
+        slide_num='07 / 18',
+        left_title='BASELINE: TRANSLATION INVARIANCE FLAW',
+        left_sub='Standard Convolutions Treat Ground Buckets Same as Worn Helmets',
+        left_img_name='Fig2A_Baseline_Translation_Invariance_Flaw.png',
+        left_bullets=[
+            ('[❌ Shared Kernel Weights]', 'Standard 3-channel RGB filters have zero spatial altitude awareness across camera view coordinates.'),
+            ('[❌ Geometric Context Ambiguity]', 'Yellow buckets/traffic cones at floor level (y ≈ 0.9) trigger identical activations to helmets (y ≈ 0.2).'),
+            ('[❌ Heavy Ground Clutter FPs]', 'Over 28% of industrial false alarms originate from ground clutter sharing helmet color/geometry.')
+        ],
+        right_title='PROPOSED: 5-CHANNEL COORDCONV STEM INJECTION',
+        right_sub='Injects Normalized Coordinates Cx, Cy ∈ [-1, 1] Strictly at Input Stem Layer',
+        right_img_name='Fig2B_Proposed_CoordConv_Spatial_Injection.png',
+        right_bullets=[
+            ('[✅ Construction Spatial Axiom]', 'Forces filters to learn anatomical priors: Helmets reside on heads (Cy < 0.3), never on floors.'),
+            ('[⚡ >28% False Alarm Pruning]', 'Ground-level helmet logits are algebraically suppressed at the initial Stem (Conv c1=5 -> c2=64).'),
+            ('[⚡ Negligible Cost (+0.06 ms)]', 'Preserves translation invariance in deeper layers, maximizing contextual gain at minimal compute.')
+        ]
+    )
 
     # =========================================================================
     # SLIDE 8: INNOVATION 3 - BIFORMER SPARSE ROUTING ATTENTION
     # =========================================================================
     s8 = prs.slides.add_slide(blank_layout); set_slide_bg(s8)
-    add_header(s8, 'Innovation 3: BiFormer 2-Level Sparse Routing Attention', 'Technical Innovation 3 · Tiny Target Saliency Focus', '08 / 18')
-
-    biformer_diag = os.path.join(fig_dir, 'Fig_BiFormer_Sparse_Attention.png')
-    if os.path.exists(biformer_diag):
-        add_card(s8, 0.8, 1.25, 11.7, 4.25, CARD_BG, BORDER_COLOR)
-        s8.shapes.add_picture(biformer_diag, Inches(0.95), Inches(1.35), Inches(11.4), Inches(4.05))
-
-    takeaways_bio = [
-        ('REGION ROUTING (S×S)', 'Partitions feature maps into S x S regions (S=8), builds region affinity graph, filters Top-k (k=4).', ORANGE_ACCENT),
-        ('LINEAR COMPLEXITY O(HW)', 'Eliminates standard Transformer O(H²W²) bottleneck, preventing VRAM overflow on edge devices.', BLUE_ACCENT),
-        ('TINY TARGET SALIENCY', 'Prunes 80% background context, concentrating computation on distant helmet tokens, raising Recall to 91.33%.', GREEN_ACCENT)
-    ]
-    for idx, (h_txt, desc_txt, col) in enumerate(takeaways_bio):
-        left_pos = 0.8 + idx * 4.0
-        add_card(s8, left_pos, 5.60, 3.8, 1.50)
-        tb = s8.shapes.add_textbox(Inches(left_pos + 0.15), Inches(5.68), Inches(3.5), Inches(1.35))
-        tf = tb.text_frame; tf.word_wrap = True
-        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-        p = tf.paragraphs[0]; p.text = h_txt; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = col; p.space_after = Pt(2)
-        p = tf.add_paragraph(); p.text = desc_txt; p.font.size = Pt(9.2); p.font.color.rgb = TEXT_BODY
+    add_side_by_side_slide(
+        s8,
+        title='Innovation 3: BiFormer 2-Level Dynamic Sparse Routing Attention',
+        category='TECHNICAL INNOVATION 3 · TINY TARGET SALIENCY FOCUS',
+        slide_num='08 / 18',
+        left_title='BASELINE: DENSE SELF-ATTENTION BOTTLENECK',
+        left_sub='Quadratic Complexity O(H²W²) · Severe VRAM Out-of-Memory (OOM) on Edge Hardware',
+        left_img_name='Fig3A_Baseline_Dense_Attention_Bottleneck.png',
+        left_bullets=[
+            ('[❌ Quadratic Compute Explosion]', 'At 1024×1024, dense affinity matrix A requires >10¹⁰ dot products, consuming >4 GB scratchpad VRAM.'),
+            ('[❌ 80% Compute Wasted on Noise]', 'Attention is diffusely scattered across empty sky, concrete floors, and blank wall surfaces.'),
+            ('[❌ Edge GPU Memory Crash]', 'Causes instant CUDA OOM crashes on resource-constrained 2GB–4GB edge hardware (Jetson / MX230).')
+        ],
+        right_title='PROPOSED: BIFORMER DYNAMIC SPARSE ROUTING',
+        right_sub='2-Level Routing: Region Grid S=8, Top-k=4 · Strict Linear Complexity O(HW)',
+        right_img_name='Fig3B_Proposed_BiFormer_Sparse_Routing.png',
+        right_bullets=[
+            ('[✅ 80% Background Pruning]', 'Dynamically routes token attention strictly through the top-4 most salient worker head regions.'),
+            ('[⚡ Linear Complexity O(HW)]', 'Reduces compute from O((HW)²) to linear O(HW), completely eliminating VRAM overflow bottlenecks.'),
+            ('[⚡ Distant Target Saliency Focus]', 'Concentrates 100% compute on subtle helmet contours, enabling smooth inference at 1024px.')
+        ]
+    )
 
     # =========================================================================
-    # SLIDE 9: INNOVATION 4 - FOCAL EIOU LOSS & DECOUPLED HEAD
+    # SLIDE 9: INNOVATION 4 - FOCAL EIOU LOSS & BOUNDING BOX REGRESSION
     # =========================================================================
     s9 = prs.slides.add_slide(blank_layout); set_slide_bg(s9)
-    add_header(s9, 'Innovation 4: Focal EIoU Loss & Small Target Optimization', 'Technical Innovation 4 · Bounding Box Optimization', '09 / 18')
-
-    focal_diag = os.path.join(fig_dir, 'Fig_Focal_EIoU_Decomposition.png')
-    if os.path.exists(focal_diag):
-        add_card(s9, 0.8, 1.25, 11.7, 4.25, CARD_BG, BORDER_COLOR)
-        s9.shapes.add_picture(focal_diag, Inches(0.95), Inches(1.35), Inches(11.4), Inches(4.05))
-
-    takeaways_focal = [
-        ('DECOUPLED DIMENSION PENALTY', 'Replaces CIoU aspect ratio penalty with explicit independent width (dw) and height (dh) loss.', ORANGE_ACCENT),
-        ('FOCAL HARD-SAMPLE MINING', 'IoU^0.5 weighting amplifies gradients for heavily occluded helmets obscured by scaffolding.', BLUE_ACCENT),
-        ('MITIGATING 1:12 CLASS IMBALANCE', 'Combined with weighted BCE to prevent worker body instances from drowning helmet gradients.', GREEN_ACCENT)
-    ]
-    for idx, (h_txt, desc_txt, col) in enumerate(takeaways_focal):
-        left_pos = 0.8 + idx * 4.0
-        add_card(s9, left_pos, 5.60, 3.8, 1.50)
-        tb = s9.shapes.add_textbox(Inches(left_pos + 0.15), Inches(5.68), Inches(3.5), Inches(1.35))
-        tf = tb.text_frame; tf.word_wrap = True
-        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-        p = tf.paragraphs[0]; p.text = h_txt; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = col; p.space_after = Pt(2)
-        p = tf.add_paragraph(); p.text = desc_txt; p.font.size = Pt(9.2); p.font.color.rgb = TEXT_BODY
+    add_side_by_side_slide(
+        s9,
+        title='Innovation 4: Focal EIoU Loss & Decoupled Bounding Box Optimization',
+        category='TECHNICAL INNOVATION 4 · BOUNDING BOX OPTIMIZATION',
+        slide_num='09 / 18',
+        left_title='BASELINE: CIOU GRADIENT VANISHING FLAW',
+        left_sub='Aspect Ratio Penalty v ∝ (arctan(w_gt/h_gt) - arctan(w/h))² Vanishes Gradient',
+        left_img_name='Fig4A_Baseline_CIoU_Vanishing_Gradient.png',
+        left_bullets=[
+            ('[❌ Gradient Vanishing to Zero]', 'When aspect ratios match (w/h == w_gt/h_gt), ∂v/∂w ≡ 0 even when predicted box area is 200% off.'),
+            ('[❌ Frozen Prediction Box]', 'Bounding box regression freezes and fails to tightly fit occluded helmets partially covered by scaffolding.'),
+            ('[❌ Scale-Agnostic Penalty]', 'Penalizes relative angle difference rather than absolute physical pixel errors in width and height.')
+        ],
+        right_title='PROPOSED: FOCAL-EIoU INDEPENDENT DECOMPOSITION',
+        right_sub='Decoupled Errors (w-w_gt)² + (h-h_gt)² + Dynamic Hard-Sample Weighting (IoU)^0.5',
+        right_img_name='Fig4B_Proposed_Focal_EIoU_Decomposition.png',
+        right_bullets=[
+            ('[✅ Guaranteed Non-Zero Gradient]', '∂L/∂w = 2(w-w_gt)/Cw² ≠ 0 continuously guides independent convergence of both width and height.'),
+            ('[⚡ Hard Boundary Localization]', 'Focal factor (IoU)^0.5 amplifies gradients for difficult, heavily occluded tiny helmet boundaries.'),
+            ('[⚡ TAL + Weighted BCE Synergism]', 'Works with Task-Aligned Assigner to resolve 1:12 class imbalance, reaching peak mAP50-95 of 65.91%.')
+        ]
+    )
 
     # =========================================================================
     # SLIDE 10: CUSTOM CODE & CORE CONTRIBUTIONS

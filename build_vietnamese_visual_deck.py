@@ -292,134 +292,217 @@ def build_deck():
     p.text = '✓ HIỆN TRẠNG TIẾN ĐỘ: Đã hoàn thiện đầy đủ 5/5 sản phẩm cam kết, đạt ~90% khối lượng toàn khóa ngay tại Giai đoạn 1!'
     p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = GREEN_ACCENT
 
+    # Helper for Side-by-Side Comparison Slides (Slides 05 to 09)
+    def add_side_by_side_slide(slide, title, category, slide_num,
+                               left_title, left_sub, left_img_name, left_bullets,
+                               right_title, right_sub, right_img_name, right_bullets):
+        add_header(slide, title, category, slide_num)
+        
+        card_w = 5.75
+        card_h = 5.85
+        top_pos = 1.25
+        sci_dir = os.path.join(fig_dir, 'scientific_exports')
+        
+        # LEFT CARD (Baseline / Flaw)
+        left_x = 0.80
+        add_card(slide, left_x, top_pos, card_w, card_h, CARD_BG, BORDER_COLOR, border_width=1.0)
+        
+        # Left Title Header Pill
+        add_card(slide, left_x + 0.15, top_pos + 0.12, card_w - 0.30, 0.48, LIGHT_ORANGE, ORANGE_ACCENT, border_width=1.0)
+        tb_lh = slide.shapes.add_textbox(Inches(left_x + 0.25), Inches(top_pos + 0.14), Inches(card_w - 0.50), Inches(0.44))
+        tf_lh = tb_lh.text_frame; tf_lh.word_wrap = True
+        tf_lh.margin_left = tf_lh.margin_right = tf_lh.margin_top = tf_lh.margin_bottom = 0
+        p = tf_lh.paragraphs[0]; p.text = left_title; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = ORANGE_ACCENT
+        p = tf_lh.add_paragraph(); p.text = left_sub; p.font.size = Pt(8.2); p.font.color.rgb = TEXT_MUTED
+        
+        # Left Picture
+        left_img_path = os.path.join(sci_dir, left_img_name)
+        if not os.path.exists(left_img_path):
+            left_img_path = os.path.join(fig_dir, left_img_name)
+        if os.path.exists(left_img_path):
+            slide.shapes.add_picture(left_img_path, Inches(left_x + 0.15), Inches(top_pos + 0.68), Inches(card_w - 0.30), Inches(2.95))
+            
+        # Left Bullets Box
+        add_card(slide, left_x + 0.15, top_pos + 3.72, card_w - 0.30, 1.98, RGBColor(254, 242, 242), RGBColor(252, 165, 165), border_width=0.8)
+        tb_lb = slide.shapes.add_textbox(Inches(left_x + 0.25), Inches(top_pos + 3.80), Inches(card_w - 0.50), Inches(1.82))
+        tf_lb = tb_lb.text_frame; tf_lb.word_wrap = True
+        tf_lb.margin_left = tf_lb.margin_right = tf_lb.margin_top = tf_lb.margin_bottom = 0
+        for i, (badge, text) in enumerate(left_bullets):
+            p = tf_lb.paragraphs[0] if i == 0 else tf_lb.add_paragraph()
+            p.text = f"{badge} "
+            p.font.size = Pt(9.0); p.font.bold = True; p.font.color.rgb = RGBColor(185, 28, 28)
+            run = p.add_run()
+            run.text = text
+            run.font.size = Pt(8.8); run.font.bold = False; run.font.color.rgb = TEXT_BODY
+            p.space_after = Pt(2)
+
+        # RIGHT CARD (Proposed / Innovation)
+        right_x = 6.78
+        add_card(slide, right_x, top_pos, card_w, card_h, CARD_BG, BORDER_COLOR, border_width=1.0)
+        
+        # Right Title Header Pill
+        add_card(slide, right_x + 0.15, top_pos + 0.12, card_w - 0.30, 0.48, LIGHT_GREEN, GREEN_ACCENT, border_width=1.0)
+        tb_rh = slide.shapes.add_textbox(Inches(right_x + 0.25), Inches(top_pos + 0.14), Inches(card_w - 0.50), Inches(0.44))
+        tf_rh = tb_rh.text_frame; tf_rh.word_wrap = True
+        tf_rh.margin_left = tf_rh.margin_right = tf_rh.margin_top = tf_rh.margin_bottom = 0
+        p = tf_rh.paragraphs[0]; p.text = right_title; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = GREEN_ACCENT
+        p = tf_rh.add_paragraph(); p.text = right_sub; p.font.size = Pt(8.2); p.font.color.rgb = TEXT_MUTED
+
+        # Right Picture
+        right_img_path = os.path.join(sci_dir, right_img_name)
+        if not os.path.exists(right_img_path):
+            right_img_path = os.path.join(fig_dir, right_img_name)
+        if os.path.exists(right_img_path):
+            slide.shapes.add_picture(right_img_path, Inches(right_x + 0.15), Inches(top_pos + 0.68), Inches(card_w - 0.30), Inches(2.95))
+
+        # Right Bullets Box
+        add_card(slide, right_x + 0.15, top_pos + 3.72, card_w - 0.30, 1.98, LIGHT_GREEN, RGBColor(134, 239, 172), border_width=0.8)
+        tb_rb = slide.shapes.add_textbox(Inches(right_x + 0.25), Inches(top_pos + 3.80), Inches(card_w - 0.50), Inches(1.82))
+        tf_rb = tb_rb.text_frame; tf_rb.word_wrap = True
+        tf_rb.margin_left = tf_rb.margin_right = tf_rb.margin_top = tf_rb.margin_bottom = 0
+        for i, (badge, text) in enumerate(right_bullets):
+            p = tf_rb.paragraphs[0] if i == 0 else tf_rb.add_paragraph()
+            p.text = f"{badge} "
+            p.font.size = Pt(9.0); p.font.bold = True; p.font.color.rgb = RGBColor(21, 128, 61)
+            run = p.add_run()
+            run.text = text
+            run.font.size = Pt(8.8); run.font.bold = False; run.font.color.rgb = TEXT_BODY
+            p.space_after = Pt(2)
+
     # =========================================================================
-    # SLIDE 5: TỔNG QUAN KIẾN TRÚC REP-YOLO11s (FIGURE 2)
+    # SLIDE 5: ĐỐI CHIẾU KIẾN TRÚC YOLO11s (3 HEADS) VS. REP-YOLO11s-P2 (4 HEADS)
     # =========================================================================
     s5 = prs.slides.add_slide(blank_layout); set_slide_bg(s5)
-    add_header(s5, 'Sơ Đồ Kiến Trúc Toàn Diện 5 Tầng Của Rep-YOLO11s', 'Đề Xuất Mô Hình · Kiến Trúc Mạng Nơ-ron Đột Phá', '05 / 18')
-
-    # Central Architecture Diagram
-    fig2_path = os.path.join(fig_dir, 'Fig2_rep_yolo11s_neural_architecture.png')
-    if os.path.exists(fig2_path):
-        add_card(s5, 0.8, 1.25, 11.7, 4.30, CARD_BG, BORDER_COLOR)
-        s5.shapes.add_picture(fig2_path, Inches(0.95), Inches(1.35), Inches(11.4), Inches(4.10))
-
-    # Bottom 3 Architecture Subsystem Highlights
-    subs = [
-        ('1. BACKBONE KHÔNG GIAN', 'CSPDarknet tích hợp CoordConv (tiêm tọa độ Cx, Cy) và khối RepConv học đa nhánh phong phú.', ORANGE_ACCENT),
-        ('2. NECK ĐỊNH TUYẾN THƯA', 'Mạng PAN nhúng cơ chế chú ý BiFormer định tuyến Top-k vùng, giảm bậc tính toán xuống tuyến tính.', BLUE_ACCENT),
-        ('3. HEAD & LOSS TỐI ƯU', 'Đầu dò Anchor-free Decoupled kết hợp hàm mất mát Focal EIoU phân rã sai số cạnh hộp bao.', GREEN_ACCENT)
-    ]
-    for idx, (h_txt, desc_txt, col) in enumerate(subs):
-        left_pos = 0.8 + idx * 4.0
-        add_card(s5, left_pos, 5.65, 3.8, 1.45)
-        tb = s5.shapes.add_textbox(Inches(left_pos + 0.15), Inches(5.72), Inches(3.5), Inches(1.30))
-        tf = tb.text_frame; tf.word_wrap = True
-        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-        p = tf.paragraphs[0]; p.text = h_txt; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = col; p.space_after = Pt(2)
-        p = tf.add_paragraph(); p.text = desc_txt; p.font.size = Pt(9.2); p.font.color.rgb = TEXT_BODY
+    add_side_by_side_slide(
+        s5,
+        title='Đối Chiếu Kiến Trúc: Baseline YOLO11s (3 Heads) vs. Rep-YOLO11s-P2 AFPN (4 Heads)',
+        category='ĐỀ XUẤT MÔ HÌNH · GIẢI PHẪU KIẾN TRÚC NƠ-RON',
+        slide_num='05 / 18',
+        left_title='BASELINE: VANILLA YOLO11s (3 HEADS)',
+        left_sub='Chỉ có 3 đầu dò P3, P4, P5 (Stride 8, 16, 32) · Bỏ sót mục tiêu < 20px',
+        left_img_name='Fig5A_Baseline_YOLO11s_Architecture.png',
+        left_bullets=[
+            ('[❌ Nút Thắt P5 Stride 32]', 'Downsampling 32 lần làm mũ 16×16 px co rút dưới 0.5 pixel trên feature map, đặc trưng biến mất.'),
+            ('[❌ Giới Hạn Cự Ly Xa]', 'Bỏ sót hoàn toàn công nhân ở xa cự ly > 25m (Recall mũ bảo hộ bị nghẽn ở mức 90.35%).'),
+            ('[❌ Thiếu Dẫn Truyền P2]', 'Không có nhánh kết nối trực tiếp đặc trưng nông P2 lên các tầng cổ mạng (Neck).')
+        ],
+        right_title='PROPOSED: REP-YOLO11s-P2 AFPN (4 HEADS)',
+        right_sub='Bổ sung nhánh P2 (Stride 4, 160×160) · Bảo toàn 100% hình học vi vật thể',
+        right_img_name='Fig5B_Proposed_RepYOLO11s_Architecture.png',
+        right_bullets=[
+            ('[✅ Nhánh P2 Stride 4]', 'Duy trì bản đồ đặc trưng 160×160 px, vi vật thể mũ bảo hộ chiếm trọn 4×4 cells trên bản đồ.'),
+            ('[⚡ Bứt Phá Recall 91.33%]', 'Tăng vọt khả năng bắt dính mục tiêu nhỏ cự ly xa (đỉnh 5-Fold Cross-Validation đạt 93.34%).'),
+            ('[⚡ Cắt Giảm 51.9% Params]', 'Tối ưu hóa độ rộng kênh mạng, cắt giảm tham số từ 9.85M xuống 4.74M mà độ chính xác vẫn vượt trội.')
+        ]
+    )
 
     # =========================================================================
-    # SLIDE 6: ĐIỂM MỚI 1 - TÁI THAM SỐ HÓA REPCONV (W_fused)
+    # SLIDE 6: ĐỘT PHÁ 1 - TÁI THAM SỐ HÓA REPCONV & GỘP NHÁNH ĐẠI SỐ
     # =========================================================================
     s6 = prs.slides.add_slide(blank_layout); set_slide_bg(s6)
-    add_header(s6, 'Điểm Mới 1: Tái Tham Số Hóa Cấu Trúc (RepConv) & Gộp Nhánh Đại Số', 'Đóng Góp Kỹ Thuật 1 · Tối Ưu Hóa Độ Trễ Suy Luận', '06 / 18')
-
-    # Top: Large Diagram
-    rep_diag = os.path.join(fig_dir, 'Fig_RepConv_Architecture.png')
-    if os.path.exists(rep_diag):
-        add_card(s6, 0.8, 1.25, 11.7, 4.25, CARD_BG, BORDER_COLOR)
-        s6.shapes.add_picture(rep_diag, Inches(0.95), Inches(1.35), Inches(11.4), Inches(4.05))
-
-    # Bottom 3 Technical Key Takeaways
-    takeaways_rep = [
-        ('HUẤN LUYỆN ĐA NHÁNH', '3 nhánh song song (3x3, 1x1, Identity) làm giàu gradient và không gian đặc trưng biểu diễn.', ORANGE_ACCENT),
-        ('GỘP ĐẠI SỐ switch_to_deploy()', 'Hợp nhất BN, đệm zero 1x1 và Dirac delta kernel thành duy nhất 1 lớp 3x3 Conv đơn lẻ.', BLUE_ACCENT),
-        ('HIỆU QUẢ VẬN HÀNH THỰC TẾ', 'Độ trễ giảm 55.2% (từ 7.12 ms xuống 2.92 ms), đạt 342.5 FPS trên T4 với sai số đại số Δ < 10⁻⁵.', GREEN_ACCENT)
-    ]
-    for idx, (h_txt, desc_txt, col) in enumerate(takeaways_rep):
-        left_pos = 0.8 + idx * 4.0
-        add_card(s6, left_pos, 5.60, 3.8, 1.50)
-        tb = s6.shapes.add_textbox(Inches(left_pos + 0.15), Inches(5.68), Inches(3.5), Inches(1.35))
-        tf = tb.text_frame; tf.word_wrap = True
-        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-        p = tf.paragraphs[0]; p.text = h_txt; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = col; p.space_after = Pt(2)
-        p = tf.add_paragraph(); p.text = desc_txt; p.font.size = Pt(9.2); p.font.color.rgb = TEXT_BODY
+    add_side_by_side_slide(
+        s6,
+        title='Đột Phá 1: Tái Tham Số Hóa Cấu Trúc (RepConv) & Gộp Nhánh Đại Số',
+        category='ĐÓNG GÓP KỸ THUẬT 1 · TỐI ƯU HÓA ĐỘ TRỄ SUY LUẬN',
+        slide_num='06 / 18',
+        left_title='BASELINE: MULTI-BRANCH TRAINING BOTTLENECK',
+        left_sub='3 nhánh song song (3×3, 1×1, Identity) · Phân mảnh bộ nhớ GPU',
+        left_img_name='Fig1A_Baseline_MultiBranch_Bottleneck.png',
+        left_bullets=[
+            ('[❌ Memory Access Cost]', 'GPU phải phân bổ 3 bộ đệm bộ nhớ riêng biệt cho từng nhánh, gây nghẽn băng thông nghiêm trọng.'),
+            ('[❌ 3 Kernel Launches]', 'Tốn 3 lần gọi nhân tính toán CUDA độc lập trên từng lớp tích chập, gây hiện tượng Cache Thrashing.'),
+            ('[❌ Độ Trễ Kéo Dài 7.12 ms]', 'Tốc độ thực tế chỉ đạt 140.4 FPS trên Tesla T4, không đáp ứng được luồng camera đa kênh 4K.')
+        ],
+        right_title='PROPOSED: REPCONV ALGEBRAIC FUSION LIFECYCLE',
+        right_sub='switch_to_deploy() gộp giải tích thành duy nhất 1 lớp Conv 3×3',
+        right_img_name='Fig1B_Proposed_RepConv_Algebraic_Fusion.png',
+        right_bullets=[
+            ('[✅ Gộp Đại Số Khép Kín]', 'BatchNorm Folding + Zero-Padding 1×1 + Dirac Delta Kernel (điều kiện Cin==Cout và s=1).'),
+            ('[⚡ Giảm 55.2% Độ Trễ]', 'Thời gian suy luận giảm ngoạn mục từ 7.12 ms xuống 2.92 ms trên Tesla T4 (5.35 ms trên RTX 3050).'),
+            ('[⚡ Tốc Độ 342.5 FPS]', 'Vận hành siêu thời gian thực với sai số giải tích số học cực tiểu Δ < 10⁻⁵ so với bản đa nhánh.')
+        ]
+    )
 
     # =========================================================================
-    # SLIDE 7: ĐIỂM MỚI 2 - TỌA ĐỘ KHÔNG GIAN COORDCONV
+    # SLIDE 7: ĐỘT PHÁ 2 - MÃ HÓA TỌA ĐỘ COORDCONV DẬP TẮT BÁO ĐỘNG GIẢ
     # =========================================================================
     s7 = prs.slides.add_slide(blank_layout); set_slide_bg(s7)
-    add_header(s7, 'Điểm Mới 2: Mã Hóa Tọa Độ CoordConv Dập Tắt Báo Động Giả', 'Đóng Góp Kỹ Thuật 2 · Phá Vỡ Tính Bất Biến Tịnh Tiến', '07 / 18')
-
-    coord_diag = os.path.join(fig_dir, 'Fig_CoordConv_Concept.png')
-    if os.path.exists(coord_diag):
-        add_card(s7, 0.8, 1.25, 11.7, 4.25, CARD_BG, BORDER_COLOR)
-        s7.shapes.add_picture(coord_diag, Inches(0.95), Inches(1.35), Inches(11.4), Inches(4.05))
-
-    takeaways_coord = [
-        ('PHÁ VỠ BẤT BIẾN TỊNH TIẾN', 'Bổ sung 2 kênh tọa độ chuẩn hóa Cx, Cy ∈ [-1, 1] vào ảnh RGB đầu vào (thành 5 kênh).', ORANGE_ACCENT),
-        ('TIÊN ĐỀ HÌNH HỌC CÔNG TRƯỜNG', 'Ép kernel học quy luật giải phẫu: Mũ bảo hộ nằm trên đầu người (Cy < 0), không nằm ở mặt đất.', BLUE_ACCENT),
-        ('TRIỆT TIÊU BÁO ĐỘNG GIẢ', 'Loại bỏ hoàn toàn >28% cảnh báo sai vào xô vữa vàng, cọc tiêu và biển báo nguy hiểm dưới sàn.', GREEN_ACCENT)
-    ]
-    for idx, (h_txt, desc_txt, col) in enumerate(takeaways_coord):
-        left_pos = 0.8 + idx * 4.0
-        add_card(s7, left_pos, 5.60, 3.8, 1.50)
-        tb = s7.shapes.add_textbox(Inches(left_pos + 0.15), Inches(5.68), Inches(3.5), Inches(1.35))
-        tf = tb.text_frame; tf.word_wrap = True
-        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-        p = tf.paragraphs[0]; p.text = h_txt; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = col; p.space_after = Pt(2)
-        p = tf.add_paragraph(); p.text = desc_txt; p.font.size = Pt(9.2); p.font.color.rgb = TEXT_BODY
+    add_side_by_side_slide(
+        s7,
+        title='Đột Phá 2: Mã Hóa Tọa Độ CoordConv Dập Tắt Báo Động Giả Dưới Sàn',
+        category='ĐÓNG GÓP KỸ THUẬT 2 · PHÁ VỠ TÍNH BẤT BIẾN TỊNH TIẾN',
+        slide_num='07 / 18',
+        left_title='BASELINE: TRANSLATION INVARIANCE FLAW',
+        left_sub='Tích chập tiêu chuẩn xử lý xô vàng dưới sàn giống hệt mũ trên đầu',
+        left_img_name='Fig2A_Baseline_Translation_Invariance_Flaw.png',
+        left_bullets=[
+            ('[❌ Chia Sẻ Trọng Số]', 'Bộ lọc tích chập 3 kênh RGB không có nhận thức không gian về độ cao vật thể trong khung hình.'),
+            ('[❌ Nhầm Lẫn Hình Học]', 'Xô vữa vàng và cọc tiêu ở sàn (y ≈ 0.9) kích hoạt phản hồi hệt như mũ bảo hộ trên đầu (y ≈ 0.2).'),
+            ('[❌ Báo Động Giả Tràn Lan]', 'Hơn 28% cảnh báo sai xuất hiện ở khu vực sàn đất và máy móc công trường do màu sắc tương đồng.')
+        ],
+        right_title='PROPOSED: 5-CHANNEL COORDCONV STEM INJECTION',
+        right_sub='Cấy 2 kênh tọa độ không gian đối xứng Cx, Cy ∈ [-1, 1] tại tầng Stem',
+        right_img_name='Fig2B_Proposed_CoordConv_Spatial_Injection.png',
+        right_bullets=[
+            ('[✅ Tiên Đề Hình Học]', 'Ép mạng học tiên nghiệm giải phẫu: Mũ bảo hộ nằm trên đầu người (Cy < 0.3), không nằm ở sàn đất.'),
+            ('[⚡ Dập Tắt >28% Cảnh Báo Sai]', 'Logit lớp mũ tại sàn nhà bị triệt tiêu về 0 ngay tại tầng Stem (Conv c1=5 -> c2=64).'),
+            ('[⚡ Chi Phí Cực Nhỏ (+0.06 ms)]', 'Giữ nguyên các tầng sâu là tích chập chuẩn, đạt hiệu quả tối đa với chi phí tính toán tối thiểu.')
+        ]
+    )
 
     # =========================================================================
-    # SLIDE 8: ĐIỂM MỚI 3 - CHÚ Ý THƯA 2 CẤP ĐỘ BIFORMER
+    # SLIDE 8: ĐỘT PHÁ 3 - CHÚ Ý THƯA 2 CẤP ĐỘ BIFORMER
     # =========================================================================
     s8 = prs.slides.add_slide(blank_layout); set_slide_bg(s8)
-    add_header(s8, 'Điểm Mới 3: Cơ Chế Chú Ý Định Tuyến Thưa 2 Cấp Độ (BiFormer)', 'Đóng Góp Kỹ Thuật 3 · Khóa Nét Vi Vật Thể Mũ < 20 px', '08 / 18')
-
-    biformer_diag = os.path.join(fig_dir, 'Fig_BiFormer_Sparse_Attention.png')
-    if os.path.exists(biformer_diag):
-        add_card(s8, 0.8, 1.25, 11.7, 4.25, CARD_BG, BORDER_COLOR)
-        s8.shapes.add_picture(biformer_diag, Inches(0.95), Inches(1.35), Inches(11.4), Inches(4.05))
-
-    takeaways_bio = [
-        ('ĐỊNH TUYẾN THƯA VÙNG (S×S)', 'Chia lưới S x S (S=8), tính ma trận tương quan vùng A^r và chỉ giữ lại Top-k (k=4) vùng liên quan.', ORANGE_ACCENT),
-        ('ĐỘ PHỨC TẠP TUYẾN TÍNH', 'Giảm độ phức tạp tự chú ý từ bậc hai O(H²W²) xuống tuyến tính O(HW), không làm tràn bộ nhớ VRAM.', BLUE_ACCENT),
-        ('TĂNG RECALL VI VẬT THỂ', 'Loại bỏ 80% nền rác, tập trung 100% tài nguyên tính toán vào vòm mũ, đẩy Recall mũ lên 91.33%.', GREEN_ACCENT)
-    ]
-    for idx, (h_txt, desc_txt, col) in enumerate(takeaways_bio):
-        left_pos = 0.8 + idx * 4.0
-        add_card(s8, left_pos, 5.60, 3.8, 1.50)
-        tb = s8.shapes.add_textbox(Inches(left_pos + 0.15), Inches(5.68), Inches(3.5), Inches(1.35))
-        tf = tb.text_frame; tf.word_wrap = True
-        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-        p = tf.paragraphs[0]; p.text = h_txt; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = col; p.space_after = Pt(2)
-        p = tf.add_paragraph(); p.text = desc_txt; p.font.size = Pt(9.2); p.font.color.rgb = TEXT_BODY
+    add_side_by_side_slide(
+        s8,
+        title='Đột Phá 3: Cơ Chế Chú Ý Định Tuyến Thưa 2 Cấp Độ (BiFormer)',
+        category='ĐÓNG GÓP KỸ THUẬT 3 · KHÓA NÉT VI VẬT THỂ MŨ < 20 PX',
+        slide_num='08 / 18',
+        left_title='BASELINE: DENSE SELF-ATTENTION BOTTLENECK',
+        left_sub='Độ phức tạp bậc hai O(H²W²) · Gây tràn bộ nhớ CUDA OOM',
+        left_img_name='Fig3A_Baseline_Dense_Attention_Bottleneck.png',
+        left_bullets=[
+            ('[❌ Bùng Nổ Tính Toán]', 'Ở độ phân giải 1024px, ma trận ái lực A cần >10¹⁰ phép tính, ngốn >4 GB VRAM tạm thời.'),
+            ('[❌ Lãng Phí Tài Nguyên]', 'Hơn 80% tính toán chú ý rơi vào nền vô nghĩa (bầu trời, mặt sàn bê tông, mảng tường trống).'),
+            ('[❌ Sập Nguồn Thiết Bị Biên]', 'Gây lỗi tràn bộ nhớ CUDA Out-of-Memory trên GPU biên 2GB–4GB (Jetson Nano / MX230).')
+        ],
+        right_title='PROPOSED: BIFORMER DYNAMIC SPARSE ROUTING',
+        right_sub='Định tuyến 2 cấp độ: Lưới vùng S=8, Top-k=4 · Độ phức tạp tuyến tính O(HW)',
+        right_img_name='Fig3B_Proposed_BiFormer_Sparse_Routing.png',
+        right_bullets=[
+            ('[✅ Lọc 80% Nền Rác]', 'Chỉ định tuyến thông tin qua 4 vùng thô quan trọng nhất chứa chi tiết công nhân và vòm mũ.'),
+            ('[⚡ Độ Phức Tạp Tuyến Tính]', 'Chuyển từ O((HW)²) thành O(HW), giải phóng hoàn toàn áp lực bộ nhớ VRAM khi xử lý ảnh lớn.'),
+            ('[⚡ Khóa Nét Viền Mũ Xa]', 'Dồn 100% chú ý vào mục tiêu li ti, giúp mô hình chạy mượt ở 1024px mà không bao giờ bị OOM.')
+        ]
+    )
 
     # =========================================================================
-    # SLIDE 9: ĐIỂM MỚI 4 - HÀM MẤT MÁT FOCAL EIOU & NHÁNH P2
+    # SLIDE 9: ĐỘT PHÁ 4 - HÀM MẤT MÁT FOCAL EIOU HỒI QUY KHUNG BAO
     # =========================================================================
     s9 = prs.slides.add_slide(blank_layout); set_slide_bg(s9)
-    add_header(s9, 'Điểm Mới 4: Hàm Mất Mát Focal EIoU & Nhánh Vi Vật Thể P2', 'Đóng Góp Kỹ Thuật 4 · Tối Ưu Bounding Box & Thu Gọn Mô Hình', '09 / 18')
-
-    focal_diag = os.path.join(fig_dir, 'Fig_Focal_EIoU_Decomposition.png')
-    if os.path.exists(focal_diag):
-        add_card(s9, 0.8, 1.25, 11.7, 4.25, CARD_BG, BORDER_COLOR)
-        s9.shapes.add_picture(focal_diag, Inches(0.95), Inches(1.35), Inches(11.4), Inches(4.05))
-
-    takeaways_focal = [
-        ('PHÂN RÃ CẠNH ĐỘC LẬP', 'Khắc phục hàm CIoU bằng cách tách độc lập phạt chiều rộng w và chiều cao h, chống biến dạng hộp.', ORANGE_ACCENT),
-        ('ĐIỀU TIẾT MẪU KHÓ FOCAL', 'Trọng số IoU^0.5 tự động khuếch đại gradient cho các mũ bảo hộ bị che khuất một phần dưới giàn giáo.', BLUE_ACCENT),
-        ('CẤU TRÚC 4-HEAD P2 AFPN', 'Bổ sung nhánh P2 (160x160/stride 4) nhưng cắt giảm 51.9% tham số (từ 9.85M xuống 4.74M params).', GREEN_ACCENT)
-    ]
-    for idx, (h_txt, desc_txt, col) in enumerate(takeaways_focal):
-        left_pos = 0.8 + idx * 4.0
-        add_card(s9, left_pos, 5.60, 3.8, 1.50)
-        tb = s9.shapes.add_textbox(Inches(left_pos + 0.15), Inches(5.68), Inches(3.5), Inches(1.35))
-        tf = tb.text_frame; tf.word_wrap = True
-        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
-        p = tf.paragraphs[0]; p.text = h_txt; p.font.size = Pt(10.5); p.font.bold = True; p.font.color.rgb = col; p.space_after = Pt(2)
-        p = tf.add_paragraph(); p.text = desc_txt; p.font.size = Pt(9.2); p.font.color.rgb = TEXT_BODY
+    add_side_by_side_slide(
+        s9,
+        title='Đột Phá 4: Focal EIoU Loss Phân Rã Cạnh & Hồi Quy Vi Vật Thể Khó',
+        category='ĐÓNG GÓP KỸ THUẬT 4 · HỒI QUY KHUNG BAO CHÍNH XÁC CAO',
+        slide_num='09 / 18',
+        left_title='BASELINE: CIOU GRADIENT VANISHING FLAW',
+        left_sub='Phạt tỷ lệ góc v ∝ (arctan(w_gt/h_gt) - arctan(w/h))² triệt tiêu đạo hàm',
+        left_img_name='Fig4A_Baseline_CIoU_Vanishing_Gradient.png',
+        left_bullets=[
+            ('[❌ Đạo Hàm Triệt Tiêu Về 0]', 'Khi tỷ lệ cạnh w/h == w_gt/h_gt, ∂v/∂w ≡ 0 dù diện tích hộp dự đoán bị lệch gấp đôi.'),
+            ('[❌ Kẹt Hộp Bao Dự Đoán]', 'Hộp bao không thể co giãn để khớp chính xác mũ bảo hộ bị giàn giáo công trường che khuất.'),
+            ('[❌ Mù Kích Thước Tuyệt Đối]', 'Chỉ phạt tỷ lệ góc tương đối mà không tối ưu trực tiếp sai lệch chiều rộng và chiều cao.')
+        ],
+        right_title='PROPOSED: FOCAL-EIoU INDEPENDENT DECOMPOSITION',
+        right_sub='Phân rã độc lập sai số (w-w_gt)² + (h-h_gt)² + Điều tiết mẫu khó (IoU)^0.5',
+        right_img_name='Fig4B_Proposed_Focal_EIoU_Decomposition.png',
+        right_bullets=[
+            ('[✅ Gradient Luôn Tồn Tại]', '∂L/∂w = 2(w-w_gt)/Cw² ≠ 0 liên tục dẫn dắt tối ưu cả chiều rộng và chiều cao độc lập.'),
+            ('[⚡ Khai Phá Mẫu Khó]', 'Trọng số (IoU)^0.5 tập trung tối ưu biên cho các mũ bảo hộ bị che khuất và kích thước nhỏ.'),
+            ('[⚡ Đồng Thuận TAL + BCE]', 'Phối hợp Task-Aligned Assigner giải quyết mất cân bằng 1:12, mAP50-95 đạt đỉnh 65.91% (Harmonized 78.93%).')
+        ]
+    )
 
     # =========================================================================
     # SLIDE 10: TỰ PHÁT TRIỂN & ĐÓNG GÓP MÃ NGUỒN LÕI
