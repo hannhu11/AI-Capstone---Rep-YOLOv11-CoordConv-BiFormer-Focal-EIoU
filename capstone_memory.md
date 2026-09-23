@@ -297,10 +297,13 @@ Toàn bộ **32 bài báo nghiên cứu nền tảng và SOTA (2019–2026)** v�
   - Giữ lại phần chạy chi tiết độ trễ ms, FPS và chuỗi ablation $A_0 \to A_6$ cho **Review 2 & 3**.
   - Review 1 tập trung đối chuẩn các mô hình cơ sở từ Bảng 1: YOLOv8n/s, YOLOv10n/s, YOLO11n/s so với mục tiêu đề tài.
   - Khẳng định định hướng nộp bài báo khoa học chuẩn IEEE Q1 (IEEE TII) và không dùng thiết bị nhúng biên (Edge Device) cho lần báo cáo 1.
-
-
-
-
-
-
-
+- [x] **Xây dựng Hoàn chỉnh 5 Slide Bổ sung Mục 8 đến Mục 12 cho Báo cáo Review 1**:
+  - Dựa trên tài liệu gốc: `review_1_main/HUONG_DAN_TRA_LOI_12_MUC_REVIEW_1.md`.
+  - Tệp PowerPoint hoàn chỉnh: `review_1_main/Slides_Muc_8_9_10_11_12.pptx`.
+  - 5 Slide đồ họa 300 DPI độ phân giải siêu nét (4800x2700) tại `review_1_main/slide_renders_8_to_12/`:
+    1. **Slide 08 (Mục 8 - Evaluation Strategy)**: `Slide_08_Evaluation_Strategy.png` (mAP50, mAP50-95, Recall sinh mạng, 5-Fold Stratified CV, Grad-CAM XAI).
+    2. **Slide 09 (Mục 9 - Project Plan & Gantt Chart)**: `Slide_09_Project_Plan_Gantt.png` (5 Phase W1–W15, 3 cột mốc Review -> Bảo vệ, Agile Sprints, Phân công Nhu/Thanh/Dung).
+    3. **Slide 10 (Mục 10 - Research Paper Plan)**: `Slide_10_Research_Paper_Plan.png` (Mục tiêu IEEE Transactions on Industrial Informatics Q1 IF 11.7, 4 đóng góp khoa học, bản thảo 10 trang IEEEtran).
+    4. **Slide 11 (Mục 11 - Risks & Mitigation)**: `Slide_11_Risk_Assessment_Mitigation.png` (Ma trận 6 rủi ro kỹ thuật: Mất cân bằng 1:12, Báo động sàn, Mũ li ti xa, Triệt tiêu CIoU, Rò rỉ video, Giới hạn GPU).
+    5. **Slide 12 (Mục 12 - Expected Outcomes & Conclusion)**: `Slide_12_Expected_Outcomes_Conclusion.png` (5 sản phẩm đầu ra cam kết: Weights, Dataset C*, Mã nguồn GitHub, RTSP demo, Paper IEEE + Tổng kết 8 ý cốt lõi).
+  - Scripts tạo lập tự động: `review_1_main/generate_review1_slides_8_to_12.py`, `review_1_main/render_slides_as_images.py`.
