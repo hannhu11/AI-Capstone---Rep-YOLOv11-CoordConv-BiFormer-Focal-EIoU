@@ -3,7 +3,7 @@
 **Đơn vị:** Khoa Công nghệ Thông tin - Ngành Trí tuệ Nhân tạo, Đại học FPT  
 **Mã đề tài:** FA26AI16 | **Mã nhóm:** GFA26AI17  
 **Tài liệu tham chiếu chuẩn xác 100%:**
-- Bản thảo Bài báo IEEE Q1: `Rep-YOLO11s_Master_Paper_IEEE.pdf`
+- Bản thảo Báo cáo Nghiên cứu Khoa học Chuẩn Quốc tế (Publication-Ready Manuscript): `Rep-YOLO11s_Master_Paper_IEEE.pdf`
 - Slide Báo cáo Review 1: `Capstone_Review_1 (1).pdf` / `Capstone_Review_1.pptx`
 - Bảng đối chuẩn SOTA cơ sở: Ảnh trích xuất Bảng 1 (`media_1790177080346.png`)
 - Mã nguồn thực thi: `custom_ablation_modules.py`, `rep_yolo11s_p2.yaml`
@@ -15,7 +15,7 @@
    $$\text{Problem} \longrightarrow \text{Research Questions} \longrightarrow \text{Research Gap} \longrightarrow \text{SOTA / Related Work} \longrightarrow \text{Baselines} \longrightarrow \text{Proposed Method} \longrightarrow \text{Dataset \& Pipeline} \longrightarrow \text{Evaluation Strategy} \longrightarrow \text{Project Plan} \longrightarrow \text{Paper Plan} \longrightarrow \text{Risks \& Mitigation} \longrightarrow \text{Expected Outcomes} \longrightarrow \text{Conclusion}$$
 2. **Chiến lược Phạm vi Báo cáo Review 1 (Đã khóa theo yêu cầu tác giả)**:
    - Nhóm **chưa trình bày chuỗi thực nghiệm chi tiết Ablation $A_0 \to A_6$** và **chưa trình bày đo đạc độ trễ/FPS trên thiết bị biên nhúng (Edge Devices)**. Các phần này được giữ làm bằng chứng thực nghiệm trọng tâm cho **Review 2 và Review 3**.
-   - Review 1 tập trung chứng minh: **Tính rõ ràng của bài toán**, **Cơ sở lý thuyết vững chắc của 4 cải tiến**, **Dữ liệu chuẩn hóa sạch sẽ**, và **Khả năng thực hiện thành công bài báo khoa học chuẩn IEEE Q1**.
+   - Review 1 tập trung chứng minh: **Tính rõ ràng của bài toán**, **Cơ sở lý thuyết vững chắc của 4 cải tiến**, **Dữ liệu chuẩn hóa sạch sẽ**, và **Khả năng hoàn thiện bài báo nghiên cứu khoa học chuẩn hóa, sẵn sàng trình Hội đồng Đánh giá và nộp cho các tạp chí/hội nghị chuyên ngành quốc tế**.
    - Bảng so sánh baseline tập trung vào đối chuẩn SOTA của dòng YOLO (YOLOv8n/s, YOLOv10n/s, YOLO11n/s) và mục tiêu vượt trội của đề tài.
 
 ---
@@ -36,7 +36,7 @@
             ▼
 ┌────────────────────────┐      ┌────────────────────────┐      ┌────────────────────────┐
 │ 7. Evaluation Strategy │ ───► │ 8. Plan, Risks & Paper │ ───► │ 9. Expected Outcomes   │
-│ mAP50, Recall, 5-Fold  │      │ Gantt Chart, IEEE TII  │      │ Model, Code, RTSP Demo │
+│ mAP50, Recall, 5-Fold  │      │ Gantt Chart, Paper Plan│      │ Model, Code, RTSP Demo │
 └────────────────────────┘      └────────────────────────┘      └────────────────────────┘
 ```
 
@@ -346,24 +346,27 @@ Milestone:         REVIEW 1              REVIEW 2    REVIEW 3
 | **Phase 1: Foundation & Review 1** | Tuần 1 – 5 | - Khảo sát 30 nghiên cứu quốc tế, xác định RQ & Research Gap.<br>- Làm sạch dữ liệu SHWD, chuẩn hóa $\mathcal{C}^*$.<br>- Thiết lập baseline YOLOv8s, YOLO11s.<br>- Chuẩn bị slide và báo cáo Review 1. | - Slide báo cáo Review 1.<br>- Tập dữ liệu SHWD đã làm sạch.<br>- Bảng đối chuẩn SOTA cơ sở. | **Cả nhóm** (Nhu Lead) |
 | **Phase 2: Core Engineering & Review 2** | Tuần 6 – 8 | - Lập trình module RepConv, CoordConv, BiFormer, Focal-EIoU.<br>- Huấn luyện và thực hiện Ablation Study từng thành phần ($A_0 \to A_6$).<br>- Đo đạc thực nghiệm sơ bộ trên GPU Kaggle T4. | - Mã nguồn module hoàn chỉnh.<br>- Bảng kết quả Ablation Study.<br>- Slide báo cáo Review 2. | **Hàn Như** (Chính)<br>Tuấn Dũng |
 | **Phase 3: Validation & Review 3** | Tuần 9 – 11 | - Chạy đánh giá 5-Fold Cross-Validation ($\mu \pm \sigma$).<br>- Kiểm thử Zero-shot trên 5 tập dữ liệu ngoại miền.<br>- Trích xuất bản đồ nhiệt Grad-CAM XAI. | - Bảng số liệu 5-Fold CV.<br>- Báo cáo XAI Grad-CAM.<br>- Trọng số model tốt nhất `.pt`. | **Văn Thành** (Chính)<br>Hàn Như |
-| **Phase 4: Deployment & Documentation** | Tuần 12 – 14 | - Xây dựng ứng dụng giám sát video RTSP.<br>- Đóng gói mô hình Docker/API.<br>- Hoàn thiện bản thảo bài báo khoa học IEEE Q1. | - Ứng dụng demo RTSP.<br>- Bản thảo Paper hoàn chỉnh.<br>- Kho mã nguồn GitHub sạch. | **Tuấn Dũng** (Chính)<br>Hàn Như |
+| **Phase 4: Deployment & Documentation** | Tuần 12 – 14 | - Xây dựng ứng dụng giám sát video RTSP.<br>- Đóng gói mô hình Docker/API.<br>- Hoàn thiện bản thảo bài báo nghiên cứu khoa học chuẩn IEEE. | - Ứng dụng demo RTSP.<br>- Bản thảo Paper hoàn chỉnh.<br>- Kho mã nguồn GitHub sạch. | **Tuấn Dũng** (Chính)<br>Hàn Như |
 | **Phase 5: Defense Preparation** | Tuần 15 | - Viết toàn văn Báo cáo Khóa luận tốt nghiệp (Thesis Book).<br>- Dựng slide bảo vệ chính thức và tập dượt thuyết trình. | - Quyển Khóa luận tốt nghiệp.<br>- Slide bảo vệ chung cuộc. | **Cả nhóm** |
 
 ---
 
-## MỤC 10: KẾ HOẠCH BÀI BÁO KHOA HỌC (RESEARCH PAPER PLAN)
+## MỤC 10: KẾ HOẠCH BÀI BÁO KHOA HỌC (SCIENTIFIC RESEARCH MANUSCRIPT PLAN)
 
-*Nhóm có định hướng và đã chuẩn bị hoàn tất bản thảo bài báo khoa học với thông tin chi tiết như sau:*
+*Nhóm đã chuẩn bị hoàn tất bản thảo bài báo nghiên cứu khoa học chuyên sâu, định hướng xuất bản với thông tin chi tiết như sau:*
 * **Tên bài báo dự kiến:** *Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance*
-* **Tạp chí mục tiêu:** **IEEE Transactions on Industrial Informatics (IEEE TII)** (Q1 Top-Tier, Impact Factor: 11.7, CiteScore: 21.0) hoặc **IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI)**.
+* **Chuẩn mực học thuật & Định dạng bản thảo:** Bản thảo nghiên cứu khoa học hoàn chỉnh 10 trang tiếng Anh, định dạng chuẩn **IEEE Double-Column** (`IEEEtran` LaTeX template), cấu trúc đầy đủ: Abstract, Introduction, Related Work, Mathematical Methodology, Experiments & Ablations, Grad-CAM Saliency Analysis, và Conclusion.
+* **Mục tiêu Nghiệm thu & Định hướng Công bố:**
+  1. **Trước mắt (Ưu tiên số 1):** Phục vụ Hội đồng Đánh giá Khóa luận Tốt nghiệp Đại học FPT nghiệm thu về hàm lượng khoa học, tính mới (novelty) và tính đóng góp kỹ thuật thực tế của đề tài.
+  2. **Định hướng công bố quốc tế:** Dưới sự đồng tác giả và hướng dẫn của Mentor (ThS. Vũ Hà Anh), bản thảo đã sẵn sàng nộp bình duyệt tại các Tạp chí / Hội nghị Khoa học Chuyên ngành uy tín thuộc danh mục Scopus / ISI (định hướng các venue chuyên ngành như *IEEE Transactions on Industrial Informatics / IEEE Transactions on Instrumentation and Measurement* hoặc các Hội nghị Quốc tế về Thị giác Máy tính).
 * **Câu hỏi & Khoảng trống nghiên cứu:** Đã nêu chi tiết tại Mục 3.
 * **Phương pháp đề xuất:** Mô hình Rep-YOLO11s kết hợp RepConv, CoordConv, BiFormer, Focal-EIoU và Task-Aligned Assigner.
-* **Đóng góp học thuật dự kiến (Expected Contributions):**
+* **Đóng góp học thuật cốt lõi (4 Core Contributions):**
   1. *Đóng góp kiến trúc:* Thiết kế thành công mạng Rep-YOLO11s tối ưu cho giám sát công trường với độ chính xác cao và thông lượng suy luận lớn.
-  2. *Chứng minh toán học:* Trình bày công thức đại số khép kín của RepConv chuyển đổi từ mạng đa nhánh sang nhân $3\times3$ đơn lẻ với sai số sai lệch bằng $0$.
+  2. *Chứng minh toán học:* Trình bày công thức đại số khép kín của RepConv chuyển đổi từ mạng đa nhánh sang nhân $3\times3$ đơn lẻ với sai số sai lệch bằng $0$ ($\|Y_{\text{multi}} - Y_{\text{fused}}\|_{\infty} < 10^{-5}$).
   3. *Đột phá về tính giải thích:* Chứng minh bằng Grad-CAM XAI rằng CoordConv và BiFormer có khả năng dìm báo động giả ở mặt sàn và tập trung đặc trưng vào mục tiêu xa.
   4. *Benchmark đa miền quy mô lớn:* Đánh giá Zero-shot trên hơn $33,000$ ảnh công nghiệp và làm rõ hiện tượng lệch khung bao nhãn (IoU Collapse).
-* **Tình trạng hiện tại:** Bản thảo tiếng Anh 10 trang chuẩn IEEEtran đã được biên soạn và biên dịch thành công (`Rep-YOLO11s_Master_Paper_IEEE.pdf`).
+* **Tình trạng hiện tại:** Bản thảo tiếng Anh 10 trang chuẩn IEEEtran đã được biên dịch thành công tệp PDF (`Rep-YOLO11s_Master_Paper_IEEE.pdf`), sẵn sàng trình chiếu minh chứng trước Hội đồng.
 
 ---
 
@@ -387,7 +390,7 @@ Milestone:         REVIEW 1              REVIEW 2    REVIEW 3
 2. **Bộ dữ liệu chuẩn hóa công nghiệp (Dataset Pipeline):** Bộ dữ liệu SHWD đã làm sạch nhãn rác cùng bộ quy tắc chuẩn hóa nhãn $\mathcal{C}^*$ đồng bộ trên hơn $33,000$ ảnh công trường.
 3. **Mã nguồn và Tài liệu Kỹ thuật (Open-Source Codebase):** Toàn bộ mã nguồn huấn luyện, tệp cấu hình YAML, và script chuyển đổi `switch_to_deploy()` trên GitHub.
 4. **Phần mềm Demo Giám sát RTSP (Software Prototype):** Ứng dụng xử lý luồng video camera thời gian thực với tính năng vẽ khung bao và phát cảnh báo vi phạm.
-5. **Bản thảo Bài báo Khoa học Quốc tế (Research Paper):** Bài báo hoàn chỉnh chuẩn IEEE format sẵn sàng nộp đăng tạp chí Q1.
+5. **Bản thảo Báo cáo Nghiên cứu Khoa học (Publication-Ready Scientific Manuscript):** Bản thảo bài báo 10 trang hoàn chỉnh theo đúng chuẩn định dạng IEEE 2 cột, sẵn sàng nghiệm thu trước Hội đồng Đánh giá và nộp cho các tạp chí/hội nghị chuyên ngành.
 
 ### 12.2 Tổng kết Đề tài (Conclusion - 8 Ý Cốt lõi)
 1. **Problem:** Giải quyết bài toán giám sát an toàn lao động tự động qua camera CCTV công trường với các thách thức: mục tiêu siêu nhỏ ở xa, mất cân bằng nhãn $1:12$ và báo động giả ở mặt sàn.
@@ -396,7 +399,7 @@ Milestone:         REVIEW 1              REVIEW 2    REVIEW 3
 4. **Proposed Method:** Đề xuất kiến trúc **Rep-YOLO11s** tích hợp 4 module toán học: RepConv (tái tham số hóa), CoordConv (mã hóa tọa độ), BiFormer (định tuyến thưa), và Focal-EIoU (phân rã cạnh độc lập).
 5. **Dataset:** Huấn luyện trên $7,581$ ảnh SHWD chuẩn hóa (80/20 không rò rỉ dữ liệu) và kiểm định ngoại miền trên $25,000+$ ảnh công trường.
 6. **Evaluation:** Đánh giá đa chiều qua $mAP_{50}, mAP_{50-95}, Recall, F1$, kiểm định chéo 5-Fold Stratified CV và trực quan hóa bản đồ nhiệt Grad-CAM XAI.
-7. **Expected Outcome:** Đạt độ chính xác tiệm cận hoàn hảo ($96.64\%$ 5-fold), xuất bản bài báo khoa học IEEE Q1 và phần mềm demo ứng dụng thực tế.
+7. **Expected Outcome:** Đạt độ chính xác tiệm cận hoàn hảo ($96.64\%$ 5-fold), hoàn thiện bản thảo bài báo khoa học chuẩn IEEE sẵn sàng cho Hội đồng nghiệm thu và công bố quốc tế, cùng phần mềm demo ứng dụng thực tế.
 8. **Risk Management:** Đã chủ động nhận diện 6 rủi ro kỹ thuật trọng yếu và xây dựng giải pháp xử lý triệt để được bảo chứng bằng lý thuyết toán học.
 
 ---

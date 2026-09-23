@@ -90,14 +90,14 @@ def draw_card(ax, x, y, w, h, border_color=C_BORDER, bg_color=C_CARD_BG, lw=1.2)
     )
     ax.add_patch(card)
 
-def draw_badge(ax, x, y, w, h, text, bg_color):
+def draw_badge(ax, x, y, w, h, text, bg_color, fontsize=11):
     badge = patches.FancyBboxPatch(
         (x, y), w, h,
         boxstyle="round,pad=0.03,rounding_size=0.1",
         facecolor=bg_color, edgecolor=bg_color, linewidth=1
     )
     ax.add_patch(badge)
-    ax.text(x + w / 2, y + h / 2, text, fontsize=11, fontweight='bold',
+    ax.text(x + w / 2, y + h / 2, text, fontsize=fontsize, fontweight='bold',
             color='#FFFFFF', va='center', ha='center')
 
 # =====================================================================
@@ -195,7 +195,7 @@ def render_slide_9():
         ("Phase 1 (W1–W5)", "Foundation & Review 1", "30-paper survey, RQ/Gap, SHWD data cleaning, Baseline setup.", "Review 1 Deck & Cleaned Data", C_ORANGE),
         ("Phase 2 (W6–W8)", "Core Engineering & Review 2", "Module coding (RepConv, CoordConv, BiFormer, EIoU), Ablation A0–A6.", "Review 2 Report & Code", C_BLUE),
         ("Phase 3 (W9–W11)", "Validation & Review 3", "5-Fold CV, Cross-domain testing (25k+ imgs), Grad-CAM XAI.", "Review 3 Data & Weights", C_AMBER),
-        ("Phase 4 (W12–W14)", "Deployment & Docs", "RTSP camera pipeline, Docker packaging, IEEE paper polish.", "RTSP Demo & Paper Draft", C_GREEN),
+        ("Phase 4 (W12–W14)", "Deployment & Docs", "RTSP camera pipeline, Docker packaging, Scientific paper polish.", "RTSP Demo & Paper Draft", C_GREEN),
         ("Phase 5 (W15)", "Final Defense", "Thesis Book submission, final defense presentation rehearsal.", "Thesis Book & Defense", C_PURPLE),
     ]
 
@@ -251,7 +251,7 @@ def render_slide_9():
     ax.text(9.2, 3.72, "Strategic Team Role Allocation", fontsize=14, fontweight='bold', color=C_TITLE, va='center')
 
     lines_b = [
-        ("• Nguyễn Hàn Như (Lead · SE183644):", "Overall network architecture, custom PyTorch modules, and IEEE paper writing."),
+        ("• Nguyễn Hàn Như (Lead · SE183644):", "Overall network architecture, custom PyTorch modules, and Scientific paper writing."),
         ("• Nguyễn Văn Thành (SE180387):", "Data engineering, label harmonization (C*), SHWD cleaning, 5-Fold Stratified CV."),
         ("• Trần Phạm Tuấn Dũng (SE183674):", "Real-time RTSP video streaming pipeline, hardware acceleration, and documentation."),
         ("• High-Efficiency Collaboration:", "Clear responsibility boundaries with unified shared Git repo and issue tracking.")
@@ -272,19 +272,19 @@ def render_slide_9():
 # =====================================================================
 def render_slide_10():
     fig, ax = setup_base_slide(
-        "CRITERION 6 · RESEARCH PAPER PLAN (IEEE TRANSACTIONS)", "10 / 18",
-        "Scientific Publication Plan: Targeting IEEE Transactions (Q1)"
+        "CRITERION 6 · SCIENTIFIC RESEARCH & PUBLICATION PLAN", "10 / 18",
+        "Scientific Research Manuscript: Publication-Ready Paper Plan"
     )
 
-    # Hero Card: Target Venue (Top)
+    # Hero Card: Target Academic Standards & Publication Readiness (Top)
     draw_card(ax, 0.8, 4.75, 14.4, 2.65, border_color=C_BLUE, lw=1.8)
-    draw_badge(ax, 1.1, 6.9, 2.8, 0.35, "TARGET PUBLICATION VENUE", C_BLUE)
+    draw_badge(ax, 1.1, 6.9, 4.3, 0.35, "SCIENTIFIC MANUSCRIPT & ACADEMIC STANDARDS", C_BLUE, fontsize=9.2)
 
-    ax.text(1.1, 6.45, "IEEE Transactions on Industrial Informatics (IEEE TII) — Q1 Top-Tier", fontsize=16, fontweight='bold', color=C_TITLE, va='center')
-    ax.text(1.1, 6.05, "Impact Factor: 11.7 · CiteScore: 21.0 · Alternative Targets: IEEE TPAMI / IEEE TIM", fontsize=12, fontweight='bold', color=C_ORANGE, va='center')
+    ax.text(1.1, 6.45, "Publication-Ready Master Manuscript (Targeting Peer-Reviewed Venues)", fontsize=15, fontweight='bold', color=C_TITLE, va='center')
+    ax.text(1.1, 6.05, "Formatted in Standard IEEE Double-Column · Ready for Academic Committee Review & Journal Submission", fontsize=11, fontweight='bold', color=C_ORANGE, va='center')
     paper_title = 'Paper Title: "Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance"'
     ax.text(1.1, 5.65, wrap_str(paper_title, 110), fontsize=10.8, fontstyle='italic', color=C_BODY, va='center')
-    ax.text(1.1, 5.15, "• Manuscript Status: 10-page master research paper fully drafted in IEEEtran format (Rep-YOLO11s_Master_Paper_IEEE.pdf).", fontsize=11, fontweight='normal', color=C_TITLE, va='center')
+    ax.text(1.1, 5.15, "• Manuscript Status: Complete 10-page master technical paper fully drafted in IEEE format, ready for Academic Council evaluation and journal submission.", fontsize=10.5, fontweight='normal', color=C_TITLE, va='center')
 
     # Card 1: 4 Scientific Contributions (Bottom-Left)
     draw_card(ax, 0.8, 1.35, 7.0, 3.2)
@@ -310,8 +310,8 @@ def render_slide_10():
 
     lines_d = [
         ("• Phase 1–3 (Empirical Evidence):", "Solidify 5-Fold Stratified CV, multi-dataset zero-shot tests, and Grad-CAM saliency maps."),
-        ("• Phase 4 (Writing & Peer Review):", "Rigorous academic polishing, IEEE LaTeX double-column typesetting, and mentor co-author review."),
-        ("• Phase 5 & Post-Defense:", "Formal journal submission to IEEE Transactions; public release of models and datasets on GitHub."),
+        ("• Phase 4 (Writing & Academic Review):", "Rigorous academic polishing, IEEE LaTeX double-column typesetting, and mentor co-author review."),
+        ("• Phase 5 & Defense:", "Present manuscript to Academic Council; finalize submission to reputable journals/conferences under advisor mentorship."),
         ("• Reproducibility Standards:", "Full open-source release with deterministic seed control and complete training scripts.")
     ]
     y_pos = 3.65
@@ -320,7 +320,7 @@ def render_slide_10():
         ax.text(8.5, y_pos - 0.24, wrap_str(desc, 68), fontsize=10, fontweight='normal', color=C_BODY, va='center')
         y_pos -= 0.54
 
-    add_banner(ax, "Publication-grade research combining mathematical proofs, extensive empirical evidence, and open-source industrial contributions.")
+    add_banner(ax, "Publication-ready scientific manuscript prepared to international IEEE standards, fully verifiable by the Academic Council and ready for peer-reviewed venues.")
     fig.savefig(os.path.join(out_dir, 'Slide_10_Research_Paper_Plan.png'), bbox_inches='tight', dpi=300)
     plt.close(fig)
     print("Rendered: Slide_10_Research_Paper_Plan.png")
@@ -402,7 +402,7 @@ def render_slide_12():
         ("2. Standardized Dataset Pipeline", "Cleaned SHWD (7,581 images) with zero label corruption, plus unified C* taxonomy across >33,000 industrial images."),
         ("3. Open-Source Code Repository", "Clean GitHub repository with PyTorch modules, switch_to_deploy() scripts, and multi-GPU DDP training configs."),
         ("4. Real-Time RTSP Software Demo", "Surveillance desktop application running on live CCTV streams with automated violation alerts and bounding boxes."),
-        ("5. IEEE Q1 Research Manuscript", "10-page master paper ready for submission to IEEE Transactions on Industrial Informatics (IEEE TII).")
+        ("5. Scientific Research Manuscript", "Publication-ready master paper in IEEE format, ready for Academic Council evaluation and journal submission.")
     ]
     y_pos = 6.45
     for d_title, d_desc in deliv_items:
@@ -431,7 +431,7 @@ def render_slide_12():
         ax.text(8.5, y_pos - 0.24, wrap_str(p_desc, 68), fontsize=9.6, fontweight='normal', color=C_BODY, va='center')
         y_pos -= 0.62
 
-    add_banner(ax, "A comprehensive, publication-grade AI capstone delivering high-accuracy helmet surveillance, robust software, and IEEE Q1 contribution.")
+    add_banner(ax, "A comprehensive, publication-grade AI capstone delivering high-accuracy helmet surveillance, robust software, and verifiable scientific contributions.")
     fig.savefig(os.path.join(out_dir, 'Slide_12_Expected_Outcomes_Conclusion.png'), bbox_inches='tight', dpi=300)
     plt.close(fig)
     print("Rendered: Slide_12_Expected_Outcomes_Conclusion.png")

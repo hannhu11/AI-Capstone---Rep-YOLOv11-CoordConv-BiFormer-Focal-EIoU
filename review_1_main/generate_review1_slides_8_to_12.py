@@ -208,7 +208,7 @@ def create_pptx_deck(output_pptx_path, existing_prs=None):
         ("Phase 1 (W1–W5)", "Foundation & Review 1", "30-paper survey, RQ/Gap, SHWD data cleaning, Baseline setup.", "Review 1 Deck & Cleaned Data", c_orange),
         ("Phase 2 (W6–W8)", "Core Engineering & Review 2", "Module coding (RepConv, CoordConv, BiFormer, EIoU), Ablation A0–A6.", "Review 2 Report & Code", c_blue),
         ("Phase 3 (W9–W11)", "Validation & Review 3", "5-Fold CV, Cross-domain testing (25k+ imgs), Grad-CAM XAI.", "Review 3 Data & Weights", c_amber),
-        ("Phase 4 (W12–W14)", "Deployment & Docs", "RTSP camera pipeline, Docker packaging, IEEE paper polish.", "RTSP Demo & Paper Draft", c_green),
+        ("Phase 4 (W12–W14)", "Deployment & Docs", "RTSP camera pipeline, Docker packaging, Scientific paper polish.", "RTSP Demo & Paper Draft", c_green),
         ("Phase 5 (W15)", "Final Defense", "Thesis Book submission, final defense presentation rehearsal.", "Thesis Book & Defense", c_purple),
     ]
 
@@ -263,7 +263,7 @@ def create_pptx_deck(output_pptx_path, existing_prs=None):
     tf_ro.word_wrap = True
     p = tf_ro.paragraphs[0]; p.text = "Strategic Team Role Allocation"; p.font.bold = True; p.font.size = Pt(13); p.font.color.rgb = c_title
     items_ro = [
-        "Nguyễn Hàn Như (Lead · SE183644): Overall network architecture, custom PyTorch modules, and IEEE paper writing.",
+        "Nguyễn Hàn Như (Lead · SE183644): Overall network architecture, custom PyTorch modules, and Scientific paper writing.",
         "Nguyễn Văn Thành (SE180387): Data engineering, label harmonization (C*), SHWD cleaning, 5-Fold Stratified CV.",
         "Trần Phạm Tuấn Dũng (SE183674): Real-time RTSP video streaming pipeline, hardware acceleration, and documentation.",
         "High-Efficiency Collaboration: Clear responsibility boundaries with unified shared Git repo and issue tracking."
@@ -274,27 +274,27 @@ def create_pptx_deck(output_pptx_path, existing_prs=None):
     add_bottom_banner(s9, "Structured 15-week Hybrid Agile roadmap strictly aligned with 3 Review milestones and final Capstone Defense.")
 
     # -------------------------------------------------------------
-    # SLIDE 10: CRITERION 6 · RESEARCH PAPER PLAN
+    # SLIDE 10: CRITERION 6 · SCIENTIFIC RESEARCH & PUBLICATION PLAN
     # -------------------------------------------------------------
     s10 = prs.slides.add_slide(blank_layout)
-    setup_slide_header(s10, "CRITERION 6 · RESEARCH PAPER PLAN (IEEE TRANSACTIONS)", "10 / 18",
-                       "Scientific Publication Plan: Targeting IEEE Transactions (Q1)")
+    setup_slide_header(s10, "CRITERION 6 · SCIENTIFIC RESEARCH & PUBLICATION PLAN", "10 / 18",
+                       "Scientific Research Manuscript: Publication-Ready Paper Plan")
 
-    # Hero Card: Target Venue
+    # Hero Card: Target Academic Standards & Publication Readiness
     c_hero = s10.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.35), Inches(11.733), Inches(2.2))
     c_hero.fill.solid(); c_hero.fill.fore_color.rgb = c_white; c_hero.line.color.rgb = c_blue; c_hero.line.width = Pt(1.5)
 
-    b_h = s10.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.0), Inches(1.48), Inches(2.6), Inches(0.32))
+    b_h = s10.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.0), Inches(1.48), Inches(3.6), Inches(0.32))
     b_h.fill.solid(); b_h.fill.fore_color.rgb = c_blue; b_h.line.fill.background()
-    b_h.text_frame.text = "TARGET PUBLICATION VENUE"
+    b_h.text_frame.text = "SCIENTIFIC MANUSCRIPT & ACADEMIC STANDARDS"
     b_h.text_frame.paragraphs[0].font.name = 'Calibri'; b_h.text_frame.paragraphs[0].font.size = Pt(10); b_h.text_frame.paragraphs[0].font.bold = True; b_h.text_frame.paragraphs[0].font.color.rgb = c_white
 
     tf_h = s10.shapes.add_textbox(Inches(1.0), Inches(1.85), Inches(11.3), Inches(1.6)).text_frame
     tf_h.word_wrap = True
-    p = tf_h.paragraphs[0]; p.text = "IEEE Transactions on Industrial Informatics (IEEE TII) — Q1 Top-Tier"; p.font.bold = True; p.font.size = Pt(15); p.font.color.rgb = c_title
-    p = tf_h.add_paragraph(); p.text = "Impact Factor: 11.7 · CiteScore: 21.0 · Alternative Targets: IEEE TPAMI / IEEE TIM"; p.font.size = Pt(11); p.font.bold = True; p.font.color.rgb = c_orange; p.space_before = Pt(2)
+    p = tf_h.paragraphs[0]; p.text = "Publication-Ready Master Manuscript (Targeting Peer-Reviewed Venues)"; p.font.bold = True; p.font.size = Pt(15); p.font.color.rgb = c_title
+    p = tf_h.add_paragraph(); p.text = "Formatted in Standard IEEE Double-Column · Ready for Academic Committee Review & Journal Submission"; p.font.size = Pt(11); p.font.bold = True; p.font.color.rgb = c_orange; p.space_before = Pt(2)
     p = tf_h.add_paragraph(); p.text = 'Title: "Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance"'; p.font.size = Pt(10.5); p.font.italic = True; p.font.color.rgb = c_body; p.space_before = Pt(3)
-    p = tf_h.add_paragraph(); p.text = "• Manuscript Status: 10-page master research paper fully drafted in IEEEtran format (Rep-YOLO11s_Master_Paper_IEEE.pdf)."; p.font.size = Pt(10.5); p.font.color.rgb = c_title; p.space_before = Pt(2)
+    p = tf_h.add_paragraph(); p.text = "• Manuscript Status: Complete 10-page master technical paper fully drafted in IEEE format, ready for Academic Council evaluation and journal submission."; p.font.size = Pt(10.5); p.font.color.rgb = c_title; p.space_before = Pt(2)
 
     # Bottom Left Card: 4 Core Scientific Contributions
     c_cont = s10.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(3.7), Inches(5.7), Inches(2.7))
@@ -327,14 +327,14 @@ def create_pptx_deck(output_pptx_path, existing_prs=None):
     p = tf_pb.paragraphs[0]; p.text = "Publication Roadmap & Scientific Integrity"; p.font.bold = True; p.font.size = Pt(13); p.font.color.rgb = c_title
     items_pb = [
         "Phase 1–3 (Empirical Evidence): Solidify 5-Fold Stratified CV, multi-dataset zero-shot tests, and Grad-CAM saliency maps.",
-        "Phase 4 (Writing & Peer Review): Rigorous academic polishing, IEEE LaTeX double-column typesetting, and mentor co-author review.",
-        "Phase 5 & Post-Defense: Formal journal submission to IEEE Transactions; public release of models and datasets on GitHub.",
+        "Phase 4 (Writing & Academic Review): Rigorous academic polishing, IEEE LaTeX double-column typesetting, and mentor co-author review.",
+        "Phase 5 & Defense: Present manuscript to Academic Council; finalize submission to reputable journals/conferences under advisor mentorship.",
         "Reproducibility Standards: Full open-source release with deterministic seed control and complete training scripts."
     ]
     for itm in items_pb:
         p = tf_pb.add_paragraph(); p.text = "• " + itm; p.font.size = Pt(10); p.font.color.rgb = c_body; p.space_before = Pt(3)
 
-    add_bottom_banner(s10, "Publication-grade research combining mathematical proofs, extensive empirical evidence, and open-source industrial contributions.")
+    add_bottom_banner(s10, "Publication-ready scientific manuscript prepared to international IEEE standards, fully verifiable by the Academic Council and ready for peer-reviewed venues.")
 
     # -------------------------------------------------------------
     # SLIDE 11: CRITERION 7 · RISK ASSESSMENT & MITIGATION MATRIX
@@ -415,7 +415,7 @@ def create_pptx_deck(output_pptx_path, existing_prs=None):
         ("2. Standardized Dataset Pipeline", "Cleaned SHWD (7,581 images) with zero label corruption, plus unified C* taxonomy across >33,000 industrial images."),
         ("3. Open-Source Code Repository", "Clean GitHub repository with PyTorch modules, switch_to_deploy() scripts, and multi-GPU DDP training configs."),
         ("4. Real-Time RTSP Software Demo", "Surveillance desktop application running on live CCTV streams with automated violation alerts and bounding boxes."),
-        ("5. IEEE Q1 Research Manuscript", "10-page master paper ready for submission to IEEE Transactions on Industrial Informatics (IEEE TII).")
+        ("5. Scientific Research Manuscript", "Publication-ready master paper in IEEE format, ready for Academic Council evaluation and journal submission.")
     ]
     for d_title, d_desc in deliv_items:
         p = tf_dl.add_paragraph(); p.text = d_title; p.font.bold = True; p.font.size = Pt(10.5); p.font.color.rgb = c_blue; p.space_before = Pt(5)
@@ -444,7 +444,7 @@ def create_pptx_deck(output_pptx_path, existing_prs=None):
     for p_title, p_desc in points_syn:
         p = tf_cn.add_paragraph(); p.text = f"{p_title} {p_desc}"; p.font.size = Pt(9.5); p.font.color.rgb = c_body; p.space_before = Pt(3)
 
-    add_bottom_banner(s12, "A comprehensive, publication-grade AI capstone delivering high-accuracy helmet surveillance, robust software, and IEEE Q1 contribution.")
+    add_bottom_banner(s12, "A comprehensive, publication-grade AI capstone delivering high-accuracy helmet surveillance, robust software, and verifiable scientific contributions.")
 
     # Ensure all text paragraphs use Calibri
     for slide in [s8, s9, s10, s11, s12]:

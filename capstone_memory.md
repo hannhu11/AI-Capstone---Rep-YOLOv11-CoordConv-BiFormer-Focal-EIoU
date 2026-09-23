@@ -322,10 +322,14 @@ Toàn bộ **32 bài báo nghiên cứu nền tảng và SOTA (2019–2026)** v�
 - [x] **Slide Mục 6.1 - Kiến trúc Tổng thể Đề xuất Rep-YOLO11s**:
   - Sơ đồ Pipeline trực quan 6 khối khớp ảnh `media_1790204424086.png`: Ảnh đầu vào -> CoordConv Stem -> RepConv Backbone -> BiFormer Neck -> Focal-EIoU Head -> Kết quả đầu ra.
   - 4 Thẻ đóng góp toán học: Tái tham số hóa đại số, Mã hóa tọa độ không gian, Chú ý định tuyến thưa $O(HW)$, Hàm mất mát phân rã kích thước độc lập.
-  - Tệp ảnh 300 DPI: `review_1_main/slide_renders_4_5_6/Slide_06_1_Proposed_Rep_YOLO11s_Architecture.png`.
-- [x] **Các Tệp Sản phẩm Bàn giao**:
-  - Bản PPTX tách rời: `review_1_main/Slides_Muc_4_5_6.pptx` (5 slide vector, font chuẩn Calibri).
-  - Bản PPTX gộp All-in-One Master: `review_1_main/Capstone_Review_1_All_In_One_Master.pptx` (37 slide bao gồm toàn bộ slide gốc + Mục 4, 5, 6 + Mục 8, 9, 10, 11, 12).
-  - Thư mục ảnh render 300 DPI: `review_1_main/slide_renders_4_5_6/`.
-  - Scripts tạo lập & render tự động: `review_1_main/generate_review1_slides_4_5_6.py`, `review_1_main/render_slides_4_5_6_as_images.py`.
+### 8.7. Chuẩn hóa Học thuật An toàn cho Kế hoạch Bài báo Khoa học (Session 2026-09-24)
+- [x] **Tiếp thu Chỉ dẫn của Thầy Hướng dẫn / Hội đồng**:
+  - Nhận diện rủi ro học thuật: Tránh cam kết cứng nhắc việc chắc chắn xuất bản / nộp tạp chí IEEE Q1 (do chu kỳ bình duyệt 6-12 tháng vượt xa 15 tuần làm đồ án và tỷ lệ chấp nhận <15%).
+  - Chuyển đổi sang chuẩn mực học thuật an toàn tuyệt đối, danh giá và chuẩn bảo vệ khóa luận: **"Bản thảo Báo cáo Nghiên cứu Khoa học Chuẩn Quốc tế (Publication-Ready Scientific Manuscript) định dạng IEEE 2 cột, sẵn sàng nghiệm thu trước Hội đồng Đánh giá và nộp cho các Tạp chí / Hội nghị Chuyên ngành"**.
+- [x] **Cập nhật Đồng bộ Hệ thống Slide & Tài liệu Hướng dẫn**:
+  - `review_1_main/HUONG_DAN_TRA_LOI_12_MUC_REVIEW_1.md` & `.html`: Cập nhật Mục 9 (Phase 4), Mục 10 (Scientific Research Manuscript Plan), Mục 12.1 (Deliverable 5) và Mục 12.2 (Conclusion 7).
+  - `review_1_main/generate_review1_slides_8_to_12.py`: Cập nhật tiêu đề Slide 10, huy hiệu `SCIENTIFIC MANUSCRIPT & ACADEMIC STANDARDS`, phụ đề, lộ trình xuất bản và sản phẩm đầu ra Slide 12.
+  - `review_1_main/render_slides_as_images.py`: Cập nhật đồng bộ các hình vẽ và thiết lập `fontsize` tối ưu cho huy hiệu.
+  - Tái tạo tệp PowerPoint: `review_1_main/Slides_Muc_8_9_10_11_12.pptx`, `review_1_main/Capstone_Review_1_Merged_Muc_8_to_12.pptx`, và `review_1_main/Capstone_Review_1_All_In_One_Master.pptx` (37 slides).
+  - Tái xuất ảnh 300 DPI: `Slide_09_Project_Plan_Gantt.png`, `Slide_10_Research_Paper_Plan.png`, `Slide_12_Expected_Outcomes_Conclusion.png`.
 
