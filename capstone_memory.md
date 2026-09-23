@@ -266,6 +266,27 @@ Toàn bộ **32 bài báo nghiên cứu nền tảng và SOTA (2019–2026)** v�
 4. **Bộ lọc Không gian Bipartite Triệt tiêu Báo động Giả trên Áp phích**:
    - Tích hợp điều kiện hình học: Mũ bảo hộ hợp lệ bắt buộc phải có thân người tương ứng nằm bên dưới hoặc có độ tin cậy vượt ngưỡng $\tau > 0.90$.
 
+### 8.4. Cập nhật Thực thi Toàn diện & Các Sản phẩm Bàn giao (Session 2026-09-23)
+- [x] **DELIVERABLE 1 - Thư phản biện tác giả chính thức (Author Rebuttal Letter)**:
+  - Tệp Markdown: `review1_genspark_package/AUTHOR_REBUTTAL_LETTER_STANFORD_REVIEW.md`
+  - Tệp HTML in PDF: `review1_genspark_package/AUTHOR_REBUTTAL_LETTER_STANFORD_REVIEW.html`
+  - Giải trình cặn kẽ toàn bộ 12 câu hỏi của Reviewer với mô hình Roofline, ma trận đối chuẩn giao thức SHWD, phân rã toán học Focal-EIoU vs TAL/BCE, chi phí cô lập của BiFormer và CoordConv.
+- [x] **DELIVERABLE 2 - Rà soát & Tinh chỉnh mã nguồn LaTeX Overleaf**:
+  - Tệp mã nguồn: `paper_overleaf/main.tex` (Biên dịch thành công 10 trang chuẩn IEEEtran, không có lỗi).
+  - Loại bỏ hoàn toàn lỗi chính tả ("YOLO1Is" -> "YOLO11s", "EloU" -> "EIoU").
+  - Khẳng định điều kiện nhánh Identity của RepConv: $\mathbb{I}_{\{C_{in}=C_{out} \land s=1\}}$.
+  - Điều chỉnh văn phong khách quan đối với EC-YOLOv8 trong bối cảnh khác biệt giao thức đánh giá.
+- [x] **DELIVERABLE 3 - Thiết kế 5 Sơ đồ Kiến trúc Sóng đôi cho Slide Thuyết trình (Slides 05–09)**:
+  - Slide 05: `Slide05_Baseline_vs_Proposed_Architecture.png` (3-Head Baseline vs 4-Head P2 AFPN).
+  - Slide 06: `Slide06_PlainConv_vs_RepConv_Lifecycle.png` (Multi-branch Bottleneck vs Single-Path Fused Conv 3x3).
+  - Slide 07: `Slide07_Translation_Invariance_vs_CoordConv.png` (Bất biến tịnh tiến gây báo động giả xô sàn vs Cấy tọa độ Stem).
+  - Slide 08: `Slide08_Dense_Attention_vs_BiFormer_Routing.png` (Dense O(H^2W^2) OOM vs BiFormer Dynamic Sparse Routing O(HW)).
+  - Slide 09: `Slide09_CIoU_Vanishing_vs_Focal_EIoU.png` (Triệt tiêu gradient CIoU vs Phân rã độc lập EIoU & Focal Mining).
+  - Lưu trữ tại: `review1_genspark_package/slide_renders/` và `review1_genspark_package/figures/scientific_exports/`.
+- [x] **DELIVERABLE 4 - Đồng bộ Bộ nhớ & Backup Git**:
+  - Ghi nhận toàn bộ quyết sách học thuật vào `capstone_memory.md`.
+  - Thực hiện commit và push toàn bộ thay đổi lên GitHub repository.
+
 
 
 

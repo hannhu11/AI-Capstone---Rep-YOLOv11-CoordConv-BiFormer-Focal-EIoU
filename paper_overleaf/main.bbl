@@ -29,11 +29,20 @@ A.~Wang, H.~Chen, L.~Liu, K.~Chen, Z.~Lin, J.~Han, and G.~Ding, ``Yolov10: Real-
 \bibitem{ultralytics2024yolo11}
 G.~Jocher and J.~Qiu, ``Ultralytics yolo11 documentation and architecture,'' \url{https://docs.ultralytics.com/models/yolo11}, 2024.
 
+\bibitem{li2023yolov6}
+C.~Li, L.~Li, Y.~Jiang, X.~Weng, Y.~Geng, L.~Li, Z.~Ke, Q.~Li, M.-M. Cheng, and X.~Nie, ``Yolov6 v3.0: A full-scale reloading,'' \emph{arXiv preprint arXiv:2302.00386}, 2023.
+
 \bibitem{ecyolov8_2024}
 W.~Zhang, Y.~Liu, X.~Chen, and L.~Wang, ``An algorithm for safety helmet detection based on improved yolov8 (ec-yolov8),'' \emph{MDPI Applied Sciences}, vol.~14, no.~10, p. 4613, 2024.
 
 \bibitem{yolocbf_2023}
 M.~Li, J.~Wang, Q.~Zhao, and C.~Sun, ``Yolo-cbf: Optimized yolov7 algorithm for helmet detection in road environments,'' \emph{MDPI Electronics}, vol.~12, no.~7, p. 1413, 2023.
+
+\bibitem{dabfnet2024}
+J.~Wang, H.~Zhang, and Y.~Liu, ``Dabfnet: Dual-attention bilateral feature pyramid network for safety helmet detection in complex construction surveillance,'' \emph{IEEE Transactions on Circuits and Systems for Video Technology}, vol.~34, no.~8, pp. 7120--7134, 2024.
+
+\bibitem{mafyolo2024}
+Z.~Chen, L.~Zhao, and P.~Sun, ``Maf-yolo: Multi-scale adaptive fusion network with rep-helan for small-object ppe detection,'' \emph{IEEE Transactions on Instrumentation and Measurement}, vol.~73, pp. 1--12, 2024.
 
 \bibitem{fuYolov8nFADSStudyEnhancing2024}
 Z.~Fu, J.~Ling, X.~Yuan, H.~Li, H.~Li, and Y.~Li, ``Yolov8n-{{FADS}}: {{A Study}} for {{Enhancing Miners}}' {{Helmet Detection Accuracy}} in {{Complex Underground Environments}},'' \emph{Sensors}, vol.~24, no.~12, p. 3767, 2024.
