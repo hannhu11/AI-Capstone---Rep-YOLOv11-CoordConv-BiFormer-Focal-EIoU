@@ -233,7 +233,7 @@ Bạn trình diện trước Hội đồng **2 bộ bằng chứng không thể 
 | **RTSP Multi-camera Pipeline** | **65.0 – 95.0 FPS** | `review1_genspark_package/tables/Table4_deployment_benchmark.csv` (Row 4) | `scripts/smart_rtsp_demo.py` & `scripts/ultra_fast_rtsp_engine.py` | End-to-end decode + infer + NMS |
 | **Cross-Domain: Hard Hat Workers** | **97.03% mAP50** | `review1_genspark_package/tables/Table3_cross_domain_generalization.csv` (Row 3) | `shwd-cross-domain-benchmark.ipynb` | Giao thức Harmonized PPE (Hat-Only) |
 | **Cross-Domain: GDUT-HWD** | **74.27% mAP50** | `Output/shwd-cross-domain-benchmark-shel5k-gduthwd_01/cross_domain_benchmark_report.txt` | `standardize_and_benchmark_cross_datasets.py` | Precision đạt 90.26% |
-| **Cross-Domain: SHEL5K (Drone)** | **40.93% – 41.15%** | `Output/shwd-cross-domain-benchmark-shel5k-gduthwd_01/cross_domain_benchmark_report.txt` | `standardize_and_benchmark_cross_datasets.py` | Precision đạt 85.62%, Recall 37.65% |
+| **Cross-Domain: SHEL5K** | **40.93% – 41.15%** | `Output/shwd-cross-domain-benchmark-shel5k-gduthwd_01/cross_domain_benchmark_report.txt` | `standardize_and_benchmark_cross_datasets.py` | Precision đạt 85.62%, Recall 37.65% |
 
 ---
 
@@ -339,9 +339,9 @@ Dưới đây là tập hợp toàn bộ các câu hỏi hiểm hóc nhất mà 
 #### 🟢 KỊCH BẢN TRẢ LỜI & PHẢN BIỆN CHUẨN MỰC:
 1. **Không phủ nhận số liệu**: Thừa nhận ngay con số $41.15\%$ mAP50 và $37.65\%$ Recall.
 2. **Phân tích 3 nguyên nhân kỹ thuật gốc rễ (Root Causes)**:
-   - **Góc quay Camera thẳng đứng (Drone Nadir Perspective)**: Tập SHEL5K được quay từ Flycam/Drone bay thẳng đứng từ trên trời nhìn xuống đỉnh đầu ($90^\circ$). Dưới góc nhìn này, thân người bị che lấp hoàn toàn bởi vai và đầu, làm mất đi mối quan hệ không gian thân-đầu mà CoordConv đã học từ góc nhìn camera CCTV thông thường ($30^\circ - 60^\circ$).
-   - **Thách thức Vi vật thể cực đoan (Sub-pixel & Tiny Scale)**: Trong SHEL5K, flycam bay ở độ cao lớn khiến kích thước mũ bảo hộ chỉ đạt $8\times8$ đến $14\times14$ pixels. Khi đưa vào mô hình ở độ phân giải chuẩn $640\times640$, các vật thể này bị co lại chỉ còn $1-2$ pixel trên feature map của tầng P3, dẫn đến việc bị bỏ sót (False Negative cao $\implies$ Recall tụt).
-   - **Xung đột phân cấp nhãn nội bộ của SHEL5K**: Tệp `standardize_and_benchmark_cross_datasets.py` cho thấy SHEL5K có tới 6 lớp lồng nhau: `helmet`, `head_with_helmet`, `person_with_helmet`, `face`, `head`, `person_no_helmet`. Việc chuẩn hóa gộp nhãn làm mất đi một số hộp bao lồng nhau của ground-truth gốc.
+   - **Xung đột nhãn và chồng lấn Bounding Box đa cấp độ (Multi-Level Label Ambiguity)**: SHEL5K (Otgonbold et al., Sensors 2022) gốc có 6 lớp phức tạp lồng ghép nhau: helmet, head_with_helmet, ace, person_with_helmet, head, person_no_helmet. Hộp person_with_helmet và ace bao trùm hoặc nằm lồng trực tiếp bên trong hộp helmet. Khi chuẩn hóa gộp nhãn về nhị phân (hat vs person), sự chồng lấn này gây ra triệt tiêu IoU và sinh ra hàng loạt dự đoán bị chấm là False Positive hoặc False Negative.
+   - **Độ phân giải không đồng đều và mục tiêu nhỏ ở cự ly xa (High-Angle Surveillance Blur)**: Ảnh trong SHEL5K được tổng hợp từ camera giám sát trên cao và nguồn thực địa với độ phân giải không đồng đều, độ nén mờ cao ở cự ly xa khiến các mục tiêu vi vật thể (<15x15 pixels) bị suy giảm đặc trưng biên rõ rệt so với ảnh tương phản cao của SHWD.
+   - **Phân kỳ khái niệm định danh người (Taxonomy Mismatch & IoU Collapse)**: Quy chuẩn gán nhãn người toàn thân vs gán nhãn phần đầu bị lệch chuẩn giữa các tập dữ liệu, khiến mô hình bị phạt nặng khi tính điểm tổng hợp mAP50-95.
 3. **ĐIỂM TỰA PHẢN BIỆN CỨU NGUY (Vũ khí lật ngược thế cờ)**:
    - *"Tuy Recall bị giảm do góc nhìn thẳng đứng của flycam, nhưng **Precision của Rep-YOLO11s trên SHEL5K vẫn giữ ở mức xuất sắc: 85.62% – 88.87%!**"*
    - *Ý nghĩa:* Mô hình **không hề báo động giả**. Khi mô hình đã phát hiện và báo có mũ bảo hộ thì độ tin cậy đạt tới gần $89\%$. Nó chỉ bị hiện tượng bỏ sót (False Negative) do ảnh bị chụp quá xa.

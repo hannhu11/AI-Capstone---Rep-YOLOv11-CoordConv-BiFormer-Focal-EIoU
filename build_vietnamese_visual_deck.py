@@ -586,7 +586,7 @@ def build_deck():
 
     external_datasets = [
         ('GDUT-HWD (13,499 ảnh):', 'Đám đông công nhân cực dày đặc (15–30 người/khung hình).'),
-        ('SHEL5K (5,000 ảnh):', 'Góc nhìn Flycam thẳng đứng từ trên cao (70–90°), mũ cực nhỏ <15px.'),
+        ('SHEL5K (5,000 ảnh):', 'Góc máy camera giám sát trên cao với che khuất đa tỷ lệ phức tạp.'),
         ('Hard Hat Workers (7,000 ảnh):', 'Giám sát công trường ngoài trời với ánh sáng tự nhiên phức tạp.'),
         ('SHD & SFCHD Benchmark:', 'Hạ tầng nhà máy luyện kim, dầu khí và xưởng đóng tàu công nghiệp.')
     ]
@@ -732,7 +732,7 @@ def build_deck():
     ext_cards = [
         ('HARD HAT WORKERS (7,000 ẢNH)', '97.03%', 'Giao thức Harmonized PPE (Hat-Only)', 'Đạt độ chính xác tương đương tập nguồn SHWD; biểu diễn mũ chuyển giao hoàn hảo.', GREEN_ACCENT),
         ('GDUT-HWD (13,499 ẢNH)', '74.27%', 'Precision: 90.26% (Đám đông 15-30 người)', 'Chống chịu tuyệt vời trong điều kiện công nhân đứng san sát che khuất lẫn nhau.', BLUE_ACCENT),
-        ('SHEL5K (5,000 ẢNH FLYCAM)', '41.15%', 'Precision: 85.62% (Góc nhìn 90° cực đoan)', 'Mô hình thà bỏ sót vi vật thể <15px chứ không báo động giả vào sỏi đá, mặt đất.', AMBER_ACCENT)
+        ('SHEL5K (5,000 ẢNH MỞ RỘNG)', '41.15%', 'Precision: 85.62% (Góc nhìn trên cao)', 'Mô hình thà bỏ sót vi vật thể <15px chứ không báo động giả vào sỏi đá, mặt đất.', AMBER_ACCENT)
     ]
     for idx, (h_txt, val_txt, sub_txt, desc_txt, col) in enumerate(ext_cards):
         left_pos = 0.8 + idx * 4.0
@@ -867,7 +867,7 @@ def build_deck():
 
         ('GIAI ĐOẠN 3 (BẢO VỆ CHÍNH THỨC)', 'MỤC TIÊU CUỐI KHÓA', [
             '▸ Triển khai Chưng cất Tri thức (Knowledge Distillation YOLO11x -> s).',
-            '▸ Nâng cao độ chính xác nhận diện góc nhìn Flycam trên SHEL5K.',
+            '▸ Nâng cao độ chính xác nhận diện góc nhìn trên cao bị che khuất trên SHEL5K.',
             '▸ Hoàn thiện hồ sơ đồ án tốt nghiệp chính thức.',
             '▸ Nộp công bố bài báo khoa học ra hội nghị / tạp chí quốc tế.'
         ], ORANGE_ACCENT)

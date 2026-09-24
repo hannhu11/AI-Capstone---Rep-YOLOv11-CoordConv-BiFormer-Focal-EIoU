@@ -166,8 +166,7 @@ Dựa trên kiểm định thực nghiệm chéo giữa các tập dữ liệu v
 
 4. **Bệnh lý Miền Dữ liệu Phức tạp (GDUT-HWD $74.27\%$ và SHEL5K $41.15\%$)**:
    - **GDUT-HWD ($74.27\%$ $mAP_{50}$, $39.00\%$ $mAP_{50-95}$)**: Bị chi phối bởi mật độ công nhân quá dày đặc ($15-30$ người/ảnh) gây che khuất lẫn nhau (Crowd Occlusion) và góc camera gắn trên cao làm biến dạng elip vòm mũ. Độ chính xác Precision vẫn đạt rất cao ($90.26\%$) chứng minh mô hình không sinh ra phát hiện ảo; sự sụt giảm nằm ở Recall ($68.35\%$) do bị vật cản che khuất.
-   - **SHEL5K ($41.15\%$ $mAP_{50}$, $24.44\%$ $mAP_{50-95}$)**: Chịu ảnh hưởng bởi góc chụp Flycam/Drone thẳng đứng ($70^\circ-90^\circ$ nadir) triệt tiêu hoàn toàn bối cảnh giải phẫu người (không có vai/thân), vô hiệu hóa tiên đề không gian CoordConv. Đồng thời kích thước đối tượng siêu nhỏ ($<15\times15$ px) bị co rút dưới 1 pixel ở feature map stride 16 và 32 tại độ phân giải 640px. Precision vẫn đạt $85.62\%$, nhưng Recall bị nghẽn ở $37.65\%$.
-
+   - **SHEL5K (.15\%$ {50}$, .44\%$ {50-95}$)**: Chịu ảnh hưởng bởi xung đột phân cấp nhãn nội bộ đa cấp độ (nested bounding boxes giữa helmet, head_with_helmet và face trong schema 6 nhãn gốc của SHEL5K - Otgonbold et al., Sensors 2022), kết hợp cùng hiện tượng nén mờ và che khuất ở cự ly xa từ góc nhìn camera giám sát trên cao (<15x15 px). Precision vẫn giữ ở mức rất cao 85.62%, chứng minh mô hình không báo động giả, nhưng Recall bị nghẽn ở 37.65% do chồng lấn nhãn ground-truth.\n
 ---
 
 ## 🚀 5. CHIẾN LƯỢC ĐỘT PHÁ TOÀN DIỆN CHO FIX-6 (CHINH PHỤC $mAP_{50} \ge 0.980, mAP_{50-95} \ge 0.850$)
@@ -333,3 +332,18 @@ Toàn bộ **32 bài báo nghiên cứu nền tảng và SOTA (2019–2026)** v�
   - Tái tạo tệp PowerPoint: `review_1_main/Slides_Muc_8_9_10_11_12.pptx`, `review_1_main/Capstone_Review_1_Merged_Muc_8_to_12.pptx`, và `review_1_main/Capstone_Review_1_All_In_One_Master.pptx` (37 slides).
   - Tái xuất ảnh 300 DPI: `Slide_09_Project_Plan_Gantt.png`, `Slide_10_Research_Paper_Plan.png`, `Slide_12_Expected_Outcomes_Conclusion.png`.
 
+
+### 8.8. Đính chính Khoa học & Chuẩn hóa Thực nghiệm Tập Dữ liệu Ngoại miền SHEL5K (Session 2026-09-24)
+- [x] **Xác thực Bản chất Khoa học của Tập Dữ liệu SHEL5K (Otgonbold et al., Sensors 2022)**:
+  - Khẳng định tính chính xác khoa học: SHEL5K (5,000 ảnh, 75,570 nhãn, Mendeley Data 9rcv8mm682-4.zip) **KHÔNG PHẢI là tập dữ liệu thu thập chuyên dụng bằng UAV/Drone góc thẳng đứng 70–90 độ**.
+  - Nhận diện lỗi over-claim trong các bản thảo trước: Nhận định 'drone 70–90 độ' trước đây là suy diễn chủ quan nhằm giải thích cho việc mAP tụt xuống 40.96%.
+  - Phân tích chuẩn khoa học về nguyên nhân sụt giảm mAP:
+    1. **Xung đột nhãn đa cấp độ (Multi-Level Label Ambiguity)**: 6 lớp lồng ghép (helmet, head_with_helmet, ace, person_with_helmet, head, person_no_helmet) khiến bounding box chồng lấn nhau, triệt tiêu IoU khi chuẩn hóa nhị phân.
+    2. **Độ phân giải không đồng đều & mục tiêu nhỏ ở cự ly xa**: Ảnh CCTV thực địa bị nén mờ, đặc trưng biên mũ bị suy giảm.
+    3. **Phân kỳ khái niệm 'Person' (Taxonomy Mismatch & IoU Collapse)**: Quy chuẩn gán nhãn lệch nhau giữa các tập.
+- [x] **Đồng bộ Sửa lỗi trên Toàn bộ Hệ thống**:
+  - Slide 15 (11/18) trong Capstone_Review_1.pptx, Capstone_Review_1_Merged_Muc_8_to_12.pptx, Capstone_Review_1_All_In_One_Master.pptx: Cập nhật thành *'High-angle CCTV surveillance perspective with complex multi-scale occlusions'*.
+  - Bản thảo Bài báo IEEE paper_overleaf/main.tex (Mục IV-E) & main.pdf: Xóa cụm từ *'due to steep vertical drone camera angles'*, thay bằng phân tích chuẩn xác về multi-level label ambiguity và distant occluded targets.
+  - Tài liệu Hướng dẫn 
+eview_1_main/HUONG_DAN_TRA_LOI_12_MUC_REVIEW_1.md và .html.
+  - Bộ hồ sơ Phản biện CAPSTONE_DEFENSE_AND_REBUTTAL_DOSSIER.md (Lỗ hổng B2).

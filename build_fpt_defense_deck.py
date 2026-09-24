@@ -648,7 +648,7 @@ def build_deck():
     p = tf.add_paragraph(); p.text = 'GDUT-HWD & SHEL5K: Thách Thức Mật Độ & Góc Nhìn'; p.font.size = Pt(11.5); p.font.bold = True; p.font.color.rgb = TEXT_DARK; p.space_after = Pt(2)
     add_bullet_list(tf, [
         '· GDUT-HWD (13,499 ảnh): Môi trường công trường Châu Á cực kỳ đông đúc, mật độ 15–30 người/khung hình, che khuất chéo.',
-        '· SHEL5K (5,000 ảnh): Góc quay Flycam/Drone thẳng đứng từ đỉnh đầu 70–90 độ, vi vật thể mũ bảo hộ siêu nhỏ (<15px).',
+        '· SHEL5K (5,000 ảnh): Góc máy camera giám sát trên cao với che khuất đa tỷ lệ phức tạp và vi vật thể <15px.',
         '· Thực nghiệm Zero-Shot: Đánh giá trực tiếp khả năng tổng quát hóa mà không huấn luyện lại bất kỳ trọng số nào.',
         '■ Thẩm định cự ly cực hạn: Kiểm chứng độ vững chắc của mô hình trước các góc máy camera khắc nghiệt nhất.'
     ], font_size=Pt(9.4), text_color=TEXT_BODY, space_after=Pt(2.0), bold_color=BLUE_ACCENT)
@@ -1110,7 +1110,7 @@ def build_deck():
         '· GDUT-HWD (13,499 ảnh): 74.27% mAP50, 90.26% Precision trong bối cảnh công nhân cực kỳ đông đúc (15–30 người/ảnh).',
         '· Safety Helmet Detection (SHD): 76.85% mAP50 trong nhà máy chế tạo cơ khí.',
         '· SFCHD Benchmark: 64.80% mAP50 trong nhà xưởng kết cấu kim loại phức tạp.',
-        '· SHEL5K (5,000 ảnh): 41.15% mAP50 (Góc nhìn Drone nhìn thẳng đứng 90 độ, vi vật thể <15px).',
+        '· SHEL5K (5,000 ảnh): 41.15% mAP50 (Góc nhìn trên cao phức tạp, vi vật thể <15px).',
         '■ Năng lực chuyển giao: Vượt trội trên 5 bộ kiểm thử ngoại miền độc lập với quy mô >33,000 ảnh!'
     ]
     add_bullet_list(tf, s16_table_lines, font_size=Pt(9.3), text_color=TEXT_BODY, space_after=Pt(2.0), bold_color=ORANGE_ACCENT)
@@ -1287,7 +1287,7 @@ def build_deck():
     p = tf.add_paragraph(); p.text = 'Chưng Cất Tri Thức Nâng Cao'; p.font.size = Pt(11); p.font.bold = True; p.font.color.rgb = TEXT_DARK; p.space_after = Pt(2)
     add_bullet_list(tf, [
         '· Kỹ thuật chưng cất tri thức vi mô (Knowledge Distillation: YOLO11x -> Rep-YOLO11s).',
-        '· Cải thiện góc nhìn Drone thẳng đứng (SHEL5K) lên >55% mAP50.',
+        '· Cải thiện hiệu năng trên tập mở rộng SHEL5K lên >55% mAP50.',
         '· Tinh chỉnh hyperparameter cho các tình huống sương mù và ban đêm.',
         '· Chuẩn bị bộ kịch bản demo trực tiếp (live video feed) cho ngày bảo vệ.',
         '■ Tối ưu: Đạt ngưỡng hiệu năng cao nhất và chuẩn bị demo trực tiếp.'

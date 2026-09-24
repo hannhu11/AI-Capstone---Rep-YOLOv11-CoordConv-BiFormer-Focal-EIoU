@@ -586,7 +586,7 @@ def build_english_deck():
 
     external_datasets = [
         ('GDUT-HWD (13,499 images):', 'Ultra-dense worker crowding (15–30 persons per camera frame).'),
-        ('SHEL5K (5,000 images):', 'Vertical drone overhead perspective (70–90°), tiny helmets <15px.'),
+        ('SHEL5K (5,000 images):', 'High-angle CCTV surveillance perspective with complex multi-scale occlusions.'),
         ('Hard Hat Workers (7,000 images):', 'Outdoor surveillance under extreme natural lighting and shadows.'),
         ('SHD & SFCHD Benchmark:', 'Heavy industry metallurgical plants, oil refineries, and shipyards.')
     ]
@@ -725,7 +725,7 @@ def build_english_deck():
     ext_cards = [
         ('HARD HAT WORKERS (7,000 IMAGES)', '97.03%', 'Harmonized PPE Protocol (Hat-Only)', 'Matches in-domain SHWD accuracy; perfect transfer of helmet visual features.', GREEN_ACCENT),
         ('GDUT-HWD (13,499 IMAGES)', '74.27%', 'Precision: 90.26% (15-30 workers/frame)', 'Exceptional resilience under extreme worker crowd density and mutual occlusion.', BLUE_ACCENT),
-        ('SHEL5K (5,000 DRONE IMAGES)', '41.15%', 'Precision: 85.62% (90° vertical angle)', 'Model conservatively suppresses ground clutter rather than generating false alarms.', AMBER_ACCENT)
+        ('SHEL5K (5,000 EXTENDED IMAGES)', '41.15%', 'Precision: 85.62% (High-angle vantage)', 'Model conservatively suppresses ground clutter rather than generating false alarms.', AMBER_ACCENT)
     ]
     for idx, (h_txt, val_txt, sub_txt, desc_txt, col) in enumerate(ext_cards):
         left_pos = 0.8 + idx * 4.0
@@ -857,7 +857,7 @@ def build_english_deck():
 
         ('STAGE 3 (FINAL DEFENSE)', 'TERM CONCLUSION & PUBLICATION', [
             '▸ Execute Knowledge Distillation (YOLO11x teacher -> s student).',
-            '▸ Enhance extreme drone-view performance on SHEL5K.',
+            '▸ Enhance extreme high-angle occluded target performance on SHEL5K.',
             '▸ Finalize formal Capstone Graduation Dossier.',
             '▸ Submit research paper to international computer vision venue.'
         ], ORANGE_ACCENT)

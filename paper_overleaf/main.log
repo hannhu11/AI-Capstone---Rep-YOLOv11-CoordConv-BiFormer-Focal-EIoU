@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  23 SEP 2026 17:23
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  24 SEP 2026 07:03
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -382,9 +382,9 @@ Underfull \hbox (badness 2158) in paragraph at lines 378--379
 
 
 [7]
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
-Underfull \vbox (badness 1838) has occurred while \output is active []
 
 
 
@@ -415,13 +415,13 @@ L3 programming layer <2025-05-26>
 Here is how much of TeX's memory you used:
  4082 strings out of 469867
  65963 string characters out of 5482749
- 506095 words of memory out of 5000000
+ 506209 words of memory out of 5000000
  32324 multiletter control sequences out of 15000+600000
  680026 words of font info for 137 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  57i,12n,65p,2741b,307s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (10 pages, 2398514 bytes).
+Output written on main.pdf (10 pages, 2398674 bytes).
 PDF statistics:
  548 PDF objects out of 1000 (max. 8388607)
  128 compressed objects within 2 object streams
