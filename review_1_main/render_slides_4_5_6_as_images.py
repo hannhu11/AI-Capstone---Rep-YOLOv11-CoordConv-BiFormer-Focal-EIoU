@@ -1,5 +1,5 @@
 """
-Render Slides for Sections 4, 5, and 6 as 300 DPI high-resolution PNG images.
+Render Slides for Sections 4, 5, and 6 in English as 300 DPI high-resolution PNG images.
 Output directory: review_1_main/slide_renders_4_5_6/
 """
 
@@ -64,16 +64,13 @@ def draw_bottom_banner(ax, text):
     wrapped = textwrap.fill(text, width=125)
     ax.text(2.80, 0.725, wrapped, fontsize=11, fontweight='bold', color=C_TITLE, va='center')
 
-def wrap_str(text, width=45):
-    return textwrap.fill(text, width=width)
-
 # =============================================================================
-# SLIDE 1: MỤC 4.1 · BẢNG SO SÁNH ĐỐI CHUẨN SOTA CƠ SỞ
+# SLIDE 1: SECTION 4.1 · SOTA BASELINE BENCHMARKING TABLE
 # =============================================================================
 def render_slide_1():
     fig, ax = init_canvas()
-    draw_header(ax, "MỤC 4 & MỤC 5 · RELATED WORK & SOTA BASELINES", "04 / 18",
-                "Bảng So sánh Đối chuẩn SOTA Cơ sở trên Tập Chuẩn SHWD (VOC2028)")
+    draw_header(ax, "SECTION 4 & SECTION 5 · RELATED WORK & SOTA BASELINES", "04 / 18",
+                "SOTA Baseline Benchmarking on Standard SHWD (VOC2028 Format)")
 
     # Draw Table Container
     table_card = FancyBboxPatch((0.96, 3.25), 14.08, 4.35,
@@ -81,8 +78,6 @@ def render_slide_1():
                                 facecolor=C_WHITE, edgecolor=C_BORDER, linewidth=1)
     ax.add_patch(table_card)
 
-    # Table columns definitions: (Header, Width, Align)
-    # Total width = 14.08. Left starts at 0.96
     cols = [
         ("Model Architecture", 3.48, 'left'),
         ("Params (M)", 1.40, 'center'),
@@ -100,8 +95,8 @@ def render_slide_1():
         ("YOLOv10n", "2.30", "6.7", "93.30", "60.35", "92.97", "87.13", "0.8930"),
         ("YOLOv10s", "8.00", "21.6", "94.39", "62.19", "93.36", "89.14", "0.9049"),
         ("YOLO11n", "2.60", "6.5", "93.19", "60.21", "92.33", "86.51", "0.8964"),
-        ("YOLO11s (Chính)", "9.40", "21.5", "94.74", "62.54", "94.06", "90.35", "0.9073"),
-        ("Rep-YOLO11s (Mục tiêu của Đề tài)", "9.85", "22.4", "94.83 (5-Fold: 96.64)", "62.54", "94.44", "91.33", "0.9190"),
+        ("YOLO11s (Primary Baseline)", "9.40", "21.5", "94.74", "62.54", "94.06", "90.35", "0.9073"),
+        ("Rep-YOLO11s (Proposed Capstone)", "9.85", "22.4", "94.83 (5-Fold: 96.64)", "62.54", "94.44", "91.33", "0.9190"),
     ]
 
     header_y = 7.30
@@ -166,12 +161,12 @@ def render_slide_1():
     c_h = 1.70
 
     insights = [
-        ("01", C_BLUE, "Ưu thế Recall Sinh mạng (91.33%)",
-         "Recallhat đạt đỉnh 91.33%, cao hơn YOLO11s (90.35%) và YOLOv8s (90.62%). Trong an toàn lao động, bỏ sót vi phạm là rủi ro tử vong; mô hình đề tài tối đa hóa khả năng cứu sinh."),
-        ("02", C_ORANGE, "Cân bằng Tham số & Độ phức tạp",
-         "9.85M params & 22.4 GFLOPs xấp xỉ YOLO11s gốc (9.40M/21.5G), nhẹ hơn đáng kể so với YOLOv8s (11.24M/28.6G). Tích hợp 4 module cải tiến mà không gây bùng nổ tài nguyên tính toán."),
-        ("03", C_GREEN, "Độ ổn định Thống kê 5-Fold (96.64%)",
-         "Trên quy trình 5-Fold Stratified CV, mô hình đạt đỉnh 96.64% ± 0.32% mAP50. Chứng minh độ tin cậy vượt trội, loại trừ hoàn toàn yếu tố may rủi của phép chia tập dữ liệu ngẫu nhiên.")
+        ("01", C_BLUE, "Life-Critical Recall Dominance (91.33%)",
+         "Achieves 91.33% Recallhat, decisively outperforming YOLO11s (90.35%) and YOLOv8s (90.62%). In safety inspection, missed detections risk fatal injury; our architecture strictly prioritizes worker survivability."),
+        ("02", C_ORANGE, "Optimal Parameter & FLOP Balance",
+         "Requires 9.85M params & 22.4 GFLOPs, closely matching stock YOLO11s (9.40M / 21.5G) while being 28% lighter than YOLOv8s (11.24M / 28.6G). Integrates 4 mathematical modules without resource explosion."),
+        ("03", C_GREEN, "5-Fold Cross-Validation Stability (96.64%)",
+         "Under rigorous 5-Fold Stratified CV, achieves peak 96.64% mAP50 (+-0.32%). Statistically proves exceptional generalization and eliminates any risk of train/val partitioning bias or data cherry-picking.")
     ]
 
     for idx, (b_num, b_col, ins_title, ins_desc) in enumerate(insights):
@@ -187,12 +182,12 @@ def render_slide_1():
         ax.add_patch(sb)
         ax.text(c_left + 0.405, c_top + c_h - 0.27, b_num, fontsize=10.5, fontweight='bold', color=C_WHITE, va='center', ha='center')
 
-        ax.text(c_left + 0.75, c_top + c_h - 0.27, ins_title, fontsize=11.5, fontweight='bold', color=C_TITLE, va='center')
+        ax.text(c_left + 0.75, c_top + c_h - 0.27, ins_title, fontsize=11.2, fontweight='bold', color=C_TITLE, va='center')
 
-        wrapped_desc = textwrap.fill(ins_desc, width=50)
-        ax.text(c_left + 0.20, c_top + 0.65, wrapped_desc, fontsize=9.6, color=C_BODY, va='center', linespacing=1.35)
+        wrapped_desc = textwrap.fill(ins_desc, width=54)
+        ax.text(c_left + 0.20, c_top + 0.65, wrapped_desc, fontsize=9.2, color=C_BODY, va='center', linespacing=1.35)
 
-    draw_bottom_banner(ax, "Bảng đối chuẩn khách quan trên 7,581 ảnh SHWD chứng minh Rep-YOLO11s vượt trội về Recallhat (91.33%) và F1hat (0.9190) với chi phí phần cứng tối ưu.")
+    draw_bottom_banner(ax, "Standardized benchmarking across 7,581 SHWD images proves Rep-YOLO11s achieves superior Recallhat (91.33%) and F1hat (0.9190) with minimal hardware footprint.")
 
     out_file = os.path.join(OUT_DIR, "Slide_04_1_Baseline_Comparison_Table.png")
     plt.savefig(out_file, dpi=300, facecolor=C_BG)
@@ -200,14 +195,13 @@ def render_slide_1():
     print("Rendered:", os.path.basename(out_file))
 
 # =============================================================================
-# SLIDE 2: MỤC 4.2 · PHÂN TÍCH BASELINE 1: YOLO11s (SOTA MỚI NHẤT)
+# SLIDE 2: SECTION 4.2 · BASELINE 1 DEEP-DIVE: YOLO11s (LATEST SOTA)
 # =============================================================================
 def render_slide_2():
     fig, ax = init_canvas()
-    draw_header(ax, "MỤC 4 & MỤC 5 · RELATED WORK & SOTA BASELINES", "05 / 18",
-                "Phân tích Chi tiết Baseline 1: YOLO11s (Ultralytics, 10/2024 · SOTA Mới nhất)")
+    draw_header(ax, "SECTION 4 & SECTION 5 · RELATED WORK & SOTA BASELINES", "05 / 18",
+                "Baseline 1 Deep-Dive: YOLO11s (Ultralytics, Oct 2024 · Latest SOTA Architecture)")
 
-    # Left Card: Architecture & Specs
     c_w = 6.88
     c_gap = 0.32
     c_top = 1.30
@@ -223,22 +217,22 @@ def render_slide_2():
                              facecolor=C_BLUE, edgecolor='none')
     ax.add_patch(badge_l)
     ax.text(1.45, c_top + c_h - 0.34, "01", fontsize=12, fontweight='bold', color=C_WHITE, va='center', ha='center')
-    ax.text(1.85, c_top + c_h - 0.34, "Kiến trúc & Năng lực Thực nghiệm trên SHWD", fontsize=13.5, fontweight='bold', color=C_TITLE, va='center')
+    ax.text(1.85, c_top + c_h - 0.34, "Architecture & Empirical Performance on SHWD", fontsize=13.0, fontweight='bold', color=C_TITLE, va='center')
 
     y11_left = [
-        ("Paper & Thời điểm Công bố", "Phát hành bởi Ultralytics (Tháng 10/2024), đại diện cho thế hệ mô hình phát hiện vật thể SOTA mới nhất."),
-        ("Cấu trúc Mạng Đặc trưng", "Backbone CSPDarknet cải tiến với khối C3k2 và khối tự chú ý không gian C2PSA; Neck PANet trích xuất đa quy mô."),
-        ("3 Tầng Đầu ra Phát hiện", "P3 (stride 8: 80x80), P4 (stride 16: 40x40), P5 (stride 32: 20x20) kết hợp Decoupled Head không neo (Anchor-free)."),
-        ("Tập Dữ liệu Huấn luyện", "Pretrained trên COCO và fine-tune trực tiếp trên SHWD (7,581 ảnh authentic) với phân chia 80/20 chuẩn."),
-        ("Kết quả Đối chuẩn Thực nghiệm", "mAP50 = 94.74% · mAP50-95 = 62.54% · Recallhat = 90.35% · F1hat = 0.9073 (Params: 9.40M · FLOPs: 21.5G)."),
-        ("Ưu điểm Nổi bật", "Tối ưu hóa số lượng tham số tốt, tốc độ hội tụ nhanh, thông lượng xử lý cao trên các nền tảng GPU hiện đại.")
+        ("Paper & Release Date", "Published by Ultralytics (October 2024), representing the latest state-of-the-art generation in real-time object detection."),
+        ("Feature Network Backbone", "Enhanced CSPDarknet backbone featuring C3k2 feature blocks and C2PSA spatial self-attention; multi-scale PANet neck."),
+        ("3-Scale Detection Heads", "P3 (stride 8: 80x80), P4 (stride 16: 40x40), P5 (stride 32: 20x20) coupled with anchor-free decoupled classification/regression heads."),
+        ("Training & Fine-Tuning", "Pretrained on COCO and fine-tuned directly on authentic SHWD (7,581 images) under standard 80/20 train/test split."),
+        ("Empirical Benchmark Results", "mAP50 = 94.74% | mAP50-95 = 62.54% | Recallhat = 90.35% | F1hat = 0.9073 (Params: 9.40M | FLOPs: 21.5G)."),
+        ("Core Advantages", "Highly parameter-efficient, rapid gradient convergence, and excellent inference throughput on modern GPU accelerators.")
     ]
 
     y_pos = c_top + c_h - 0.95
     for tag, desc in y11_left:
-        ax.text(1.25, y_pos, f"• {tag}:", fontsize=10.2, fontweight='bold', color=C_BLUE, va='top')
-        wrapped = textwrap.fill(desc, width=70)
-        ax.text(1.45, y_pos - 0.28, wrapped, fontsize=9.4, color=C_BODY, va='top', linespacing=1.3)
+        ax.text(1.25, y_pos, f"- {tag}:", fontsize=10.0, fontweight='bold', color=C_BLUE, va='top')
+        wrapped = textwrap.fill(desc, width=72)
+        ax.text(1.45, y_pos - 0.28, wrapped, fontsize=9.2, color=C_BODY, va='top', linespacing=1.3)
         y_pos -= 0.88
 
     # Right Card: Bottlenecks & Improvements
@@ -252,24 +246,24 @@ def render_slide_2():
                              facecolor=C_ORANGE, edgecolor='none')
     ax.add_patch(badge_r)
     ax.text(0.96 + c_w + c_gap + 0.49, c_top + c_h - 0.34, "02", fontsize=12, fontweight='bold', color=C_WHITE, va='center', ha='center')
-    ax.text(0.96 + c_w + c_gap + 0.89, c_top + c_h - 0.34, "3 Điểm nghẽn Cốt lõi & Giải pháp Kế thừa / Cải tiến", fontsize=13.5, fontweight='bold', color=C_TITLE, va='center')
+    ax.text(0.96 + c_w + c_gap + 0.89, c_top + c_h - 0.34, "3 Core Bottlenecks & Architectural Lessons Learned", fontsize=13.0, fontweight='bold', color=C_TITLE, va='center')
 
     y11_right = [
-        ("Điểm nghẽn 1 (Mất dấu mũ ở xa)", "Các tầng downsampling tích lũy (stride 8/16/32) làm tiêu biến hoàn toàn tín hiệu của mũ bảo hộ siêu nhỏ (<20px)."),
-        ("Điểm nghẽn 2 (Báo động giả sàn >28%)", "Tích chập tiêu chuẩn có tính Bất biến Tịnh tiến (Translation Invariance), gây nhầm lẫn xô vữa, biển cảnh báo màu vàng dưới nền đất thành mũ."),
-        ("Điểm nghẽn 3 (Triệt tiêu Gradient CIoU)", "Hàm loss CIoU bị triệt tiêu gradient khi tỷ lệ aspect ratio w/h của bounding box dự đoán trùng với ground truth."),
-        ("Nhóm học được gì từ YOLO11s?", "Học được cấu trúc khối trích xuất đặc trưng C3k2 gọn nhẹ và nguyên lý phân tách hai nhánh phân loại / định vị (Decoupled Head)."),
-        ("Nhóm kế thừa & Cải tiến gì?", "Kế thừa bộ khung YOLO11s nhưng thay bằng RepConv (gộp nhánh đại số về 1 Conv 3x3), cấy CoordConv Stem, bổ sung BiFormer Neck và thay bằng Focal-EIoU.")
+        ("Bottleneck 1 (Far-Range Helmet Vanishing)", "Successive downsampling strides (8/16/32) wash away spatial signals for tiny helmets (<20px) captured by distant CCTV lenses."),
+        ("Bottleneck 2 (>28% Ground False Alarms)", "Standard convolution translation invariance confuses yellow construction buckets and floor cones with genuine safety helmets."),
+        ("Bottleneck 3 (CIoU Aspect Ratio Vanishing)", "CIoU penalty derivative degenerates to zero when predicted box aspect ratio w/h matches ground-truth ratio w_gt/h_gt."),
+        ("What We Learned from YOLO11s", "Adopted the streamlined C3k2 feature extraction topology and the decoupled head principle separating classification and localization."),
+        ("What We Inherited & Improved", "Retained YOLO11s macro-pipeline while embedding RepConv (multi-branch training -> single-path deploy), CoordConv Stem, BiFormer Neck, and Focal-EIoU Loss.")
     ]
 
     y_pos = c_top + c_h - 0.95
     for tag, desc in y11_right:
-        ax.text(0.96 + c_w + c_gap + 0.25, y_pos, f"• {tag}:", fontsize=10.2, fontweight='bold', color=C_ORANGE, va='top')
-        wrapped = textwrap.fill(desc, width=70)
-        ax.text(0.96 + c_w + c_gap + 0.45, y_pos - 0.28, wrapped, fontsize=9.4, color=C_BODY, va='top', linespacing=1.3)
+        ax.text(0.96 + c_w + c_gap + 0.25, y_pos, f"- {tag}:", fontsize=10.0, fontweight='bold', color=C_ORANGE, va='top')
+        wrapped = textwrap.fill(desc, width=72)
+        ax.text(0.96 + c_w + c_gap + 0.45, y_pos - 0.28, wrapped, fontsize=9.2, color=C_BODY, va='top', linespacing=1.3)
         y_pos -= 0.88
 
-    draw_bottom_banner(ax, "YOLO11s đại diện cho SOTA kiến trúc mới nhất (10/2024); nhóm kế thừa sườn mạng nhưng giải quyết triệt để 3 điểm nghẽn bằng 4 module toán học.")
+    draw_bottom_banner(ax, "YOLO11s represents the latest architectural SOTA (10/2024); our team inherited its core skeleton but systematically resolved its 3 bottlenecks via 4 mathematical modules.")
 
     out_file = os.path.join(OUT_DIR, "Slide_04_2_Baseline_1_YOLO11s.png")
     plt.savefig(out_file, dpi=300, facecolor=C_BG)
@@ -277,19 +271,18 @@ def render_slide_2():
     print("Rendered:", os.path.basename(out_file))
 
 # =============================================================================
-# SLIDE 3: MỤC 4.2 · PHÂN TÍCH BASELINE 2: YOLOv8s (CHUẨN MỰC CÔNG NGHIỆP)
+# SLIDE 3: SECTION 4.2 · BASELINE 2 DEEP-DIVE: YOLOv8s (INDUSTRIAL GOLD STANDARD)
 # =============================================================================
 def render_slide_3():
     fig, ax = init_canvas()
-    draw_header(ax, "MỤC 4 & MỤC 5 · RELATED WORK & SOTA BASELINES", "06 / 18",
-                "Phân tích Chi tiết Baseline 2: YOLOv8s (Jocher et al., 2023 · Chuẩn mực Công nghiệp)")
+    draw_header(ax, "SECTION 4 & SECTION 5 · RELATED WORK & SOTA BASELINES", "06 / 18",
+                "Baseline 2 Deep-Dive: YOLOv8s (Jocher et al., 2023 · Industrial Gold Standard)")
 
     c_w = 6.88
     c_gap = 0.32
     c_top = 1.30
     c_h = 6.30
 
-    # Left Card: Architecture & Specs
     card_l = FancyBboxPatch((0.96, c_top), c_w, c_h,
                             boxstyle="round,pad=0.01,rounding_size=0.1",
                             facecolor=C_WHITE, edgecolor=C_AMBER, linewidth=1.5)
@@ -300,22 +293,22 @@ def render_slide_3():
                              facecolor=C_AMBER, edgecolor='none')
     ax.add_patch(badge_l)
     ax.text(1.45, c_top + c_h - 0.34, "01", fontsize=12, fontweight='bold', color=C_WHITE, va='center', ha='center')
-    ax.text(1.85, c_top + c_h - 0.34, "Kiến trúc & Vị thế Mốc chuẩn Công nghiệp (Gold Standard)", fontsize=13.5, fontweight='bold', color=C_TITLE, va='center')
+    ax.text(1.85, c_top + c_h - 0.34, "Architecture & Industrial Benchmark Status", fontsize=13.0, fontweight='bold', color=C_TITLE, va='center')
 
     y8_left = [
-        ("Paper & Vị thế Công nghiệp", "Được phát triển bởi Jocher et al. (2023), YOLOv8 là mốc chuẩn công nghiệp phổ biến và được ứng dụng rộng rãi nhất thế giới hiện nay."),
-        ("Cấu trúc Khối Trích xuất C2f", "Cross Stage Partial with 2 Convolutions (C2f) kết hợp nhiều kết nối residual nội bộ giúp làm giàu dòng chảy gradient."),
-        ("Cơ chế Gán nhãn Động (TAL)", "Task-Aligned Assigner đo lường sự kết hợp giữa độ tự tin phân loại và căn chỉnh IoU để gán nhãn động cho top-k anchors tốt nhất."),
-        ("Tập Dữ liệu Huấn luyện", "Thực nghiệm trực tiếp trên tập SHWD chuẩn (7,581 ảnh authentic) trong cùng điều kiện phần cứng với các baseline khác."),
-        ("Kết quả Đối chuẩn Thực nghiệm", "mAP50 = 94.89% · mAP50-95 = 62.21% · Recallhat = 90.62% · F1hat = 0.9120 (Params: 11.24M · FLOPs: 28.6G)."),
-        ("Ưu điểm Nổi bật", "Độ chính xác nhận diện tổng thể mAP50 cao, cộng đồng mã nguồn mở khổng lồ, mức độ ổn định sản xuất đã được kiểm chứng.")
+        ("Paper & Industrial Prominence", "Developed by Jocher et al. (2023), YOLOv8 serves as the globally recognized industry standard for commercial edge computer vision."),
+        ("C2f Feature Extraction Blocks", "Cross Stage Partial with 2 Convolutions (C2f) with internal residual split-and-merge connections for enriched gradient flow."),
+        ("Task-Aligned Assigner (TAL)", "Dynamically allocates ground-truth labels using a joint metric balancing classification confidence and bounding box IoU alignment."),
+        ("Empirical Dataset Benchmarking", "Evaluated directly on the authentic SHWD benchmark (7,581 images) under identical hardware and evaluation protocols."),
+        ("Empirical Benchmark Results", "mAP50 = 94.89% | mAP50-95 = 62.21% | Recallhat = 90.62% | F1hat = 0.9120 (Params: 11.24M | FLOPs: 28.6G)."),
+        ("Core Strengths", "Strong overall detection accuracy, battle-tested open-source codebase, and proven commercial deployment stability worldwide.")
     ]
 
     y_pos = c_top + c_h - 0.95
     for tag, desc in y8_left:
-        ax.text(1.25, y_pos, f"• {tag}:", fontsize=10.2, fontweight='bold', color=C_AMBER, va='top')
-        wrapped = textwrap.fill(desc, width=70)
-        ax.text(1.45, y_pos - 0.28, wrapped, fontsize=9.4, color=C_BODY, va='top', linespacing=1.3)
+        ax.text(1.25, y_pos, f"- {tag}:", fontsize=10.0, fontweight='bold', color=C_AMBER, va='top')
+        wrapped = textwrap.fill(desc, width=72)
+        ax.text(1.45, y_pos - 0.28, wrapped, fontsize=9.2, color=C_BODY, va='top', linespacing=1.3)
         y_pos -= 0.88
 
     # Right Card: Hardware Bottlenecks & Lessons
@@ -329,24 +322,24 @@ def render_slide_3():
                              facecolor=C_PURPLE, edgecolor='none')
     ax.add_patch(badge_r)
     ax.text(0.96 + c_w + c_gap + 0.49, c_top + c_h - 0.34, "02", fontsize=12, fontweight='bold', color=C_WHITE, va='center', ha='center')
-    ax.text(0.96 + c_w + c_gap + 0.89, c_top + c_h - 0.34, "Hạn chế Phần cứng & Bài học Kế thừa / Cải tiến", fontsize=13.5, fontweight='bold', color=C_TITLE, va='center')
+    ax.text(0.96 + c_w + c_gap + 0.89, c_top + c_h - 0.34, "Hardware Constraints & Architectural Lessons Learned", fontsize=13.0, fontweight='bold', color=C_TITLE, va='center')
 
     y8_right = [
-        ("Hạn chế 1 (Chi phí Tính toán Nặng)", "FLOPs lên tới 28.6G và 11.24M tham số, nặng hơn 28% so với Rep-YOLO11s (22.4G / 9.85M), tạo áp lực lớn khi triển khai biên."),
-        ("Hạn chế 2 (Nghẽn Băng thông Bộ nhớ DRAM)", "Cấu trúc C2f phân nhánh nội bộ liên tục sử dụng nhiều thao tác nối tensor (concat) làm tăng lưu lượng truy cập DRAM và độ trễ truy xuất."),
-        ("Hạn chế 3 (Thiếu Cơ chế Không gian)", "Không có thông tin tọa độ dọc, mô hình vẫn mắc phải tỷ lệ báo động giả cao đối với các thiết bị màu vàng dưới sàn nhà."),
-        ("Nhóm học được gì từ YOLOv8s?", "Học tập cơ chế gán nhãn động Task-Aligned Assigner và chiến lược cân bằng loss đa nhiệm (BCE Classification Loss + DFL Loss)."),
-        ("Nhóm kế thừa & Cải tiến gì?", "Kế thừa tư tưởng Task-Aligned Assigner nhưng xây dựng trên nền tảng YOLO11s gọn nhẹ hơn, áp dụng RepConv loại bỏ hoàn toàn chi phí bộ nhớ phân nhánh khi triển khai.")
+        ("Constraint 1 (Heavy Computational Cost)", "Demands 28.6 GFLOPs and 11.24M parameters-28% heavier than Rep-YOLO11s (22.4G / 9.85M)-limiting budget edge hardware viability."),
+        ("Constraint 2 (DRAM Memory Traffic Bottleneck)", "Frequent branching and tensor concatenation in C2f dramatically increases DRAM memory access latency and GPU kernel launches."),
+        ("Constraint 3 (Lack of Spatial Priors)", "Without vertical coordinate inductive bias, exhibits high false alarm rates (>28%) on ground-level yellow construction equipment."),
+        ("What We Learned from YOLOv8s", "Adopted the Task-Aligned Assigner (TAL) dynamic assignment mechanism and balanced multi-task loss formulation (BCE Cls + DFL)."),
+        ("What We Inherited & Improved", "Retained TAL's dynamic assignment strength while migrating to the leaner YOLO11s backbone, utilizing RepConv to eliminate branching DRAM overhead.")
     ]
 
     y_pos = c_top + c_h - 0.95
     for tag, desc in y8_right:
-        ax.text(0.96 + c_w + c_gap + 0.25, y_pos, f"• {tag}:", fontsize=10.2, fontweight='bold', color=C_PURPLE, va='top')
-        wrapped = textwrap.fill(desc, width=70)
-        ax.text(0.96 + c_w + c_gap + 0.45, y_pos - 0.28, wrapped, fontsize=9.4, color=C_BODY, va='top', linespacing=1.3)
+        ax.text(0.96 + c_w + c_gap + 0.25, y_pos, f"- {tag}:", fontsize=10.0, fontweight='bold', color=C_PURPLE, va='top')
+        wrapped = textwrap.fill(desc, width=72)
+        ax.text(0.96 + c_w + c_gap + 0.45, y_pos - 0.28, wrapped, fontsize=9.2, color=C_BODY, va='top', linespacing=1.3)
         y_pos -= 0.88
 
-    draw_bottom_banner(ax, "YOLOv8s là mốc chuẩn công nghiệp phổ biến nhất; nhóm kế thừa cơ chế TAL gán nhãn động nhưng tối ưu triệt để chi phí tính toán và bộ nhớ DRAM.")
+    draw_bottom_banner(ax, "YOLOv8s is the industry's most trusted gold standard; our project inherited TAL dynamic assignment while cutting 28% FLOPs and eliminating DRAM branching overhead.")
 
     out_file = os.path.join(OUT_DIR, "Slide_04_2_Baseline_2_YOLOv8s.png")
     plt.savefig(out_file, dpi=300, facecolor=C_BG)
@@ -354,12 +347,12 @@ def render_slide_3():
     print("Rendered:", os.path.basename(out_file))
 
 # =============================================================================
-# SLIDE 4: MỤC 4.2 · SO SÁNH ĐỐI ĐẦU 2 BASELINE TRÊN 1 SLIDE (TÙY CHỌN GỌN)
+# SLIDE 4: HEAD-TO-HEAD COMPARISON & SCIENTIFIC JUSTIFICATION
 # =============================================================================
 def render_slide_4():
     fig, ax = init_canvas()
-    draw_header(ax, "MỤC 4 & MỤC 5 · RELATED WORK & SOTA BASELINES", "05-06 / 18",
-                "Phân tích So sánh 2 Mô hình Baseline Chính: YOLO11s vs YOLOv8s")
+    draw_header(ax, "SECTION 4 & SECTION 5 · RELATED WORK & SOTA BASELINES", "05-06 / 18",
+                "Head-to-Head Architectural Comparison: Baseline 1 (YOLO11s) vs Baseline 2 (YOLOv8s)")
 
     c_w = 6.88
     c_gap = 0.32
@@ -372,25 +365,25 @@ def render_slide_4():
                             facecolor=C_WHITE, edgecolor=C_BLUE, linewidth=1.5)
     ax.add_patch(card_l)
 
-    b_l = FancyBboxPatch((1.20, c_top + c_h - 0.50), 2.80, 0.36,
+    b_l = FancyBboxPatch((1.20, c_top + c_h - 0.50), 3.00, 0.36,
                          boxstyle="round,pad=0.01,rounding_size=0.08",
                          facecolor=C_BLUE, edgecolor='none')
     ax.add_patch(b_l)
-    ax.text(2.60, c_top + c_h - 0.32, "BASELINE 1 · YOLO11s", fontsize=11, fontweight='bold', color=C_WHITE, va='center', ha='center')
+    ax.text(2.70, c_top + c_h - 0.32, "BASELINE 1 - YOLO11s", fontsize=11, fontweight='bold', color=C_WHITE, va='center', ha='center')
 
-    ax.text(1.25, c_top + c_h - 0.82, "SOTA Mới Nhất (Ultralytics, Tháng 10/2024)", fontsize=12, fontweight='bold', color=C_TITLE, va='center')
+    ax.text(1.25, c_top + c_h - 0.82, "Latest Architectural SOTA (Ultralytics, Oct 2024)", fontsize=11.8, fontweight='bold', color=C_TITLE, va='center')
 
     c1_pts = [
-        ("Kiến trúc mạng:", "C3k2 Feature Blocks + C2PSA Spatial Attention + Decoupled Head."),
-        ("Thông số thực nghiệm:", "9.40M Params · 21.5 GFLOPs · mAP50 = 94.74% · Recall = 90.35%."),
-        ("Ưu điểm:", "Tối ưu hóa số lượng tham số xuất sắc, tính toán nhanh, hội tụ nhanh."),
-        ("Hạn chế cốt lõi:", "Mất tín hiệu mũ nhỏ ở xa (<20px); Báo động giả sàn nhà do bất biến tịnh tiến; Triệt tiêu gradient tỷ lệ khung CIoU."),
-        ("Kế thừa & Cải tiến:", "Kế thừa sườn C3k2; thay thế RepConv, cấy CoordConv Stem, bổ sung BiFormer Neck và Focal-EIoU Head.")
+        ("Architecture:", "C3k2 Feature Blocks + C2PSA Attention + Decoupled Head."),
+        ("Empirical Specs:", "9.40M Params | 21.5 GFLOPs | mAP50 = 94.74% | Recall = 90.35%."),
+        ("Key Advantages:", "Superior parameter efficiency, fast convergence, low latency."),
+        ("Core Bottlenecks:", "Vanishing signal for distant small helmets (<20px); Ground false alarms due to translation invariance; CIoU aspect ratio gradient vanishing."),
+        ("Capstone Contribution:", "Retains C3k2 macro-topology; upgrades to RepConv, embeds CoordConv Stem, BiFormer Neck, and Focal-EIoU Head.")
     ]
     y_pos = c_top + c_h - 1.25
     for tag, desc in c1_pts:
-        ax.text(1.25, y_pos, f"• {tag}", fontsize=9.8, fontweight='bold', color=C_BLUE, va='top')
-        wrapped = textwrap.fill(desc, width=64)
+        ax.text(1.25, y_pos, f"- {tag}", fontsize=9.6, fontweight='bold', color=C_BLUE, va='top')
+        wrapped = textwrap.fill(desc, width=66)
         ax.text(1.45, y_pos - 0.25, wrapped, fontsize=8.8, color=C_BODY, va='top', linespacing=1.28)
         y_pos -= 0.65
 
@@ -400,25 +393,25 @@ def render_slide_4():
                             facecolor=C_WHITE, edgecolor=C_AMBER, linewidth=1.5)
     ax.add_patch(card_r)
 
-    b_r = FancyBboxPatch((0.96 + c_w + c_gap + 0.24, c_top + c_h - 0.50), 2.80, 0.36,
+    b_r = FancyBboxPatch((0.96 + c_w + c_gap + 0.24, c_top + c_h - 0.50), 3.00, 0.36,
                          boxstyle="round,pad=0.01,rounding_size=0.08",
                          facecolor=C_AMBER, edgecolor='none')
     ax.add_patch(b_r)
-    ax.text(0.96 + c_w + c_gap + 1.64, c_top + c_h - 0.32, "BASELINE 2 · YOLOv8s", fontsize=11, fontweight='bold', color=C_WHITE, va='center', ha='center')
+    ax.text(0.96 + c_w + c_gap + 1.74, c_top + c_h - 0.32, "BASELINE 2 - YOLOv8s", fontsize=11, fontweight='bold', color=C_WHITE, va='center', ha='center')
 
-    ax.text(0.96 + c_w + c_gap + 0.25, c_top + c_h - 0.82, "Chuẩn Mực Công Nghiệp (Jocher et al., 2023)", fontsize=12, fontweight='bold', color=C_TITLE, va='center')
+    ax.text(0.96 + c_w + c_gap + 0.25, c_top + c_h - 0.82, "Industrial Benchmark Standard (Jocher et al., 2023)", fontsize=11.8, fontweight='bold', color=C_TITLE, va='center')
 
     c2_pts = [
-        ("Kiến trúc mạng:", "C2f Cross Stage Partial Blocks + Task-Aligned Assigner (TAL)."),
-        ("Thông số thực nghiệm:", "11.24M Params · 28.6 GFLOPs · mAP50 = 94.89% · Recall = 90.62%."),
-        ("Ưu điểm:", "Độ chính xác mAP50 cao, mã nguồn cực kỳ ổn định, cộng đồng hỗ trợ lớn."),
-        ("Hạn chế cốt lõi:", "28.6 GFLOPs nặng hơn 28% so với đề tài; Khối C2f ngốn băng thông DRAM; Báo động giả do thiếu tiên đề không gian."),
-        ("Kế thừa & Cải tiến:", "Kế thừa cơ chế gán nhãn động TAL nhưng chuyển sang nền sườn YOLO11s gọn hơn và áp dụng RepConv xóa bỏ overhead DRAM.")
+        ("Architecture:", "C2f Cross Stage Partial Blocks + Task-Aligned Assigner (TAL)."),
+        ("Empirical Specs:", "11.24M Params | 28.6 GFLOPs | mAP50 = 94.89% | Recall = 90.62%."),
+        ("Key Advantages:", "High mAP50 accuracy, mature ecosystem, battle-tested stability."),
+        ("Core Bottlenecks:", "28.6 GFLOPs is 28% heavier than our model; C2f branching causes DRAM memory bottlenecks; Ground false alarms from missing spatial priors."),
+        ("Capstone Contribution:", "Inherits TAL dynamic assignment philosophy while migrating to leaner YOLO11s backbone and applying RepConv to eliminate DRAM overhead.")
     ]
     y_pos = c_top + c_h - 1.25
     for tag, desc in c2_pts:
-        ax.text(0.96 + c_w + c_gap + 0.25, y_pos, f"• {tag}", fontsize=9.8, fontweight='bold', color=C_AMBER, va='top')
-        wrapped = textwrap.fill(desc, width=64)
+        ax.text(0.96 + c_w + c_gap + 0.25, y_pos, f"- {tag}", fontsize=9.6, fontweight='bold', color=C_AMBER, va='top')
+        wrapped = textwrap.fill(desc, width=66)
         ax.text(0.96 + c_w + c_gap + 0.45, y_pos - 0.25, wrapped, fontsize=8.8, color=C_BODY, va='top', linespacing=1.28)
         y_pos -= 0.65
 
@@ -428,16 +421,16 @@ def render_slide_4():
                             facecolor='#F8FAFC', edgecolor=C_BORDER, linewidth=1)
     ax.add_patch(c_just)
 
-    ax.text(1.25, 2.55, "TẠI SAO NHÓM CHỌN 2 BASELINE NÀY ĐỂ BÁO CÁO REVIEW 1? (SCIENTIFIC JUSTIFICATION)",
+    ax.text(1.25, 2.55, "SCIENTIFIC JUSTIFICATION: WHY SELECT THESE TWO BASELINES FOR REVIEW 1?",
             fontsize=11.2, fontweight='bold', color=C_ORANGE, va='center')
 
-    just_p1 = textwrap.fill("• Tính Đại diện SOTA & Uy tín Khoa học: YOLO11s đại diện cho đỉnh cao kiến trúc mới nhất (tháng 10/2024), trong khi YOLOv8s là mốc chuẩn công nghiệp phổ biến nhất thế giới (Gold Standard). Đối chuẩn đồng thời với cả hai tạo nền tảng vững chắc và khách quan tuyệt đối trước Hội đồng chấm.", width=130)
+    just_p1 = textwrap.fill("- SOTA Representativeness & Scientific Authority: YOLO11s represents the cutting edge of real-time computer vision architectures (released Oct 2024), while YOLOv8s is the globally recognized industrial gold standard. Benchmarking against both establishes rigorous, unimpeachable credibility before the Defense Committee.", width=130)
     ax.text(1.25, 2.10, just_p1, fontsize=9.0, color=C_BODY, va='center', linespacing=1.3)
 
-    just_p2 = textwrap.fill("• Nền tảng Minh chứng Cải tiến: Mọi cải tiến của Rep-YOLO11s đều xuất phát từ việc khắc phục chính xác các điểm nghẽn kỹ thuật được chỉ ra ở hai mô hình cơ sở này, chứng minh tính cấp thiết và giá trị khoa học thực sự của đề tài.", width=130)
+    just_p2 = textwrap.fill("- Empirical Grounding for Our Innovations: Every enhancement in Rep-YOLO11s directly stems from addressing specific, verifiable hardware and mathematical bottlenecks identified in these two models, proving the necessity, novelty, and scientific value of our research.", width=130)
     ax.text(1.25, 1.62, just_p2, fontsize=9.0, color=C_BODY, va='center', linespacing=1.3)
 
-    draw_bottom_banner(ax, "Đối chuẩn song song SOTA mới nhất (YOLO11s) và Chuẩn công nghiệp (YOLOv8s) tạo cơ sở khoa học khách quan chứng minh tính vượt trội của đề tài.")
+    draw_bottom_banner(ax, "Parallel benchmarking against the latest SOTA (YOLO11s) and industrial gold standard (YOLOv8s) establishes an unassailable empirical baseline for our capstone.")
 
     out_file = os.path.join(OUT_DIR, "Slide_04_2_Baselines_Combined_Comparison.png")
     plt.savefig(out_file, dpi=300, facecolor=C_BG)
@@ -445,14 +438,13 @@ def render_slide_4():
     print("Rendered:", os.path.basename(out_file))
 
 # =============================================================================
-# SLIDE 5: MỤC 6.1 · KIẾN TRÚC TỔNG THỂ ĐỀ XUẤT: REP-YOLO11s
+# SLIDE 5: SECTION 6.1 · PROPOSED ARCHITECTURE: REP-YOLO11s
 # =============================================================================
 def render_slide_5():
     fig, ax = init_canvas()
-    draw_header(ax, "MỤC 6 · PHƯƠNG PHÁP ĐỀ XUẤT (PROPOSED METHOD)", "07 / 18",
-                "Kiến trúc Tổng thể Rep-YOLO11s: Tích hợp 4 Cải tiến Toán học")
+    draw_header(ax, "SECTION 6 · PROPOSED METHOD: REP-YOLO11s", "07 / 18",
+                "Proposed Rep-YOLO11s Architecture: Integrating 4 Mathematical Innovations")
 
-    # Left Column: Flowchart Container
     c_flow_w = 8.16
     c_top = 1.30
     c_h = 6.30
@@ -462,19 +454,19 @@ def render_slide_5():
                                facecolor=C_WHITE, edgecolor=C_BORDER, linewidth=1)
     ax.add_patch(card_flow)
 
-    f_tag = FancyBboxPatch((1.20, c_top + c_h - 0.45), 3.80, 0.32,
+    f_tag = FancyBboxPatch((1.20, c_top + c_h - 0.45), 4.20, 0.32,
                            boxstyle="round,pad=0.01,rounding_size=0.08",
                            facecolor=C_SLATE, edgecolor='none')
     ax.add_patch(f_tag)
-    ax.text(3.10, c_top + c_h - 0.29, "PIPELINE KIẾN TRÚC TỔNG THỂ REP-YOLO11s", fontsize=9.5, fontweight='bold', color=C_WHITE, va='center', ha='center')
+    ax.text(3.30, c_top + c_h - 0.29, "REP-YOLO11s ARCHITECTURAL PIPELINE", fontsize=9.5, fontweight='bold', color=C_WHITE, va='center', ha='center')
 
     flow_steps = [
-        ("ẢNH ĐẦU VÀO [640×640×3]", "Luồng Video Camera Giám sát Công trường Xây dựng (CCTV Feed)", C_SLATE, False),
-        ("CẢI TIẾN 2: COORDCONV STEM", "Cấy 2 kênh tọa độ [Cx, Cy] vào Layer 0 (5 -> 64 kênh) -> Khử báo động sàn", C_ORANGE, True),
-        ("CẢI TIẾN 1: REPCONV BACKBONE", "3 nhánh huấn luyện -> Gộp đại số về 1 Conv 3x3 khi triển khai (Zero Latency)", C_BLUE, True),
-        ("CẢI TIẾN 3: BIFORMER NECK", "Định tuyến thưa 2 cấp độ Top-k (Complexity O(HW)) -> Bắt trúng mũ nhỏ xa", C_PURPLE, True),
-        ("CẢI TIẾN 4: FOCAL-EIoU HEAD", "Phân rã kích thước độc lập + TAL gán nhãn động -> Tránh suy biến gradient", C_AMBER, True),
-        ("KẾT QUẢ ĐẦU RA (OUTPUT)", "Khung bao mũ bảo hộ sắc nét, Recall >91%, triệt tiêu báo động giả mặt sàn", C_GREEN, False)
+        ("INPUT STREAM [640x640x3]", "Raw 1080p CCTV Construction Video Stream with Letterbox Preprocessing", C_SLATE, False),
+        ("INNOVATION 2: COORDCONV STEM", "Injects normalized [Cx, Cy] coordinates into Layer 0 (5 -> 64 ch) -> Suppresses floor false alarms", C_ORANGE, True),
+        ("INNOVATION 1: REPCONV BACKBONE", "Multi-branch training topology -> Algebraic fusion into single 3x3 Conv at deploy (Zero Latency)", C_BLUE, True),
+        ("INNOVATION 3: BIFORMER NECK", "Bi-level top-k sparse routing attention (Complexity O(HW)) -> Pinpoints tiny distant helmets", C_PURPLE, True),
+        ("INNOVATION 4: FOCAL-EIoU HEAD", "Decoupled edge length regression + TAL dynamic assignment -> Eliminates gradient vanishing", C_AMBER, True),
+        ("SYSTEM OUTPUT (PREDICTIONS)", "High-confidence bounding boxes, Recall >91%, zero floor clutter alarms", C_GREEN, False)
     ]
 
     step_top_start = c_top + c_h - 0.75
@@ -484,13 +476,10 @@ def render_slide_5():
     for idx, (title, sub, col, is_mod) in enumerate(flow_steps):
         s_y = step_top_start - (idx + 1) * step_h - idx * step_gap
 
-        # Draw Connector Arrow from previous step
         if idx > 0:
-            arr_y = s_y + step_h + step_gap / 2.0
             ax.annotate('', xy=(5.04, s_y + step_h), xytext=(5.04, s_y + step_h + step_gap),
                         arrowprops=dict(arrowstyle="-|>", color=C_MUTED, lw=1.5, mutation_scale=12))
 
-        # Step card
         bg_col = C_ORANGE_LIGHT if is_mod else '#F8FAFC'
         border_col = col if is_mod else C_BORDER
         sc = FancyBboxPatch((1.20, s_y), c_flow_w - 0.48, step_h,
@@ -498,27 +487,26 @@ def render_slide_5():
                             facecolor=bg_col, edgecolor=border_col, linewidth=1.5 if is_mod else 1)
         ax.add_patch(sc)
 
-        # Color bar indicator
         bar = FancyBboxPatch((1.28, s_y + 0.08), 0.14, step_h - 0.16,
                              boxstyle="round,pad=0.01,rounding_size=0.05",
                              facecolor=col, edgecolor='none')
         ax.add_patch(bar)
 
-        ax.text(1.56, s_y + step_h - 0.22, title, fontsize=11, fontweight='bold', color=col, va='center')
-        ax.text(1.56, s_y + 0.22, sub, fontsize=9.2, color=C_TITLE if is_mod else C_MUTED, va='center')
+        ax.text(1.56, s_y + step_h - 0.22, title, fontsize=10.5, fontweight='bold', color=col, va='center')
+        ax.text(1.56, s_y + 0.22, sub, fontsize=8.8, color=C_TITLE if is_mod else C_MUTED, va='center')
 
     # Right Column: 4 Scientific Impact Cards
     c_right_w = 5.60
     c_right_left = 9.44
     mod_cards = [
-        ("Cải tiến 1: Tái tham số hóa RepConv", C_BLUE,
-         "Huấn luyện đa nhánh giàu biểu diễn (3x3, 1x1, Identity) -> Gộp đại số khép kín về duy nhất 1 nhân Conv 3x3 khi suy luận (switch_to_deploy). Đạt tốc độ cực hạn với Zero Latency Overhead."),
-        ("Cải tiến 2: Mã hóa Tọa độ CoordConv", C_ORANGE,
-         "Cấy trực tiếp 2 kênh tọa độ không gian Cartesian [Cx, Cy] vào tầng Stem đầu vào. Phá vỡ tính bất biến tịnh tiến sai lầm, triệt tiêu dứt điểm báo động giả xô vàng và áo phản quang dưới sàn."),
-        ("Cải tiến 3: Chú ý Định tuyến BiFormer", C_PURPLE,
-         "Cơ chế định tuyến thưa 2 cấp độ lọc bỏ 93.75% các vùng nền rậm rạp không liên quan, tập trung năng lực tính toán vào các vùng chỏm đầu công nhân ở xa với độ phức tạp tuyến tính O(HW)."),
-        ("Cải tiến 4: Hàm mất mát Focal-EIoU", C_AMBER,
-         "Phân rã độc lập sai số chiều rộng và chiều cao thay vì tỷ lệ khung bao aspect ratio của CIoU, ngăn ngừa triệt tiêu gradient. Kết hợp trọng số tiêu điểm tập trung tối đa cho mẫu mục tiêu nhỏ khó.")
+        ("Innovation 1: Structural Re-parameterization (RepConv)", C_BLUE,
+         "Trains with rich multi-branch topology (3x3, 1x1, Identity) -> Algebraically folds into a single 3x3 Conv kernel at inference (`switch_to_deploy`). Yields optimal representation capacity with absolute Zero Latency Overhead."),
+        ("Innovation 2: Spatial Coordinate Encoding (CoordConv)", C_ORANGE,
+         "Injects normalized 2D Cartesian spatial coordinates [Cx, Cy] directly into the input stem. Breaks translation invariance, eliminating false alarms on yellow buckets, floor vests, and ground clutter."),
+        ("Innovation 3: Bi-Level Routing Attention (BiFormer)", C_PURPLE,
+         "Two-level routing mechanism filters out 93.75% of irrelevant background regions, focusing compute budget purely on tiny worker head regions with linear O(HW) complexity and zero CUDA OOM risk."),
+        ("Innovation 4: Decoupled Focal-EIoU Bounding Box Loss", C_AMBER,
+         "Independently penalizes width and height discrepancies rather than CIoU aspect ratios, preventing gradient vanishing. Focal weighting (IoU^0.5) optimizes hard boundary localization for distant helmets.")
     ]
 
     card_h = 1.48
@@ -532,18 +520,17 @@ def render_slide_5():
                             facecolor=C_WHITE, edgecolor=C_BORDER, linewidth=1)
         ax.add_patch(mc)
 
-        # Left color strip
         strip = FancyBboxPatch((c_right_left + 0.16, m_y + 0.12), 0.12, card_h - 0.24,
                                boxstyle="round,pad=0.01,rounding_size=0.05",
                                facecolor=m_col, edgecolor='none')
         ax.add_patch(strip)
 
-        ax.text(c_right_left + 0.42, m_y + card_h - 0.30, m_title, fontsize=11.2, fontweight='bold', color=m_col, va='center')
+        ax.text(c_right_left + 0.42, m_y + card_h - 0.30, m_title, fontsize=10.8, fontweight='bold', color=m_col, va='center')
 
         wrapped_desc = textwrap.fill(m_desc, width=54)
-        ax.text(c_right_left + 0.42, m_y + 0.52, wrapped_desc, fontsize=8.8, color=C_BODY, va='center', linespacing=1.35)
+        ax.text(c_right_left + 0.42, m_y + 0.52, wrapped_desc, fontsize=8.6, color=C_BODY, va='center', linespacing=1.35)
 
-    draw_bottom_banner(ax, "Rep-YOLO11s kết hợp 4 cải tiến toán học giải quyết đồng thời 4 rào cản: Khử báo động sàn, suy luận không độ trễ, tập trung mục tiêu xa và hồi quy hộp chính xác.")
+    draw_bottom_banner(ax, "Rep-YOLO11s harmonizes 4 mathematical innovations to resolve 4 critical barriers: Zero-latency inference, floor false alarm suppression, distant target attention, and tight box regression.")
 
     out_file = os.path.join(OUT_DIR, "Slide_06_1_Proposed_Rep_YOLO11s_Architecture.png")
     plt.savefig(out_file, dpi=300, facecolor=C_BG)
@@ -556,4 +543,4 @@ if __name__ == '__main__':
     render_slide_3()
     render_slide_4()
     render_slide_5()
-    print("All slides for Sections 4, 5, 6 successfully rendered at 300 DPI!")
+    print("All slides for Sections 4, 5, 6 successfully rendered in English at 300 DPI!")

@@ -453,8 +453,10 @@ def create_pptx_deck(output_pptx_path, existing_prs=None):
                 for p in shape.text_frame.paragraphs:
                     p.font.name = 'Calibri'
 
-    prs.save(output_pptx_path)
-    print(f"Successfully generated PowerPoint deck: {output_pptx_path}")
+    if output_pptx_path:
+        prs.save(output_pptx_path)
+        print(f"Successfully generated PowerPoint deck: {output_pptx_path}")
+    return prs
 
 def build_presentation(base_pptx=None, output_path=None):
     if base_pptx and os.path.exists(base_pptx):

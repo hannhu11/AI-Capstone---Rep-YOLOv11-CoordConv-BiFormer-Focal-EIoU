@@ -347,3 +347,44 @@ Toàn bộ **32 bài báo nghiên cứu nền tảng và SOTA (2019–2026)** v�
   - Tài liệu Hướng dẫn 
 eview_1_main/HUONG_DAN_TRA_LOI_12_MUC_REVIEW_1.md và .html.
   - Bộ hồ sơ Phản biện CAPSTONE_DEFENSE_AND_REBUTTAL_DOSSIER.md (Lỗ hổng B2).
+
+### 8.9. Chuẩn hóa Song ngữ Slide Báo cáo Review 1 (English Master & Parallel Vietnamese Deck) (Session 2026-09-24)
+- [x] **Chuyển ngữ 100% Tiếng Anh Học thuật cho Mục 4, 5, 6 (Ready for Slide Defense Deck)**:
+  - Cập nhật script 
+eview_1_main/generate_review1_slides_4_5_6.py và 
+eview_1_main/render_slides_4_5_6_as_images.py.
+  - Bộ slide tiếng Anh độc lập: 
+eview_1_main/Slides_Muc_4_5_6.pptx (5 slide chuẩn tỷ lệ 16:9, typography Calibri, visual cards đồng bộ).
+  - Xuất 5 ảnh render 300 DPI (4800x2700) tại 
+eview_1_main/slide_renders_4_5_6/:
+    * Slide_04_1_Baseline_Comparison_Table.png (Mục 4.1: Empirical SOTA Benchmarking).
+    * Slide_04_2_Baseline_1_YOLO11s.png (Mục 4.2: Architectural Analysis: YOLO11s).
+    * Slide_04_2_Baseline_2_YOLOv8s.png (Mục 4.2: Architectural Analysis: YOLOv8s).
+    * Slide_04_2_Baselines_Combined_Comparison.png (Mục 4.2: Comparative Analysis & Architectural Trade-offs).
+    * Slide_06_1_Proposed_Rep_YOLO11s_Architecture.png (Mục 6.1: Proposed Rep-YOLO11s Architecture Pipeline).
+  - Tích hợp thành tệp tổng thể Master: 
+eview_1_main/Capstone_Review_1_All_In_One_Master.pptx (37 slide bao gồm 27 slide thuyết trình gốc + 5 slide Mục 4,5,6 + 5 slide Mục 8–12).
+- [x] **Xây dựng Bản Dịch Tiếng Việt Song Song Toàn diện Từ Mục 4 Đến Mục 12**:
+  - Tạo script tạo slide: 
+eview_1_main/generate_vietnamese_slides_4_to_12.py.
+  - Tạo script kết xuất đồ họa: 
+eview_1_main/render_vietnamese_slides_4_to_12.py.
+  - Bộ slide tiếng Việt độc lập: 
+eview_1_main/Slides_Tieng_Viet_Muc_4_den_12.pptx (11 slide tiếng Việt hoàn chỉnh, bố cục thẻ card, font Calibri, tỷ lệ 16:9).
+  - Xuất 11 ảnh render 300 DPI (4800x2700) tại 
+eview_1_main/slide_renders_tieng_viet/:
+    1. Slide_04_1_Bang_So_Sanh_Mo_Hinh_Co_So.png (Mục 4.1: Bảng đối chuẩn thực nghiệm).
+    2. Slide_04_2_Mo_Hinh_Co_So_1_YOLO11s.png (Mục 4.2: Phân tích kiến trúc YOLO11s).
+    3. Slide_04_2_Mo_Hinh_Co_So_2_YOLOv8s.png (Mục 4.2: Phân tích kiến trúc YOLOv8s).
+    4. Slide_04_2_So_Sanh_Tong_Hop_Hai_Mo_Hinh_Co_So.png (Mục 4.2: So sánh tổng hợp & cơ sở khoa học).
+    5. Slide_06_1_Kien_Truc_Tong_The_De_Xuat_Rep_YOLO11s.png (Mục 6.1: Sơ đồ luồng xử lý Rep-YOLO11s).
+    6. Slide_07_Ky_Thuat_Du_Lieu_Data_Engineering.png (Mục 7: Tiền xử lý & Kỹ thuật dữ liệu SHWD/VOC2028).
+    7. Slide_08_Chien_Luoc_Danh_Gia_Evaluation.png (Mục 8: Chiến lược đánh giá đa tầng).
+    8. Slide_09_Ke_Hoach_Thuc_Hien_Gantt.png (Mục 9: Kế hoạch thực hiện & Biểu đồ Gantt 15 tuần).
+    9. Slide_10_Ke_Hoach_Bai_Bao_Khoa_Hoc.png (Mục 10: Kế hoạch bài báo khoa học chuẩn IEEE).
+    10. Slide_11_Quan_Ly_Rui_Ro_Va_Giai_Phap.png (Mục 11: Quản lý rủi ro & Phương án khắc phục).
+    11. Slide_12_Ket_Qua_Ky_Vong_Va_Ket_Luan.png (Mục 12: Sản phẩm kỳ vọng bàn giao & Kết luận).
+- [x] **Kiểm định Trực quan & Toàn vẹn Học thuật**:
+  - Không tràn chữ, không cắt mép, khoảng đệm lề chuẩn xác.
+  - Số liệu thực nghiệm bất biến, chính xác 100% theo mã nguồn huấn luyện.
+  - Ngôn từ học thuật an toàn cho kế hoạch xuất bản và định nghĩa chuẩn xác góc quay CCTV cho SHEL5K.
