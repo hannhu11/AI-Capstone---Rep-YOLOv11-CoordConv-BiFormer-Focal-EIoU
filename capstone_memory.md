@@ -388,3 +388,41 @@ eview_1_main/slide_renders_tieng_viet/:
   - Không tràn chữ, không cắt mép, khoảng đệm lề chuẩn xác.
   - Số liệu thực nghiệm bất biến, chính xác 100% theo mã nguồn huấn luyện.
   - Ngôn từ học thuật an toàn cho kế hoạch xuất bản và định nghĩa chuẩn xác góc quay CCTV cho SHEL5K.
+
+---
+
+## 9. Triển khai Thực nghiệm Mở rộng PPE & Phân loại Màu sắc Mũ (3 Notebook trên 3 Tài khoản Kaggle Dual T4)
+
+### 9.1. Bối cảnh & Yêu cầu của Thầy Nguyễn Xuân Huy (Review 1)
+- **Hướng 1**: Phân loại màu sắc mũ bảo hộ (Xanh, Đỏ, Trắng, Vàng, Người).
+- **Hướng 2**: Mở rộng sang đồ bảo hộ lao động cá nhân (PPE: áo phản quang / `vest`, người, mũ).
+- **Câu hỏi then chốt**: Thêm nhãn đồ bảo hộ có làm suy giảm mAP của mũ bảo hộ không? Phân biệt màu sắc mũ có bị nhầm lẫn không?
+- **Chiến lược thực thi**: Tận dụng 3 tài khoản Kaggle chạy song song trên phần cứng Accelerator **GPU T4 x2** (Dual Tesla T4) với thiết lập huấn luyện sâu (50–60 Epochs, Cosine Annealing, Batch 32, Image Size 640).
+
+### 9.2. Danh mục 3 Notebook Độc lập Tương ứng với 3 Tài khoản Kaggle
+
+1. **Tài khoản Kaggle 1 - Hướng 2 (Mở rộng Đồ bảo hộ PPE 3-Class)**:
+   - **Tệp Notebook**: `ppe_extension_experiment/notebooks/Kaggle_Account_1_PPE_3Class_Finetune_and_Benchmark.ipynb`
+   - **Nhãn chuẩn hóa**: 3 lớp `[hat, person, vest]`.
+   - **Input**: CHV Dataset (tự động tải Google Drive `1fdGn67W0B7ShpBDbbQpUF0ScPQa4DR0a` 419 MB) + Khởi tạo Warm-start từ `yolo11s_best.pt` (hoặc `yolo11s.pt`).
+   - **Output**: Model checkpoint `ppe_3class_best.pt`, bảng số liệu đối chứng `ppe_3class_comparison.csv`, đồ thị PR/F1, và báo cáo `BAO_CAO_HUONG_2_PPE_THAY_HUY.md`.
+   - **Mục tiêu**: Chứng minh việc bổ sung áo bảo hộ (`vest`) không gây xung đột và không làm tụt mAP50 của lớp mũ bảo hộ (`hat`).
+
+2. **Tài khoản Kaggle 2 - Hướng 1 (Phân loại Màu sắc Mũ bảo hộ 5-Class)**:
+   - **Tệp Notebook**: `ppe_extension_experiment/notebooks/Kaggle_Account_2_Color_Helmet_5Class_Benchmark.ipynb`
+   - **Nhãn chuẩn hóa**: 5 lớp `[blue_helmet, red_helmet, white_helmet, yellow_helmet, person]`.
+   - **Input**: CHV Dataset + Checkpoint khởi tạo.
+   - **Output**: Model checkpoint `color_helmet_5class_best.pt`, bảng số liệu `color_helmet_5class_metrics.csv`, ma trận nhầm lẫn màu sắc `color_confusion_matrix.png`, và báo cáo `BAO_CAO_HUONG_1_COLOR_HELMET_THAY_HUY.md`.
+   - **Mục tiêu**: Đánh giá khả năng phân loại màu mũ, phân tích hiện tượng nhầm lẫn giữa Mũ Vàng và Mũ Trắng dưới điều kiện nắng gắt.
+
+3. **Tài khoản Kaggle 3 - Hướng Kết hợp Toàn diện (Full 6-Class Master)**:
+   - **Tệp Notebook**: `ppe_extension_experiment/notebooks/Kaggle_Account_3_Full_6Class_PPE_and_Colors_Master.ipynb`
+   - **Nhãn chuẩn hóa**: 6 lớp `[person, vest, blue_helmet, red_helmet, white_helmet, yellow_helmet]`.
+   - **Input**: CHV Dataset (toàn bộ 6 nhãn gốc) + Checkpoint khởi tạo.
+   - **Output**: Model checkpoint `full_6class_master_best.pt`, bảng số liệu `full_6class_benchmark.csv`, đo lường độ trễ suy luận Latency (ms) và FPS trên GPU Tesla T4 FP16, và báo cáo `BAO_CAO_TOAN_DIEN_6CLASS_THAY_HUY.md`.
+   - **Mục tiêu**: Thử nghiệm kịch bản cao cấp kết hợp cả 2 hướng, xác nhận mô hình hoàn toàn đáp ứng thời gian thực (>100 FPS trên T4) và không bị quá tải.
+
+### 9.3. Tài liệu Hướng dẫn & Đồng bộ Hệ thống
+- Tệp hướng dẫn vận hành chi tiết: `ppe_extension_experiment/HUONG_DAN_CHAY_3_NOTEBOOK_KAGGLE_3_ACC.md`.
+- Tất cả tài nguyên được đẩy lên GitHub `origin/main` để lưu trữ an toàn và sẵn sàng nạp trực tiếp vào Kaggle.
+
