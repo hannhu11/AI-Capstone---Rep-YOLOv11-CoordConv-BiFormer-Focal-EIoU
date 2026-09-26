@@ -44,7 +44,7 @@ nb1_cells = [
 | Thành phần | Chi tiết |
 | :--- | :--- |
 | **INPUT CẦN THIẾT** | 1. Dataset CHV (Tự động tải qua Google Drive link tốc độ cao ~419 MB hoặc lấy từ `/kaggle/input/` nếu đã add)<br>2. Checkpoint `yolo11s_best.pt` (đã huấn luyện trên 7,581 ảnh SHWD, tự động tìm trong `/kaggle/input/` hoặc fallback `yolo11s.pt`) |
-| **OUTPUT THU ĐƯỢC** | 1. Model Checkpoint: `ppe_3class_best.pt`<br>2. Bảng chỉ số đối chứng: `ppe_3class_comparison.csv` (Precision, Recall, mAP50, mAP50-95 cho từng class `hat`, `person`, `vest`)<br>3. Báo cáo phân tích đối chứng: `BAO_CAO_HƯƠNG_2_PPE_THAY_HUY.md`<br>4. Biểu đồ trực quan: Confusion Matrix, PR curve, F1 curve, ảnh dự đoán mẫu trên tập Test. |
+| **OUTPUT THU ĐƯỢC** | 1. Model Checkpoint: `ppe_3class_best.pt`<br>2. Bảng chỉ số đối chứng: `ppe_3class_comparison.csv` (Precision, Recall, mAP50, mAP50-95 cho từng class `hat`, `person`, `vest`)<br>3. Báo cáo phân tích đối chứng: `BAO_CAO_HUONG_2_PPE_THAY_HUY.md`<br>4. Biểu đồ trực quan: Confusion Matrix, PR curve, F1 curve, ảnh dự đoán mẫu `sample_test_predictions.jpg` trên tập Test. |
 """),
     make_code_cell("""# CELL 1: KIỂM TRA PHẦN CỨNG & CẤU HÌNH DUAL TESLA T4
 import os
@@ -63,17 +63,21 @@ if torch.cuda.is_available():
     print(f"Số lượng GPU khả dụng: {n_gpus}")
     for i in range(n_gpus):
         print(f"  - GPU [{i}]: {torch.cuda.get_device_name(i)} | VRAM: {torch.cuda.get_device_properties(i).total_memory / (1024**3):.2f} GB")
-    DEVICE_CFG = 0  # Chạy GPU 0 ổn định tuyệt đối trên Kaggle (16GB VRAM)
+    # CẤU HÌNH THIẾT BỊ:
+    # DEVICE_CFG = 0: Ổn định 100% trên giao diện Kaggle Interactive Notebook (16GB VRAM)
+    # DEVICE_CFG = [0, 1]: Sử dụng cả 2 GPU với PyTorch DDP
+    DEVICE_CFG = 0
     BATCH_SIZE = 32
 else:
     print("⚠️ CẢNH BÁO: Không tìm thấy GPU! Hãy bật Accelerator: GPU T4 x2 trong menu bên phải Kaggle.")
     DEVICE_CFG = 'cpu'
     BATCH_SIZE = 8
 
-# Cài đặt thư viện bổ trợ (gdown để tải dữ liệu, ultralytics)
-!pip install -q -U ultralytics gdown
+# Cài đặt thư viện bổ trợ (gdown để tải dữ liệu, ultralytics, tabulate để xuất bảng Markdown)
+!pip install -q -U ultralytics gdown tabulate
 from ultralytics import YOLO
-print("✅ Ultralytics YOLO đã sẵn sàng!")
+from IPython.display import display
+print("✅ Ultralytics YOLO & Công cụ phân tích đã sẵn sàng!")
 """),
     make_code_cell("""# CELL 2: TỰ ĐỘNG TẢI & KIỂM TRA TẬP DỮ LIỆU CHV (COLOR HELMET AND VEST)
 import zipfile
@@ -238,6 +242,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from ultralytics import YOLO
+from IPython.display import display
 
 best_pt = Path("/kaggle/working/ppe_runs/ppe_3class_experiment/weights/best.pt")
 test_model = YOLO(str(best_pt))
@@ -281,7 +286,29 @@ df_metrics.to_csv(csv_out, index=False)
 print(f"✅ Đã lưu kết quả đối chứng: {csv_out}")
 display(df_metrics)
 """),
-    make_code_cell("""# CELL 7: TRỰC QUAN HÓA KẾT QUẢ DỰ ĐOÁN & TỔNG HỢP BÁO CÁO THẦY HUY
+    make_code_cell("""# CELL 7: DỰ ĐOÁN THỰC TẾ TRÊN 6 ẢNH TEST & LƯU GRID MINH HỌA
+import glob
+import cv2
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+test_imgs = sorted(list((OUT_DIR / "images" / "test").glob("*.jpg")))[:6]
+if test_imgs:
+    preds = test_model.predict(test_imgs, conf=0.35, imgsz=640, device=DEVICE_CFG)
+    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+    axes = axes.flatten()
+    for i, r in enumerate(preds):
+        im_bgr = r.plot()
+        im_rgb = cv2.cvtColor(im_bgr, cv2.COLOR_BGR2RGB)
+        axes[i].imshow(im_rgb)
+        axes[i].set_title(f"Test Img {i+1}: {Path(test_imgs[i]).name}", fontsize=11)
+        axes[i].axis('off')
+    plt.tight_layout()
+    plt.savefig("/kaggle/working/sample_test_predictions.jpg", dpi=200)
+    plt.show()
+    print("✅ Đã lưu ảnh dự đoán mẫu: /kaggle/working/sample_test_predictions.jpg")
+"""),
+    make_code_cell("""# CELL 8: TRỰC QUAN HÓA KẾT QUẢ ĐỒ THỊ & TỔNG HỢP BÁO CÁO THẦY HUY
 import matplotlib.pyplot as plt
 import cv2
 import glob
@@ -349,7 +376,12 @@ nb1 = {
 
 with open(OUT_DIR / "Kaggle_Account_1_PPE_3Class_Finetune_and_Benchmark.ipynb", "w", encoding="utf-8") as f:
     json.dump(nb1, f, indent=2, ensure_ascii=False)
-print("✅ Created Notebook 1 successfully!")
+
+# Also write SHWD_PPE_3Class_Finetune_and_Benchmark.ipynb as a direct clone
+with open(OUT_DIR / "SHWD_PPE_3Class_Finetune_and_Benchmark.ipynb", "w", encoding="utf-8") as f:
+    json.dump(nb1, f, indent=2, ensure_ascii=False)
+
+print("✅ Created Notebook 1 & Standalone PPE Notebook successfully!")
 
 # ==============================================================================
 # NOTEBOOK 2: HƯỚNG 1 - PHÂN LOẠI MÀU SẮC MŨ BẢO HỘ (COLOR HELMET 5-CLASS)
@@ -368,7 +400,7 @@ nb2_cells = [
 | Thành phần | Chi tiết |
 | :--- | :--- |
 | **INPUT CẦN THIẾT** | 1. Dataset CHV (Tự động tải qua Google Drive link ~419 MB hoặc lấy từ `/kaggle/input/` nếu đã add)<br>2. Checkpoint `yolo11s_best.pt` hoặc `yolo11s.pt` |
-| **OUTPUT THU ĐƯỢC** | 1. Model Checkpoint: `color_helmet_5class_best.pt`<br>2. Bảng chỉ số đối chứng: `color_helmet_5class_metrics.csv` (Precision, Recall, mAP50, mAP50-95 cho từng màu mũ)<br>3. Ma trận nhầm lẫn màu sắc: `color_confusion_matrix.png` (Phân tích hiện tượng nhầm lẫn giữa Mũ trắng vs Mũ vàng khi chói nắng)<br>4. Báo cáo phân tích đối chứng: `BAO_CAO_HUONG_1_COLOR_HELMET_THAY_HUY.md` |
+| **OUTPUT THU ĐƯỢC** | 1. Model Checkpoint: `color_helmet_5class_best.pt`<br>2. Bảng chỉ số đối chứng: `color_helmet_5class_metrics.csv` (Precision, Recall, mAP50, mAP50-95 cho từng màu mũ)<br>3. Ma trận nhầm lẫn màu sắc: `color_confusion_matrix.png` (Phân tích hiện tượng nhầm lẫn giữa Mũ trắng vs Mũ vàng khi chói nắng)<br>4. Báo cáo phân tích đối chứng: `BAO_CAO_HUONG_1_COLOR_HELMET_THAY_HUY.md`<br>5. Ảnh minh họa phát hiện: `sample_color_predictions.jpg` |
 """),
     make_code_cell("""# CELL 1: KIỂM TRA PHẦN CỨNG & CẤU HÌNH DUAL TESLA T4
 import os
@@ -393,9 +425,10 @@ else:
     DEVICE_CFG = 'cpu'
     BATCH_SIZE = 8
 
-!pip install -q -U ultralytics gdown
+!pip install -q -U ultralytics gdown tabulate
 from ultralytics import YOLO
-print("✅ Ultralytics YOLO đã sẵn sàng!")
+from IPython.display import display
+print("✅ Ultralytics YOLO & Công cụ đã sẵn sàng!")
 """),
     make_code_cell("""# CELL 2: TỰ ĐỘNG TẢI TẬP DỮ LIỆU CHV
 import zipfile
@@ -540,6 +573,7 @@ from pathlib import Path
 from ultralytics import YOLO
 import matplotlib.pyplot as plt
 import cv2
+from IPython.display import display
 
 best_pt = Path("/kaggle/working/color_runs/color_helmet_5class/weights/best.pt")
 test_model = YOLO(str(best_pt))
@@ -588,14 +622,41 @@ if Path(cm_path).exists():
     plt.axis('off')
     plt.show()
 """),
-    make_code_cell("""# CELL 6: TẠO BÁO CÁO GIẢI TRÌNH THẦY HUY CHO HƯỚNG 1
+    make_code_cell("""# CELL 6: DỰ ĐOÁN MẪU TRÊN 6 ẢNH TEST & TRỰC QUAN HÓA CÁC MÀU MŨ
+import glob
+import cv2
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+test_imgs = sorted(list((OUT_DIR / "images" / "test").glob("*.jpg")))[:6]
+if test_imgs:
+    preds = test_model.predict(test_imgs, conf=0.35, imgsz=640, device=DEVICE_CFG)
+    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+    axes = axes.flatten()
+    for i, r in enumerate(preds):
+        im_bgr = r.plot()
+        im_rgb = cv2.cvtColor(im_bgr, cv2.COLOR_BGR2RGB)
+        axes[i].imshow(im_rgb)
+        axes[i].set_title(f"Test Img {i+1}: {Path(test_imgs[i]).name}", fontsize=11)
+        axes[i].axis('off')
+    plt.tight_layout()
+    plt.savefig("/kaggle/working/sample_color_predictions.jpg", dpi=200)
+    plt.show()
+    print("✅ Đã lưu ảnh dự đoán mẫu màu mũ: /kaggle/working/sample_color_predictions.jpg")
+"""),
+    make_code_cell("""# CELL 7: TẠO BÁO CÁO GIẢI TRÌNH THẦY HUY CHO HƯỚNG 1
+try:
+    table_str = df_metrics.to_markdown(index=False)
+except Exception:
+    table_str = df_metrics.to_string(index=False)
+
 report_text = f\"\"\"# 📋 BÁO CÁO KẾT QUẢ THỰC NGHIỆM HƯỚNG 1: PHÂN LOẠI MÀU SẮC MŨ BẢO HỘ
 **Kính gửi Thầy Nguyễn Xuân Huy và Hội đồng chấm ĐATN**,
 
 Nhóm nghiên cứu đã thực nghiệm phân loại chi tiết 4 màu mũ bảo hộ phổ biến tại các công trường xây dựng:
 
 ### 1. Bảng số liệu chi tiết theo từng màu mũ:
-{df_metrics.to_markdown(index=False)}
+{table_str}
 
 ### 2. Nhận xét & Đánh giá khoa học:
 1. **Khả năng phân biệt màu sắc**: Mô hình đạt độ chính xác cao trên các màu có độ tương phản mạnh (Mũ đỏ và Mũ xanh dương).
@@ -644,7 +705,7 @@ nb3_cells = [
 | Thành phần | Chi tiết |
 | :--- | :--- |
 | **INPUT CẦN THIẾT** | 1. Dataset CHV (Tự động tải qua Google Drive link ~419 MB hoặc lấy từ `/kaggle/input/` nếu đã add)<br>2. Checkpoint `yolo11s_best.pt` hoặc `yolo11s.pt` |
-| **OUTPUT THU ĐƯỢC** | 1. Model Checkpoint: `full_6class_master_best.pt`<br>2. Bảng chỉ số đối chứng: `full_6class_benchmark.csv` (Precision, Recall, mAP50, mAP50-95 cho cả 6 nhãn)<br>3. Đo lường tốc độ phần cứng: Tốc độ suy luận thực tế (ms) và FPS trên Dual Tesla T4 / FP16.<br>4. Báo cáo chiến lược tổng hợp: `BAO_CAO_TOAN_DIEN_6CLASS_THAY_HUY.md` |
+| **OUTPUT THU ĐƯỢC** | 1. Model Checkpoint: `full_6class_master_best.pt`<br>2. Bảng chỉ số đối chứng: `full_6class_benchmark.csv` (Precision, Recall, mAP50, mAP50-95 cho cả 6 nhãn)<br>3. Đo lường tốc độ phần cứng: Tốc độ suy luận thực tế (ms) và FPS trên Dual Tesla T4 / FP16.<br>4. Báo cáo chiến lược tổng hợp: `BAO_CAO_TOAN_DIEN_6CLASS_THAY_HUY.md`<br>5. Ảnh dự đoán minh họa: `sample_master_predictions.jpg` |
 """),
     make_code_cell("""# CELL 1: KIỂM TRA PHẦN CỨNG & CẤU HÌNH DUAL TESLA T4
 import os
@@ -669,9 +730,10 @@ else:
     DEVICE_CFG = 'cpu'
     BATCH_SIZE = 8
 
-!pip install -q -U ultralytics gdown
+!pip install -q -U ultralytics gdown tabulate
 from ultralytics import YOLO
-print("✅ Ultralytics YOLO đã sẵn sàng!")
+from IPython.display import display
+print("✅ Ultralytics YOLO & Công cụ đã sẵn sàng!")
 """),
     make_code_cell("""# CELL 2: TỰ ĐỘNG TẢI TẬP DỮ LIỆU CHV
 import zipfile
@@ -806,6 +868,7 @@ import time
 import torch
 from pathlib import Path
 from ultralytics import YOLO
+from IPython.display import display
 
 best_pt = Path("/kaggle/working/master_6class_runs/full_6class_experiment/weights/best.pt")
 test_model = YOLO(str(best_pt))
@@ -857,14 +920,41 @@ latency_ms = ((time.time() - start_bench) / n_rounds) * 1000
 fps = 1000.0 / latency_ms
 print(f"⚡ ĐỘ TRỄ SUY LUẬN TRÊN TESLA T4: {latency_ms:.2f} ms | FPS: {fps:.1f} FPS")
 """),
-    make_code_cell("""# CELL 6: TẠO BÁO CÁO TỔNG HỢP CHIẾN LƯỢC TOÀN DIỆN CHO THẦY HUY
+    make_code_cell("""# CELL 6: DỰ ĐOÁN MẪU TRÊN 6 ẢNH TEST & TRỰC QUAN HÓA TOÀN BỘ 6 LỚP
+import glob
+import cv2
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+test_imgs = sorted(list((OUT_DIR / "images" / "test").glob("*.jpg")))[:6]
+if test_imgs:
+    preds = test_model.predict(test_imgs, conf=0.35, imgsz=640, device=DEVICE_CFG)
+    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+    axes = axes.flatten()
+    for i, r in enumerate(preds):
+        im_bgr = r.plot()
+        im_rgb = cv2.cvtColor(im_bgr, cv2.COLOR_BGR2RGB)
+        axes[i].imshow(im_rgb)
+        axes[i].set_title(f"Test Img {i+1}: {Path(test_imgs[i]).name}", fontsize=11)
+        axes[i].axis('off')
+    plt.tight_layout()
+    plt.savefig("/kaggle/working/sample_master_predictions.jpg", dpi=200)
+    plt.show()
+    print("✅ Đã lưu ảnh dự đoán mẫu 6-class: /kaggle/working/sample_master_predictions.jpg")
+"""),
+    make_code_cell("""# CELL 7: TẠO BÁO CÁO TỔNG HỢP CHIẾN LƯỢC TOÀN DIỆN CHO THẦY HUY
+try:
+    table_str = df_metrics.to_markdown(index=False)
+except Exception:
+    table_str = df_metrics.to_string(index=False)
+
 report_text = f\"\"\"# 🏆 BÁO CÁO KẾT QUẢ THỰC NGHIỆM TỔNG HỢP: FULL 6-CLASS (MŨ + MÀU + ÁO BẢO HỘ)
 **Kính gửi Thầy Nguyễn Xuân Huy và Hội đồng chấm ĐATN**,
 
 Nhóm nghiên cứu đã thực nghiệm mô hình cao nhất kết hợp đồng thời cả Hướng 1 và Hướng 2 trên 6 lớp đối tượng:
 
 ### 1. Bảng số liệu hiệu năng tổng hợp (CHV Test Split):
-{df_metrics.to_markdown(index=False)}
+{table_str}
 
 ### 2. Thông số phần cứng & Tốc độ thời gian thực:
 - **Tốc độ suy luận (Latency)**: {latency_ms:.2f} ms / frame trên GPU Tesla T4.
