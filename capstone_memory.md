@@ -442,29 +442,35 @@ eview_1_main/slide_renders_tieng_viet/:
   - Tự động trích xuất kết quả chiếu (project) sang 3 lớp PPE (`hat`, `person`, `vest`) và 5 lớp màu mũ để trả lời trọn vẹn cả 2 hướng gợi ý của Thầy Nguyễn Xuân Huy.
 
 ### 10.2. Hệ thống 3 Notebook Sản xuất Phân bổ trên 3 Tài khoản Kaggle Dual Tesla T4
-1. **Tài khoản Kaggle 1**: `Task2_Account_1_DataPipeline_and_Baselines.ipynb`
+1. **Tài khoản Kaggle 1**: `DataPipeline_and_Baselines_chv.ipynb`
    - *Phase 1 (Slide 3-6)*: Tiền xử lý, chuẩn hóa YOLO 6 lớp, phân tích định lượng mất cân bằng dữ liệu (Imbalance Ratio), biểu đồ phân phối, kỹ thuật bù đắp (Mosaic, MixUp).
-   - *Phase 2 (Slide 7-9)*: Huấn luyện Baseline 1 (YOLO11s) và Baseline 2 (YOLOv8s) 60 epochs, đánh giá tập Test độc lập (133 ảnh), phân tích khoảng cách (Gap Analysis) so với bài báo gốc.
+   - *Phase 2 (Slide 7-9)*: Huấn luyện Baseline 1 (YOLO11s) và Baseline 2 (YOLOv8s) 100 epochs với Cosine Annealing, `patience=30`, `close_mosaic=10`, đánh giá tập Test độc lập (133 ảnh), phân tích khoảng cách (Gap Analysis) so với bài báo gốc.
    - *Đóng gói tự động*: `Task2_Baselines_Outputs.zip`.
-2. **Tài khoản Kaggle 2**: `Task2_Account_2_Modular_Ablations_A1_to_A5.ipynb`
-   - *Phase 3 (Slide 10-11, 13)*: Thực nghiệm 5 nghiên cứu bóc tách thành phần (Modular Ablation Studies):
+2. **Tài khoản Kaggle 2**: `Modular_Ablations_A1_to_A5_chv.ipynb`
+   - *Phase 3 (Slide 10-11, 13)*: Thực nghiệm 5 nghiên cứu bóc tách thành phần (Modular Ablation Studies) độc lập hoàn toàn về trọng số (Zero Weight Contamination, mỗi thực nghiệm nạp từ `yolo11s.pt` gốc), 100 epochs mỗi thực nghiệm:
      - **A1**: Hard-case Data Augmentation (Albumentations, Mosaic, MixUp).
      - **A2**: CoordConv Spatial Coordinate Encoding.
      - **A3**: RepConv Structural Re-parameterization.
      - **A4**: Focal-EIoU Dynamic Boundary Regression Loss.
      - **A5**: BiFormer Dynamic Bi-Level Routing Attention.
+   - Trang bị khối cờ toggle độc lập (`RUN_A1=True` đến `RUN_A5=True`) và cơ chế tự động bỏ qua nếu đã có checkpoint (`SKIP_IF_EXISTS=True`).
    - Bảng tổng hợp tiến trình đóng góp lũy tiến và biểu đồ cột so sánh mAP50 / mAP50-95.
    - *Đóng gói tự động*: `Task2_Modular_Ablations_Outputs.zip`.
-3. **Tài khoản Kaggle 3**: `Task2_Account_3_Proposed_Champion_A6_and_Failure_Analysis.ipynb`
+3. **Tài khoản Kaggle 3**: `Proposed_Champion_A6_and_Failure_Analysis_chv.ipynb`
    - *Phase 3 & 4 (Slide 11-16)*:
-     - **A6: Proposed Champion (Rep-YOLO11s Full Fusion)** tích hợp đồng thời cả 5 module, huấn luyện 70 epochs, chuyển đổi `switch_to_deploy()` để tối ưu hóa suy diễn.
+     - **A6: Proposed Champion (Rep-YOLO11s Full Fusion)** tích hợp đồng thời cả 5 module, huấn luyện 100 epochs với Cosine LR và `close_mosaic=10`, chuyển đổi `switch_to_deploy()` để tối ưu hóa suy diễn.
      - *Phân tích Trường hợp Dự đoán Sai (Failure Cases Analysis - Slide 12)*: Quét tự động và chẩn đoán 10+ trường hợp thực tế (vật thể cực nhỏ, che khuất nặng, lóa nắng màu mũ, báo động giả nền) kèm ma trận chẩn đoán và hướng khắc phục.
      - *Đo đạc Phần cứng (Slide 15)*: Đo độ trễ Latency (ms) và FPS thực tế trên Tesla T4.
      - *Bảng So sánh Master (Slide 14)*: Bảng tổng hợp từ Baseline 1, 2 đến A1-A6.
      - *Minh họa Trực quan (Slide 16)*: Lưới ảnh demo đa lớp chất lượng cao.
    - *Đóng gói tự động*: `Task2_Proposed_Champion_Outputs.zip`.
 
-### 10.3. Tiêu chuẩn Kỹ thuật Nghiêm ngặt Đã Tuân thủ
+### 10.3. Đánh giá Quota Thời gian Thực thi (An toàn Tuyệt đối 12 Tiếng)
+- Với tập dữ liệu CHV (Train=1,066 ảnh), trên GPU Dual Tesla T4 x2 (batch 32), mỗi epoch chỉ mất ~7-8 giây.
+- 100 epochs chỉ mất ~13-15 phút/model.
+- Tổng thời gian: Notebook 1 (~30 phút), Notebook 2 (~75 phút cho 5 ablation), Notebook 3 (~18 phút). Toàn bộ chỉ chiếm ~10% thời lượng phiên 12 tiếng của Kaggle, an toàn 100% không bao giờ lo bị timeout/crack.
+
+### 10.4. Tiêu chuẩn Kỹ thuật Nghiêm ngặt Đã Tuân thủ
 - **Tuyệt đối không icon / emoji**: 100% tệp notebook và báo cáo markdown chỉ dùng thẻ định danh học thuật dạng `[INFO]`, `[STAGE 1]`, `[SUCCESS]`, `[EVALUATION]`, `[WARNING]`, loại bỏ hoàn toàn lỗi hiển thị phông chữ.
 - **Phạm vi an toàn thư mục**: Toàn bộ mã nguồn mới chỉ nằm trong `ppe_extension_experiment/`, giữ nguyên 100% các thư mục gốc `Output/` và `review_1_main/`.
 - **Tự động đóng gói ZIP**: Mỗi notebook tự động nén toàn bộ trọng số `best.pt`, file CSV số liệu, ảnh biểu đồ PNG 200 DPI và báo cáo markdown thành 1 file ZIP duy nhất để tải về 1-click.

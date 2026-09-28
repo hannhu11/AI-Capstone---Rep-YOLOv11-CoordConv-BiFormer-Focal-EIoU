@@ -3,9 +3,9 @@ import re
 from pathlib import Path
 
 notebooks = [
-    Path("ppe_extension_experiment/notebooks/Task2_Account_1_DataPipeline_and_Baselines.ipynb"),
-    Path("ppe_extension_experiment/notebooks/Task2_Account_2_Modular_Ablations_A1_to_A5.ipynb"),
-    Path("ppe_extension_experiment/notebooks/Task2_Account_3_Proposed_Champion_A6_and_Failure_Analysis.ipynb")
+    Path("ppe_extension_experiment/notebooks/DataPipeline_and_Baselines_chv.ipynb"),
+    Path("ppe_extension_experiment/notebooks/Modular_Ablations_A1_to_A5_chv.ipynb"),
+    Path("ppe_extension_experiment/notebooks/Proposed_Champion_A6_and_Failure_Analysis_chv.ipynb")
 ]
 
 emoji_pattern = re.compile(
@@ -28,6 +28,6 @@ for nb_path in notebooks:
         print("  - [PASS] Zero emojis / icons confirmed!")
 
 if all_clean:
-    print("\n[ALL PASS] All 3 notebooks are valid JSON and 100% free of emojis!")
+    print("\n[ALL PASS] All 3 renamed notebooks are valid JSON and 100% free of emojis!")
 else:
     print("\n[FAIL] Found emojis that need cleanup.")
