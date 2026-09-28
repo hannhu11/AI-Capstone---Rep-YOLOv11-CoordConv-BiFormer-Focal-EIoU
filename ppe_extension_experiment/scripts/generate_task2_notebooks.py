@@ -1793,7 +1793,13 @@ def measure_latency(model, n_warmup=20, n_runs=100):
 benchmarks = []
 
 # Baseline 1 Profiling
-b1_m = YOLO("/kaggle/working/task2_baselines/baseline1_yolo11s/weights/best.pt").model
+b1_weight_path = Path("/kaggle/working/task2_baselines/baseline1_yolo11s/weights/best.pt")
+if b1_weight_path.exists():
+    print("[INFO] Profiling Baseline 1 from local trained checkpoint...")
+    b1_m = YOLO(str(b1_weight_path)).model
+else:
+    print("[INFO] Baseline 1 checkpoint not found locally. Profiling standard YOLO11s architecture directly...")
+    b1_m = YOLO("yolo11s.pt").model
 lat_b1, fps_b1 = measure_latency(b1_m)
 benchmarks.append({
     'Model_Name': 'Baseline 1: YOLO11s',
