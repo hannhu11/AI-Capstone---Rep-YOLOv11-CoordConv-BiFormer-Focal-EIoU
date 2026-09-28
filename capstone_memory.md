@@ -426,3 +426,47 @@ eview_1_main/slide_renders_tieng_viet/:
 - Tệp hướng dẫn vận hành chi tiết: `ppe_extension_experiment/HUONG_DAN_CHAY_3_NOTEBOOK_KAGGLE_3_ACC.md`.
 - Tất cả tài nguyên được đẩy lên GitHub `origin/main` để lưu trữ an toàn và sẵn sàng nạp trực tiếp vào Kaggle.
 
+---
+
+## 10. KẾ HOẠCH & TRIỂN KHAI TOÀN DIỆN TASK 2 (REVIEW 2): 2 BASELINES & 6 ABLATION STUDIES (CHV 6-CLASS)
+
+### 10.1. Yêu cầu Chính thức từ Hội đồng Đánh giá (Văn bản "HƯỚNG DẪN THỰC HIỆN - TASK 2")
+- **Quy mô Bài báo & Đồ án**: Đáp ứng trọn vẹn 4 Giai đoạn (Phase 1 đến Phase 4) và khung slide bảo vệ Review 2 (18 - 25 slides).
+- **Phân định rõ ràng Giữa Baseline và Module Kiến trúc**:
+  - **Baseline 1**: **YOLO11s** (Mô hình SOTA 2024 - Ultralytics, 9.4M tham số, 21.5 GFLOPs).
+  - **Baseline 2**: **YOLOv8s** (Mô hình Chuẩn Công nghiệp 2023 - Ultralytics, 11.2M tham số, 28.6 GFLOPs).
+  - Các module cải tiến kiến trúc (**CoordConv, RepConv, BiFormer, Focal-EIoU**) là các thành phần của **Phương pháp Đề xuất (Proposed Method)** được đánh giá lũy tiến qua **Ablation Studies A1 đến A6**.
+- **Chiến lược Huấn luyện Từ Đầu (Train from Scratch / COCO Pretrain) trên 6 Class CHV**:
+  - Không fine-tune từ trọng số SHWD (2 class `hat`/`person`) vì đầu phân loại $1\times1$ bị khởi tạo ngẫu nhiên khi lệch số lớp, đồng thời biểu diễn đơn sắc của SHWD xung đột với 4 màu mũ và áo bảo hộ của CHV.
+  - Huấn luyện chuẩn xác trên 6 lớp CHV: `['person', 'vest', 'blue_helmet', 'red_helmet', 'white_helmet', 'yellow_helmet']`.
+  - Tự động trích xuất kết quả chiếu (project) sang 3 lớp PPE (`hat`, `person`, `vest`) và 5 lớp màu mũ để trả lời trọn vẹn cả 2 hướng gợi ý của Thầy Nguyễn Xuân Huy.
+
+### 10.2. Hệ thống 3 Notebook Sản xuất Phân bổ trên 3 Tài khoản Kaggle Dual Tesla T4
+1. **Tài khoản Kaggle 1**: `Task2_Account_1_DataPipeline_and_Baselines.ipynb`
+   - *Phase 1 (Slide 3-6)*: Tiền xử lý, chuẩn hóa YOLO 6 lớp, phân tích định lượng mất cân bằng dữ liệu (Imbalance Ratio), biểu đồ phân phối, kỹ thuật bù đắp (Mosaic, MixUp).
+   - *Phase 2 (Slide 7-9)*: Huấn luyện Baseline 1 (YOLO11s) và Baseline 2 (YOLOv8s) 60 epochs, đánh giá tập Test độc lập (133 ảnh), phân tích khoảng cách (Gap Analysis) so với bài báo gốc.
+   - *Đóng gói tự động*: `Task2_Baselines_Outputs.zip`.
+2. **Tài khoản Kaggle 2**: `Task2_Account_2_Modular_Ablations_A1_to_A5.ipynb`
+   - *Phase 3 (Slide 10-11, 13)*: Thực nghiệm 5 nghiên cứu bóc tách thành phần (Modular Ablation Studies):
+     - **A1**: Hard-case Data Augmentation (Albumentations, Mosaic, MixUp).
+     - **A2**: CoordConv Spatial Coordinate Encoding.
+     - **A3**: RepConv Structural Re-parameterization.
+     - **A4**: Focal-EIoU Dynamic Boundary Regression Loss.
+     - **A5**: BiFormer Dynamic Bi-Level Routing Attention.
+   - Bảng tổng hợp tiến trình đóng góp lũy tiến và biểu đồ cột so sánh mAP50 / mAP50-95.
+   - *Đóng gói tự động*: `Task2_Modular_Ablations_Outputs.zip`.
+3. **Tài khoản Kaggle 3**: `Task2_Account_3_Proposed_Champion_A6_and_Failure_Analysis.ipynb`
+   - *Phase 3 & 4 (Slide 11-16)*:
+     - **A6: Proposed Champion (Rep-YOLO11s Full Fusion)** tích hợp đồng thời cả 5 module, huấn luyện 70 epochs, chuyển đổi `switch_to_deploy()` để tối ưu hóa suy diễn.
+     - *Phân tích Trường hợp Dự đoán Sai (Failure Cases Analysis - Slide 12)*: Quét tự động và chẩn đoán 10+ trường hợp thực tế (vật thể cực nhỏ, che khuất nặng, lóa nắng màu mũ, báo động giả nền) kèm ma trận chẩn đoán và hướng khắc phục.
+     - *Đo đạc Phần cứng (Slide 15)*: Đo độ trễ Latency (ms) và FPS thực tế trên Tesla T4.
+     - *Bảng So sánh Master (Slide 14)*: Bảng tổng hợp từ Baseline 1, 2 đến A1-A6.
+     - *Minh họa Trực quan (Slide 16)*: Lưới ảnh demo đa lớp chất lượng cao.
+   - *Đóng gói tự động*: `Task2_Proposed_Champion_Outputs.zip`.
+
+### 10.3. Tiêu chuẩn Kỹ thuật Nghiêm ngặt Đã Tuân thủ
+- **Tuyệt đối không icon / emoji**: 100% tệp notebook và báo cáo markdown chỉ dùng thẻ định danh học thuật dạng `[INFO]`, `[STAGE 1]`, `[SUCCESS]`, `[EVALUATION]`, `[WARNING]`, loại bỏ hoàn toàn lỗi hiển thị phông chữ.
+- **Phạm vi an toàn thư mục**: Toàn bộ mã nguồn mới chỉ nằm trong `ppe_extension_experiment/`, giữ nguyên 100% các thư mục gốc `Output/` và `review_1_main/`.
+- **Tự động đóng gói ZIP**: Mỗi notebook tự động nén toàn bộ trọng số `best.pt`, file CSV số liệu, ảnh biểu đồ PNG 200 DPI và báo cáo markdown thành 1 file ZIP duy nhất để tải về 1-click.
+
+
