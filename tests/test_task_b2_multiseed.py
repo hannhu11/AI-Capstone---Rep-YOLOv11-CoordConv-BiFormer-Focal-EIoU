@@ -7,6 +7,7 @@ Author: Nguyen Han Nhu (FPT University)
 """
 
 import ast
+import base64
 import json
 import re
 import sys
@@ -32,6 +33,23 @@ NOTEBOOK_FILES = [
     ("Kaggle_TaskB2_Seed1337_Ablation_T4x2.ipynb", 1337, 2),
     ("Kaggle_TaskB2_Seed2026_Ablation_T4x2.ipynb", 2026, 3),
 ]
+
+
+def get_effective_notebook_source(path: Path) -> str:
+    """Reads notebook JSON and decodes embedded base64 code modules for full verification."""
+    raw_text = path.read_text(encoding="utf-8")
+    extra = []
+    with open(path, "r", encoding="utf-8") as f:
+        nb = json.load(f)
+    for cell in nb.get("cells", []):
+        cell_src = "".join(cell.get("source", []))
+        m_mod = re.search(r'custom_modules_b64\s*=\s*"([^"]+)"', cell_src)
+        if m_mod:
+            extra.append(base64.b64decode(m_mod.group(1)).decode("utf-8"))
+        m_train = re.search(r'ablation_trainer_b64\s*=\s*"([^"]+)"', cell_src)
+        if m_train:
+            extra.append(base64.b64decode(m_train.group(1)).decode("utf-8"))
+    return raw_text + "\n" + "\n".join(extra)
 
 
 def contains_emoji(text: str) -> bool:
@@ -131,7 +149,8 @@ class TestTaskB2NotebookStructure:
         assert "EPOCHS = 100" in text
         assert "SEEDS = [42, 1337, 2026]" in text
         assert "from ablation_trainer import MultiSeedAblationTrainer" in text
-        assert "route_logits = torch.matmul(q_region, k_region.transpose(-1, -2))" in text
+        eff_text = get_effective_notebook_source(path)
+        assert "route_logits = torch.matmul(q_region, k_region.transpose(-1, -2))" in eff_text
 
     @pytest.mark.parametrize("filename,expected_seed,expected_account", NOTEBOOK_FILES)
     def test_ddp_module_architecture(self, filename, expected_seed, expected_account):
@@ -166,12 +185,41 @@ class TestTaskB2NotebookStructure:
     def test_biformer_full_implementation(self, filename, expected_seed, expected_account):
         """Verifies that BiFormerBlockLite contains genuine region-level routing attention."""
         path = PROJECT_ROOT / filename
-        text = path.read_text(encoding="utf-8")
-        assert "route_logits = torch.matmul(q_region, k_region.transpose(-1, -2))" in text
-        assert "q_tokens" in text
-        assert "topk" in text
+        eff_text = get_effective_notebook_source(path)
+        assert "route_logits = torch.matmul(q_region, k_region.transpose(-1, -2))" in eff_text
+        assert "q_tokens" in eff_text
+        assert "topk" in eff_text
         # Must not be the truncated dummy shortcut
-        assert "return x + self.norm(self.proj(v))\n'''" not in text
+        assert "return x + self.norm(self.proj(v))\n'''" not in eff_text
+
+    @pytest.mark.parametrize("filename,expected_seed,expected_account", NOTEBOOK_FILES)
+    def test_cell2_runtime_materialization(self, filename, expected_seed, expected_account, tmp_path):
+        """Tests that Cell 2 decodes and writes custom_ablation_modules.py and ablation_trainer.py without errors."""
+        path = PROJECT_ROOT / filename
+        with open(path, "r", encoding="utf-8") as f:
+            nb = json.load(f)
+        cell_2_code = "".join(nb["cells"][2]["source"])
+        # Extract the materialization portion (base64 decode and write)
+        lines = cell_2_code.split("\n")
+        cutoff = [i for i, l in enumerate(lines) if "for sp in site.getsitepackages" in l][0]
+        mat_code = "\n".join(lines[:cutoff])
+        
+        # Execute inside tmp_path
+        scope = {"__file__": str(tmp_path / "dummy.py")}
+        orig_cwd = Path.cwd()
+        import os
+        os.chdir(tmp_path)
+        try:
+            exec(mat_code, scope)
+            assert (tmp_path / "custom_ablation_modules.py").exists()
+            assert (tmp_path / "ablation_trainer.py").exists()
+            src = (tmp_path / "custom_ablation_modules.py").read_text(encoding="utf-8")
+            assert "class CoordConv" in src
+            assert "class RepConv" in src
+            assert "class BiFormerBlockLite" in src
+            assert "def focal_eiou_loss" in src
+        finally:
+            os.chdir(orig_cwd)
 
 
 

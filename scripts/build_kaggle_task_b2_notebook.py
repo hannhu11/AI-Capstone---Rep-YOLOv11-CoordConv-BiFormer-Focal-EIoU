@@ -26,6 +26,7 @@ Key Architectural & Operating Features:
 =============================================================================
 """
 
+import base64
 import json
 from pathlib import Path
 
@@ -214,6 +215,10 @@ class MultiSeedAblationTrainer(DetectionTrainer):
         return model
 """
 
+CUSTOM_MODULES_B64 = base64.b64encode(CUSTOM_MODULES_SRC.encode("utf-8")).decode("ascii")
+ABLATION_TRAINER_B64 = base64.b64encode(ABLATION_TRAINER_SRC.encode("utf-8")).decode("ascii")
+P2_YAML_B64 = base64.b64encode(P2_YAML_CONTENT.strip().encode("utf-8")).decode("ascii")
+
 
 def create_single_seed_notebook(seed: int, account_num: int):
     """
@@ -332,18 +337,20 @@ print(f"[INFO] Evaluation Device : {{EVAL_DEVICE}}")
     # CELL 2: ARCHITECTURAL MODULE REGISTRATION & DDP INJECTION
     # ------------------------------------------------------------------------
     cell_2_code = f"""# CELL 2: ARCHITECTURAL MODULE REGISTRATION AND DDP SITE-PACKAGES INJECTION
-import json
+import base64
 import os
 import site
 import sys
 from pathlib import Path
 
 # 1. Materialize custom_ablation_modules.py (genuine BiFormer, RepConv, CoordConv, Focal EIoU)
-custom_modules_src = json.loads({json.dumps(CUSTOM_MODULES_SRC)})
+custom_modules_b64 = "{CUSTOM_MODULES_B64}"
+custom_modules_src = base64.b64decode(custom_modules_b64.encode("ascii")).decode("utf-8")
 Path("custom_ablation_modules.py").write_text(custom_modules_src, encoding="utf-8")
 
 # 2. Materialize ablation_trainer.py (MultiSeedAblationTrainer and build_ablation_model factory)
-ablation_trainer_src = json.loads({json.dumps(ABLATION_TRAINER_SRC)})
+ablation_trainer_b64 = "{ABLATION_TRAINER_B64}"
+ablation_trainer_src = base64.b64decode(ablation_trainer_b64.encode("ascii")).decode("utf-8")
 Path("ablation_trainer.py").write_text(ablation_trainer_src, encoding="utf-8")
 
 # 3. Propagate modules into all site-packages directories for DDP subprocesses
@@ -614,6 +621,7 @@ print(f"[INFO] Configuration file saved: {data_yaml_path}")
     # CELL 4: ARCHITECTURE FACTORY & MULTI-HEAD P2 SETUP
     # ------------------------------------------------------------------------
     cell_4_code = f"""# CELL 4: ARCHITECTURE FACTORY AND MULTI-HEAD P2 INITIALIZATION (A0 -> A6)
+import base64
 import os
 from pathlib import Path
 import torch
@@ -622,7 +630,7 @@ from ablation_trainer import MultiSeedAblationTrainer, build_ablation_model
 
 # Write rep_yolo11s_p2.yaml for Ablation A1
 p2_yaml_path = Path("/kaggle/working/rep_yolo11s_p2.yaml")
-p2_yaml_content = \"\"\"{P2_YAML_CONTENT}\"\"\"
+p2_yaml_content = base64.b64decode("{P2_YAML_B64}".encode("ascii")).decode("utf-8")
 p2_yaml_path.write_text(p2_yaml_content.strip(), encoding="utf-8")
 print(f"[INFO] 4-Head P2 Model Architecture YAML written to: {{p2_yaml_path}}")
 
@@ -1007,18 +1015,20 @@ print(f"[INFO] Evaluation Device : {EVAL_DEVICE}")
 """
 
     cell_2_code = f"""# CELL 2: ARCHITECTURAL MODULE REGISTRATION AND DDP SITE-PACKAGES INJECTION
-import json
+import base64
 import os
 import site
 import sys
 from pathlib import Path
 
 # 1. Materialize custom_ablation_modules.py
-custom_modules_src = json.loads({json.dumps(CUSTOM_MODULES_SRC)})
+custom_modules_b64 = "{CUSTOM_MODULES_B64}"
+custom_modules_src = base64.b64decode(custom_modules_b64.encode("ascii")).decode("utf-8")
 Path("custom_ablation_modules.py").write_text(custom_modules_src, encoding="utf-8")
 
 # 2. Materialize ablation_trainer.py
-ablation_trainer_src = json.loads({json.dumps(ABLATION_TRAINER_SRC)})
+ablation_trainer_b64 = "{ABLATION_TRAINER_B64}"
+ablation_trainer_src = base64.b64decode(ablation_trainer_b64.encode("ascii")).decode("utf-8")
 Path("ablation_trainer.py").write_text(ablation_trainer_src, encoding="utf-8")
 
 # 3. Propagate modules into all site-packages directories for DDP subprocesses
@@ -1283,6 +1293,7 @@ print(f"[INFO] Configuration file saved: {data_yaml_path}")
 """
 
     cell_4_code = f"""# CELL 4: ARCHITECTURE FACTORY AND MULTI-HEAD P2 INITIALIZATION (A0 -> A6)
+import base64
 import os
 from pathlib import Path
 import torch
@@ -1291,7 +1302,7 @@ from ablation_trainer import MultiSeedAblationTrainer, build_ablation_model
 
 # Write rep_yolo11s_p2.yaml for Ablation A1
 p2_yaml_path = Path("/kaggle/working/rep_yolo11s_p2.yaml")
-p2_yaml_content = \"\"\"{P2_YAML_CONTENT}\"\"\"
+p2_yaml_content = base64.b64decode("{P2_YAML_B64}".encode("ascii")).decode("utf-8")
 p2_yaml_path.write_text(p2_yaml_content.strip(), encoding="utf-8")
 print(f"[INFO] 4-Head P2 Model Architecture YAML written to: {{p2_yaml_path}}")
 
