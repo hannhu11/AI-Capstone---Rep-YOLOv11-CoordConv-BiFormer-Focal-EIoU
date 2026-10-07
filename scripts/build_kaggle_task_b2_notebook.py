@@ -1669,30 +1669,106 @@ print("[INFO] Download TaskB2_MultiSeed_Ablation_T4x2_Outputs.zip directly from 
     return nb
 
 
+def create_single_seed_script(seed: int, account_num: int) -> str:
+    """Generates a standalone, executable Python script (.py) for Kaggle Script mode."""
+    nb = create_single_seed_notebook(seed, account_num)
+    code_blocks = [
+        f'"""\n'
+        f'=============================================================================\n'
+        f'KAGGLE STANDALONE SCRIPT: TASK B2 STATISTICAL ABLATION (SEED {seed})\n'
+        f'IEEE AAIML 2027 Reviewer Rebuttal - Safety Helmet Detection (SHWD / VOC2028)\n'
+        f'Author: Nguyen Han Nhu (FPT University)\n'
+        f'Target Account: Kaggle Account {account_num} | Dual Tesla T4 x2 (32GB VRAM)\n'
+        f'Epochs: 100 per ablation, patience=30, cos_lr=True, batch=32, imgsz=640\n'
+        f'=============================================================================\n'
+        f'"""\n'
+    ]
+    for cell in nb["cells"]:
+        if cell["cell_type"] == "code":
+            src = "".join(cell["source"])
+            clean_lines = []
+            for line in src.splitlines():
+                if line.strip().startswith("!pip install"):
+                    clean_lines.append("import subprocess")
+                    clean_lines.append("import sys")
+                    clean_lines.append('subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U", "ultralytics", "scipy", "tabulate", "matplotlib", "seaborn", "pandas"], check=False)')
+                elif line.strip().startswith("!") or line.strip().startswith("%"):
+                    clean_lines.append("# " + line)
+                else:
+                    clean_lines.append(line)
+            code_blocks.append("\n".join(clean_lines))
+
+    return ("\n\n# " + "=" * 78 + "\n\n").join(code_blocks) + "\n"
+
+
+def create_consolidated_multiseed_script() -> str:
+    """Generates a standalone, executable Python script (.py) for multi-seed ablation."""
+    nb = create_consolidated_multiseed_notebook()
+    code_blocks = [
+        '"""\n'
+        '=============================================================================\n'
+        'KAGGLE STANDALONE SCRIPT: TASK B2 MULTI-SEED STATISTICAL ABLATION SUITE\n'
+        'IEEE AAIML 2027 Reviewer Rebuttal - Safety Helmet Detection (SHWD / VOC2028)\n'
+        'Author: Nguyen Han Nhu (FPT University)\n'
+        'Seeds: 42, 1337, 2026 across 7 experimental configurations (A0 -> A6)\n'
+        '=============================================================================\n'
+        '"""\n'
+    ]
+    for cell in nb["cells"]:
+        if cell["cell_type"] == "code":
+            src = "".join(cell["source"])
+            clean_lines = []
+            for line in src.splitlines():
+                if line.strip().startswith("!pip install"):
+                    clean_lines.append("import subprocess")
+                    clean_lines.append("import sys")
+                    clean_lines.append('subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-U", "ultralytics", "scipy", "tabulate", "matplotlib", "seaborn", "pandas"], check=False)')
+                elif line.strip().startswith("!") or line.strip().startswith("%"):
+                    clean_lines.append("# " + line)
+                else:
+                    clean_lines.append(line)
+            code_blocks.append("\n".join(clean_lines))
+
+    return ("\n\n# " + "=" * 78 + "\n\n").join(code_blocks) + "\n"
+
+
 def build_all_notebooks():
     configs = [
-        {"seed": 42, "account": 1, "filename": "Kaggle_TaskB2_Seed42_Ablation_T4x2.ipynb"},
-        {"seed": 1337, "account": 2, "filename": "Kaggle_TaskB2_Seed1337_Ablation_T4x2.ipynb"},
-        {"seed": 2026, "account": 3, "filename": "Kaggle_TaskB2_Seed2026_Ablation_T4x2.ipynb"},
+        {"seed": 42, "account": 1, "filename_nb": "Kaggle_TaskB2_Seed42_Ablation_T4x2.ipynb", "filename_py": "Kaggle_TaskB2_Seed42_Ablation.py"},
+        {"seed": 1337, "account": 2, "filename_nb": "Kaggle_TaskB2_Seed1337_Ablation_T4x2.ipynb", "filename_py": "Kaggle_TaskB2_Seed1337_Ablation.py"},
+        {"seed": 2026, "account": 3, "filename_nb": "Kaggle_TaskB2_Seed2026_Ablation_T4x2.ipynb", "filename_py": "Kaggle_TaskB2_Seed2026_Ablation.py"},
     ]
 
     generated_files = []
-    # 1. Build dedicated single-seed notebooks for the 3 Kaggle accounts
+    # 1. Build dedicated single-seed notebooks and scripts for the 3 Kaggle accounts
     for cfg in configs:
+        # Build .ipynb
         nb = create_single_seed_notebook(seed=cfg["seed"], account_num=cfg["account"])
-        out_path = Path(cfg["filename"])
-        with open(out_path, "w", encoding="utf-8") as f:
+        out_nb = Path(cfg["filename_nb"])
+        with open(out_nb, "w", encoding="utf-8") as f:
             json.dump(nb, f, indent=1)
-        generated_files.append(out_path)
-        print(f"[SUCCESS] Generated: {out_path.name} (Seed {cfg['seed']}, Account {cfg['account']})")
+        generated_files.append(out_nb)
+        print(f"[SUCCESS] Generated Notebook: {out_nb.name} (Seed {cfg['seed']}, Account {cfg['account']})")
 
-    # 2. Build clean consolidated reference notebook (0 emojis, 100 epochs)
+        # Build .py script
+        script_src = create_single_seed_script(seed=cfg["seed"], account_num=cfg["account"])
+        out_py = Path(cfg["filename_py"])
+        out_py.write_text(script_src, encoding="utf-8")
+        generated_files.append(out_py)
+        print(f"[SUCCESS] Generated Script  : {out_py.name} (Seed {cfg['seed']}, Account {cfg['account']})")
+
+    # 2. Build clean consolidated reference notebook and script (0 emojis, 100 epochs)
     consolidated_nb = create_consolidated_multiseed_notebook()
     consolidated_path = Path("Kaggle_TaskB2_MultiSeed_Ablation_T4x2.ipynb")
     with open(consolidated_path, "w", encoding="utf-8") as f:
         json.dump(consolidated_nb, f, indent=1)
     generated_files.append(consolidated_path)
-    print(f"[SUCCESS] Generated: {consolidated_path.name} (Consolidated Reference)")
+    print(f"[SUCCESS] Generated Notebook: {consolidated_path.name} (Consolidated Reference)")
+
+    consolidated_py = Path("Kaggle_TaskB2_MultiSeed_Ablation.py")
+    consolidated_py.write_text(create_consolidated_multiseed_script(), encoding="utf-8")
+    generated_files.append(consolidated_py)
+    print(f"[SUCCESS] Generated Script  : {consolidated_py.name} (Consolidated Reference)")
 
     return generated_files
 
