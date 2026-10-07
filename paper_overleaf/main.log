@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  7 OCT 2026 18:28
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  7 OCT 2026 18:59
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -277,147 +277,105 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
-Underfull \hbox (badness 4366) in paragraph at lines 62--64
+LaTeX Font Info:    Calculating math sizes for size <11> on input line 37.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 37.
+ (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 37.
+ (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+LaTeX Font Info:    Trying to load font information for OMS+ptm on input line 37.
+ (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/psnfss/omsptm.fd
+File: omsptm.fd 
+)
+LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 37.
+
+Underfull \hbox (badness 4366) in paragraph at lines 43--45
 []\OT1/ptm/b/it/9 Index Terms\OT1/ptm/b/n/9 ---Safety Hel-met De-tec-tion, Struc-tural Re-
  []
 
 
-Underfull \vbox (badness 1097) has occurred while \output is active []
 
 
+Underfull \hbox (badness 4518) in paragraph at lines 52--53
+[]\OT1/ptm/b/n/10 Spatial Dis-trac-tor Con-fu-sion\OT1/ptm/m/n/10 : Con-struc-tion sites
+ []
 
-<figures/test_construction_site_workers_1080p.jpg, id=1, 1284.8pt x 682.55pt>
-File: figures/test_construction_site_workers_1080p.jpg Graphic file (type jpg)
-<use figures/test_construction_site_workers_1080p.jpg>
-Package pdftex.def Info: figures/test_construction_site_workers_1080p.jpg  used on input line 71.
-(pdftex.def)             Requested size: 252.0pt x 133.87262pt.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 72.
-(c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+LaTeX Font Info:    Trying to load font information for OT1+phv on input line 58.
+(c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/psnfss/ot1phv.fd
+File: ot1phv.fd 2020/03/25 scalable font definitions for OT1/phv.
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 72.
- (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
+Underfull \hbox (badness 2050) in paragraph at lines 58--59
+[]\OT1/ptm/b/n/10 RepConv Struc-tural Fu-sion\OT1/ptm/m/n/10 : Multi-branch train-ing
+ []
+
+
 
 [1{c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/base/8r.enc}
 
 
 ]
-LaTeX Font Info:    Trying to load font information for OT1+phv on input line 86.
- (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/psnfss/ot1phv.fd
-File: ot1phv.fd 2020/03/25 scalable font definitions for OT1/phv.
-)
-
-
-Underfull \hbox (badness 2073) in paragraph at lines 90--91
-[]\OT1/ptm/b/n/10 Protocol-Aware Cross-Domain Gen-er-al-iza-tion\OT1/ptm/m/n/10 : We
+Underfull \hbox (badness 4132) in paragraph at lines 73--74
+\OT1/ptm/m/n/10 au-dit-ing. EC-YOLOv8 [5] in-cor-po-rated ECA at-ten-tion,
  []
 
 
 
-[2 <./figures/test_construction_site_workers_1080p.jpg>]
-<figures/rep_yolo11s_overall_ieee.png, id=26, 511.9125pt x 640.3925pt>
+<figures/rep_yolo11s_overall_ieee.png, id=19, 511.9125pt x 640.3925pt>
 File: figures/rep_yolo11s_overall_ieee.png Graphic file (type png)
 <use figures/rep_yolo11s_overall_ieee.png>
-Package pdftex.def Info: figures/rep_yolo11s_overall_ieee.png  used on input line 121.
-(pdftex.def)             Requested size: 202.1915pt x 252.94499pt.
-<figures/repconv_detail_ieee.png, id=27, 511.9125pt x 146.5475pt>
+Package pdftex.def Info: figures/rep_yolo11s_overall_ieee.png  used on input line 84.
+(pdftex.def)             Requested size: 252.0pt x 315.24126pt.
+
+
+[2 <./figures/rep_yolo11s_overall_ieee.png (PNG copy)>]
+<figures/repconv_detail_ieee.png, id=26, 511.9125pt x 146.5475pt>
 File: figures/repconv_detail_ieee.png Graphic file (type png)
 <use figures/repconv_detail_ieee.png>
-Package pdftex.def Info: figures/repconv_detail_ieee.png  used on input line 134.
-(pdftex.def)             Requested size: 252.0pt x 72.13983pt.
+Package pdftex.def Info: figures/repconv_detail_ieee.png  used on input line 99.
+(pdftex.def)             Requested size: 252.84283pt x 72.38133pt.
+<figures/biformer_detail_ieee.png, id=27, 511.9125pt x 163.61125pt>
+File: figures/biformer_detail_ieee.png Graphic file (type png)
+<use figures/biformer_detail_ieee.png>
+Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 105.
+(pdftex.def)             Requested size: 252.84283pt x 80.80931pt.
 
-
-
-Underfull \hbox (badness 4144) in paragraph at lines 148--149
-[]\OT1/ptm/m/n/10 During the de-ploy-ment con-ver-sion phase (\OT1/phv/m/n/10 switch[]to
- []
 
 
 
 [3]
-<figures/biformer_detail_ieee.png, id=33, 511.9125pt x 163.61125pt>
-File: figures/biformer_detail_ieee.png Graphic file (type png)
-<use figures/biformer_detail_ieee.png>
-Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 178.
-(pdftex.def)             Requested size: 252.0pt x 80.53969pt.
 
 
 
+[4 <./figures/repconv_detail_ieee.png (PNG copy)> <./figures/biformer_detail_ieee.png (PNG copy)>]
 
-[4 <./figures/rep_yolo11s_overall_ieee.png (PNG copy)> <./figures/repconv_detail_ieee.png (PNG copy)> <./figures/biformer_detail_ieee.png (PNG copy)>]
-
+<figures/shwd_gradcam_comparison.pdf, id=37, 770.88pt x 564.18782pt>
+File: figures/shwd_gradcam_comparison.pdf Graphic file (type pdf)
+<use figures/shwd_gradcam_comparison.pdf>
+Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 322.
+(pdftex.def)             Requested size: 143.17517pt x 104.79128pt.
+<figures/shwd_system_pipeline.pdf, id=38, 1112.95805pt x 513.11702pt>
+File: figures/shwd_system_pipeline.pdf Graphic file (type pdf)
+<use figures/shwd_system_pipeline.pdf>
+Package pdftex.def Info: figures/shwd_system_pipeline.pdf  used on input line 341.
+(pdftex.def)             Requested size: 231.83954pt x 106.88084pt.
 
 
 [5]
-Underfull \hbox (badness 6859) in paragraph at lines 285--286
-[]\OT1/ptm/m/n/10 In com-par-i-son to spe-cial-ized lit-er-a-ture, while EC-
- []
+
+
+Underfull \vbox (badness 3713) has occurred while \output is active []
 
 
 
+[6 <./figures/shwd_gradcam_comparison.pdf> <./figures/shwd_system_pipeline.pdf>]
 
-Underfull \hbox (badness 1406) in paragraph at lines 315--316
-\OT1/ptm/m/n/10 ex-e-cu-tion en-gines cleanly at-tributes both ac-cu-racy gains
- []
-
-
-
-[6]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
-
-<figures/shwd_gradcam_comparison.pdf, id=49, 770.88pt x 564.18782pt>
-File: figures/shwd_gradcam_comparison.pdf Graphic file (type pdf)
-<use figures/shwd_gradcam_comparison.pdf>
-Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 381.
-(pdftex.def)             Requested size: 266.6126pt x 195.12877pt.
-
+(./main.bbl
 
 [7]
-Underfull \vbox (badness 4859) has occurred while \output is active []
-
-
-
-<figures/shwd_system_pipeline.pdf, id=54, 1112.95805pt x 513.11702pt>
-File: figures/shwd_system_pipeline.pdf Graphic file (type pdf)
-<use figures/shwd_system_pipeline.pdf>
-Package pdftex.def Info: figures/shwd_system_pipeline.pdf  used on input line 402.
-(pdftex.def)             Requested size: 360.53531pt x 166.2212pt.
-<figures/shwd_latency_vs_map.png, id=55, 469.755pt x 303.534pt>
-File: figures/shwd_latency_vs_map.png Graphic file (type png)
-<use figures/shwd_latency_vs_map.png>
-Package pdftex.def Info: figures/shwd_latency_vs_map.png  used on input line 409.
-(pdftex.def)             Requested size: 252.0pt x 162.83139pt.
-
-Underfull \hbox (badness 1584) in paragraph at lines 415--416
-\OT1/ptm/m/n/10 stream pipeline reach-ing $[]$ ($\OT1/cmr/m/n/10 14\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 28[]$\OT1/ptm/m/n/10 ). At
- []
-
-
-Underfull \hbox (badness 2158) in paragraph at lines 415--416
-\OT1/cmr/m/n/10 640 \OMS/cmsy/m/n/10 ^^B \OT1/cmr/m/n/10 640$\OT1/ptm/m/n/10 , Ten-sorRT FP16 for-ward ex-e-cu-tion re-quires
- []
-
-
-
-[8 <./figures/shwd_gradcam_comparison.pdf>]
-
-
-Underfull \hbox (badness 1694) in paragraph at lines 453--454
-\OT1/ptm/m/n/10 ing boxes and alert-ing over-lay via OpenCV GUI
- []
-
-
-
-[9 <./figures/shwd_system_pipeline.pdf> <./figures/shwd_latency_vs_map.png>] (./main.bbl
-Underfull \hbox (badness 2237) in paragraph at lines 27--28
-\OT1/ptm/m/n/8 ``Yolov10: Real-time end-to-end ob-ject de-tec-tion,'' \OT1/ptm/m/it/8 arXiv preprint
- []
-
-
 
 )
 
@@ -433,25 +391,25 @@ Before submitting the final camera ready copy, remember to:
 
 
 
-[10] (./main.aux)
+[8] (./main.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-05-26>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4106 strings out of 469867
- 66704 string characters out of 5482749
- 505530 words of memory out of 5000000
- 32348 multiletter control sequences out of 15000+600000
- 678947 words of font info for 135 fonts, out of 8000000 for 9000
+ 4145 strings out of 469867
+ 66998 string characters out of 5482749
+ 506089 words of memory out of 5000000
+ 32385 multiletter control sequences out of 15000+600000
+ 680704 words of font info for 146 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 57i,12n,65p,2245b,310s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,14n,65p,2261b,358s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (10 pages, 3128129 bytes).
+Output written on main.pdf (8 pages, 2772306 bytes).
 PDF statistics:
- 313 PDF objects out of 1000 (max. 8388607)
- 108 compressed objects within 2 object streams
+ 303 PDF objects out of 1000 (max. 8388607)
+ 103 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 36 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 26 words of extra memory for PDF output out of 10000 (max. 10000000)
 

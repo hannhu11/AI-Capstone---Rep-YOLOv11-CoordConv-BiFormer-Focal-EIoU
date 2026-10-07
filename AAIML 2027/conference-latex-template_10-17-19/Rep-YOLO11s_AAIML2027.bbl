@@ -83,14 +83,8 @@ S.~S.~R. Group, ``Safety helmet wearing dataset ({SHWD}),'' \url{https://github.
 \bibitem{gdut_hwd_2021}
 W.~Jia, S.~Xu, Z.~Liang, D.~Zhao, H.~Min, and S.~Li, ``{GDUT-HWD}: A large-scale safety helmet wearing dataset for real-world surveillance scenarios,'' \emph{IEEE Transactions on Industrial Informatics}, vol.~18, no.~6, pp. 4125--4134, 2021.
 
-\bibitem{shel5k_2022}
-R.~Dianat, M.~Ghayoumi, M.~Kakhki, and R.~Alimohammadi, ``{SHEL5K}: An extended dataset for safety helmet and personal protective equipment detection in complex industrial workplaces,'' \emph{Data in Brief}, vol.~44, p. 108532, 2022.
-
 \bibitem{hard_hat_workers_mvd}
 A.~MVD, ``Hard hat workers dataset,'' \url{https://www.kaggle.com/datasets/andrewmvd/hard-hat-detection}, 2021.
-
-\bibitem{sfchd_2023}
-W.~Fang, L.~Ding, and P.~E.~D. Love, ``{SFCHD}: Safety helmet face and head detection dataset for dense crowd construction monitoring,'' \emph{Automation in Construction}, vol. 150, p. 104840, 2023.
 
 \bibitem{bodla2017soft}
 N.~Bodla, B.~Singh, R.~Chellappa, and L.~S. Davis, ``Soft-{NMS}--improving object detection with one line of code,'' in \emph{IEEE International Conference on Computer Vision (ICCV)}, 2017, pp. 5561--5569.
