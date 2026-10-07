@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="510pt" height="146pt" viewBox="0 0 510 146">
+<rect width="100%" height="100%" fill="white" />
+<rect x="4" y="4" width="502" height="138" rx="2" fill="none" stroke="#666666" stroke-width=".55" stroke-dasharray="2 2" />
+<text x="9" y="15" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="start" fill="#111111">RepConv: training and deployment topologies</text>
+<rect x="14" y="70" width="30" height="25" rx="2" fill="#F5F5F5" stroke="#666666" stroke-width=".55" />
+<text x="29.0" y="85.2" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">X</text>
+<rect x="80" y="29" width="100" height="20" rx="2" fill="#FFE6CC" stroke="#D79B00" stroke-width=".55" />
+<text x="130.0" y="41.7" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Conv 3×3 + BN</text>
+<rect x="80" y="66" width="100" height="20" rx="2" fill="#FFE6CC" stroke="#D79B00" stroke-width=".55" />
+<text x="130.0" y="78.7" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Conv 1×1 + BN</text>
+<rect x="80" y="103" width="100" height="20" rx="2" fill="#FFFFFF" stroke="#666666" stroke-width=".55" />
+<g data-role="math-label" aria-label="Identity + BN*"><text font-family="Times New Roman" font-size="8.0" font-weight="700" fill="#111111"><tspan x="105.207422" y="115.700000" font-size="8" font-style="normal">Identity + BN</tspan><tspan x="151.992578" y="112.700000" font-size="5.6" font-style="normal">*</tspan></text></g><rect x="210" y="71.5" width="22" height="22" rx="2" fill="#FFFFFF" stroke="#666666" stroke-width=".55" />
+<text x="221.0" y="85.2" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Σ</text>
+<rect x="250" y="71.5" width="35" height="22" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="267.5" y="85.2" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">SiLU</text>
+<polyline points="44,82.5 62,82.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polyline points="62,39 62,113" fill="none" stroke="#111111" stroke-width=".65" />
+<polyline points="196,39 196,113" fill="none" stroke="#111111" stroke-width=".65" />
+<polyline points="62,39 80,39.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="80,39.0 76.53026202681323,40.549489721626365 76.53026202681323,37.450510278373635" fill="#111111" />
+<polyline points="180,39.0 196,39" fill="none" stroke="#111111" stroke-width=".65" />
+<polyline points="62,76 80,76.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="80,76.0 76.53026202681323,77.54948972162637 76.53026202681323,74.45051027837363" fill="#111111" />
+<polyline points="180,76.0 196,76" fill="none" stroke="#111111" stroke-width=".65" />
+<polyline points="62,113 80,113.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="80,113.0 76.53026202681323,114.54948972162637 76.53026202681323,111.45051027837363" fill="#111111" />
+<polyline points="180,113.0 196,113" fill="none" stroke="#111111" stroke-width=".65" />
+<polyline points="196,82.5 210,82.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="210,82.5 206.53026202681323,84.04948972162637 206.53026202681323,80.95051027837363" fill="#111111" />
+<polyline points="232,82.5 250,82.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="250,82.5 246.53026202681323,84.04948972162637 246.53026202681323,80.95051027837363" fill="#111111" />
+<circle cx="62" cy="82.5" r="1" fill="#111111" />
+<circle cx="62" cy="76" r="1" fill="#111111" />
+<circle cx="196" cy="82.5" r="1" fill="#111111" />
+<circle cx="196" cy="76" r="1" fill="#111111" />
+<rect x="340" y="57" width="20" height="24" rx="2" fill="#F5F5F5" stroke="#666666" stroke-width=".55" />
+<text x="350.0" y="71.7" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">X</text>
+<rect x="379" y="54" width="117" height="30" rx="2" fill="#FFF2CC" stroke="#D6B656" stroke-width=".55" />
+<text x="437.5" y="67.10000000000001" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Fused Conv 3×3</text>
+<text x="437.5" y="76.30000000000001" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Equivalent kernel + bias</text>
+<rect x="416.5" y="98" width="42" height="20" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="437.5" y="110.7" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">SiLU</text>
+<polyline points="360,69.0 379,69.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="379,69.0 375.5302620268132,70.54948972162637 375.5302620268132,67.45051027837363" fill="#111111" />
+<polyline points="437.5,84 437.5,98" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="437.5,98 435.95051027837366,94.53026202681323 439.04948972162634,94.53026202681323" fill="#111111" />
+<polyline points="221.0,71.5 221,23 437.5,23 437.5,54" fill="none" stroke="#9673A6" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="437.5,54 435.95051027837366,50.530262026813226 439.04948972162634,50.530262026813226" fill="#9673A6" />
+<text x="323" y="19" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="start" fill="#111111">switch_to_deploy()</text>
+<text x="14" y="135" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="start" fill="#111111">* Identity branch only when channel counts match and stride = 1.</text>
+</svg>

@@ -1,0 +1,294 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="510pt" height="638pt" viewBox="0 0 510 638">
+<rect width="100%" height="100%" fill="white" />
+<rect x="4" y="4" width="502" height="100" rx="2" fill="none" stroke="#666666" stroke-width=".55" stroke-dasharray="2 2" />
+<text x="9" y="15" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="start" fill="#111111">Input + CoordConv</text>
+<rect x="14" y="32" width="100" height="36" rx="2" fill="#F5F5F5" stroke="#666666" stroke-width=".55" />
+<text x="64.0" y="48.1" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Input image (RGB)</text>
+<text x="64.0" y="57.3" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">B × 3 × 640 × 640</text>
+<rect x="170" y="32" width="104" height="36" rx="2" fill="#D5E8D4" stroke="#82B366" stroke-width=".55" />
+<text x="222.0" y="48.1" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">CoordConv</text>
+<text x="222.0" y="57.3" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Concat [RGB, X, Y]</text>
+<rect x="332" y="32" width="103" height="36" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="383.5" y="48.1" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Spatial tensor</text>
+<text x="383.5" y="57.3" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">B × 5 × 640 × 640</text>
+<rect x="170" y="77" width="104" height="21" rx="2" fill="#D5E8D4" stroke="#82B366" stroke-width=".55" />
+<text x="222.0" y="85.60000000000001" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">X, Y grids: [−1, 1]</text>
+<text x="222.0" y="94.80000000000001" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">2 channels</text>
+<polyline points="114,50.0 170,50.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="170,50.0 166.53026202681323,51.549489721626365 166.53026202681323,48.450510278373635" fill="#111111" />
+<polyline points="274,50.0 332,50.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="332,50.0 328.5302620268132,51.549489721626365 328.5302620268132,48.450510278373635" fill="#111111" />
+<polyline points="222.0,77 222.0,68" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="222.0,68 223.54948972162637,71.46973797318677 220.45051027837363,71.46973797318677" fill="#111111" />
+<text x="299" y="88" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="start" fill="#111111">Coordinates are concatenated along channels.</text>
+<rect x="4" y="124" width="96" height="314" rx="2" fill="none" stroke="#666666" stroke-width=".55" stroke-dasharray="2 2" />
+<text x="9" y="135" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="start" fill="#111111">Backbone</text>
+<rect x="104" y="124" width="115" height="314" rx="2" fill="none" stroke="#666666" stroke-width=".55" stroke-dasharray="2 2" />
+<text x="109" y="135" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="start" fill="#111111">Neck: PAN abstraction</text>
+<rect x="223" y="124" width="283" height="314" rx="2" fill="none" stroke="#666666" stroke-width=".55" stroke-dasharray="2 2" />
+<text x="228" y="135" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="start" fill="#111111">Anchor-free decoupled head: P3 / P4 / P5</text>
+<rect x="10" y="144" width="84" height="43" rx="2" fill="#FFE6CC" stroke="#D79B00" stroke-width=".55" />
+<text x="52.0" y="159.0" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Stem CBS: 3×3 / s2</text>
+<text x="52.0" y="168.2" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Conv + BN + SiLU</text>
+<text x="52.0" y="177.4" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">P1: 32 × 320 × 320</text>
+<rect x="10" y="203" width="84" height="43" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="52.0" y="218.0" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">P2 stage: C3k2</text>
+<text x="52.0" y="227.2" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Output stride: 4</text>
+<text x="52.0" y="236.4" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">64 × 160 × 160</text>
+<rect x="10" y="262" width="84" height="43" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="52.0" y="277.0" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">P3 stage: C3k2</text>
+<text x="52.0" y="286.2" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Output stride: 8</text>
+<text x="52.0" y="295.4" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">128 × 80 × 80</text>
+<rect x="10" y="321" width="84" height="43" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="52.0" y="336.0" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">P4 stage: C3k2</text>
+<text x="52.0" y="345.2" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Output stride: 16</text>
+<text x="52.0" y="354.4" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">256 × 40 × 40</text>
+<rect x="10" y="380" width="84" height="43" rx="2" fill="#E1D5E7" stroke="#9673A6" stroke-width=".55" />
+<text x="52.0" y="395.0" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">P5: SPPF + C2PSA</text>
+<text x="52.0" y="404.2" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Output stride: 32</text>
+<text x="52.0" y="413.4" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">512 × 20 × 20</text>
+<polyline points="435,50.0 460,50 460,112 52,112 52.0,144" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="52.0,144 50.450510278373635,140.53026202681323 53.549489721626365,140.53026202681323" fill="#111111" />
+<polyline points="52.0,187 52.0,203" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="52.0,203 50.450510278373635,199.53026202681323 53.549489721626365,199.53026202681323" fill="#111111" />
+<polyline points="52.0,246 52.0,262" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="52.0,262 50.450510278373635,258.5302620268132 53.549489721626365,258.5302620268132" fill="#111111" />
+<polyline points="52.0,305 52.0,321" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="52.0,321 50.450510278373635,317.5302620268132 53.549489721626365,317.5302620268132" fill="#111111" />
+<polyline points="52.0,364 52.0,380" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="52.0,380 50.450510278373635,376.5302620268132 53.549489721626365,376.5302620268132" fill="#111111" />
+<rect x="140" y="160" width="74" height="264" rx="2" fill="#FFFFFF" stroke="#666666" stroke-width=".55" />
+<text x="177" y="173" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Multi-scale</text>
+<text x="177" y="183" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">PAN fusion</text>
+<rect x="145" y="195" width="64" height="43" rx="2" fill="#D5E8D4" stroke="#82B366" stroke-width=".55" />
+<text x="177.0" y="210.0" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">BiFormer / BRA</text>
+<text x="177.0" y="219.2" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Region routing</text>
+<text x="177.0" y="228.4" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">+ token attention</text>
+<rect x="145" y="253" width="64" height="53" rx="2" fill="#FFF2CC" stroke="#D6B656" stroke-width=".55" />
+<text x="177.0" y="268.4" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">RepConv fusion</text>
+<text x="177.0" y="277.59999999999997" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Multi-branch</text>
+<text x="177.0" y="286.79999999999995" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">training; single</text>
+<text x="177.0" y="296.0" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">3×3 deployment</text>
+<polyline points="177.0,238 177.0,253" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="177.0,253 175.45051027837363,249.53026202681323 178.54948972162637,249.53026202681323" fill="#111111" />
+<rect x="110" y="271.5" width="26" height="24" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="123.0" y="281.59999999999997" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">P3</text>
+<text x="123.0" y="290.79999999999995" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">80×80</text>
+<polyline points="94,283.5 110,283.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="110,283.5 106.53026202681323,285.04948972162634 106.53026202681323,281.95051027837366" fill="#111111" />
+<polyline points="136,283.5 140,283.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="140,283.5 136.53026202681323,285.04948972162634 136.53026202681323,281.95051027837366" fill="#111111" />
+<rect x="110" y="330.5" width="26" height="24" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="123.0" y="340.59999999999997" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">P4</text>
+<text x="123.0" y="349.79999999999995" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">40×40</text>
+<polyline points="94,342.5 110,342.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="110,342.5 106.53026202681323,344.04948972162634 106.53026202681323,340.95051027837366" fill="#111111" />
+<polyline points="136,342.5 140,342.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="140,342.5 136.53026202681323,344.04948972162634 136.53026202681323,340.95051027837366" fill="#111111" />
+<rect x="110" y="389.5" width="26" height="24" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="123.0" y="399.59999999999997" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">P5</text>
+<text x="123.0" y="408.79999999999995" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">20×20</text>
+<polyline points="94,401.5 110,401.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="110,401.5 106.53026202681323,403.04948972162634 106.53026202681323,399.95051027837366" fill="#111111" />
+<polyline points="136,401.5 140,401.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="140,401.5 136.53026202681323,403.04948972162634 136.53026202681323,399.95051027837366" fill="#111111" />
+<rect x="229" y="174" width="26" height="27" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="242.0" y="185.6" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">N3/P3</text>
+<text x="242.0" y="194.79999999999998" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">80×80</text>
+<polyline points="214,187.5 229,187.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="229,187.5 225.53026202681323,189.04948972162637 225.53026202681323,185.95051027837363" fill="#111111" />
+<rect x="262" y="147" width="60" height="36" rx="2" fill="#FFE6CC" stroke="#D79B00" stroke-width=".55" />
+<text x="292.0" y="158.5" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">cv3</text>
+<text x="292.0" y="167.7" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Classification</text>
+<text x="292.0" y="176.9" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">2 class scores</text>
+<rect x="262" y="197" width="60" height="36" rx="2" fill="#FFE6CC" stroke="#D79B00" stroke-width=".55" />
+<text x="292.0" y="208.5" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">cv2</text>
+<text x="292.0" y="217.7" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Regression</text>
+<text x="292.0" y="226.9" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Distributions</text>
+<rect x="334" y="147" width="65" height="36" rx="2" fill="#F8CECC" stroke="#B85450" stroke-width=".55" />
+<text x="366.5" y="158.5" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Classification</text>
+<text x="366.5" y="167.7" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">scores</text>
+<text x="366.5" y="176.9" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">hat / person</text>
+<rect x="334" y="197" width="65" height="36" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="366.5" y="213.1" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Box decoding</text>
+<text x="366.5" y="222.29999999999998" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Decoded boxes</text>
+<rect x="410" y="172" width="43" height="36" rx="2" fill="#F8CECC" stroke="#B85450" stroke-width=".55" />
+<text x="431.5" y="188.1" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">P3</text>
+<text x="431.5" y="197.29999999999998" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">predictions</text>
+<polyline points="255,187.5 258,187.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polyline points="258,187.5 258,165 262,165.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="262,165.0 258.5302620268132,166.54948972162637 258.5302620268132,163.45051027837363" fill="#111111" />
+<polyline points="258,187.5 258,215 262,215.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="262,215.0 258.5302620268132,216.54948972162637 258.5302620268132,213.45051027837363" fill="#111111" />
+<polyline points="322,165.0 334,165.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="334,165.0 330.5302620268132,166.54948972162637 330.5302620268132,163.45051027837363" fill="#111111" />
+<polyline points="322,215.0 334,215.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="334,215.0 330.5302620268132,216.54948972162637 330.5302620268132,213.45051027837363" fill="#111111" />
+<polyline points="399,165.0 431.5,165 431.5,172" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="431.5,172 429.95051027837366,168.53026202681323 433.04948972162634,168.53026202681323" fill="#111111" />
+<polyline points="399,215.0 431.5,215 431.5,208" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="431.5,208 433.04948972162634,211.46973797318677 429.95051027837366,211.46973797318677" fill="#111111" />
+<circle cx="258" cy="187.5" r="1" fill="#111111" />
+<rect x="229" y="271" width="26" height="27" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="242.0" y="282.59999999999997" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">N4/P4</text>
+<text x="242.0" y="291.79999999999995" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">40×40</text>
+<polyline points="214,284.5 229,284.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="229,284.5 225.53026202681323,286.04948972162634 225.53026202681323,282.95051027837366" fill="#111111" />
+<rect x="262" y="244" width="60" height="36" rx="2" fill="#FFE6CC" stroke="#D79B00" stroke-width=".55" />
+<text x="292.0" y="255.5" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">cv3</text>
+<text x="292.0" y="264.7" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Classification</text>
+<text x="292.0" y="273.9" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">2 class scores</text>
+<rect x="262" y="294" width="60" height="36" rx="2" fill="#FFE6CC" stroke="#D79B00" stroke-width=".55" />
+<text x="292.0" y="305.5" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">cv2</text>
+<text x="292.0" y="314.7" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Regression</text>
+<text x="292.0" y="323.9" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Distributions</text>
+<rect x="334" y="244" width="65" height="36" rx="2" fill="#F8CECC" stroke="#B85450" stroke-width=".55" />
+<text x="366.5" y="255.5" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Classification</text>
+<text x="366.5" y="264.7" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">scores</text>
+<text x="366.5" y="273.9" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">hat / person</text>
+<rect x="334" y="294" width="65" height="36" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="366.5" y="310.09999999999997" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Box decoding</text>
+<text x="366.5" y="319.29999999999995" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Decoded boxes</text>
+<rect x="410" y="269" width="43" height="36" rx="2" fill="#F8CECC" stroke="#B85450" stroke-width=".55" />
+<text x="431.5" y="285.09999999999997" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">P4</text>
+<text x="431.5" y="294.29999999999995" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">predictions</text>
+<polyline points="255,284.5 258,284.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polyline points="258,284.5 258,262 262,262.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="262,262.0 258.5302620268132,263.54948972162634 258.5302620268132,260.45051027837366" fill="#111111" />
+<polyline points="258,284.5 258,312 262,312.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="262,312.0 258.5302620268132,313.54948972162634 258.5302620268132,310.45051027837366" fill="#111111" />
+<polyline points="322,262.0 334,262.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="334,262.0 330.5302620268132,263.54948972162634 330.5302620268132,260.45051027837366" fill="#111111" />
+<polyline points="322,312.0 334,312.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="334,312.0 330.5302620268132,313.54948972162634 330.5302620268132,310.45051027837366" fill="#111111" />
+<polyline points="399,262.0 431.5,262 431.5,269" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="431.5,269 429.95051027837366,265.5302620268132 433.04948972162634,265.5302620268132" fill="#111111" />
+<polyline points="399,312.0 431.5,312 431.5,305" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="431.5,305 433.04948972162634,308.4697379731868 429.95051027837366,308.4697379731868" fill="#111111" />
+<circle cx="258" cy="284.5" r="1" fill="#111111" />
+<rect x="229" y="368" width="26" height="27" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="242.0" y="379.59999999999997" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">N5/P5</text>
+<text x="242.0" y="388.79999999999995" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">20×20</text>
+<polyline points="214,381.5 229,381.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="229,381.5 225.53026202681323,383.04948972162634 225.53026202681323,379.95051027837366" fill="#111111" />
+<rect x="262" y="341" width="60" height="36" rx="2" fill="#FFE6CC" stroke="#D79B00" stroke-width=".55" />
+<text x="292.0" y="352.5" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">cv3</text>
+<text x="292.0" y="361.7" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Classification</text>
+<text x="292.0" y="370.9" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">2 class scores</text>
+<rect x="262" y="391" width="60" height="36" rx="2" fill="#FFE6CC" stroke="#D79B00" stroke-width=".55" />
+<text x="292.0" y="402.5" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">cv2</text>
+<text x="292.0" y="411.7" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Regression</text>
+<text x="292.0" y="420.9" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Distributions</text>
+<rect x="334" y="341" width="65" height="36" rx="2" fill="#F8CECC" stroke="#B85450" stroke-width=".55" />
+<text x="366.5" y="352.5" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Classification</text>
+<text x="366.5" y="361.7" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">scores</text>
+<text x="366.5" y="370.9" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">hat / person</text>
+<rect x="334" y="391" width="65" height="36" rx="2" fill="#DAE8FC" stroke="#6C8EBF" stroke-width=".55" />
+<text x="366.5" y="407.09999999999997" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Box decoding</text>
+<text x="366.5" y="416.29999999999995" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Decoded boxes</text>
+<rect x="410" y="366" width="43" height="36" rx="2" fill="#F8CECC" stroke="#B85450" stroke-width=".55" />
+<text x="431.5" y="382.09999999999997" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">P5</text>
+<text x="431.5" y="391.29999999999995" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">predictions</text>
+<polyline points="255,381.5 258,381.5" fill="none" stroke="#111111" stroke-width=".65" />
+<polyline points="258,381.5 258,359 262,359.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="262,359.0 258.5302620268132,360.54948972162634 258.5302620268132,357.45051027837366" fill="#111111" />
+<polyline points="258,381.5 258,409 262,409.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="262,409.0 258.5302620268132,410.54948972162634 258.5302620268132,407.45051027837366" fill="#111111" />
+<polyline points="322,359.0 334,359.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="334,359.0 330.5302620268132,360.54948972162634 330.5302620268132,357.45051027837366" fill="#111111" />
+<polyline points="322,409.0 334,409.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="334,409.0 330.5302620268132,410.54948972162634 330.5302620268132,407.45051027837366" fill="#111111" />
+<polyline points="399,359.0 431.5,359 431.5,366" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="431.5,366 429.95051027837366,362.5302620268132 433.04948972162634,362.5302620268132" fill="#111111" />
+<polyline points="399,409.0 431.5,409 431.5,402" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="431.5,402 433.04948972162634,405.4697379731868 429.95051027837366,405.4697379731868" fill="#111111" />
+<circle cx="258" cy="381.5" r="1" fill="#111111" />
+<rect x="465" y="147" width="36" height="270" rx="2" fill="#F8CECC" stroke="#B85450" stroke-width=".55" />
+<text x="483.0" y="266.3" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Collect</text>
+<text x="483.0" y="275.5" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">scales</text>
+<text x="483.0" y="284.7" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">P3/P4/P5</text>
+<text x="483.0" y="293.90000000000003" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Scores +</text>
+<text x="483.0" y="303.1" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">boxes</text>
+<polyline points="453,190.0 465,190.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="465,190.0 461.5302620268132,191.54948972162637 461.5302620268132,188.45051027837363" fill="#111111" />
+<polyline points="453,287.0 465,287.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="465,287.0 461.5302620268132,288.54948972162634 461.5302620268132,285.45051027837366" fill="#111111" />
+<polyline points="453,384.0 465,384.0" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="465,384.0 461.5302620268132,385.54948972162634 461.5302620268132,382.45051027837366" fill="#111111" />
+<rect x="226" y="449" width="151" height="28" rx="2" fill="#CCF2F4" stroke="#3399A6" stroke-width=".55" />
+<text x="301.5" y="461.09999999999997" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">P3 / P4 / P5 box distributions</text>
+<text x="301.5" y="470.29999999999995" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Retained before box decoding</text>
+<polyline points="292.0,233 292.0,237 328,237" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polyline points="292.0,330 292.0,334 328,334" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polyline points="292.0,427 292.0,431 328,431" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<circle cx="328" cy="262.0" r="1.5" fill="white" />
+<circle cx="328" cy="312.0" r="1.5" fill="white" />
+<circle cx="328" cy="359.0" r="1.5" fill="white" />
+<circle cx="328" cy="409.0" r="1.5" fill="white" />
+<polyline points="328,237 328,431 328,442 301.5,442 301.5,449" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="301.5,449 299.95051027837366,445.5302620268132 303.04948972162634,445.5302620268132" fill="#426F79" />
+<circle cx="328" cy="334" r="1" fill="#426F79" />
+<circle cx="328" cy="431" r="1" fill="#426F79" />
+<rect x="426" y="465" width="80" height="128" rx="2" fill="none" stroke="#666666" stroke-width=".55" stroke-dasharray="2 2" />
+<text x="431" y="476" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="start" fill="#111111">Post-processing</text>
+<rect x="438" y="491" width="56" height="26" rx="2" fill="#FFFFFF" stroke="#666666" stroke-width=".55" />
+<text x="466.0" y="506.7" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">NMS</text>
+<rect x="436" y="535" width="60" height="51" rx="2" fill="#F5F5F5" stroke="#666666" stroke-width=".55" />
+<text x="466.0" y="549.4000000000001" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Final detections</text>
+<text x="466.0" y="558.6000000000001" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Boxes /</text>
+<text x="466.0" y="567.8000000000001" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">confidence</text>
+<text x="466.0" y="577.0000000000001" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">scores / classes</text>
+<polyline points="483.0,417 483,450 496,450 496,484 466,484 466.0,491" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="466.0,491 464.45051027837366,487.5302620268132 467.54948972162634,487.5302620268132" fill="#111111" />
+<polyline points="466.0,517 466.0,535" fill="none" stroke="#111111" stroke-width=".65" />
+<polygon points="466.0,535 464.45051027837366,531.5302620268133 467.54948972162634,531.5302620268133" fill="#111111" />
+<rect x="4" y="497" width="407" height="139" rx="2" fill="none" stroke="#666666" stroke-width=".55" stroke-dasharray="2 2" />
+<text x="9" y="508" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="start" fill="#111111">Training-only supervision / losses</text>
+<rect x="329" y="518" width="73" height="30" rx="2" fill="#F5F5F5" stroke="#666666" stroke-width=".55" />
+<text x="365.5" y="531.1" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Ground truth</text>
+<text x="365.5" y="540.3000000000001" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Boxes + classes</text>
+<rect x="221" y="518" width="102" height="30" rx="2" fill="#CCF2F4" stroke="#3399A6" stroke-width=".55" />
+<text x="272.0" y="526.5" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Task-aligned assigner</text>
+<text x="272.0" y="535.7" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Prediction-to-target</text>
+<text x="272.0" y="544.9" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">assignment</text>
+<rect x="97" y="518" width="115" height="30" rx="2" fill="#CCF2F4" stroke="#3399A6" stroke-width=".55" />
+<text x="154.5" y="531.1" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Loss inputs</text>
+<text x="154.5" y="540.3000000000001" font-family="Times New Roman" font-size="8" font-weight="400" text-anchor="middle" fill="#111111">Predictions + assigned targets</text>
+<rect x="14" y="564" width="112" height="26" rx="2" fill="#CCF2F4" stroke="#3399A6" stroke-width=".55" />
+<text x="70.0" y="575.1" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Classification: BCE</text>
+<g data-role="math-label" aria-label="L_BCE"><text font-family="Times New Roman" font-size="8.0" font-weight="400" fill="#111111"><tspan x="62.329883" y="584.300000" font-size="8" font-style="italic">L</tspan><tspan x="66.779102" y="586.100000" font-size="5.6" font-style="normal">BCE</tspan></text></g><rect x="152" y="564" width="112" height="26" rx="2" fill="#CCF2F4" stroke="#3399A6" stroke-width=".55" />
+<text x="208.0" y="575.1" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Box regression: Focal-EIoU</text>
+<g data-role="math-label" aria-label="L_Focal-EIoU"><text font-family="Times New Roman" font-size="8.0" font-weight="400" fill="#111111"><tspan x="192.557422" y="584.300000" font-size="8" font-style="italic">L</tspan><tspan x="197.006641" y="586.100000" font-size="5.6" font-style="normal">Focal-EIoU</tspan></text></g><rect x="290" y="564" width="112" height="26" rx="2" fill="#CCF2F4" stroke="#3399A6" stroke-width=".55" />
+<text x="346.0" y="575.1" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Distribution focal loss</text>
+<g data-role="math-label" aria-label="L_DFL"><text font-family="Times New Roman" font-size="8.0" font-weight="400" fill="#111111"><tspan x="338.485742" y="584.300000" font-size="8" font-style="italic">L</tspan><tspan x="342.934961" y="586.100000" font-size="5.6" font-style="normal">DFL</tspan></text></g><rect x="132" y="605" width="230" height="28" rx="2" fill="#CCF2F4" stroke="#3399A6" stroke-width=".55" />
+<text x="247.0" y="617.1" font-family="Times New Roman" font-size="8" font-weight="700" text-anchor="middle" fill="#111111">Total training objective</text>
+<g data-role="math-label" aria-label="L = λcls L_BCE + λbox L_Focal-EIoU + λdfl L_DFL"><text font-family="Times New Roman" font-size="8.0" font-weight="400" fill="#111111"><tspan x="182.762891" y="626.300000" font-size="8" font-style="italic">L</tspan><tspan x="187.212109" y="626.300000" font-size="8" font-style="normal"> = </tspan><tspan x="195.723828" y="626.300000" font-size="8" font-style="italic">λ</tspan><tspan x="199.188672" y="628.100000" font-size="5.6" font-style="normal">cls</tspan><tspan x="205.409375" y="626.300000" font-size="8" font-style="normal"> </tspan><tspan x="207.409375" y="626.300000" font-size="8" font-style="italic">L</tspan><tspan x="211.858594" y="628.100000" font-size="5.6" font-style="normal">BCE</tspan><tspan x="222.749609" y="626.300000" font-size="8" font-style="normal"> + </tspan><tspan x="231.261328" y="626.300000" font-size="8" font-style="italic">λ</tspan><tspan x="234.726172" y="628.100000" font-size="5.6" font-style="normal">box</tspan><tspan x="243.126172" y="626.300000" font-size="8" font-style="normal"> </tspan><tspan x="245.126172" y="626.300000" font-size="8" font-style="italic">L</tspan><tspan x="249.575391" y="628.100000" font-size="5.6" font-style="normal">Focal-EIoU</tspan><tspan x="276.011328" y="626.300000" font-size="8" font-style="normal"> + </tspan><tspan x="284.523047" y="626.300000" font-size="8" font-style="italic">λ</tspan><tspan x="287.987891" y="628.100000" font-size="5.6" font-style="normal">dfl</tspan><tspan x="294.208594" y="626.300000" font-size="8" font-style="normal"> </tspan><tspan x="296.208594" y="626.300000" font-size="8" font-style="italic">L</tspan><tspan x="300.657813" y="628.100000" font-size="5.6" font-style="normal">DFL</tspan></text></g><polyline points="483,450 398,450 398,487 154.5,487 154.5,518" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="154.5,518 152.95051027837363,514.5302620268133 156.04948972162637,514.5302620268133" fill="#426F79" />
+<polyline points="272,487 272.0,518" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="272.0,518 270.45051027837366,514.5302620268133 273.54948972162634,514.5302620268133" fill="#426F79" />
+<circle cx="272" cy="487" r="1" fill="#426F79" />
+<circle cx="483" cy="450" r="1" fill="#111111" />
+<polyline points="329,533.0 323,533.0" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="323,533.0 326.4697379731868,531.4505102783736 326.4697379731868,534.5494897216264" fill="#426F79" />
+<polyline points="221,533.0 212,533.0" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="212,533.0 215.46973797318677,531.4505102783736 215.46973797318677,534.5494897216264" fill="#426F79" />
+<polyline points="154.5,548 154.5,556" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polyline points="70,556 346,556" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<circle cx="154.5" cy="556" r="1" fill="#426F79" />
+<circle cx="208" cy="556" r="1" fill="#426F79" />
+<polyline points="70.0,556 70.0,564" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="70.0,564 68.45051027837363,560.5302620268133 71.54948972162637,560.5302620268133" fill="#426F79" />
+<polyline points="208.0,556 208.0,564" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="208.0,564 206.45051027837363,560.5302620268133 209.54948972162637,560.5302620268133" fill="#426F79" />
+<polyline points="346.0,556 346.0,564" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="346.0,564 344.45051027837366,560.5302620268133 347.54948972162634,560.5302620268133" fill="#426F79" />
+<polyline points="70.0,590 70.0,598 171.1,598 171.1,605" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="171.1,605 169.55051027837362,601.5302620268133 172.64948972162637,601.5302620268133" fill="#426F79" />
+<polyline points="208.0,590 208.0,598 247.0,598 247.0,605" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="247.0,605 245.45051027837363,601.5302620268133 248.54948972162637,601.5302620268133" fill="#426F79" />
+<polyline points="346.0,590 346.0,598 322.9,598 322.9,605" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="322.9,605 321.35051027837363,601.5302620268133 324.4494897216263,601.5302620268133" fill="#426F79" />
+<circle cx="398" cy="463.0" r="1.5" fill="white" />
+<polyline points="377,463.0 417,463 417,577 402,577.0" fill="none" stroke="#426F79" stroke-width=".65" stroke-dasharray="2 1.7" />
+<polygon points="402,577.0 405.4697379731868,575.4505102783736 405.4697379731868,578.5494897216264" fill="#426F79" />
+</svg>

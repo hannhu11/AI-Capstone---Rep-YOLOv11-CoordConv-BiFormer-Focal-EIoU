@@ -53,6 +53,9 @@ X.~Ding, X.~Zhang, N.~Ma, J.~Han, G.~Ding, and J.~Sun, ``Repvgg: Making vgg-styl
 \bibitem{liu2018coordconv}
 R.~Liu, J.~Lehman, P.~Molino, F.~P. Such, E.~Frank, A.~Sergeev, and J.~Yosinski, ``An intriguing failing of convolutional neural networks and the coordconv solution,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~31, 2018, pp. 9605--9616.
 
+\bibitem{zhu2023biformer}
+L.~Zhu, X.~W. Wang, Z.~Ke, W.~Zhang, and C.~Shen, ``Biformer: Vision transformer with bi-level routing attention,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2023, pp. 10\,323--10\,333.
+
 \bibitem{zhang2021focal}
 Y.-R. Zhang, W.~Ren, Z.~Zhang, K.~Jia, and L.~Wang, ``Focal and efficient iou loss for accurate bounding box regression,'' \emph{Neurocomputing}, vol. 455, pp. 137--147, 2021.
 
