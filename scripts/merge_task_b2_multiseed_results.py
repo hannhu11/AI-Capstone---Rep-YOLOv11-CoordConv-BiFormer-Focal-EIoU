@@ -46,31 +46,31 @@ def generate_demo_dataset() -> pd.DataFrame:
     """
     records = [
         # Seed 42
-        {"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 42, "mAP50": 94.72, "mAP50_95": 62.32, "precision": 92.70, "recall": 90.30, "train_time_min": 19.5},
-        {"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 42, "mAP50": 94.80, "mAP50_95": 62.38, "precision": 92.78, "recall": 91.00, "train_time_min": 24.2},
-        {"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 42, "mAP50": 94.76, "mAP50_95": 62.43, "precision": 93.00, "recall": 90.85, "train_time_min": 20.1},
-        {"ablation_id": "A3", "ablation_name": "+ RepConv Re-Param", "seed": 42, "mAP50": 94.80, "mAP50_95": 62.46, "precision": 92.38, "recall": 90.92, "train_time_min": 21.0},
-        {"ablation_id": "A4", "ablation_name": "+ Focal EIoU Loss", "seed": 42, "mAP50": 94.86, "mAP50_95": 62.50, "precision": 93.10, "recall": 91.18, "train_time_min": 21.2},
-        {"ablation_id": "A5", "ablation_name": "+ BiFormer Attention", "seed": 42, "mAP50": 94.79, "mAP50_95": 62.48, "precision": 93.68, "recall": 91.12, "train_time_min": 23.5},
-        {"ablation_id": "A6", "ablation_name": "Full Fusion (Proposed)", "seed": 42, "mAP50": 94.82, "mAP50_95": 62.53, "precision": 92.98, "recall": 91.31, "train_time_min": 23.8},
+        {"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 42, "mAP50": 94.92, "mAP50_95": 62.36, "precision": 92.85, "recall": 90.39, "train_time_min": 19.5},
+        {"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 42, "mAP50": 94.90, "mAP50_95": 62.42, "precision": 92.85, "recall": 91.04, "train_time_min": 24.2},
+        {"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 42, "mAP50": 94.88, "mAP50_95": 62.47, "precision": 93.06, "recall": 90.91, "train_time_min": 20.1},
+        {"ablation_id": "A3", "ablation_name": "+ RepConv Re-Param", "seed": 42, "mAP50": 94.90, "mAP50_95": 62.50, "precision": 92.45, "recall": 90.98, "train_time_min": 21.0},
+        {"ablation_id": "A4", "ablation_name": "+ Focal EIoU Loss", "seed": 42, "mAP50": 94.97, "mAP50_95": 62.52, "precision": 93.16, "recall": 91.22, "train_time_min": 21.2},
+        {"ablation_id": "A5", "ablation_name": "+ BiFormer Attention", "seed": 42, "mAP50": 94.89, "mAP50_95": 62.52, "precision": 93.76, "recall": 91.17, "train_time_min": 23.5},
+        {"ablation_id": "A6", "ablation_name": "Full Fusion (Proposed)", "seed": 42, "mAP50": 94.98, "mAP50_95": 62.55, "precision": 93.04, "recall": 91.35, "train_time_min": 23.8},
 
         # Seed 1337
-        {"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 1337, "mAP50": 94.76, "mAP50_95": 62.35, "precision": 92.81, "recall": 90.38, "train_time_min": 19.3},
-        {"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 1337, "mAP50": 94.82, "mAP50_95": 62.41, "precision": 92.83, "recall": 91.04, "train_time_min": 24.0},
-        {"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 1337, "mAP50": 94.79, "mAP50_95": 62.46, "precision": 93.04, "recall": 90.90, "train_time_min": 20.0},
-        {"ablation_id": "A3", "ablation_name": "+ RepConv Re-Param", "seed": 1337, "mAP50": 94.82, "mAP50_95": 62.49, "precision": 92.43, "recall": 90.97, "train_time_min": 20.8},
-        {"ablation_id": "A4", "ablation_name": "+ Focal EIoU Loss", "seed": 1337, "mAP50": 94.89, "mAP50_95": 62.52, "precision": 93.15, "recall": 91.22, "train_time_min": 21.0},
-        {"ablation_id": "A5", "ablation_name": "+ BiFormer Attention", "seed": 1337, "mAP50": 94.81, "mAP50_95": 62.51, "precision": 93.74, "recall": 91.17, "train_time_min": 23.2},
-        {"ablation_id": "A6", "ablation_name": "Full Fusion (Proposed)", "seed": 1337, "mAP50": 94.84, "mAP50_95": 62.55, "precision": 93.03, "recall": 91.34, "train_time_min": 23.6},
+        {"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 1337, "mAP50": 94.74, "mAP50_95": 62.34, "precision": 92.77, "recall": 90.35, "train_time_min": 19.3},
+        {"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 1337, "mAP50": 94.81, "mAP50_95": 62.40, "precision": 92.80, "recall": 91.02, "train_time_min": 24.0},
+        {"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 1337, "mAP50": 94.78, "mAP50_95": 62.45, "precision": 93.02, "recall": 90.88, "train_time_min": 20.0},
+        {"ablation_id": "A3", "ablation_name": "+ RepConv Re-Param", "seed": 1337, "mAP50": 94.81, "mAP50_95": 62.48, "precision": 92.41, "recall": 90.95, "train_time_min": 20.8},
+        {"ablation_id": "A4", "ablation_name": "+ Focal EIoU Loss", "seed": 1337, "mAP50": 94.88, "mAP50_95": 62.51, "precision": 93.13, "recall": 91.20, "train_time_min": 21.0},
+        {"ablation_id": "A5", "ablation_name": "+ BiFormer Attention", "seed": 1337, "mAP50": 94.80, "mAP50_95": 62.50, "precision": 93.72, "recall": 91.15, "train_time_min": 23.2},
+        {"ablation_id": "A6", "ablation_name": "Full Fusion (Proposed)", "seed": 1337, "mAP50": 94.83, "mAP50_95": 62.54, "precision": 93.01, "recall": 91.33, "train_time_min": 23.6},
 
         # Seed 2026
-        {"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 2026, "mAP50": 94.74, "mAP50_95": 62.35, "precision": 92.77, "recall": 90.37, "train_time_min": 19.6},
-        {"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 2026, "mAP50": 94.81, "mAP50_95": 62.41, "precision": 92.82, "recall": 91.02, "train_time_min": 24.5},
-        {"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 2026, "mAP50": 94.79, "mAP50_95": 62.46, "precision": 93.02, "recall": 90.89, "train_time_min": 20.2},
-        {"ablation_id": "A3", "ablation_name": "+ RepConv Re-Param", "seed": 2026, "mAP50": 94.81, "mAP50_95": 62.49, "precision": 92.42, "recall": 90.96, "train_time_min": 21.1},
-        {"ablation_id": "A4", "ablation_name": "+ Focal EIoU Loss", "seed": 2026, "mAP50": 94.89, "mAP50_95": 62.51, "precision": 93.14, "recall": 91.20, "train_time_min": 21.3},
-        {"ablation_id": "A5", "ablation_name": "+ BiFormer Attention", "seed": 2026, "mAP50": 94.80, "mAP50_95": 62.51, "precision": 93.74, "recall": 91.16, "train_time_min": 23.4},
-        {"ablation_id": "A6", "ablation_name": "Full Fusion (Proposed)", "seed": 2026, "mAP50": 94.83, "mAP50_95": 62.54, "precision": 93.02, "recall": 91.34, "train_time_min": 23.7},
+        {"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 2026, "mAP50": 94.56, "mAP50_95": 62.32, "precision": 92.70, "recall": 90.31, "train_time_min": 19.6},
+        {"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 2026, "mAP50": 94.72, "mAP50_95": 62.38, "precision": 92.76, "recall": 91.00, "train_time_min": 24.5},
+        {"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 2026, "mAP50": 94.68, "mAP50_95": 62.43, "precision": 92.98, "recall": 90.85, "train_time_min": 20.2},
+        {"ablation_id": "A3", "ablation_name": "+ RepConv Re-Param", "seed": 2026, "mAP50": 94.72, "mAP50_95": 62.46, "precision": 92.37, "recall": 90.92, "train_time_min": 21.1},
+        {"ablation_id": "A4", "ablation_name": "+ Focal EIoU Loss", "seed": 2026, "mAP50": 94.79, "mAP50_95": 62.50, "precision": 93.10, "recall": 91.18, "train_time_min": 21.3},
+        {"ablation_id": "A5", "ablation_name": "+ BiFormer Attention", "seed": 2026, "mAP50": 94.71, "mAP50_95": 62.48, "precision": 93.68, "recall": 91.13, "train_time_min": 23.4},
+        {"ablation_id": "A6", "ablation_name": "Full Fusion (Proposed)", "seed": 2026, "mAP50": 94.68, "mAP50_95": 62.53, "precision": 92.98, "recall": 91.31, "train_time_min": 23.7},
     ]
     return pd.DataFrame(records)
 

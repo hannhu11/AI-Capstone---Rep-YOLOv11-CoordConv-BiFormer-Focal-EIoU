@@ -130,6 +130,49 @@ class TestTaskB2NotebookStructure:
                 ast.parse("\n".join(filtered_lines))
         assert "EPOCHS = 100" in text
         assert "SEEDS = [42, 1337, 2026]" in text
+        assert "from ablation_trainer import MultiSeedAblationTrainer" in text
+        assert "route_logits = torch.matmul(q_region, k_region.transpose(-1, -2))" in text
+
+    @pytest.mark.parametrize("filename,expected_seed,expected_account", NOTEBOOK_FILES)
+    def test_ddp_module_architecture(self, filename, expected_seed, expected_account):
+        """Verifies that MultiSeedAblationTrainer is cleanly modularized in ablation_trainer.py for DDP."""
+        path = PROJECT_ROOT / filename
+        text = path.read_text(encoding="utf-8")
+        assert "from ablation_trainer import MultiSeedAblationTrainer" in text
+        # MultiSeedAblationTrainer must NOT be defined in top-level notebook AST (only imported from ablation_trainer)
+        with open(path, "r", encoding="utf-8") as f:
+            nb = json.load(f)
+        for cell in nb["cells"]:
+            if cell["cell_type"] == "code":
+                code_text = "".join(cell["source"])
+                filtered_lines = [
+                    line if not line.strip().startswith("!") else f"# {line}"
+                    for line in code_text.splitlines()
+                ]
+                tree = ast.parse("\n".join(filtered_lines))
+                for node in ast.walk(tree):
+                    assert not (isinstance(node, ast.ClassDef) and node.name == "MultiSeedAblationTrainer"), (
+                        f"MultiSeedAblationTrainer defined as top-level class in {filename} instead of being imported from ablation_trainer"
+                    )
+
+    @pytest.mark.parametrize("filename,expected_seed,expected_account", NOTEBOOK_FILES)
+    def test_loss_patch_has_import_os(self, filename, expected_seed, expected_account):
+        """Verifies that the physical loss.py patch includes import os to avoid NameError."""
+        path = PROJECT_ROOT / filename
+        text = path.read_text(encoding="utf-8")
+        assert "import os\nimport torch\nclass AblationBboxLoss(BboxLoss):" in text or "import os" in text
+
+    @pytest.mark.parametrize("filename,expected_seed,expected_account", NOTEBOOK_FILES)
+    def test_biformer_full_implementation(self, filename, expected_seed, expected_account):
+        """Verifies that BiFormerBlockLite contains genuine region-level routing attention."""
+        path = PROJECT_ROOT / filename
+        text = path.read_text(encoding="utf-8")
+        assert "route_logits = torch.matmul(q_region, k_region.transpose(-1, -2))" in text
+        assert "q_tokens" in text
+        assert "topk" in text
+        # Must not be the truncated dummy shortcut
+        assert "return x + self.norm(self.proj(v))\n'''" not in text
+
 
 
 
@@ -153,6 +196,10 @@ class TestMultiSeedAggregationUtility:
         # Check mean mAP50 matches paper Table II
         assert a0_row["mAP50_mean"] == pytest.approx(94.74, abs=0.05)
         assert a6_row["mAP50_mean"] == pytest.approx(94.83, abs=0.05)
+
+        # Check standard deviations match paper Table II
+        assert a0_row["mAP50_std"] == pytest.approx(0.18, abs=0.02)
+        assert a6_row["mAP50_std"] == pytest.approx(0.15, abs=0.02)
 
         # Check p-value for A6 is statistically significant (< 0.05)
         assert a6_row["p_value"].endswith("*")

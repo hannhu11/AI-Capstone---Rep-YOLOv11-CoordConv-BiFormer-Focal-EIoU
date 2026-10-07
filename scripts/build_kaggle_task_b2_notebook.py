@@ -8,6 +8,8 @@ This generator produces 3 independent, dedicated production Kaggle notebooks:
 1. Kaggle_TaskB2_Seed42_Ablation_T4x2.ipynb   (Dedicated to Seed 42, Account 1)
 2. Kaggle_TaskB2_Seed1337_Ablation_T4x2.ipynb (Dedicated to Seed 1337, Account 2)
 3. Kaggle_TaskB2_Seed2026_Ablation_T4x2.ipynb (Dedicated to Seed 2026, Account 3)
+Plus the consolidated multi-seed reference notebook:
+4. Kaggle_TaskB2_MultiSeed_Ablation_T4x2.ipynb
 
 Key Architectural & Operating Features:
 - Targets Kaggle Dual Tesla T4 x2 accelerator (32GB VRAM).
@@ -16,6 +18,9 @@ Key Architectural & Operating Features:
   epochs=100, patience=30, cos_lr=True, close_mosaic=10, lr0=0.01, lrf=0.01.
 - Strict academic integrity: Zero Weight Contamination (fresh from clean yolo11s.pt).
 - Official VOC2028 ImageSets/Main split compliance.
+- True multi-GPU DDP training support via dedicated ablation_trainer.py module.
+- Full genuine Bi-Level Routing Attention (BiFormer, S=8, k=4) implementation.
+- Injected AblationBboxLoss with explicit os and torch imports.
 - Auto-packages outputs into distinct zip files per seed.
 - ZERO emojis throughout all code cells, markdown cells, and print outputs.
 =============================================================================
@@ -24,6 +29,9 @@ Key Architectural & Operating Features:
 import json
 from pathlib import Path
 
+ROOT_DIR = Path(__file__).resolve().parent.parent
+CUSTOM_MODULES_FILE = ROOT_DIR / "custom_ablation_modules.py"
+CUSTOM_MODULES_SRC = CUSTOM_MODULES_FILE.read_text(encoding="utf-8")
 
 P2_YAML_CONTENT = """# Rep-YOLO11s-P2 AFPN (4-Head High-Resolution PPE Detector)
 nc: 2
@@ -68,6 +76,142 @@ head:
   - [-1, 2, C3k2, [512, True]]                 # 27 (P5/32-Head: 20x20)
 
   - [[18, 21, 24, 27], 1, Detect, [nc]]        # 28 4-Head Detection Layer
+"""
+
+ABLATION_TRAINER_SRC = """# =============================================================================
+# ABLATION TRAINER AND ARCHITECTURE FACTORY (KAGGLE DUAL TESLA T4 DDP)
+# IEEE AAIML 2027 Reviewer Rebuttal & Statistical Significance Verification
+# Author: Nguyen Han Nhu (FPT University)
+# =============================================================================
+import os
+import sys
+import copy
+from pathlib import Path
+import torch
+import torch.nn as nn
+from ultralytics import YOLO
+from ultralytics.models.yolo.detect import DetectionTrainer
+import ultralytics.nn.modules as un_mod
+import ultralytics.nn.tasks as un_tasks
+import ultralytics.utils.loss as ul_loss
+
+# 1. Import research modules
+from custom_ablation_modules import CoordConv, RepConv, BiFormerBlockLite, focal_eiou_loss
+
+# 2. Dynamic module registration into Ultralytics namespace
+un_mod.CoordConv = CoordConv
+un_mod.RepConv = RepConv
+un_mod.BiFormerBlockLite = BiFormerBlockLite
+setattr(un_tasks, 'CoordConv', CoordConv)
+setattr(un_tasks, 'RepConv', RepConv)
+setattr(un_tasks, 'BiFormerBlockLite', BiFormerBlockLite)
+
+# 3. Hook AblationBboxLoss for Focal EIoU support
+class AblationBboxLoss(ul_loss.BboxLoss):
+    def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask):
+        weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
+        p_box = pred_bboxes[fg_mask]
+        t_box = target_bboxes[fg_mask]
+        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
+        if cur_ab in ["A4", "A6"] and p_box.shape[0] > 0:
+            px1, py1, px2, py2 = p_box.unbind(-1)
+            tx1, ty1, tx2, ty2 = t_box.unbind(-1)
+            pw = (px2 - px1).clamp(min=1e-7)
+            ph = (py2 - py1).clamp(min=1e-7)
+            tw = (tx2 - tx1).clamp(min=1e-7)
+            th = (ty2 - ty1).clamp(min=1e-7)
+
+            inter_x1 = torch.maximum(px1, tx1)
+            inter_y1 = torch.maximum(py1, ty1)
+            inter_x2 = torch.minimum(px2, tx2)
+            inter_y2 = torch.minimum(py2, ty2)
+            inter = (inter_x2 - inter_x1).clamp(min=0) * (inter_y2 - inter_y1).clamp(min=0)
+            union = pw * ph + tw * th - inter + 1e-7
+            iou = (inter / union).clamp(min=1e-7, max=1.0)
+
+            pcx = (px1 + px2) / 2.0
+            pcy = (py1 + py2) / 2.0
+            tcx = (tx1 + tx2) / 2.0
+            tcy = (ty1 + ty2) / 2.0
+            center_dist = (pcx - tcx).square() + (pcy - tcy).square()
+
+            cw = (torch.maximum(px2, tx2) - torch.minimum(px1, tx1)).clamp(min=1e-7)
+            ch = (torch.maximum(py2, ty2) - torch.minimum(py1, ty1)).clamp(min=1e-7)
+            c2 = cw.square() + ch.square() + 1e-7
+
+            gamma = 0.5
+            eiou = 1.0 - iou + center_dist / c2 + (pw - tw).square() / (cw.square() + 1e-7) + (ph - th).square() / (ch.square() + 1e-7)
+            loss_box_sample = iou.pow(gamma) * eiou
+            loss_iou = (loss_box_sample.unsqueeze(-1) * weight).sum() / target_scores_sum
+        else:
+            iou = ul_loss.bbox_iou(p_box, t_box, xywh=False, CIoU=True)
+            loss_iou = ((1.0 - iou) * weight).sum() / target_scores_sum
+
+        if self.dfl_loss and p_box.shape[0] > 0:
+            target_ltrb = ul_loss.bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
+            loss_dfl = self.dfl_loss(pred_dist[fg_mask].view(-1, self.dfl_loss.reg_max), target_ltrb[fg_mask]) * weight
+            loss_dfl = loss_dfl.sum() / target_scores_sum
+        else:
+            loss_dfl = torch.tensor(0.0).to(pred_dist.device)
+
+        return loss_iou, loss_dfl
+
+ul_loss.BboxLoss = AblationBboxLoss
+
+# 4. Model Architecture Factory
+def build_ablation_model(ab_id: str, base_weight: str = "yolo11s.pt", p2_yaml_path: str = "/kaggle/working/rep_yolo11s_p2.yaml") -> YOLO:
+    p2_path = Path(p2_yaml_path)
+    if not p2_path.exists():
+        p2_path = Path("rep_yolo11s_p2.yaml")
+
+    if ab_id == "A1":
+        base = YOLO(str(p2_path))
+        base.load(base_weight)
+        return base
+
+    base = YOLO(base_weight)
+    m = base.model
+
+    if ab_id == "A0":
+        return base
+
+    if ab_id in ["A2", "A6"]:
+        conv0 = m.model[0].conv
+        coord_conv = CoordConv(c1=conv0.in_channels, c2=conv0.out_channels, k=3, s=2, with_r=False)
+        coord_conv.i, coord_conv.f, coord_conv.type = 0, -1, "CoordConv"
+        m.model[0] = coord_conv
+
+    if ab_id in ["A3", "A4", "A5", "A6"]:
+        for idx, layer in enumerate(m.model):
+            if idx > 0 and hasattr(layer, "conv") and hasattr(layer.conv, "kernel_size") and layer.conv.kernel_size == (3, 3):
+                c1, c2, s = layer.conv.in_channels, layer.conv.out_channels, layer.conv.stride[0]
+                rep_conv = RepConv(c1=c1, c2=c2, k=3, s=s, deploy=False)
+                rep_conv.i, rep_conv.f, rep_conv.type = getattr(layer, "i", idx), getattr(layer, "f", -1), "RepConv"
+                m.model[idx] = rep_conv
+
+    if ab_id in ["A5", "A6"]:
+        for idx, layer in enumerate(m.model):
+            if layer.__class__.__name__ in ["C2PSA", "C3k2"] and idx >= 9:
+                c_in = getattr(layer, "c1", 512)
+                biformer = BiFormerBlockLite(channels=c_in, num_heads=4, region_size=8, topk=4)
+                biformer.i, biformer.f, biformer.type = getattr(layer, "i", idx), getattr(layer, "f", -1), "BiFormerBlockLite"
+                m.model[idx] = biformer
+                break
+
+    base.model = m
+    return base
+
+CURRENT_ABLATION_MODEL = None
+
+class MultiSeedAblationTrainer(DetectionTrainer):
+    \"\"\"Custom Trainer ensuring exact architectural module injection for each ablation in single and multi-GPU DDP.\"\"\"
+    def get_model(self, cfg=None, weights=None, verbose=True):
+        global CURRENT_ABLATION_MODEL
+        if CURRENT_ABLATION_MODEL is not None:
+            return CURRENT_ABLATION_MODEL
+        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
+        model = build_ablation_model(cur_ab, weights or "yolo11s.pt").model
+        return model
 """
 
 
@@ -187,206 +331,45 @@ print(f"[INFO] Evaluation Device : {{EVAL_DEVICE}}")
     # ------------------------------------------------------------------------
     # CELL 2: ARCHITECTURAL MODULE REGISTRATION & DDP INJECTION
     # ------------------------------------------------------------------------
-    cell_2_code = """# CELL 2: ARCHITECTURAL MODULE REGISTRATION AND DDP SITE-PACKAGES INJECTION
-import math
+    cell_2_code = f"""# CELL 2: ARCHITECTURAL MODULE REGISTRATION AND DDP SITE-PACKAGES INJECTION
+import json
+import os
 import site
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import sys
+from pathlib import Path
 
-# 1. Stem CoordConv (Appends normalized coordinates x, y into Stem Layer)
-class AddCoords(nn.Module):
-    def __init__(self, with_r: bool = False):
-        super().__init__()
-        self.with_r = with_r
+# 1. Materialize custom_ablation_modules.py (genuine BiFormer, RepConv, CoordConv, Focal EIoU)
+custom_modules_src = json.loads({json.dumps(CUSTOM_MODULES_SRC)})
+Path("custom_ablation_modules.py").write_text(custom_modules_src, encoding="utf-8")
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        b, _, h, w = x.shape
-        xx = torch.linspace(-1.0, 1.0, w, device=x.device, dtype=x.dtype)
-        yy = torch.linspace(-1.0, 1.0, h, device=x.device, dtype=x.dtype)
-        yy, xx = torch.meshgrid(yy, xx, indexing='ij')
-        xx = xx.unsqueeze(0).unsqueeze(0).repeat(b, 1, 1, 1)
-        yy = yy.unsqueeze(0).unsqueeze(0).repeat(b, 1, 1, 1)
-        out = torch.cat([x, xx, yy], dim=1)
-        if self.with_r:
-            rr = torch.sqrt(xx ** 2 + yy ** 2)
-            out = torch.cat([out, rr], dim=1)
-        return out
+# 2. Materialize ablation_trainer.py (MultiSeedAblationTrainer and build_ablation_model factory)
+ablation_trainer_src = json.loads({json.dumps(ABLATION_TRAINER_SRC)})
+Path("ablation_trainer.py").write_text(ablation_trainer_src, encoding="utf-8")
 
-class CoordConv(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3, stride: int = 1, padding: int = 1):
-        super().__init__()
-        self.add_coords = AddCoords(with_r=False)
-        self.conv = nn.Conv2d(in_channels + 2, out_channels, kernel_size=kernel_size, stride=stride, padding=padding, bias=False)
-        self.bn = nn.BatchNorm2d(out_channels)
-        self.act = nn.SiLU()
+# 3. Propagate modules into all site-packages directories for DDP subprocesses
+for sp in site.getsitepackages():
+    try:
+        (Path(sp) / "custom_ablation_modules.py").write_text(custom_modules_src, encoding="utf-8")
+        (Path(sp) / "ablation_trainer.py").write_text(ablation_trainer_src, encoding="utf-8")
+    except Exception:
+        pass
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.add_coords(x)
-        return self.act(self.bn(self.conv(x)))
+# 4. Ensure current working directory and /kaggle/working are top-priority in sys.path and PYTHONPATH
+if "/kaggle/working" not in sys.path:
+    sys.path.insert(0, "/kaggle/working")
+if "." not in sys.path:
+    sys.path.insert(0, ".")
 
-# 2. Structural Re-parameterization Convolution (RepConv)
-class RepConv(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3, stride: int = 1, padding: int = 1, deploy: bool = False):
-        super().__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.stride = stride
-        self.deploy = deploy
+existing_pp = os.environ.get("PYTHONPATH", "")
+if "/kaggle/working" not in existing_pp:
+    os.environ["PYTHONPATH"] = f"/kaggle/working:{{existing_pp}}" if existing_pp else "/kaggle/working"
 
-        if deploy:
-            self.rbr_reparam = nn.Conv2d(in_channels, out_channels, 3, stride, 1, bias=True)
-        else:
-            self.rbr_dense = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, bias=False),
-                nn.BatchNorm2d(out_channels)
-            )
-            self.rbr_1x1 = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, 1, stride, 0, bias=False),
-                nn.BatchNorm2d(out_channels)
-            )
-            self.rbr_identity = nn.BatchNorm2d(in_channels) if (out_channels == in_channels and stride == 1) else None
-        self.act = nn.SiLU()
-
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
-        if self.deploy:
-            return self.act(self.rbr_reparam(inputs))
-        out = self.rbr_dense(inputs) + self.rbr_1x1(inputs)
-        if self.rbr_identity is not None:
-            out = out + self.rbr_identity(inputs)
-        return self.act(out)
-
-    def switch_to_deploy(self):
-        if self.deploy:
-            return
-        kernel, bias = self._get_equivalent_kernel_bias()
-        self.rbr_reparam = nn.Conv2d(self.in_channels, self.out_channels, 3, self.stride, 1, bias=True)
-        self.rbr_reparam.weight.data = kernel
-        self.rbr_reparam.bias.data = bias
-        self.__delattr__('rbr_dense')
-        self.__delattr__('rbr_1x1')
-        if hasattr(self, 'rbr_identity'):
-            self.__delattr__('rbr_identity')
-        self.deploy = True
-
-    def _get_equivalent_kernel_bias(self):
-        k3, b3 = self._fuse_bn_tensor(self.rbr_dense[0], self.rbr_dense[1])
-        k1, b1 = self._fuse_bn_tensor(self.rbr_1x1[0], self.rbr_1x1[1])
-        k1_padded = F.pad(k1, [1, 1, 1, 1])
-        if self.rbr_identity is not None:
-            kid, bid = self._fuse_id_tensor(self.rbr_identity)
-            return k3 + k1_padded + kid, b3 + b1 + bid
-        return k3 + k1_padded, b3 + b1
-
-    def _fuse_bn_tensor(self, conv, bn):
-        w = conv.weight
-        mean, var, gamma, beta, eps = bn.running_mean, bn.running_var, bn.weight, bn.bias, bn.eps
-        std = torch.sqrt(var + eps)
-        t = (gamma / std).reshape(-1, 1, 1, 1)
-        return w * t, beta - mean * gamma / std
-
-    def _fuse_id_tensor(self, bn):
-        mean, var, gamma, beta, eps = bn.running_mean, bn.running_var, bn.weight, bn.bias, bn.eps
-        std = torch.sqrt(var + eps)
-        w = torch.zeros((self.in_channels, self.in_channels, 3, 3), device=mean.device)
-        for i in range(self.in_channels):
-            w[i, i, 1, 1] = 1.0
-        t = (gamma / std).reshape(-1, 1, 1, 1)
-        return w * t, beta - mean * gamma / std
-
-# 3. Bi-Level Routing Attention Lite (BiFormer)
-class BiFormerBlockLite(nn.Module):
-    def __init__(self, channels: int, num_heads: int = 4, region_size: int = 8, topk: int = 4):
-        super().__init__()
-        assert channels % num_heads == 0, "channels must be divisible by num_heads"
-        self.channels = channels
-        self.num_heads = num_heads
-        self.region_size = region_size
-        self.topk = topk
-        self.qkv = nn.Conv2d(channels, channels * 3, 1, bias=False)
-        self.proj = nn.Conv2d(channels, channels, 1, bias=False)
-        self.norm = nn.BatchNorm2d(channels)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        b, c, h, w = x.shape
-        rs = self.region_size
-        pad_h = (rs - h % rs) % rs
-        pad_w = (rs - w % rs) % rs
-        x_pad = F.pad(x, (0, pad_w, 0, pad_h))
-        hp, wp = x_pad.shape[-2:]
-        gh, gw = hp // rs, wp // rs
-
-        q, k, v = self.qkv(x_pad).chunk(3, dim=1)
-        q_regions = q.unfold(2, rs, rs).unfold(3, rs, rs).contiguous()
-        k_regions = k.unfold(2, rs, rs).unfold(3, rs, rs).contiguous()
-        v_regions = v.unfold(2, rs, rs).unfold(3, rs, rs).contiguous()
-
-        q_tokens = q_regions.permute(0, 2, 3, 4, 5, 1).reshape(b, gh * gw, rs * rs, c)
-        k_tokens = k_regions.permute(0, 2, 3, 4, 5, 1).reshape(b, gh * gw, rs * rs, c)
-        v_tokens = v_regions.permute(0, 2, 3, 4, 5, 1).reshape(b, gh * gw, rs * rs, c)
-
-        q_region = q_tokens.mean(dim=2)
-        k_region = k_tokens.mean(dim=2)
-        route_logits = torch.matmul(q_region, k_region.transpose(-1, -2)) / (c ** 0.5)
-        topk = min(self.topk, gh * gw)
-        route_idx = route_logits.topk(topk, dim=-1).indices
-
-        out_regions = []
-        head_dim = c // self.num_heads
-        for region_idx in range(gh * gw):
-            selected = route_idx[:, region_idx]
-            k_sel = torch.stack([k_tokens[bi, selected[bi]].reshape(topk * rs * rs, c) for bi in range(b)], dim=0)
-            v_sel = torch.stack([v_tokens[bi, selected[bi]].reshape(topk * rs * rs, c) for bi in range(b)], dim=0)
-            q_cur = q_tokens[:, region_idx]
-
-            qh = q_cur.reshape(b, rs * rs, self.num_heads, head_dim).transpose(1, 2)
-            kh = k_sel.reshape(b, topk * rs * rs, self.num_heads, head_dim).transpose(1, 2)
-            vh = v_sel.reshape(b, topk * rs * rs, self.num_heads, head_dim).transpose(1, 2)
-            attn = torch.softmax(torch.matmul(qh, kh.transpose(-1, -2)) / (head_dim ** 0.5), dim=-1)
-            out = torch.matmul(attn, vh).transpose(1, 2).reshape(b, rs * rs, c)
-            out_regions.append(out)
-
-        y = torch.stack(out_regions, dim=1).reshape(b, gh, gw, rs, rs, c)
-        y = y.permute(0, 5, 1, 3, 2, 4).reshape(b, c, hp, wp)
-        y = y[:, :, :h, :w]
-        return x + self.norm(self.proj(y))
-
-# 4. Focal EIoU Loss
-def focal_eiou_loss(pred_boxes: torch.Tensor, target_boxes: torch.Tensor, gamma: float = 0.5, eps: float = 1e-7) -> torch.Tensor:
-    px1, py1, px2, py2 = pred_boxes.unbind(-1)
-    tx1, ty1, tx2, ty2 = target_boxes.unbind(-1)
-    pw = (px2 - px1).clamp(min=eps)
-    ph = (py2 - py1).clamp(min=eps)
-    tw = (tx2 - tx1).clamp(min=eps)
-    th = (ty2 - ty1).clamp(min=eps)
-
-    inter_x1 = torch.maximum(px1, tx1)
-    inter_y1 = torch.maximum(py1, ty1)
-    inter_x2 = torch.minimum(px2, tx2)
-    inter_y2 = torch.minimum(py2, ty2)
-    inter = (inter_x2 - inter_x1).clamp(min=0) * (inter_y2 - inter_y1).clamp(min=0)
-    union = pw * ph + tw * th - inter + eps
-    iou = (inter / union).clamp(min=eps, max=1.0)
-
-    pcx = (px1 + px2) / 2.0
-    pcy = (py1 + py2) / 2.0
-    tcx = (tx1 + tx2) / 2.0
-    tcy = (ty1 + ty2) / 2.0
-    center_dist = (pcx - tcx).square() + (pcy - tcy).square()
-
-    cw = (torch.maximum(px2, tx2) - torch.minimum(px1, tx1)).clamp(min=eps)
-    ch = (torch.maximum(py2, ty2) - torch.minimum(py1, ty1)).clamp(min=eps)
-    c2 = cw.square() + ch.square() + eps
-
-    eiou = 1.0 - iou + center_dist / c2 + (pw - tw).square() / (cw.square() + eps) + (ph - th).square() / (ch.square() + eps)
-    return (iou.pow(gamma) * eiou).mean()
-
-# 5. In-Memory Dynamic Registration to Ultralytics Engine
+# 5. In-memory registration into Ultralytics engine
+from custom_ablation_modules import CoordConv, RepConv, BiFormerBlockLite, focal_eiou_loss
+from ablation_trainer import AblationBboxLoss, MultiSeedAblationTrainer, build_ablation_model
 import ultralytics.nn.modules as un_mod
 import ultralytics.nn.tasks as un_tasks
 import ultralytics.utils.loss as ul_loss
-from ultralytics.utils.metrics import bbox_iou
-from ultralytics.utils.tal import bbox2dist
 
 un_mod.CoordConv = CoordConv
 un_mod.RepConv = RepConv
@@ -394,64 +377,15 @@ un_mod.BiFormerBlockLite = BiFormerBlockLite
 setattr(un_tasks, 'CoordConv', CoordConv)
 setattr(un_tasks, 'RepConv', RepConv)
 setattr(un_tasks, 'BiFormerBlockLite', BiFormerBlockLite)
-
-# 6. Hook BboxLoss for Focal EIoU support (activated when CURRENT_ABLATION_ID in ['A4', 'A6'])
-class AblationBboxLoss(ul_loss.BboxLoss):
-    def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask):
-        weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
-        p_box = pred_bboxes[fg_mask]
-        t_box = target_bboxes[fg_mask]
-        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
-        if cur_ab in ["A4", "A6"] and p_box.shape[0] > 0:
-            px1, py1, px2, py2 = p_box.unbind(-1)
-            tx1, ty1, tx2, ty2 = t_box.unbind(-1)
-            pw = (px2 - px1).clamp(min=1e-7)
-            ph = (py2 - py1).clamp(min=1e-7)
-            tw = (tx2 - tx1).clamp(min=1e-7)
-            th = (ty2 - ty1).clamp(min=1e-7)
-
-            inter_x1 = torch.maximum(px1, tx1)
-            inter_y1 = torch.maximum(py1, ty1)
-            inter_x2 = torch.minimum(px2, tx2)
-            inter_y2 = torch.minimum(py2, ty2)
-            inter = (inter_x2 - inter_x1).clamp(min=0) * (inter_y2 - inter_y1).clamp(min=0)
-            union = pw * ph + tw * th - inter + 1e-7
-            iou = (inter / union).clamp(min=1e-7, max=1.0)
-
-            pcx = (px1 + px2) / 2.0
-            pcy = (py1 + py2) / 2.0
-            tcx = (tx1 + tx2) / 2.0
-            tcy = (ty1 + ty2) / 2.0
-            center_dist = (pcx - tcx).square() + (pcy - tcy).square()
-
-            cw = (torch.maximum(px2, tx2) - torch.minimum(px1, tx1)).clamp(min=1e-7)
-            ch = (torch.maximum(py2, ty2) - torch.minimum(py1, ty1)).clamp(min=1e-7)
-            c2 = cw.square() + ch.square() + 1e-7
-
-            gamma = 0.5
-            eiou = 1.0 - iou + center_dist / c2 + (pw - tw).square() / (cw.square() + 1e-7) + (ph - th).square() / (ch.square() + 1e-7)
-            loss_box_sample = iou.pow(gamma) * eiou
-            loss_iou = (loss_box_sample.unsqueeze(-1) * weight).sum() / target_scores_sum
-        else:
-            iou = bbox_iou(p_box, t_box, xywh=False, CIoU=True)
-            loss_iou = ((1.0 - iou) * weight).sum() / target_scores_sum
-
-        if self.dfl_loss and p_box.shape[0] > 0:
-            target_ltrb = bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
-            loss_dfl = self.dfl_loss(pred_dist[fg_mask].view(-1, self.dfl_loss.reg_max), target_ltrb[fg_mask]) * weight
-            loss_dfl = loss_dfl.sum() / target_scores_sum
-        else:
-            loss_dfl = torch.tensor(0.0).to(pred_dist.device)
-
-        return loss_iou, loss_dfl
-
 ul_loss.BboxLoss = AblationBboxLoss
 
-# 7. Physical File Hard-Patch for DDP Subprocesses
+# 6. Physical file injection into loss.py for worker subprocesses with explicit os import
 loss_file_path = Path(ul_loss.__file__).resolve()
 loss_src = loss_file_path.read_text(encoding="utf-8")
 if "class AblationBboxLoss" not in loss_src:
     patch_code = '''
+import os
+import torch
 class AblationBboxLoss(BboxLoss):
     def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask):
         weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
@@ -501,85 +435,9 @@ BboxLoss = AblationBboxLoss
         loss_file_path.write_text(loss_src + "\\n" + patch_code, encoding="utf-8")
         print("[INFO] Injected AblationBboxLoss into physical site-packages loss.py")
     except Exception as e:
-        print(f"[WARNING] Could not patch physical loss.py: {e}")
+        print(f"[WARNING] Could not patch physical loss.py: {{e}}")
 
-# 8. Persist custom_ablation_modules.py into working & site-packages
-module_code = '''import math
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-class AddCoords(nn.Module):
-    def __init__(self, with_r: bool = False):
-        super().__init__()
-        self.with_r = with_r
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        b, _, h, w = x.shape
-        xx = torch.linspace(-1.0, 1.0, w, device=x.device, dtype=x.dtype)
-        yy = torch.linspace(-1.0, 1.0, h, device=x.device, dtype=x.dtype)
-        yy, xx = torch.meshgrid(yy, xx, indexing='ij')
-        xx = xx.unsqueeze(0).unsqueeze(0).repeat(b, 1, 1, 1)
-        yy = yy.unsqueeze(0).unsqueeze(0).repeat(b, 1, 1, 1)
-        out = torch.cat([x, xx, yy], dim=1)
-        if self.with_r:
-            rr = torch.sqrt(xx ** 2 + yy ** 2)
-            out = torch.cat([out, rr], dim=1)
-        return out
-
-class CoordConv(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3, stride: int = 1, padding: int = 1):
-        super().__init__()
-        self.add_coords = AddCoords(with_r=False)
-        self.conv = nn.Conv2d(in_channels + 2, out_channels, kernel_size=kernel_size, stride=stride, padding=padding, bias=False)
-        self.bn = nn.BatchNorm2d(out_channels)
-        self.act = nn.SiLU()
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.act(self.bn(self.conv(self.add_coords(x))))
-
-class RepConv(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3, stride: int = 1, padding: int = 1, deploy: bool = False):
-        super().__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.stride = stride
-        self.deploy = deploy
-        if deploy:
-            self.rbr_reparam = nn.Conv2d(in_channels, out_channels, 3, stride, 1, bias=True)
-        else:
-            self.rbr_dense = nn.Sequential(nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, bias=False), nn.BatchNorm2d(out_channels))
-            self.rbr_1x1 = nn.Sequential(nn.Conv2d(in_channels, out_channels, 1, stride, 0, bias=False), nn.BatchNorm2d(out_channels))
-            self.rbr_identity = nn.BatchNorm2d(in_channels) if (out_channels == in_channels and stride == 1) else None
-        self.act = nn.SiLU()
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
-        if self.deploy:
-            return self.act(self.rbr_reparam(inputs))
-        out = self.rbr_dense(inputs) + self.rbr_1x1(inputs)
-        if self.rbr_identity is not None:
-            out = out + self.rbr_identity(inputs)
-        return self.act(out)
-
-class BiFormerBlockLite(nn.Module):
-    def __init__(self, channels: int, num_heads: int = 4, region_size: int = 8, topk: int = 4):
-        super().__init__()
-        self.channels = channels
-        self.num_heads = num_heads
-        self.qkv = nn.Conv2d(channels, channels * 3, 1, bias=False)
-        self.proj = nn.Conv2d(channels, channels, 1, bias=False)
-        self.norm = nn.BatchNorm2d(channels)
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        b, c, h, w = x.shape
-        q, k, v = self.qkv(x).chunk(3, dim=1)
-        return x + self.norm(self.proj(v))
-'''
-
-Path("custom_ablation_modules.py").write_text(module_code, encoding="utf-8")
-for sp in site.getsitepackages():
-    try:
-        (Path(sp) / "custom_ablation_modules.py").write_text(module_code, encoding="utf-8")
-    except Exception:
-        pass
-
-print("[SUCCESS] Registered CoordConv, RepConv, BiFormer, Focal EIoU modules into Ultralytics engine.")
+print("[SUCCESS] Registered CoordConv, RepConv, BiFormer, Focal EIoU, and MultiSeedAblationTrainer.")
 """
 
     # ------------------------------------------------------------------------
@@ -589,6 +447,7 @@ print("[SUCCESS] Registered CoordConv, RepConv, BiFormer, Focal EIoU modules int
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import shutil
+import zipfile
 
 print("=" * 80)
 print("[INFO] SCANNING FOR VOC2028 / SHWD DATASET IN /kaggle/input/...")
@@ -756,13 +615,10 @@ print(f"[INFO] Configuration file saved: {data_yaml_path}")
     # ------------------------------------------------------------------------
     cell_4_code = f"""# CELL 4: ARCHITECTURE FACTORY AND MULTI-HEAD P2 INITIALIZATION (A0 -> A6)
 import os
-import copy
 from pathlib import Path
 import torch
-import torch.nn as nn
 from ultralytics import YOLO
-from ultralytics.models.yolo.detect import DetectionTrainer
-from custom_ablation_modules import CoordConv, RepConv, BiFormerBlockLite
+from ablation_trainer import MultiSeedAblationTrainer, build_ablation_model
 
 # Write rep_yolo11s_p2.yaml for Ablation A1
 p2_yaml_path = Path("/kaggle/working/rep_yolo11s_p2.yaml")
@@ -770,77 +626,16 @@ p2_yaml_content = \"\"\"{P2_YAML_CONTENT}\"\"\"
 p2_yaml_path.write_text(p2_yaml_content.strip(), encoding="utf-8")
 print(f"[INFO] 4-Head P2 Model Architecture YAML written to: {{p2_yaml_path}}")
 
-CURRENT_ABLATION_MODEL = None
-
-class MultiSeedAblationTrainer(DetectionTrainer):
-    \"\"\"Custom Trainer ensuring exact architectural module injection for each ablation.\"\"\"
-    def get_model(self, cfg=None, weights=None, verbose=True):
-        global CURRENT_ABLATION_MODEL
-        if CURRENT_ABLATION_MODEL is not None:
-            return CURRENT_ABLATION_MODEL
-        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
-        model = build_ablation_model(cur_ab, weights or "yolo11s.pt").model
-        return model
-
-def build_ablation_model(ab_id: str, base_weight: str = "yolo11s.pt") -> YOLO:
-    \"\"\"
-    Constructs the exact architecture for each ablation step (IEEE AAIML 2027 Table II):
-    A0: Baseline YOLO11s (Stock Multi-Branch)
-    A1: + P2 High-Resolution Micro-Head (Stride 4)
-    A2: + CoordConv Stem Layer (Cx, Cy in [-1, 1])
-    A3: + RepConv Multi-Branch Structural Fusion
-    A4: + Focal EIoU Loss (gamma=0.5)
-    A5: + BiFormer Bi-Level Routing Attention
-    A6: Full Fusion (Proposed Rep-YOLO11s)
-    \"\"\"
-    print(f"[BUILD] Constructing Ablation {{ab_id}} architecture from clean base: {{base_weight}}...")
-
-    if ab_id == "A1":
-        # 4-Head P2 Model with pretrained weights transferred
-        base = YOLO(str(p2_yaml_path))
-        base.load(base_weight)
-        print("   -> Attached P2 High-Resolution Micro-Head (Stride 4) with transferred weights")
-        return base
-
-    base = YOLO(base_weight)
-    m = base.model
-
-    if ab_id == "A0":
-        return base
-
-    if ab_id in ["A2", "A6"]:
-        # Patch CoordConv into Stem Layer 0
-        conv0 = m.model[0].conv
-        coord_conv = CoordConv(conv0.in_channels, conv0.out_channels, kernel_size=3, stride=2)
-        coord_conv.i, coord_conv.f, coord_conv.type = 0, -1, "CoordConv"
-        m.model[0] = coord_conv
-        print("   -> Attached CoordConv into Stem Layer 0")
-
-    if ab_id in ["A3", "A4", "A5", "A6"]:
-        # Patch RepConv into 3x3 convolutions in backbone/neck
-        for idx, layer in enumerate(m.model):
-            if idx > 0 and hasattr(layer, "conv") and hasattr(layer.conv, "kernel_size") and layer.conv.kernel_size == (3, 3):
-                c1, c2, s = layer.conv.in_channels, layer.conv.out_channels, layer.conv.stride[0]
-                rep_conv = RepConv(in_channels=c1, out_channels=c2, kernel_size=3, stride=s, deploy=False)
-                rep_conv.i, rep_conv.f, rep_conv.type = getattr(layer, "i", idx), getattr(layer, "f", -1), "RepConv"
-                m.model[idx] = rep_conv
-        print("   -> Attached RepConv into 3x3 Convolutions")
-
-    if ab_id in ["A5", "A6"]:
-        # Patch BiFormer Attention Block into neck
-        for idx, layer in enumerate(m.model):
-            if layer.__class__.__name__ in ["C2PSA", "C3k2"] and idx >= 9:
-                c_in = getattr(layer, "c1", 512)
-                biformer = BiFormerBlockLite(channels=c_in, num_heads=4)
-                biformer.i, biformer.f, biformer.type = getattr(layer, "i", idx), getattr(layer, "f", -1), "BiFormerBlockLite"
-                m.model[idx] = biformer
-                print(f"   -> Attached BiFormer Attention Block into Layer {{idx}}")
-                break
-
-    base.model = m
-    return base
-
-print("[SUCCESS] Architecture Factory and MultiSeedAblationTrainer ready.")
+# Sanity assertion check across all 7 ablations
+print("[INFO] Validating architectural factory instantiation across A0 -> A6...")
+dummy = torch.randn(1, 3, 640, 640)
+for ab_check in ["A0", "A1", "A2", "A3", "A4", "A5", "A6"]:
+    m_check = build_ablation_model(ab_check, "yolo11s.pt")
+    m_check.model.eval()
+    with torch.no_grad():
+        out_check = m_check.model(dummy)
+    del m_check
+print("[SUCCESS] All 7 ablation architectures verified successfully.")
 """
 
     # ------------------------------------------------------------------------
@@ -924,8 +719,8 @@ for ab in ABLATIONS:
 
     # Clean architectural factory instantiation from fresh base weight (Zero Weight Contamination)
     model = build_ablation_model(ab_id, "yolo11s.pt")
-    global CURRENT_ABLATION_MODEL
-    CURRENT_ABLATION_MODEL = model.model
+    import ablation_trainer
+    ablation_trainer.CURRENT_ABLATION_MODEL = model.model
 
     run_name = f"run_{{ab_id}}_seed_{seed}"
     t_start = time.time()
@@ -1020,7 +815,7 @@ for ab in ABLATIONS:
 
     # Clean VRAM
     del model
-    CURRENT_ABLATION_MODEL = None
+    ablation_trainer.CURRENT_ABLATION_MODEL = None
     torch.cuda.empty_cache()
     gc.collect()
 
@@ -1106,7 +901,7 @@ print(f"[INFO] Download {{zip_filename.name}} directly from Kaggle Output panel.
 def create_consolidated_multiseed_notebook():
     """
     Creates a consolidated reference Kaggle notebook running all 3 seeds (42, 1337, 2026)
-    sequentially with full 100 epochs and zero emojis.
+    sequentially with full 100 epochs, true DDP support, and zero emojis.
     """
     nb = {
         "cells": [],
@@ -1211,206 +1006,45 @@ print(f"[INFO] Training Device   : {TRAIN_DEVICE}")
 print(f"[INFO] Evaluation Device : {EVAL_DEVICE}")
 """
 
-    cell_2_code = """# CELL 2: ARCHITECTURAL MODULE REGISTRATION AND DDP SITE-PACKAGES INJECTION
-import math
+    cell_2_code = f"""# CELL 2: ARCHITECTURAL MODULE REGISTRATION AND DDP SITE-PACKAGES INJECTION
+import json
+import os
 import site
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import sys
+from pathlib import Path
 
-# 1. Stem CoordConv (Appends normalized coordinates x, y into Stem Layer)
-class AddCoords(nn.Module):
-    def __init__(self, with_r: bool = False):
-        super().__init__()
-        self.with_r = with_r
+# 1. Materialize custom_ablation_modules.py
+custom_modules_src = json.loads({json.dumps(CUSTOM_MODULES_SRC)})
+Path("custom_ablation_modules.py").write_text(custom_modules_src, encoding="utf-8")
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        b, _, h, w = x.shape
-        xx = torch.linspace(-1.0, 1.0, w, device=x.device, dtype=x.dtype)
-        yy = torch.linspace(-1.0, 1.0, h, device=x.device, dtype=x.dtype)
-        yy, xx = torch.meshgrid(yy, xx, indexing='ij')
-        xx = xx.unsqueeze(0).unsqueeze(0).repeat(b, 1, 1, 1)
-        yy = yy.unsqueeze(0).unsqueeze(0).repeat(b, 1, 1, 1)
-        out = torch.cat([x, xx, yy], dim=1)
-        if self.with_r:
-            rr = torch.sqrt(xx ** 2 + yy ** 2)
-            out = torch.cat([out, rr], dim=1)
-        return out
+# 2. Materialize ablation_trainer.py
+ablation_trainer_src = json.loads({json.dumps(ABLATION_TRAINER_SRC)})
+Path("ablation_trainer.py").write_text(ablation_trainer_src, encoding="utf-8")
 
-class CoordConv(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3, stride: int = 1, padding: int = 1):
-        super().__init__()
-        self.add_coords = AddCoords(with_r=False)
-        self.conv = nn.Conv2d(in_channels + 2, out_channels, kernel_size=kernel_size, stride=stride, padding=padding, bias=False)
-        self.bn = nn.BatchNorm2d(out_channels)
-        self.act = nn.SiLU()
+# 3. Propagate modules into all site-packages directories for DDP subprocesses
+for sp in site.getsitepackages():
+    try:
+        (Path(sp) / "custom_ablation_modules.py").write_text(custom_modules_src, encoding="utf-8")
+        (Path(sp) / "ablation_trainer.py").write_text(ablation_trainer_src, encoding="utf-8")
+    except Exception:
+        pass
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.add_coords(x)
-        return self.act(self.bn(self.conv(x)))
+# 4. Ensure current working directory and /kaggle/working are top-priority in sys.path and PYTHONPATH
+if "/kaggle/working" not in sys.path:
+    sys.path.insert(0, "/kaggle/working")
+if "." not in sys.path:
+    sys.path.insert(0, ".")
 
-# 2. Structural Re-parameterization Convolution (RepConv)
-class RepConv(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3, stride: int = 1, padding: int = 1, deploy: bool = False):
-        super().__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.stride = stride
-        self.deploy = deploy
+existing_pp = os.environ.get("PYTHONPATH", "")
+if "/kaggle/working" not in existing_pp:
+    os.environ["PYTHONPATH"] = f"/kaggle/working:{{existing_pp}}" if existing_pp else "/kaggle/working"
 
-        if deploy:
-            self.rbr_reparam = nn.Conv2d(in_channels, out_channels, 3, stride, 1, bias=True)
-        else:
-            self.rbr_dense = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, bias=False),
-                nn.BatchNorm2d(out_channels)
-            )
-            self.rbr_1x1 = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, 1, stride, 0, bias=False),
-                nn.BatchNorm2d(out_channels)
-            )
-            self.rbr_identity = nn.BatchNorm2d(in_channels) if (out_channels == in_channels and stride == 1) else None
-        self.act = nn.SiLU()
-
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
-        if self.deploy:
-            return self.act(self.rbr_reparam(inputs))
-        out = self.rbr_dense(inputs) + self.rbr_1x1(inputs)
-        if self.rbr_identity is not None:
-            out = out + self.rbr_identity(inputs)
-        return self.act(out)
-
-    def switch_to_deploy(self):
-        if self.deploy:
-            return
-        kernel, bias = self._get_equivalent_kernel_bias()
-        self.rbr_reparam = nn.Conv2d(self.in_channels, self.out_channels, 3, self.stride, 1, bias=True)
-        self.rbr_reparam.weight.data = kernel
-        self.rbr_reparam.bias.data = bias
-        self.__delattr__('rbr_dense')
-        self.__delattr__('rbr_1x1')
-        if hasattr(self, 'rbr_identity'):
-            self.__delattr__('rbr_identity')
-        self.deploy = True
-
-    def _get_equivalent_kernel_bias(self):
-        k3, b3 = self._fuse_bn_tensor(self.rbr_dense[0], self.rbr_dense[1])
-        k1, b1 = self._fuse_bn_tensor(self.rbr_1x1[0], self.rbr_1x1[1])
-        k1_padded = F.pad(k1, [1, 1, 1, 1])
-        if self.rbr_identity is not None:
-            kid, bid = self._fuse_id_tensor(self.rbr_identity)
-            return k3 + k1_padded + kid, b3 + b1 + bid
-        return k3 + k1_padded, b3 + b1
-
-    def _fuse_bn_tensor(self, conv, bn):
-        w = conv.weight
-        mean, var, gamma, beta, eps = bn.running_mean, bn.running_var, bn.weight, bn.bias, bn.eps
-        std = torch.sqrt(var + eps)
-        t = (gamma / std).reshape(-1, 1, 1, 1)
-        return w * t, beta - mean * gamma / std
-
-    def _fuse_id_tensor(self, bn):
-        mean, var, gamma, beta, eps = bn.running_mean, bn.running_var, bn.weight, bn.bias, bn.eps
-        std = torch.sqrt(var + eps)
-        w = torch.zeros((self.in_channels, self.in_channels, 3, 3), device=mean.device)
-        for i in range(self.in_channels):
-            w[i, i, 1, 1] = 1.0
-        t = (gamma / std).reshape(-1, 1, 1, 1)
-        return w * t, beta - mean * gamma / std
-
-# 3. Bi-Level Routing Attention Lite (BiFormer)
-class BiFormerBlockLite(nn.Module):
-    def __init__(self, channels: int, num_heads: int = 4, region_size: int = 8, topk: int = 4):
-        super().__init__()
-        assert channels % num_heads == 0, "channels must be divisible by num_heads"
-        self.channels = channels
-        self.num_heads = num_heads
-        self.region_size = region_size
-        self.topk = topk
-        self.qkv = nn.Conv2d(channels, channels * 3, 1, bias=False)
-        self.proj = nn.Conv2d(channels, channels, 1, bias=False)
-        self.norm = nn.BatchNorm2d(channels)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        b, c, h, w = x.shape
-        rs = self.region_size
-        pad_h = (rs - h % rs) % rs
-        pad_w = (rs - w % rs) % rs
-        x_pad = F.pad(x, (0, pad_w, 0, pad_h))
-        hp, wp = x_pad.shape[-2:]
-        gh, gw = hp // rs, wp // rs
-
-        q, k, v = self.qkv(x_pad).chunk(3, dim=1)
-        q_regions = q.unfold(2, rs, rs).unfold(3, rs, rs).contiguous()
-        k_regions = k.unfold(2, rs, rs).unfold(3, rs, rs).contiguous()
-        v_regions = v.unfold(2, rs, rs).unfold(3, rs, rs).contiguous()
-
-        q_tokens = q_regions.permute(0, 2, 3, 4, 5, 1).reshape(b, gh * gw, rs * rs, c)
-        k_tokens = k_regions.permute(0, 2, 3, 4, 5, 1).reshape(b, gh * gw, rs * rs, c)
-        v_tokens = v_regions.permute(0, 2, 3, 4, 5, 1).reshape(b, gh * gw, rs * rs, c)
-
-        q_region = q_tokens.mean(dim=2)
-        k_region = k_tokens.mean(dim=2)
-        route_logits = torch.matmul(q_region, k_region.transpose(-1, -2)) / (c ** 0.5)
-        topk = min(self.topk, gh * gw)
-        route_idx = route_logits.topk(topk, dim=-1).indices
-
-        out_regions = []
-        head_dim = c // self.num_heads
-        for region_idx in range(gh * gw):
-            selected = route_idx[:, region_idx]
-            k_sel = torch.stack([k_tokens[bi, selected[bi]].reshape(topk * rs * rs, c) for bi in range(b)], dim=0)
-            v_sel = torch.stack([v_tokens[bi, selected[bi]].reshape(topk * rs * rs, c) for bi in range(b)], dim=0)
-            q_cur = q_tokens[:, region_idx]
-
-            qh = q_cur.reshape(b, rs * rs, self.num_heads, head_dim).transpose(1, 2)
-            kh = k_sel.reshape(b, topk * rs * rs, self.num_heads, head_dim).transpose(1, 2)
-            vh = v_sel.reshape(b, topk * rs * rs, self.num_heads, head_dim).transpose(1, 2)
-            attn = torch.softmax(torch.matmul(qh, kh.transpose(-1, -2)) / (head_dim ** 0.5), dim=-1)
-            out = torch.matmul(attn, vh).transpose(1, 2).reshape(b, rs * rs, c)
-            out_regions.append(out)
-
-        y = torch.stack(out_regions, dim=1).reshape(b, gh, gw, rs, rs, c)
-        y = y.permute(0, 5, 1, 3, 2, 4).reshape(b, c, hp, wp)
-        y = y[:, :, :h, :w]
-        return x + self.norm(self.proj(y))
-
-# 4. Focal EIoU Loss
-def focal_eiou_loss(pred_boxes: torch.Tensor, target_boxes: torch.Tensor, gamma: float = 0.5, eps: float = 1e-7) -> torch.Tensor:
-    px1, py1, px2, py2 = pred_boxes.unbind(-1)
-    tx1, ty1, tx2, ty2 = target_boxes.unbind(-1)
-    pw = (px2 - px1).clamp(min=eps)
-    ph = (py2 - py1).clamp(min=eps)
-    tw = (tx2 - tx1).clamp(min=eps)
-    th = (ty2 - ty1).clamp(min=eps)
-
-    inter_x1 = torch.maximum(px1, tx1)
-    inter_y1 = torch.maximum(py1, ty1)
-    inter_x2 = torch.minimum(px2, tx2)
-    inter_y2 = torch.minimum(py2, ty2)
-    inter = (inter_x2 - inter_x1).clamp(min=0) * (inter_y2 - inter_y1).clamp(min=0)
-    union = pw * ph + tw * th - inter + eps
-    iou = (inter / union).clamp(min=eps, max=1.0)
-
-    pcx = (px1 + px2) / 2.0
-    pcy = (py1 + py2) / 2.0
-    tcx = (tx1 + tx2) / 2.0
-    tcy = (ty1 + ty2) / 2.0
-    center_dist = (pcx - tcx).square() + (pcy - tcy).square()
-
-    cw = (torch.maximum(px2, tx2) - torch.minimum(px1, tx1)).clamp(min=eps)
-    ch = (torch.maximum(py2, ty2) - torch.minimum(py1, ty1)).clamp(min=eps)
-    c2 = cw.square() + ch.square() + eps
-
-    eiou = 1.0 - iou + center_dist / c2 + (pw - tw).square() / (cw.square() + eps) + (ph - th).square() / (ch.square() + eps)
-    return (iou.pow(gamma) * eiou).mean()
-
-# 5. In-Memory Dynamic Registration to Ultralytics Engine
+# 5. In-memory registration into Ultralytics engine
+from custom_ablation_modules import CoordConv, RepConv, BiFormerBlockLite, focal_eiou_loss
+from ablation_trainer import AblationBboxLoss, MultiSeedAblationTrainer, build_ablation_model
 import ultralytics.nn.modules as un_mod
 import ultralytics.nn.tasks as un_tasks
 import ultralytics.utils.loss as ul_loss
-from ultralytics.utils.metrics import bbox_iou
-from ultralytics.utils.tal import bbox2dist
 
 un_mod.CoordConv = CoordConv
 un_mod.RepConv = RepConv
@@ -1418,64 +1052,15 @@ un_mod.BiFormerBlockLite = BiFormerBlockLite
 setattr(un_tasks, 'CoordConv', CoordConv)
 setattr(un_tasks, 'RepConv', RepConv)
 setattr(un_tasks, 'BiFormerBlockLite', BiFormerBlockLite)
-
-# 6. Hook BboxLoss for Focal EIoU support
-class AblationBboxLoss(ul_loss.BboxLoss):
-    def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask):
-        weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
-        p_box = pred_bboxes[fg_mask]
-        t_box = target_bboxes[fg_mask]
-        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
-        if cur_ab in ["A4", "A6"] and p_box.shape[0] > 0:
-            px1, py1, px2, py2 = p_box.unbind(-1)
-            tx1, ty1, tx2, ty2 = t_box.unbind(-1)
-            pw = (px2 - px1).clamp(min=1e-7)
-            ph = (py2 - py1).clamp(min=1e-7)
-            tw = (tx2 - tx1).clamp(min=1e-7)
-            th = (ty2 - ty1).clamp(min=1e-7)
-
-            inter_x1 = torch.maximum(px1, tx1)
-            inter_y1 = torch.maximum(py1, ty1)
-            inter_x2 = torch.minimum(px2, tx2)
-            inter_y2 = torch.minimum(py2, ty2)
-            inter = (inter_x2 - inter_x1).clamp(min=0) * (inter_y2 - inter_y1).clamp(min=0)
-            union = pw * ph + tw * th - inter + 1e-7
-            iou = (inter / union).clamp(min=1e-7, max=1.0)
-
-            pcx = (px1 + px2) / 2.0
-            pcy = (py1 + py2) / 2.0
-            tcx = (tx1 + tx2) / 2.0
-            tcy = (ty1 + ty2) / 2.0
-            center_dist = (pcx - tcx).square() + (pcy - tcy).square()
-
-            cw = (torch.maximum(px2, tx2) - torch.minimum(px1, tx1)).clamp(min=1e-7)
-            ch = (torch.maximum(py2, ty2) - torch.minimum(py1, ty1)).clamp(min=1e-7)
-            c2 = cw.square() + ch.square() + 1e-7
-
-            gamma = 0.5
-            eiou = 1.0 - iou + center_dist / c2 + (pw - tw).square() / (cw.square() + 1e-7) + (ph - th).square() / (ch.square() + 1e-7)
-            loss_box_sample = iou.pow(gamma) * eiou
-            loss_iou = (loss_box_sample.unsqueeze(-1) * weight).sum() / target_scores_sum
-        else:
-            iou = bbox_iou(p_box, t_box, xywh=False, CIoU=True)
-            loss_iou = ((1.0 - iou) * weight).sum() / target_scores_sum
-
-        if self.dfl_loss and p_box.shape[0] > 0:
-            target_ltrb = bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
-            loss_dfl = self.dfl_loss(pred_dist[fg_mask].view(-1, self.dfl_loss.reg_max), target_ltrb[fg_mask]) * weight
-            loss_dfl = loss_dfl.sum() / target_scores_sum
-        else:
-            loss_dfl = torch.tensor(0.0).to(pred_dist.device)
-
-        return loss_iou, loss_dfl
-
 ul_loss.BboxLoss = AblationBboxLoss
 
-# 7. Physical File Hard-Patch for DDP Subprocesses
+# 6. Physical file injection into loss.py for worker subprocesses with explicit os import
 loss_file_path = Path(ul_loss.__file__).resolve()
 loss_src = loss_file_path.read_text(encoding="utf-8")
 if "class AblationBboxLoss" not in loss_src:
     patch_code = '''
+import os
+import torch
 class AblationBboxLoss(BboxLoss):
     def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask):
         weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
@@ -1525,91 +1110,16 @@ BboxLoss = AblationBboxLoss
         loss_file_path.write_text(loss_src + "\\n" + patch_code, encoding="utf-8")
         print("[INFO] Injected AblationBboxLoss into physical site-packages loss.py")
     except Exception as e:
-        print(f"[WARNING] Could not patch physical loss.py: {e}")
+        print(f"[WARNING] Could not patch physical loss.py: {{e}}")
 
-# 8. Persist custom_ablation_modules.py into working & site-packages
-module_code = '''import math
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-class AddCoords(nn.Module):
-    def __init__(self, with_r: bool = False):
-        super().__init__()
-        self.with_r = with_r
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        b, _, h, w = x.shape
-        xx = torch.linspace(-1.0, 1.0, w, device=x.device, dtype=x.dtype)
-        yy = torch.linspace(-1.0, 1.0, h, device=x.device, dtype=x.dtype)
-        yy, xx = torch.meshgrid(yy, xx, indexing='ij')
-        xx = xx.unsqueeze(0).unsqueeze(0).repeat(b, 1, 1, 1)
-        yy = yy.unsqueeze(0).unsqueeze(0).repeat(b, 1, 1, 1)
-        out = torch.cat([x, xx, yy], dim=1)
-        if self.with_r:
-            rr = torch.sqrt(xx ** 2 + yy ** 2)
-            out = torch.cat([out, rr], dim=1)
-        return out
-
-class CoordConv(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3, stride: int = 1, padding: int = 1):
-        super().__init__()
-        self.add_coords = AddCoords(with_r=False)
-        self.conv = nn.Conv2d(in_channels + 2, out_channels, kernel_size=kernel_size, stride=stride, padding=padding, bias=False)
-        self.bn = nn.BatchNorm2d(out_channels)
-        self.act = nn.SiLU()
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.act(self.bn(self.conv(self.add_coords(x))))
-
-class RepConv(nn.Module):
-    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3, stride: int = 1, padding: int = 1, deploy: bool = False):
-        super().__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.stride = stride
-        self.deploy = deploy
-        if deploy:
-            self.rbr_reparam = nn.Conv2d(in_channels, out_channels, 3, stride, 1, bias=True)
-        else:
-            self.rbr_dense = nn.Sequential(nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, bias=False), nn.BatchNorm2d(out_channels))
-            self.rbr_1x1 = nn.Sequential(nn.Conv2d(in_channels, out_channels, 1, stride, 0, bias=False), nn.BatchNorm2d(out_channels))
-            self.rbr_identity = nn.BatchNorm2d(in_channels) if (out_channels == in_channels and stride == 1) else None
-        self.act = nn.SiLU()
-    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
-        if self.deploy:
-            return self.act(self.rbr_reparam(inputs))
-        out = self.rbr_dense(inputs) + self.rbr_1x1(inputs)
-        if self.rbr_identity is not None:
-            out = out + self.rbr_identity(inputs)
-        return self.act(out)
-
-class BiFormerBlockLite(nn.Module):
-    def __init__(self, channels: int, num_heads: int = 4, region_size: int = 8, topk: int = 4):
-        super().__init__()
-        self.channels = channels
-        self.num_heads = num_heads
-        self.qkv = nn.Conv2d(channels, channels * 3, 1, bias=False)
-        self.proj = nn.Conv2d(channels, channels, 1, bias=False)
-        self.norm = nn.BatchNorm2d(channels)
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        b, c, h, w = x.shape
-        q, k, v = self.qkv(x).chunk(3, dim=1)
-        return x + self.norm(self.proj(v))
-'''
-
-Path("custom_ablation_modules.py").write_text(module_code, encoding="utf-8")
-for sp in site.getsitepackages():
-    try:
-        (Path(sp) / "custom_ablation_modules.py").write_text(module_code, encoding="utf-8")
-    except Exception:
-        pass
-
-print("[SUCCESS] Registered CoordConv, RepConv, BiFormer, Focal EIoU modules into Ultralytics engine.")
+print("[SUCCESS] Registered CoordConv, RepConv, BiFormer, Focal EIoU, and MultiSeedAblationTrainer.")
 """
 
     cell_3_code = """# CELL 3: DATASET INGESTION AND OFFICIAL VOC2028 SPLIT COMPLIANCE
 import xml.etree.ElementTree as ET
 from pathlib import Path
 import shutil
+import zipfile
 
 print("=" * 80)
 print("[INFO] SCANNING FOR VOC2028 / SHWD DATASET IN /kaggle/input/...")
@@ -1774,13 +1284,10 @@ print(f"[INFO] Configuration file saved: {data_yaml_path}")
 
     cell_4_code = f"""# CELL 4: ARCHITECTURE FACTORY AND MULTI-HEAD P2 INITIALIZATION (A0 -> A6)
 import os
-import copy
 from pathlib import Path
 import torch
-import torch.nn as nn
 from ultralytics import YOLO
-from ultralytics.models.yolo.detect import DetectionTrainer
-from custom_ablation_modules import CoordConv, RepConv, BiFormerBlockLite
+from ablation_trainer import MultiSeedAblationTrainer, build_ablation_model
 
 # Write rep_yolo11s_p2.yaml for Ablation A1
 p2_yaml_path = Path("/kaggle/working/rep_yolo11s_p2.yaml")
@@ -1788,80 +1295,19 @@ p2_yaml_content = \"\"\"{P2_YAML_CONTENT}\"\"\"
 p2_yaml_path.write_text(p2_yaml_content.strip(), encoding="utf-8")
 print(f"[INFO] 4-Head P2 Model Architecture YAML written to: {{p2_yaml_path}}")
 
-CURRENT_ABLATION_MODEL = None
-
-class MultiSeedAblationTrainer(DetectionTrainer):
-    \"\"\"Custom Trainer ensuring exact architectural module injection for each ablation.\"\"\"
-    def get_model(self, cfg=None, weights=None, verbose=True):
-        global CURRENT_ABLATION_MODEL
-        if CURRENT_ABLATION_MODEL is not None:
-            return CURRENT_ABLATION_MODEL
-        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
-        model = build_ablation_model(cur_ab, weights or "yolo11s.pt").model
-        return model
-
-def build_ablation_model(ab_id: str, base_weight: str = "yolo11s.pt") -> YOLO:
-    \"\"\"
-    Constructs the exact architecture for each ablation step (IEEE AAIML 2027 Table II):
-    A0: Baseline YOLO11s (Stock Multi-Branch)
-    A1: + P2 High-Resolution Micro-Head (Stride 4)
-    A2: + CoordConv Stem Layer (Cx, Cy in [-1, 1])
-    A3: + RepConv Multi-Branch Structural Fusion
-    A4: + Focal EIoU Loss (gamma=0.5)
-    A5: + BiFormer Bi-Level Routing Attention
-    A6: Full Fusion (Proposed Rep-YOLO11s)
-    \"\"\"
-    print(f"[BUILD] Constructing Ablation {{ab_id}} architecture from clean base: {{base_weight}}...")
-
-    if ab_id == "A1":
-        # 4-Head P2 Model with pretrained weights transferred
-        base = YOLO(str(p2_yaml_path))
-        base.load(base_weight)
-        print("   -> Attached P2 High-Resolution Micro-Head (Stride 4) with transferred weights")
-        return base
-
-    base = YOLO(base_weight)
-    m = base.model
-
-    if ab_id == "A0":
-        return base
-
-    if ab_id in ["A2", "A6"]:
-        # Patch CoordConv into Stem Layer 0
-        conv0 = m.model[0].conv
-        coord_conv = CoordConv(conv0.in_channels, conv0.out_channels, kernel_size=3, stride=2)
-        coord_conv.i, coord_conv.f, coord_conv.type = 0, -1, "CoordConv"
-        m.model[0] = coord_conv
-        print("   -> Attached CoordConv into Stem Layer 0")
-
-    if ab_id in ["A3", "A4", "A5", "A6"]:
-        # Patch RepConv into 3x3 convolutions in backbone/neck
-        for idx, layer in enumerate(m.model):
-            if idx > 0 and hasattr(layer, "conv") and hasattr(layer.conv, "kernel_size") and layer.conv.kernel_size == (3, 3):
-                c1, c2, s = layer.conv.in_channels, layer.conv.out_channels, layer.conv.stride[0]
-                rep_conv = RepConv(in_channels=c1, out_channels=c2, kernel_size=3, stride=s, deploy=False)
-                rep_conv.i, rep_conv.f, rep_conv.type = getattr(layer, "i", idx), getattr(layer, "f", -1), "RepConv"
-                m.model[idx] = rep_conv
-        print("   -> Attached RepConv into 3x3 Convolutions")
-
-    if ab_id in ["A5", "A6"]:
-        # Patch BiFormer Attention Block into neck
-        for idx, layer in enumerate(m.model):
-            if layer.__class__.__name__ in ["C2PSA", "C3k2"] and idx >= 9:
-                c_in = getattr(layer, "c1", 512)
-                biformer = BiFormerBlockLite(channels=c_in, num_heads=4)
-                biformer.i, biformer.f, biformer.type = getattr(layer, "i", idx), getattr(layer, "f", -1), "BiFormerBlockLite"
-                m.model[idx] = biformer
-                print(f"   -> Attached BiFormer Attention Block into Layer {{idx}}")
-                break
-
-    base.model = m
-    return base
-
-print("[SUCCESS] Architecture Factory and MultiSeedAblationTrainer ready.")
+# Sanity assertion check across all 7 ablations
+print("[INFO] Validating architectural factory instantiation across A0 -> A6...")
+dummy = torch.randn(1, 3, 640, 640)
+for ab_check in ["A0", "A1", "A2", "A3", "A4", "A5", "A6"]:
+    m_check = build_ablation_model(ab_check, "yolo11s.pt")
+    m_check.model.eval()
+    with torch.no_grad():
+        out_check = m_check.model(dummy)
+    del m_check
+print("[SUCCESS] All 7 ablation architectures verified successfully.")
 """
 
-    cell_5_code = """# CELL 5: MULTI-SEED EXECUTION LOOP (SEEDS: 42, 1337, 2026 FOR A0 -> A6)
+    cell_5_code = """# CELL 5: MULTI-SEED FULL 100-EPOCH TRAINING PIPELINE (SEEDS 42, 1337, 2026)
 import gc
 import json
 import time
@@ -1869,7 +1315,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-# CONFIGURATION FOR MULTI-SEED EXECUTION
+# CONFIGURATION FOR MULTI-SEED ABLATION
 SEEDS = [42, 1337, 2026]
 ABLATIONS = [
     {"id": "A0", "name": "Baseline YOLO11s", "desc": "Standard stock YOLO11s"},
@@ -1897,45 +1343,50 @@ CHECKPOINTS_DIR = OUTPUT_DIR / "checkpoints"
 CHECKPOINTS_DIR.mkdir(parents=True, exist_ok=True)
 
 results_records = []
+csv_results_path = OUTPUT_DIR / "multiseed_ablation_results.csv"
 log_file = OUTPUT_DIR / "multiseed_ablation_log.json"
-csv_summary_file = OUTPUT_DIR / "multiseed_ablation_raw_results.csv"
 
-if log_file.exists():
-    with open(log_file, "r") as f:
-        results_records = json.load(f)
-    print(f"[RESUME] Loaded {len(results_records)} completed runs from cache.")
+if csv_results_path.exists():
+    df_cached = pd.read_csv(csv_results_path)
+    results_records = df_cached.to_dict(orient="records")
+    print(f"[RESUME] Loaded {len(results_records)} completed ablation runs from {csv_results_path.name}.")
 
 def is_already_completed(ab_id: str, seed: int) -> bool:
     for rec in results_records:
         if rec["ablation_id"] == ab_id and rec["seed"] == seed:
-            return True
+            ckpt_path = CHECKPOINTS_DIR / f"seed_{seed}_{ab_id}_best.pt"
+            if ckpt_path.exists() or Path(rec.get("checkpoint", "")).exists():
+                return True
     return False
 
 print("=" * 80)
-print(f"[START] RUNNING 3 RANDOM SEEDS FOR 7 ABLATIONS ({len(ABLATIONS) * len(SEEDS)} EXPERIMENTS)")
-print(f"   Seeds       : {SEEDS}")
-print(f"   Epochs      : {EPOCHS} per experiment")
-print(f"   Batch Size  : {BATCH_SIZE} | ImgSz: {IMGSZ}")
+print(f"[START] MULTI-SEED ABLATION SUITE ({len(SEEDS)} SEEDS x {len(ABLATIONS)} MODELS, {EPOCHS} EPOCHS EACH)")
+print(f"   Batch Size     : {BATCH_SIZE} | ImgSz: {IMGSZ}")
+print(f"   Hyperparameters: lr0={LR0}, lrf={LRF}, patience={PATIENCE}, cos_lr={COS_LR}, close_mosaic={CLOSE_MOSAIC}")
 print("=" * 80)
 
-for ab in ABLATIONS:
-    ab_id = ab["id"]
-    for seed in SEEDS:
+for seed in SEEDS:
+    print(f"\\n{'=' * 80}\\n[SEED EXECUTION] COMMENCING EVALUATION FOR SEED = {seed}\\n{'=' * 80}")
+    for ab in ABLATIONS:
+        ab_id = ab["id"]
         ckpt_name = f"seed_{seed}_{ab_id}_best.pt"
         target_ckpt = CHECKPOINTS_DIR / ckpt_name
 
         if is_already_completed(ab_id, seed):
-            print(f"[SKIP] {ab_id} (Seed {seed}) already completed in cache. Moving to next.")
+            print(f"[SKIP] Ablation {ab_id} (Seed {seed}) already completed in cache. Moving to next.")
             continue
 
-        print(f"\\n----------------------------------------------------------------------")
-        print(f"[RUNNING] Ablation {ab_id}: {ab['name']} | Seed = {seed}")
-        print(f"----------------------------------------------------------------------")
+        print("\\n----------------------------------------------------------------------")
+        print(f"[RUNNING] Ablation {ab_id}: {ab['name']} | Seed = {seed} | Epochs = {EPOCHS}")
+        print("----------------------------------------------------------------------")
 
+        # Set ablation ID in environment for DDP worker processes
         os.environ["CURRENT_ABLATION_ID"] = ab_id
+
+        # Clean architectural factory instantiation from fresh base weight (Zero Weight Contamination)
         model = build_ablation_model(ab_id, "yolo11s.pt")
-        global CURRENT_ABLATION_MODEL
-        CURRENT_ABLATION_MODEL = model.model
+        import ablation_trainer
+        ablation_trainer.CURRENT_ABLATION_MODEL = model.model
 
         run_name = f"run_{ab_id}_seed_{seed}"
         t_start = time.time()
@@ -1990,6 +1441,7 @@ for ab in ABLATIONS:
 
         train_time_min = (time.time() - t_start) / 60.0
 
+        # Independent validation on unseen val split
         val_metrics = model.val(
             data=str(data_yaml_path),
             imgsz=IMGSZ,
@@ -2015,39 +1467,34 @@ for ab in ABLATIONS:
             "precision": round(precision, 2),
             "recall": round(recall, 2),
             "train_time_min": round(train_time_min, 1),
-            "checkpoint": ckpt_name,
+            "checkpoint": str(target_ckpt.name),
         }
         results_records.append(rec)
 
+        # Persist results immediately to disk
+        df_curr = pd.DataFrame(results_records)
+        df_curr.to_csv(csv_results_path, index=False)
         with open(log_file, "w", encoding="utf-8") as f:
             json.dump(results_records, f, indent=2)
 
-        df_curr = pd.DataFrame(results_records)
-        df_curr.to_csv(csv_summary_file, index=False)
-
         print(f"[DONE] Completed {ab_id} Seed {seed}: mAP50 = {map50:.2f}%, mAP50-95 = {map50_95:.2f}% ({train_time_min:.1f} min)")
 
+        # Clean VRAM
         del model
-        CURRENT_ABLATION_MODEL = None
+        ablation_trainer.CURRENT_ABLATION_MODEL = None
         torch.cuda.empty_cache()
         gc.collect()
 
-print("\\n[SUCCESS] All Multi-Seed experiments completed successfully.")
+print("\\n[SUCCESS] All ablation models across all seeds completed successfully.")
 """
 
-    cell_6_code = """# CELL 6: STATISTICAL ANALYSIS AND IEEE LATEX TABLE GENERATION
-import json
+    cell_6_code = """# CELL 6: TABULATION AND IEEE TABLE II LATEX EXPORT
 import numpy as np
 import pandas as pd
 from scipy import stats
 from tabulate import tabulate
 
 df = pd.DataFrame(results_records)
-print("=" * 80)
-print("[RESULTS] RAW EMPIRICAL METRICS ACROSS ALL 3 RANDOM SEEDS")
-print("=" * 80)
-print(tabulate(df, headers="keys", tablefmt="pipe", showindex=False))
-
 summary_data = []
 baseline_a0_map50 = df[df["ablation_id"] == "A0"].sort_values("seed")["mAP50"].values
 
@@ -2241,4 +1688,3 @@ def build_all_notebooks():
 
 if __name__ == "__main__":
     build_all_notebooks()
-
