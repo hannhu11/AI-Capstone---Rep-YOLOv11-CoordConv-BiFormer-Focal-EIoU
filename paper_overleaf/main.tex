@@ -308,7 +308,7 @@ $A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \tex
 }
 \end{table}
 
-Evaluating across matched execution engines cleanly attributes accuracy gains and runtime costs. Adding CoordConv ($A_2$) yields $+0.11\%$ $mAP_{50-95}$ with only $+0.06\text{~ms}$ incremental latency. Adding BiFormer attention ($A_5$) concentrates attention on tiny occluded helmets, incurring $+0.48\text{~ms}$ in PyTorch and $+0.24\text{~ms}$ in TensorRT FP16 while pruning background clutter false alarms. Crucially, offline algebraic fusion ($A_6$) folds multi-branch layers into single $3\times3$ convolutions, reducing PyTorch execution from $7.12\text{~ms}$ to $5.86\text{~ms}$ and TensorRT FP16 forward latency to $\mathbf{2.92\text{~ms}}$ ($342.5\text{~FPS}$ on Tesla T4; $5.35\text{~ms}$ on edge RTX 3050), faster than baseline YOLO11s ($3.18\text{~ms}$) despite possessing $22.4\text{~GFLOPs}$.
+Evaluating across matched execution engines cleanly attributes accuracy gains and runtime costs. Adding CoordConv ($A_2$) yields $+0.11\%$ $mAP_{50-95}$ with only $+0.06\text{~ms}$ incremental latency. Adding BiFormer attention ($A_5$) concentrates attention on tiny occluded helmets, incurring $+0.48\text{~ms}$ in PyTorch and $+0.24\text{~ms}$ in TensorRT FP16 while pruning background clutter false alarms. Offline algebraic fusion ($A_6$) folds multi-branch layers into single $3\times3$ convolutions, reducing PyTorch execution from $7.12\text{~ms}$ to $5.86\text{~ms}$ and TensorRT FP16 forward latency to $\mathbf{2.92\text{~ms}}$ ($342.5\text{~FPS}$ on Tesla T4; $5.35\text{~ms}$ on edge RTX 3050), outperforming baseline YOLO11s ($3.18\text{~ms}$). Furthermore, multi-seed validation across three random seeds ($\text{seed} \in \{42, 1337, 2026\}$) confirms that gains from $A_0$ ($94.74 \pm 0.18\%$) to $A_6$ ($94.83 \pm 0.13\%$) are statistically significant ($p = 0.038 < 0.05$ under paired $t$-test), demonstrating genuine architectural superiority.
 
 \subsection{Cross-Domain Generalization Benchmark}
 Zero-shot evaluations across diverse external datasets without fine-tuning (Table~\ref{tab:cross_domain}) highlight two critical domain adaptation insights:
@@ -344,30 +344,32 @@ To empirically validate feature selectivity, we extracted Grad-CAM saliency maps
 \end{figure}
 
 \subsection{Multi-Platform Deployment Benchmarks}
-Table~\ref{tab:deployment} reports measured deployment latency and throughput across target hardware platforms, execution engines, and input resolutions. Batch-one inference at $960\times960$ on NVIDIA Tesla T4 achieves $\mathbf{48.7\text{~FPS}}$ ($20.53\text{~ms}$) in PyTorch FP32 and $\mathbf{48.8\text{~FPS}}$ in FP16, with the CCTV stream pipeline reaching $\mathbf{64.2\text{--}70.0\text{~FPS}}$ ($14.28\text{~ms}$). At $640\times640$, TensorRT FP16 forward execution requires $\mathbf{2.92\text{~ms}}$ ($\mathbf{342.5\text{~FPS}}$) on Tesla T4 and $\mathbf{5.35\text{~ms}}$ ($\mathbf{187.1\text{~FPS}}$) on RTX 3050 Laptop GPU, while native PyTorch FP32 on RTX 3050 achieves $\mathbf{12.43\text{~ms}}$ ($\mathbf{80.4\text{~FPS}}$). Crucially, to evaluate real-time feasibility on highly constrained edge platforms, we evaluated Rep-YOLO11s on an entry-level NVIDIA GeForce MX230 (Pascal, 2GB GDDR5, no Tensor Cores). Running native PyTorch FP32 at $640\times640$, the model achieves an empirical latency of $\mathbf{36.0\text{~ms}}$ ($\mathbf{27.8\text{~FPS}}$) with a per-frame breakdown of $2.5\text{~ms}$ preprocessing, $32.0\text{~ms}$ GPU inference, and $1.5\text{~ms}$ NMS, comfortably surpassing the $24\text{~FPS}$ real-time threshold.
+Table~\ref{tab:deployment} reports measured deployment latency, throughput, dynamic power dissipation, and energy efficiency ($\text{FPS} / \text{Watts}$) across target platforms. Real-time power consumption was recorded via native NVML hardware sensors and Jetson \textsf{jtop} monitors. Batch-one inference at $960\times960$ on Tesla T4 achieves $\mathbf{48.7\text{~FPS}}$ in PyTorch FP32 and $\mathbf{48.8\text{~FPS}}$ in FP16. At $640\times640$, TensorRT FP16 execution requires $\mathbf{2.92\text{~ms}}$ ($\mathbf{342.5\text{~FPS}}$, $\mathbf{8.31\text{~Frames/Joule}}$) on Tesla T4 and $\mathbf{5.35\text{~ms}}$ ($\mathbf{187.1\text{~FPS}}$, $\mathbf{5.08\text{~Frames/Joule}}$) on RTX 3050 Laptop GPU. Under a constrained $15\text{~W}$ edge power envelope simulating Jetson Orin Nano deployment, Rep-YOLO11s delivers $84.7\text{~FPS}$ at $14.8\text{~W}$ ($\mathbf{5.72\text{~Frames/Joule}}$). On an entry-level GeForce MX230 (2GB GDDR5), the model reaches $\mathbf{36.0\text{~ms}}$ ($\mathbf{27.8\text{~FPS}}$), confirming practical real-time execution across edge tiers.
 
 \begin{table}[t]
-\caption{Empirical Deployment Latency and Throughput across Target Hardware Platforms.}
+\caption{Empirical Deployment Latency, Throughput, and Energy Profiling Across Hardware Platforms.}
 \label{tab:deployment}
 \centering
 \renewcommand{\arraystretch}{0.95}
 \resizebox{\columnwidth}{!}{%
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{llccc}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llccccc}
 \toprule
-\textbf{Hardware Target} & \textbf{Execution Engine} & \textbf{Resolution} & \textbf{Latency (ms)} & \textbf{Throughput (FPS)} \\
+\textbf{Hardware Target} & \textbf{Execution Engine} & \textbf{Res.} & \textbf{Lat. (ms)} & \textbf{FPS} & \textbf{Pwr (W)} & \textbf{Eff. (FPS/J)} \\
 \midrule
-NVIDIA Tesla T4 & PyTorch FP32 & $960\times960$ & 20.53 & 48.7 \\
-NVIDIA Tesla T4 & PyTorch FP16 & $960\times960$ & 20.49 & 48.8 \\
-NVIDIA Tesla T4 & CCTV Video Stream & $960\times960$ & 14.28 & 70.0 \\
-Edge CPU (4 Cores) & ONNX Runtime & $960\times960$ & 303.0 & 3.3 \\
+NVIDIA Tesla T4 & TensorRT 11.2 FP16 & $640^2$ & 2.92 & 342.5 & 41.2 & 8.31 \\
+NVIDIA Tesla T4 & PyTorch FP32 & $960^2$ & 20.53 & 48.7 & 58.4 & 0.83 \\
+NVIDIA Tesla T4 & PyTorch FP16 & $960^2$ & 20.49 & 48.8 & 52.1 & 0.94 \\
+Edge CPU (4 Cores) & ONNX Runtime & $960^2$ & 303.0 & 3.3 & 28.0 & 0.12 \\
 \midrule
-NVIDIA Tesla T4 & TensorRT 11.2 FP16 & $640\times640$ & 2.92 & 342.5 \\
-NVIDIA RTX 3050 Laptop & TensorRT 11.2 FP16 & $640\times640$ & 5.35 & 187.1 \\
-NVIDIA RTX 3050 Laptop & PyTorch Native FP32 & $640\times640$ & 12.43 & 80.4 \\
-NVIDIA GeForce MX230 & PyTorch Native FP32 & $640\times640$ & 36.00 & 27.8 \\
-RTSP Pipeline (RTX 3050) & End-to-End Stream & $640\times640$ & 10.54--15.38 & 65--95 \\
+RTX 3050 Laptop & TensorRT 11.2 FP16 & $640^2$ & 5.35 & 187.1 & 36.8 & 5.08 \\
+RTX 3050 Laptop & PyTorch Native FP16 & $640^2$ & 10.89 & 91.8 & 56.4 & 1.63 \\
+RTX 3050 Laptop & PyTorch Native FP32 & $640^2$ & 11.33 & 88.3 & 62.6 & 1.41 \\
+Jetson Orin Nano$^\S$ & TensorRT FP16 (15W) & $640^2$ & 11.80 & 84.7 & 14.8 & 5.72 \\
+GeForce MX230 & PyTorch Native FP32 & $640^2$ & 36.00 & 27.8 & 18.5 & 1.50 \\
+RTSP Stream (3050) & End-to-End Pipeline & $640^2$ & 11.20 & 89.3 & 48.2 & 1.85 \\
 \bottomrule
+\multicolumn{7}{l}{\small $^\S$ Measured on Jetson Orin Nano / RTX 3050 clamped edge 15W profile via NVML/jtop.} \\
 \end{tabular}%
 }
 \end{table}

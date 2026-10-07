@@ -1,0 +1,44 @@
+[
+  {
+    "model_name": "Rep-YOLO11s (Champion A6 Fused Deploy)",
+    "category": "Proposed Architecture",
+    "fp16_latency_ms": 9.9,
+    "fp16_fps": 101.0,
+    "fp16_avg_power_w": 58.55,
+    "fp16_peak_power_w": 61.7,
+    "fp16_energy_eff": 1.72,
+    "fp32_latency_ms": 11.44,
+    "fp32_fps": 87.4,
+    "edge15w_pwr_w": 33.33,
+    "edge15w_eff": 2.69,
+    "academic_rating": "Xu\u1ea5t s\u1eafc (Excellent)"
+  },
+  {
+    "model_name": "Baseline YOLO11s (Stock Multi-Branch)",
+    "category": "Baseline",
+    "fp16_latency_ms": 10.52,
+    "fp16_fps": 95.1,
+    "fp16_avg_power_w": 59.23,
+    "fp16_peak_power_w": 62.73,
+    "fp16_energy_eff": 1.61,
+    "fp32_latency_ms": 11.45,
+    "fp32_fps": 87.3,
+    "edge15w_pwr_w": 33.24,
+    "edge15w_eff": 2.66,
+    "academic_rating": "Xu\u1ea5t s\u1eafc (Excellent)"
+  },
+  {
+    "model_name": "Baseline YOLOv8s (Reference)",
+    "category": "Baseline",
+    "fp16_latency_ms": 8.54,
+    "fp16_fps": 117.1,
+    "fp16_avg_power_w": 60.13,
+    "fp16_peak_power_w": 61.54,
+    "fp16_energy_eff": 1.95,
+    "fp32_latency_ms": 11.65,
+    "fp32_fps": 85.9,
+    "edge15w_pwr_w": 34.71,
+    "edge15w_eff": 2.98,
+    "academic_rating": "Xu\u1ea5t s\u1eafc (Excellent)"
+  }
+]
