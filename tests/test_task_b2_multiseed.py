@@ -32,6 +32,7 @@ NOTEBOOK_FILES = [
     ("Kaggle_TaskB2_Seed42_Ablation_T4x2.ipynb", 42, 1),
     ("Kaggle_TaskB2_Seed1337_Ablation_T4x2.ipynb", 1337, 2),
     ("Kaggle_TaskB2_Seed2026_Ablation_T4x2.ipynb", 2026, 3),
+    ("kaggle-taskb2-seed1337-ablation-1.ipynb", 1337, 2),
 ]
 
 
@@ -278,6 +279,116 @@ class TestTaskB2NotebookStructure:
         assert torch.isfinite(l_dfl_a6_9)
         assert torch.allclose(l_iou_a6_7, l_iou_a6_9)
         assert torch.allclose(l_dfl_a6_7, l_dfl_a6_9)
+
+    def test_ablation_bbox_loss_v84_strict_simulation(self):
+        """Mocks Ultralytics v8.4+ where super().forward strictly requires 9 positional arguments."""
+        import os
+        import torch
+        import torch.nn as nn
+
+        class MockV84BboxLoss(nn.Module):
+            def __init__(self, reg_max=16):
+                super().__init__()
+                self.reg_max = reg_max
+                self.dfl_loss = True
+            def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, imgsz, stride):
+                assert imgsz is not None
+                assert stride is not None
+                return torch.tensor(1.23), torch.tensor(4.56)
+
+        class MockAblationBboxLoss(MockV84BboxLoss):
+            def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs):
+                cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
+                if cur_ab not in ["A4", "A6"]:
+                    try:
+                        return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs)
+                    except TypeError:
+                        try:
+                            return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+                        except TypeError:
+                            dummy_imgsz = kwargs.get("imgsz", torch.tensor([640, 640], device=pred_dist.device))
+                            dummy_stride = kwargs.get("stride", torch.ones((anchor_points.shape[0], 1), device=pred_dist.device) * 8)
+                            return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, dummy_imgsz, dummy_stride)
+                return torch.tensor(0.0), torch.tensor(0.0)
+
+        loss_fn = MockAblationBboxLoss()
+        os.environ["CURRENT_ABLATION_ID"] = "A0"
+        bs, na, nc = 2, 10, 2
+        pred_dist = torch.randn(bs, na, 64)
+        pred_bboxes = torch.rand(bs, na, 4) * 640
+        anchor_points = torch.rand(bs, na, 2) * 640
+        target_bboxes = torch.rand(bs, na, 4) * 640
+        target_scores = torch.rand(bs, na, nc)
+        target_scores_sum = torch.tensor(5.0)
+        fg_mask = torch.zeros(bs, na, dtype=torch.bool)
+        imgsz = torch.tensor([640, 640])
+        stride = torch.ones(na, 1) * 8
+
+        # 1. 9-argument call (Ultralytics v8.4+ runtime caller convention on Kaggle)
+        l_iou, l_dfl = loss_fn(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, imgsz, stride)
+        assert l_iou.item() == pytest.approx(1.23)
+        assert l_dfl.item() == pytest.approx(4.56)
+
+        # 2. 7-argument call (fallback supplying dummy imgsz and stride to strict 9-arg base)
+        l_iou_7, l_dfl_7 = loss_fn(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+        assert l_iou_7.item() == pytest.approx(1.23)
+        assert l_dfl_7.item() == pytest.approx(4.56)
+
+    def test_loss_patch_idempotent_injection(self, tmp_path):
+        """Verifies that patch injection into loss.py cleanly replaces existing patches without duplicates."""
+        loss_file = tmp_path / "loss.py"
+        clean_src = 'class BboxLoss:\n    def forward(self, *args, **kwargs):\n        pass\n'
+        loss_file.write_text(clean_src, encoding="utf-8")
+
+        from scripts.build_kaggle_task_b2_notebook import create_single_seed_notebook
+        nb = create_single_seed_notebook(seed=1337, account_num=2)
+        cell_2_code = "".join(nb["cells"][2]["source"])
+
+        lines = cell_2_code.splitlines()
+        patch_snippet = []
+        capture = False
+        for line in lines:
+            if "loss_file_path = " in line:
+                capture = True
+            if capture:
+                if 'print("[SUCCESS] Registered' in line:
+                    break
+                patch_snippet.append(line)
+        code_to_exec = "\n".join(patch_snippet)
+
+        scope = {
+            "ul_loss": type("Dummy", (), {"__file__": str(loss_file)})(),
+            "Path": Path,
+            "BboxLoss": object,
+        }
+
+        # First injection
+        exec(code_to_exec, scope)
+        content_1 = loss_file.read_text(encoding="utf-8")
+        assert content_1.count("class AblationBboxLoss") == 1
+        assert "# === ABLATION BBOX LOSS PATCH ===" in content_1
+
+        # Second injection (idempotent run)
+        exec(code_to_exec, scope)
+        content_2 = loss_file.read_text(encoding="utf-8")
+        assert content_2.count("class AblationBboxLoss") == 1
+        assert content_2 == content_1
+
+    def test_standalone_python_scripts_variadic_signature(self):
+        """Verifies that all 4 standalone Python scripts contain the updated variadic signature."""
+        scripts = [
+            "Kaggle_TaskB2_Seed42_Ablation.py",
+            "Kaggle_TaskB2_Seed1337_Ablation.py",
+            "Kaggle_TaskB2_Seed2026_Ablation.py",
+            "Kaggle_TaskB2_MultiSeed_Ablation.py",
+        ]
+        for script_name in scripts:
+            script_path = PROJECT_ROOT / script_name
+            assert script_path.exists(), f"Missing script: {script_name}"
+            src = script_path.read_text(encoding="utf-8")
+            assert "def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs):" in src
+            assert "super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs)" in src
+            ast.parse(src)
 
 
 

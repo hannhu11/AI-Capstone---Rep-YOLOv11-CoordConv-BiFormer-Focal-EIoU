@@ -115,7 +115,12 @@ class AblationBboxLoss(ul_loss.BboxLoss):
             try:
                 return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs)
             except TypeError:
-                return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+                try:
+                    return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+                except TypeError:
+                    dummy_imgsz = kwargs.get("imgsz", torch.tensor([640, 640], device=pred_dist.device))
+                    dummy_stride = kwargs.get("stride", torch.ones((anchor_points.shape[0], 1), device=pred_dist.device) * 8)
+                    return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, dummy_imgsz, dummy_stride)
 
         weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
         p_box = pred_bboxes[fg_mask]
@@ -398,8 +403,18 @@ ul_loss.BboxLoss = AblationBboxLoss
 # 6. Physical file injection into loss.py for worker subprocesses with explicit os import
 loss_file_path = Path(ul_loss.__file__).resolve()
 loss_src = loss_file_path.read_text(encoding="utf-8")
-if "class AblationBboxLoss" not in loss_src:
-    patch_code = '''
+patch_marker = "# === ABLATION BBOX LOSS PATCH ==="
+if patch_marker in loss_src:
+    base_src = loss_src.split(patch_marker)[0].rstrip()
+elif "class AblationBboxLoss" in loss_src:
+    base_src = loss_src.split("class AblationBboxLoss")[0]
+    if "import os" in base_src:
+        base_src = base_src[:base_src.rfind("import os")].rstrip()
+else:
+    base_src = loss_src.rstrip()
+
+patch_code = '''
+# === ABLATION BBOX LOSS PATCH ===
 import os
 import torch
 class AblationBboxLoss(BboxLoss):
@@ -409,7 +424,12 @@ class AblationBboxLoss(BboxLoss):
             try:
                 return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs)
             except TypeError:
-                return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+                try:
+                    return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+                except TypeError:
+                    dummy_imgsz = kwargs.get("imgsz", torch.tensor([640, 640], device=pred_dist.device))
+                    dummy_stride = kwargs.get("stride", torch.ones((anchor_points.shape[0], 1), device=pred_dist.device) * 8)
+                    return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, dummy_imgsz, dummy_stride)
 
         weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
         p_box = pred_bboxes[fg_mask]
@@ -456,11 +476,11 @@ class AblationBboxLoss(BboxLoss):
 
 BboxLoss = AblationBboxLoss
 '''
-    try:
-        loss_file_path.write_text(loss_src + "\\n" + patch_code, encoding="utf-8")
-        print("[INFO] Injected AblationBboxLoss into physical site-packages loss.py")
-    except Exception as e:
-        print(f"[WARNING] Could not patch physical loss.py: {{e}}")
+try:
+    loss_file_path.write_text(base_src + "\\n" + patch_code, encoding="utf-8")
+    print("[INFO] Injected AblationBboxLoss into physical site-packages loss.py")
+except Exception as e:
+    print(f"[WARNING] Could not patch physical loss.py: {{e}}")
 
 print("[SUCCESS] Registered CoordConv, RepConv, BiFormer, Focal EIoU, and MultiSeedAblationTrainer.")
 """
@@ -1085,8 +1105,18 @@ ul_loss.BboxLoss = AblationBboxLoss
 # 6. Physical file injection into loss.py for worker subprocesses with explicit os import
 loss_file_path = Path(ul_loss.__file__).resolve()
 loss_src = loss_file_path.read_text(encoding="utf-8")
-if "class AblationBboxLoss" not in loss_src:
-    patch_code = '''
+patch_marker = "# === ABLATION BBOX LOSS PATCH ==="
+if patch_marker in loss_src:
+    base_src = loss_src.split(patch_marker)[0].rstrip()
+elif "class AblationBboxLoss" in loss_src:
+    base_src = loss_src.split("class AblationBboxLoss")[0]
+    if "import os" in base_src:
+        base_src = base_src[:base_src.rfind("import os")].rstrip()
+else:
+    base_src = loss_src.rstrip()
+
+patch_code = '''
+# === ABLATION BBOX LOSS PATCH ===
 import os
 import torch
 class AblationBboxLoss(BboxLoss):
@@ -1096,7 +1126,12 @@ class AblationBboxLoss(BboxLoss):
             try:
                 return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs)
             except TypeError:
-                return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+                try:
+                    return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+                except TypeError:
+                    dummy_imgsz = kwargs.get("imgsz", torch.tensor([640, 640], device=pred_dist.device))
+                    dummy_stride = kwargs.get("stride", torch.ones((anchor_points.shape[0], 1), device=pred_dist.device) * 8)
+                    return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, dummy_imgsz, dummy_stride)
 
         weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
         p_box = pred_bboxes[fg_mask]
@@ -1143,11 +1178,11 @@ class AblationBboxLoss(BboxLoss):
 
 BboxLoss = AblationBboxLoss
 '''
-    try:
-        loss_file_path.write_text(loss_src + "\\n" + patch_code, encoding="utf-8")
-        print("[INFO] Injected AblationBboxLoss into physical site-packages loss.py")
-    except Exception as e:
-        print(f"[WARNING] Could not patch physical loss.py: {{e}}")
+try:
+    loss_file_path.write_text(base_src + "\\n" + patch_code, encoding="utf-8")
+    print("[INFO] Injected AblationBboxLoss into physical site-packages loss.py")
+except Exception as e:
+    print(f"[WARNING] Could not patch physical loss.py: {{e}}")
 
 print("[SUCCESS] Registered CoordConv, RepConv, BiFormer, Focal EIoU, and MultiSeedAblationTrainer.")
 """
@@ -1796,6 +1831,21 @@ def build_all_notebooks():
     consolidated_py.write_text(create_consolidated_multiseed_script(), encoding="utf-8")
     generated_files.append(consolidated_py)
     print(f"[SUCCESS] Generated Script  : {consolidated_py.name} (Consolidated Reference)")
+
+    # 3. Synchronize kaggle-taskb2-seed1337-ablation-1.ipynb alias if present
+    alias_path = Path("kaggle-taskb2-seed1337-ablation-1.ipynb")
+    if alias_path.exists():
+        with open(alias_path, "r", encoding="utf-8") as f:
+            alias_nb = json.load(f)
+        seed_1337_nb = create_single_seed_notebook(seed=1337, account_num=2)
+        alias_nb["cells"] = seed_1337_nb["cells"]
+        alias_nb["metadata"]["accelerator"] = "GPU"
+        if "kaggle" in alias_nb.get("metadata", {}):
+            alias_nb["metadata"]["kaggle"]["isGpuEnabled"] = True
+        with open(alias_path, "w", encoding="utf-8") as f:
+            json.dump(alias_nb, f, indent=1)
+        generated_files.append(alias_path)
+        print(f"[SUCCESS] Updated Notebook: {alias_path.name} (Seed 1337 Kaggle Alias)")
 
     return generated_files
 
