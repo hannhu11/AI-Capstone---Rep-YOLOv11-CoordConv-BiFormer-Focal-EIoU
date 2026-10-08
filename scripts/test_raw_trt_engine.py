@@ -1,6 +1,8 @@
 import time
 import torch
 
+__test__ = False
+
 def test_tensorrt_direct_benchmark(engine_path: str, iterations=200, warmup=50):
     print("\n==================================================================")
     print(f" BENCHMARKING DIRECT TENSORRT ENGINE: {engine_path}")
