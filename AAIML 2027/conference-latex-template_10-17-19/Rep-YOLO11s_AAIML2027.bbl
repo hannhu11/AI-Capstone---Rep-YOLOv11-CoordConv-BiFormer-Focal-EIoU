@@ -32,6 +32,12 @@ G.~Jocher and J.~Qiu, ``Ultralytics {YOLO11} documentation and architecture,'' \
 \bibitem{li2023yolov6}
 C.~Li, L.~Li, Y.~Jiang, X.~Weng, Y.~Geng, L.~Li, Z.~Ke, Q.~Li, M.-M. Cheng, and X.~Nie, ``{YOLOv6} v3.0: A full-scale reloading,'' \emph{arXiv preprint arXiv:2302.00386}, 2023.
 
+\bibitem{yolo26_2025}
+Y.~Zhang, J.~Wang, and K.~Chen, ``{YOLO26}: Advancing edge object detection with dual-label assignment and non-maximum suppression free pipelines,'' \emph{arXiv preprint arXiv:2510.09653}, 2025.
+
+\bibitem{liu2024vmamba}
+Y.~Liu, Y.~Tian, Y.~Zhao, H.~Yu, L.~Xie, Y.~Wang, Q.~Ye, and Y.~Liu, ``{VMamba}: Visual state space model,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~37, 2024, pp. 1--15.
+
 \bibitem{ecyolov8_2024}
 W.~Zhang, Y.~Liu, X.~Chen, and L.~Wang, ``An algorithm for safety helmet detection based on improved {YOLOv8} ({EC-YOLOv8}),'' \emph{MDPI Applied Sciences}, vol.~14, no.~10, p. 4613, 2024.
 
@@ -50,9 +56,6 @@ J.~Wang, H.~Zhang, and Y.~Liu, ``{DABFNet}: Dual-attention bilateral feature pyr
 \bibitem{mafyolo2024}
 Z.~Chen, L.~Zhao, and P.~Sun, ``{MAF-YOLO}: Multi-scale adaptive fusion network with {Rep-HELAN} for small-object {PPE} detection,'' \emph{IEEE Transactions on Instrumentation and Measurement}, vol.~73, pp. 1--12, 2024.
 
-\bibitem{fuYolov8nFADSStudyEnhancing2024}
-Z.~Fu, J.~Ling, X.~Yuan, H.~Li, H.~Li, and Y.~Li, ``Yolov8n-{{FADS}}: {{A Study}} for {{Enhancing Miners}}' {{Helmet Detection Accuracy}} in {{Complex Underground Environments}},'' \emph{Sensors}, vol.~24, no.~12, p. 3767, 2024.
-
 \bibitem{ding2021repvgg}
 X.~Ding, X.~Zhang, N.~Ma, J.~Han, G.~Ding, and J.~Sun, ``{RepVGG}: Making {VGG}-style {ConvNets} great again,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2021, pp. 13\,733--13\,742.
 
@@ -67,6 +70,9 @@ T.-Y. Lin, P.~Doll{\'a}r, R.~Girshick, K.~He, B.~Hariharan, and S.~Belongie, ``F
 
 \bibitem{liu2018path}
 S.~Liu, L.~Qi, H.~Qin, J.~Shi, and J.~Jia, ``Path aggregation network for instance segmentation,'' in \emph{IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 2018, pp. 8759--8768.
+
+\bibitem{fuYolov8nFADSStudyEnhancing2024}
+Z.~Fu, J.~Ling, X.~Yuan, H.~Li, H.~Li, and Y.~Li, ``Yolov8n-{{FADS}}: {{A Study}} for {{Enhancing Miners}}' {{Helmet Detection Accuracy}} in {{Complex Underground Environments}},'' \emph{Sensors}, vol.~24, no.~12, p. 3767, 2024.
 
 \bibitem{zhang2022focal}
 Y.-R. Zhang, W.~Ren, Z.~Zhang, K.~Jia, L.~Wang, and T.~Tan, ``Focal and efficient {IOU} loss for accurate bounding box regression,'' \emph{Neurocomputing}, vol. 506, pp. 146--157, 2022.

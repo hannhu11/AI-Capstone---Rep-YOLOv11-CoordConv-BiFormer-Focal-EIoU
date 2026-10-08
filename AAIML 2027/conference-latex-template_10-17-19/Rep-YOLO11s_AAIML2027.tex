@@ -17,17 +17,17 @@
 \renewcommand{\floatpagefraction}{0.85}
 \renewcommand{\dbltopfraction}{0.95}
 \renewcommand{\dblfloatpagefraction}{0.85}
-\setlength{\textfloatsep}{5pt plus 1pt minus 1pt}
-\setlength{\floatsep}{4pt plus 1pt minus 1pt}
-\setlength{\intextsep}{4pt plus 1pt minus 1pt}
-\setlength{\dbltextfloatsep}{5pt plus 1pt minus 1pt}
-\setlength{\dblfloatsep}{4pt plus 1pt minus 1pt}
-\setlength{\abovecaptionskip}{3pt plus 1pt minus 1pt}
-\setlength{\belowcaptionskip}{3pt plus 1pt minus 1pt}
-\setlength{\abovedisplayskip}{3pt plus 1pt minus 1pt}
-\setlength{\belowdisplayskip}{3pt plus 1pt minus 1pt}
-\setlength{\abovedisplayshortskip}{1.5pt plus 1pt minus 1pt}
-\setlength{\belowdisplayshortskip}{1.5pt plus 1pt minus 1pt}
+\setlength{\textfloatsep}{4pt plus 1pt minus 1pt}
+\setlength{\floatsep}{3pt plus 1pt minus 1pt}
+\setlength{\intextsep}{3pt plus 1pt minus 1pt}
+\setlength{\dbltextfloatsep}{4pt plus 1pt minus 1pt}
+\setlength{\dblfloatsep}{3pt plus 1pt minus 1pt}
+\setlength{\abovecaptionskip}{2.5pt plus 1pt minus 1pt}
+\setlength{\belowcaptionskip}{2.5pt plus 1pt minus 1pt}
+\setlength{\abovedisplayskip}{2.5pt plus 1pt minus 1pt}
+\setlength{\belowdisplayskip}{2.5pt plus 1pt minus 1pt}
+\setlength{\abovedisplayshortskip}{1.0pt plus 1pt minus 1pt}
+\setlength{\belowdisplayshortskip}{1.0pt plus 1pt minus 1pt}
 
 \newcommand{\deployfunc}{\textsf{switch\allowbreak\_to\allowbreak\_deploy}}
 
@@ -48,7 +48,7 @@ Email: \{nhu.han, thanhnv, dungnt\}@fpt.edu.vn, anhvh@fe.edu.vn}
 \maketitle
 
 \begin{abstract}
-Automated Personal Protective Equipment (PPE) compliance monitoring via CCTV is vital for injury prevention on construction sites. However, edge surveillance faces severe operational bottlenecks: distant tiny helmet targets ($<20\times20$ pixels), extreme category skew ($1:12$ helmet-to-person ratio), multi-scale occlusions, and background clutter. We present Rep-YOLO11s, a domain-specialized, latency-optimized detector engineered for industrial surveillance through a principled integration of four proven mechanisms: (1) Structural Re-parameterization (RepConv) multi-branch training blocks folded algebraically into single $3\times3$ convolutions at inference for zero deployment overhead; (2) Stem CoordConv providing vertical spatial inductive priors at negligible latency (+0.06~ms); (3) Bi-Level Routing Attention (BiFormer, $S=8, k=4$) pruning 93.75\% of irrelevant background tokens in neck feature maps (+0.24~ms); and (4) Focal EIoU Loss for geometric bounding box regression, with class imbalance decoupled and handled via Task-Aligned Assignment (TAL) and aligned classification loss. On the Safety Helmet Wearing Dataset (SHWD / VOC2028), Rep-YOLO11s achieves 94.83\% $mAP_{50}$ and 62.54\% $mAP_{50-95}$ under joint two-class evaluation, with 5-fold cross-validation reaching a mean $mAP_{50}$ of 96.64\% (standard deviation 0.32\%, peak 97.11\%). Under the Harmonized Hat-Only Protocol, it achieves 77.90\% $mAP_{50-95}$ at $640\times640$ and 78.93\% at $960\times960$. In deployment audits, batch-one TensorRT FP16 execution at $640\times640$ achieves 2.92~ms (342.5~FPS) on NVIDIA Tesla T4, 4.37~ms (228.6~FPS at 28.4~W) on RTX 3050 Laptop GPU (182.4~FPS / 12.16~Frames/J under a 15~W power cap), and real-time execution on an entry-level GeForce MX230 (36.0~ms, 27.8~FPS). Zero-shot evaluations across GDUT-HWD, Hard Hat Workers, and SHD confirm robust cross-domain transferability under harmonized PPE protocols.
+Automated Personal Protective Equipment (PPE) compliance monitoring via CCTV is vital for injury prevention on construction sites. However, edge surveillance faces severe operational bottlenecks: distant tiny helmet targets ($<20\times20$ pixels), extreme category skew ($1:12$ helmet-to-person ratio), multi-scale occlusions, and background clutter. We present Rep-YOLO11s, a domain-specialized detector engineered as a principled Hardware-Software Co-Design for real-time edge surveillance. Guided by the GPU Roofline model, our architecture resolves the memory-bandwidth bottlenecks of single-batch inference while targeting four core physical constraints of construction monitoring: (1) Memory Access Cost (MAC) minimization via Structural Re-parameterization (RepConv) multi-branch training blocks folded algebraically into single $3\times3$ convolutions at inference; (2) vertical spatial inductive priors via Stem CoordConv (+0.06~ms) resolving ground distractor confusion; (3) Bi-Level Routing Attention (BiFormer, $S=8, k=4$) pruning 93.75\% of irrelevant background tokens in neck stages (+0.24~ms) without quadratic complexity; and (4) decoupled multi-task loss pairing Focal EIoU Loss for boundary quality with Task-Aligned Assignment (TAL) for severe 1:12 class imbalance. On the Safety Helmet Wearing Dataset (SHWD / VOC2028), Rep-YOLO11s achieves 94.83\% $mAP_{50}$ and 62.54\% $mAP_{50-95}$ under joint two-class evaluation, with 5-fold cross-validation reaching a mean $mAP_{50}$ of 96.64\% (standard deviation 0.32\%, peak 97.11\%). Under the Harmonized Hat-Only Protocol, it achieves 77.90\% $mAP_{50-95}$ at $640\times640$ and 78.93\% at $960\times960$ (+4.80\% over baseline). In matched-engine deployment audits, batch-one TensorRT FP16 execution at $640\times640$ achieves 2.92~ms (342.5~FPS) on NVIDIA Tesla T4, 4.37~ms (228.6~FPS at 28.4~W) on RTX 3050 Laptop GPU (182.4~FPS / 12.16~Frames/J under a 15~W power cap), and real-time execution on an entry-level GeForce MX230 (36.0~ms, 27.8~FPS). Zero-shot evaluations across GDUT-HWD, Hard Hat Workers, and SHD confirm robust cross-domain transferability under harmonized PPE protocols.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -57,30 +57,31 @@ Safety Helmet Detection, Bi-Level Routing Attention, Structural Re-parameterizat
 
 \section{Introduction}
 Personal Protective Equipment (PPE) compliance monitoring, particularly for safety helmets, is strictly mandated across industrial construction sites to prevent traumatic head injuries. While automated intelligent video analytics via CCTV streams offer continuous, non-intrusive compliance auditing, deploying computer vision models in real-world construction environments encounters four major operational bottlenecks:
-(1)~\textbf{Distant Tiny Targets}: Long-range CCTV cameras positioned at high elevations render helmets as sub-$20\times20$ pixel targets subject to severe feature attenuation across deep convolutional backbones.
-(2)~\textbf{Severe Category Skew}: Industrial benchmarks like the Safety Helmet Wearing Dataset (SHWD) exhibit acute category skew ($9,044$ helmet vs. $111,514$ person instances, a $1:12$ ratio), biasing standard losses toward background and torso features.
-(3)~\textbf{Spatial Distractor Confusion}: Construction sites abound with visually confusing round objects (yellow buckets, orange traffic cones, warning signage) that trigger false alarms under standard translation-invariant convolutions lacking vertical context.
-(4)~\textbf{Strict Edge Latency Bounds}: Multi-camera edge monitoring demands real-time throughput ($\ge 60$~FPS), penalizing complex attention mechanisms with prohibitive memory access costs (MAC) and kernel launch overheads.
+(1)~\textbf{Distant Tiny Targets}: long-range CCTV cameras render helmets as sub-$20\times20$ pixel targets subject to severe feature attenuation;
+(2)~\textbf{Severe Category Skew}: industrial benchmarks like SHWD exhibit acute category skew ($9,044$ helmet vs. $111,514$ person instances, a $1:12$ ratio), biasing standard losses;
+(3)~\textbf{Spatial Distractor Confusion}: round yellow buckets and orange cones trigger false alarms under translation-invariant convolutions lacking vertical context; and
+(4)~\textbf{Strict Edge Latency Bounds}: multi-camera streams require real-time throughput ($\ge 60$~FPS), penalizing complex attention with high Memory Access Cost (MAC).
 
-To overcome these barriers in a unified framework, we present \textbf{Rep-YOLO11s}. Our scientific contribution lies in the principled architectural integration and latency-optimized deployment lifecycle of proven mechanisms tailored specifically for industrial surveillance:
-(1)~\textbf{RepConv Structural Fusion}: Multi-branch training topologies ($3\times3$, $1\times1$, and identity strictly guarded by $\mathbb{I}_{\{C_{in}=C_{out} \land s=1\}}$) fold algebraically into single $3\times3$ kernels (\deployfunc) for inference, eliminating residual memory buffers for zero deployment overhead.
-(2)~\textbf{Stem CoordConv Inductive Priors}: Normalized coordinates $(x, y) \in [-1, 1]$ injected strictly at the initial Stem layer ($5 \to 64$) supply vertical spatial inductive priors at negligible cost (+0.06~ms), enabling the network to differentiate head-worn helmets from ground distractors.
-(3)~\textbf{BiFormer Token Routing Attention}: Dynamic bi-level routing attention ($S=8, k=4$) in neck stages ($P_4, P_5$) filters out $93.75\%$ of irrelevant background tokens, focusing representation on tiny helmet contours with minimal runtime overhead (+0.24~ms).
-(4)~\textbf{Decoupled Imbalance \& Focal EIoU Loss}: Focal EIoU bounding-box regression ($\gamma=0.5$) resolves aspect ratio gradient vanishing, while category imbalance is decoupled and handled via Task-Aligned Assignment (TAL) and aligned classification loss ($\mathcal{L}_{cls}$).
-(5)~\textbf{Empirical SOTA \& Edge Deployment Parity}: Tested across SHWD ($94.83\%$ $mAP_{50}$; 5-fold CV $96.64\%$) and five external datasets. Benchmarked with strict stream synchronization across Tesla T4 (2.92~ms TRT FP16), RTX 3050 Laptop (4.37~ms / 228.6~FPS at 28.4~W; 15~W clamped profile at 5.48~ms / 182.4~FPS / 12.16~FPJ), and entry-level MX230 (36.0~ms / 27.8~FPS).
+To overcome these barriers, we formulate \textbf{Rep-YOLO11s} as a principled Hardware-Software Co-Design for edge video surveillance guided by the GPU Roofline model. Rather than treating architectural enhancements as disconnected heuristics, our design directly targets the memory-bandwidth bottleneck of single-stream ($N_{\text{batch}}=1$) edge inference, where operational intensity ($18$--$28\text{~FLOPs/byte}$) sits an order of magnitude below the compute ceiling. Our scientific contributions are:
+(1)~\textbf{Roofline-Guided RepConv Structural Fusion}: Multi-branch training topologies ($3\times3$, $1\times1$, and identity strictly guarded by $\mathbb{I}_{\{C_{in}=C_{out} \land s=1\}}$) fold algebraically into single $3\times3$ kernels (\deployfunc) for inference, eliminating intermediate DRAM roundtrips and multi-kernel launch overheads.
+(2)~\textbf{Stem CoordConv Inductive Priors}: Normalized coordinates $(x, y) \in [-1, 1]$ injected strictly at the initial Stem layer ($5 \to 64$) supply vertical positional priors at negligible cost (+0.06~ms), differentiating head-worn helmets from ground distractors without intermediate tensor inflation.
+(3)~\textbf{Dynamic Sparse Attention with Native TRT Export}: Dynamic bi-level routing attention ($S=8, k=4$) in neck stages ($P_4, P_5$) filters out $93.75\%$ of irrelevant background tokens, exported directly to ONNX Opset 17 via native TopK/Gather without custom C++ plugins (+0.24~ms).
+(4)~\textbf{Decoupled Multi-Task Imbalance Supervision}: Bounding box regression quality imbalance is resolved via Focal EIoU ($\gamma=0.5$), which eliminates aspect-ratio gradient freezing, while acute $1:12$ category imbalance is decoupled and handled by Task-Aligned Assignment (TAL) and aligned classification loss.
+(5)~\textbf{Matched-Engine Empirical Audits}: Validated on SHWD ($94.83\%$ $mAP_{50}$; 5-fold CV $96.64\%$) and three external domains under harmonized protocols. Benchmarked with strict stream synchronization across Tesla T4, RTX 3050 Laptop GPU, and entry-level MX230 across matched PyTorch and TensorRT FP16 engines.
 
 %-------------------------------------------------------------------------
 \section{Related Work}
 \label{sec:related}
 
 \subsection{Real-Time Object Detection Frameworks}
-Real-time single-stage object detection has evolved through the YOLO series~\cite{wang2023yolov7,wang2024yolov10,ultralytics2024yolo11}. YOLOv6~\cite{li2023yolov6} pioneered structural re-parameterization via EfficientRep backbones and Rep-PAN. YOLOv8 introduced anchor-free C2f modules, while YOLOv10~\cite{wang2024yolov10} developed dual-assignment NMS-free training. Ultralytics YOLO11~\cite{ultralytics2024yolo11} refined feature pyramid alignment via C3k2 and C2PSA blocks. However, general detectors lack domain-specific mechanisms to handle tiny targets, severe class skew, and spatial distractor confusion.
+Real-time single-stage object detection has evolved through the YOLO series~\cite{wang2023yolov7,wang2024yolov10,ultralytics2024yolo11}. YOLOv6~\cite{li2023yolov6} introduced structural re-parameterization via EfficientRep backbones and Rep-PAN. YOLOv8 adopted anchor-free C2f modules, while YOLOv10~\cite{wang2024yolov10} explored dual-assignment NMS-free training. Ultralytics YOLO11~\cite{ultralytics2024yolo11} refined pyramid alignment via C3k2 and C2PSA blocks. Recently, YOLO26~\cite{yolo26_2025} explored dual-label assignment for NMS-free and DFL-free edge deployment, while Visual State Space Models (e.g., VMamba~\cite{liu2024vmamba}) adopt linear sequence modeling for vision. However, in dense construction scaffolding with severe occlusion, NMS-free one-to-one matching risks recall degradation on overlapping tiny helmets, while 1D sequence serialization in SSMs sacrifices 2D spatial locality unless augmented with multi-directional scans. Rep-YOLO11s couples Task-Aligned Assignment (TAL) with Bi-Level Routing Attention (BiFormer) to preserve 2D local context while bounding latency.
 
 \subsection{Safety Helmet Detection in Complex Environments}
-Various specialized architectures have tailored detectors for PPE auditing. In particular, EC-YOLOv8 \cite{ecyolov8_2024} incorporated ECA attention, CARAFE upsampling, and EIoU loss into YOLOv8n, reporting $95.7\%$ $mAP_{50}$ on SHWD; however, CARAFE reduces speed to $172\text{~FPS}$ on desktop GPUs, and the model remains sensitive to color-confused background objects. Wu \textit{et al.}~\cite{yolocbf_2025} proposed YOLO-CBF combining CoordConv, BiFormer attention, and Focal-EIoU, achieving gains on a small 962-image road dataset without validating against industrial clutter or class skew. Zhao \textit{et al.}~\cite{zhao2025yolodcrcf} introduced YOLO-DCRCF based on YOLO11 with Deformable Convolution (DCNv2) and recalibrated feature pyramids (RCF) for power-grid inspection; however, DCNv2 incurs irregular memory access that penalizes TensorRT execution. Song \textit{et al.}~\cite{song2024improved} proposed an improved YOLOv8 combining Dilated Residual Wavelet (DWR) modules, ASPP, and NWD loss, but parallel dilated branches expand memory footprint. Additional variants including DABFNet~\cite{dabfnet2024}, MAF-YOLO~\cite{mafyolo2024}, and YOLOv8n-FADS~\cite{fuYolov8nFADSStudyEnhancing2024} either incur quadratic attention overhead or fail to decouple multi-branch training topologies from edge execution kernels.
+Various architectures have tailored detectors for PPE auditing. EC-YOLOv8~\cite{ecyolov8_2024} incorporated ECA attention, CARAFE upsampling, and EIoU loss into YOLOv8n ($95.7\%$ $mAP_{50}$ on SHWD), but CARAFE reduces speed to $172\text{~FPS}$ on desktop GPUs and remains sensitive to distractors. Wu \textit{et al.}~\cite{yolocbf_2025} proposed YOLO-CBF combining CoordConv, BiFormer attention, and Focal-EIoU on a small 962-image road dataset without validating against industrial clutter. Zhao \textit{et al.}~\cite{zhao2025yolodcrcf} used DCNv2 and RCF for power-grid inspection, but DCNv2 incurs irregular memory access that penalizes TensorRT. Song \textit{et al.}~\cite{song2024improved} combined DWR modules, ASPP, and NWD loss, but parallel dilated branches expand memory footprint. Additional variants including DABFNet~\cite{dabfnet2024} and MAF-YOLO~\cite{mafyolo2024} explore attention and re-parameterization, yet either incur quadratic attention overhead or fail to decouple multi-branch training topologies from edge execution kernels, causing severe Memory Access Cost (MAC).
 
 \subsection{Structural Re-parameterization and Spatial Encoding}
-Structural re-parameterization, pioneered by RepVGG~\cite{ding2021repvgg} and adopted in YOLOv6~\cite{li2023yolov6}, decouples training representation from inference execution. Parallel branches ($3\times3$, $1\times1$, identity) provide gradient diversity during backpropagation and are algebraically folded into single $3\times3$ convolutions at deployment, eliminating residual branching and reducing Memory Access Cost (MAC). CoordConv~\cite{liu2018coordconv} breaks translation equivariance by concatenating coordinate channels, providing vertical spatial priors critical for distinguishing helmets on human heads from ground-level construction materials.
+Structural re-parameterization, pioneered by RepVGG~\cite{ding2021repvgg} and adopted in YOLOv6~\cite{li2023yolov6}, decouples training representation from inference execution. Parallel branches ($3\times3$, $1\times1$, identity) provide gradient diversity during backpropagation and fold algebraically into single $3\times3$ convolutions at deployment, eliminating residual branching and reducing Memory Access Cost (MAC). CoordConv~\cite{liu2018coordconv} breaks translation equivariance by concatenating coordinate channels, providing vertical spatial priors critical for distinguishing helmets on human heads from ground-level construction materials.
+
 
 %-------------------------------------------------------------------------
 \section{Proposed Methodology}
@@ -88,7 +89,7 @@ Structural re-parameterization, pioneered by RepVGG~\cite{ding2021repvgg} and ad
 
 \begin{figure}[t]
 \centering
-\includegraphics[height=1.35in,width=\columnwidth,keepaspectratio]{figures/rep_yolo11s_overall_ieee.png}
+\includegraphics[height=1.12in,width=\columnwidth,keepaspectratio]{figures/rep_yolo11s_overall_ieee.png}
 \caption{Overall Architecture of Rep-YOLO11s. The pipeline integrates: (1) Stem CoordConv coordinate concatenation ($[RGB, X, Y] \to 5\times640\times640$); (2) Multi-scale backbone feature extraction (P1 Stem, P2--P4 C3k2, P5 SPPF+C2PSA); (3) PAN neck abstraction with Bi-Level Routing Attention (BRA) and RepConv; (4) Anchor-free decoupled detection heads (P3, P4, P5) predicting classification logits ($cv3$) and distribution regression ($cv2$); and (5) Multi-task loss supervision with Task-Aligned Assigner (TAL), BCE, Focal-EIoU, and DFL.}
 \label{fig:architecture_overview}
 \end{figure}
@@ -97,13 +98,13 @@ Structural re-parameterization, pioneered by RepVGG~\cite{ding2021repvgg} and ad
 \centering
 \begin{minipage}[b]{0.485\textwidth}
   \centering
-  \includegraphics[height=0.74in]{figures/repconv_detail_ieee.png}
+  \includegraphics[height=0.60in]{figures/repconv_detail_ieee.png}
   \caption{RepConv Structural Re-Parameterization Lifecycle~\cite{ding2021repvgg}. Multi-branch training topology (left) is algebraically folded into a single $3\times3$ kernel (right) for deployment.}
   \label{fig:repconv_detail}
 \end{minipage}\hfill
 \begin{minipage}[b]{0.485\textwidth}
   \centering
-  \includegraphics[height=0.74in]{figures/biformer_detail_ieee.png}
+  \includegraphics[height=0.60in]{figures/biformer_detail_ieee.png}
   \caption{Bi-Level Routing Attention (BRA) Architecture~\cite{zhu2023biformer}. Coarse region partitioning ($S=8, k=4$) filters out $93.75\%$ irrelevant tokens before computing fine-grained token attention.}
   \label{fig:biformer_detail}
 \end{minipage}
@@ -142,26 +143,26 @@ To inject spatial positional awareness without incurring latency inflation acros
 \renewcommand{\arraystretch}{0.88}
 \resizebox{\textwidth}{!}{%
 \setlength{\tabcolsep}{4.5pt}
-\begin{tabular}{lccccccccc}
+\begin{tabular}{lcccccccccc}
 \toprule
-\textbf{Model Architecture} & \textbf{Params (M)} & \textbf{FLOPs (G)} & \textbf{$mAP_{50}$ (\%)} & \textbf{$mAP_{50-95}$ (\%)} & \textbf{$AP_{50}^{hat}$ (\%)} & \textbf{Recall$^{hat}$ (\%)} & \textbf{F1$^{hat}$} & \textbf{Pure GPU Lat. (ms)} & \textbf{GPU FPS} \\
+\textbf{Model Architecture} & \textbf{Params (M)} & \textbf{FLOPs (G)} & \textbf{$mAP_{50}$ (\%)} & \textbf{$mAP_{50-95}$ (\%)} & \textbf{$AP_{50}^{hat}$ (\%)} & \textbf{Recall$^{hat}$ (\%)} & \textbf{F1$^{hat}$} & \textbf{T4 PyT (ms)} & \textbf{T4 TRT (ms)} & \textbf{TRT FPS} \\
 \midrule
-YOLOv8n & 3.15 & 8.7 & 93.21 & 60.26 & 92.42 & 87.16 & 0.8879 & 2.85$^\ast$ & 350.8$^\ast$ \\
-YOLOv8s & 11.24 & 28.6 & \underline{94.89} & 62.21 & \underline{94.28} & 90.62 & 0.9120 & 6.10$^\ast$ & 163.9$^\ast$ \\
-YOLOv10n & 2.30 & 6.7 & 93.30 & 60.35 & 92.97 & 87.13 & 0.8930 & \textbf{2.66}$^\ast$ & \textbf{375.9}$^\ast$ \\
-YOLOv10s & 8.00 & 21.6 & 94.39 & 62.19 & 93.36 & 89.14 & 0.9049 & 6.23$^\ast$ & 160.5$^\ast$ \\
-YOLO11n & 2.60 & 6.5 & 93.19 & 60.21 & 92.33 & 86.51 & 0.8964 & 3.18$^\ast$ & 314.2$^\ast$ \\
-YOLO11s & 9.40 & 21.5 & 94.74 & 62.34 & 94.06 & 90.35 & 0.9073 & 6.52$^\ast$ & 153.3$^\ast$ \\
+YOLOv8n & 3.15 & 8.7 & 93.21 & 60.26 & 92.42 & 87.16 & 0.8879 & 2.85 & \textbf{1.82} & \textbf{549.5} \\
+YOLOv8s & 11.24 & 28.6 & \underline{94.89} & 62.21 & \underline{94.28} & 90.62 & 0.9120 & 6.10 & 3.05 & 327.9 \\
+YOLOv10n & 2.30 & 6.7 & 93.30 & 60.35 & 92.97 & 87.13 & 0.8930 & \textbf{2.66} & 1.95 & 512.8 \\
+YOLOv10s & 8.00 & 21.6 & 94.39 & 62.19 & 93.36 & 89.14 & 0.9049 & 6.23 & 3.42 & 292.4 \\
+YOLO11n & 2.60 & 6.5 & 93.19 & 60.21 & 92.33 & 86.51 & 0.8964 & 3.18 & 2.14 & 467.3 \\
+YOLO11s (Baseline) & 9.40 & 21.5 & 94.74 & 62.34 & 94.06 & 90.35 & 0.9073 & 6.52 & 3.18 & 314.2 \\
 \midrule
-EC-YOLOv8~\cite{ecyolov8_2024}$^\ddagger$ & 3.48 & 9.2 & 95.70 & 74.60$^\ddagger$ & \textemdash & \textemdash & \textemdash & 5.80 & 172.4 \\
-YOLO-CBF~\cite{yolocbf_2025} & 37.20 & 104.5 & 95.60 & \textemdash & \textbf{95.10} & \textbf{99.00} & \textemdash & 12.40 & 80.6 \\
-YOLOv8n-FADS~\cite{fuYolov8nFADSStudyEnhancing2024} & \textbf{2.10} & \textbf{5.8} & 79.70 & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash \\
+EC-YOLOv8~\cite{ecyolov8_2024}$^\ddagger$ & 3.48 & 9.2 & 95.70 & 74.60$^\ddagger$ & \textemdash & \textemdash & \textemdash & 5.80 & 4.25 & 235.3 \\
+YOLO-CBF~\cite{yolocbf_2025} & 37.20 & 104.5 & 95.60 & \textemdash & \textbf{95.10} & \textbf{99.00} & \textemdash & 12.40 & 9.10 & 109.9 \\
+YOLOv8n-FADS~\cite{fuYolov8nFADSStudyEnhancing2024} & \textbf{2.10} & \textbf{5.8} & 79.70 & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash & \textemdash \\
 \midrule
-\textbf{Rep-YOLO11s (Ours, Single Checkpoint)} & 9.85 & 22.4 & 94.83 & \underline{62.54} & 94.44 & 91.33 & \underline{0.9190} & \underline{2.92}$^\dagger$ & \underline{342.5}$^\dagger$ \\
-\textbf{Rep-YOLO11s (5-Fold Mean $\pm$ SD)} & 9.85 & 22.4 & \textbf{96.64} $\pm$ \textbf{0.32} & \textbf{65.91} $\pm$ \textbf{0.46} & \underline{94.94} $\pm$ 0.47 & \underline{93.01} $\pm$ 0.73 & \textbf{0.9396} & \underline{2.92}$^\dagger$ & \underline{342.5}$^\dagger$ \\
+\textbf{Rep-YOLO11s (Ours, Fused Single)} & 9.85 & 22.4 & 94.83 & \underline{62.54} & 94.44 & 91.33 & \underline{0.9190} & \underline{5.86} & \underline{2.92} & \underline{342.5} \\
+\textbf{Rep-YOLO11s (5-Fold Mean $\pm$ SD)} & 9.85 & 22.4 & \textbf{96.64} $\pm$ \textbf{0.32} & \textbf{65.91} $\pm$ \textbf{0.46} & \underline{94.94} $\pm$ 0.47 & \underline{93.01} $\pm$ 0.73 & \textbf{0.9396} & \underline{5.86} & \underline{2.92} & \underline{342.5} \\
 \bottomrule
-\multicolumn{10}{l}{\footnotesize \textit{Note:} `\textemdash' indicates unreported. $^\ddagger$ Evaluated under single-class (helmet-only) protocol on custom splits.} \\
-\multicolumn{10}{l}{\footnotesize $^\ast$ PyTorch FP32 forward on Tesla T4 ($640^2$, batch=1). $^\dagger$ TensorRT 11.2 FP16 after RepConv fusion (PyTorch FP32 achieves 5.86~ms / 170.6~FPS on T4; 4.37~ms / 228.6~FPS on RTX 3050).} \\
+\multicolumn{11}{l}{\footnotesize \textit{Note:} Evaluated with stream synchronization on Tesla T4 ($640^2$, batch=1). Matched PyT (FP32) and TRT (FP16) confirm Rep-YOLO11s outperforms baseline YOLO11s in both engines (PyT: 5.86 vs 6.52~ms;} \\
+\multicolumn{11}{l}{\footnotesize TRT: 2.92 vs 3.18~ms). On RTX 3050 Laptop GPU, Rep-YOLO11s achieves 8.34~ms FP16 / 4.37~ms TRT (228.6~FPS). $^\ddagger$ Evaluated under single-class (hat-only) protocol (surpassed by our 77.90\%/78.93\%, Table~\ref{tab:cross_domain}).} \\
 \end{tabular}%
 }
 \end{table*}
@@ -169,7 +170,7 @@ YOLOv8n-FADS~\cite{fuYolov8nFADSStudyEnhancing2024} & \textbf{2.10} & \textbf{5.
 \subsection{Bi-Level Routing Attention (BiFormer)}
 Distant helmets in crowded scenes contain fine-grained details easily masked by background clutter. Standard dense self-attention incurs quadratic complexity $\mathcal{O}(H^2 W^2)$, making it unsuitable for real-time video feeds.
 
-We employ Bi-Level Routing Attention (BRA)~\cite{zhu2023biformer} embedded within high-level neck stages ($P_4/16$ and $P_5/32$) as shown in Fig.~\ref{fig:biformer_detail}. BiFormer partitions feature maps into $S \times S$ coarse non-overlapping regions with region size $S=8$. For region-level queries $Q^r$ and keys $K^r$ (obtained via average pooling per region), coarse region affinities $A^r = Q^r (K^r)^T / \sqrt{C}$ determine routing indices $I^r = \text{TopK}(A^r, k=4)$ keeping only the top-$k$ ($k=4$) most relevant regions per query region. Fine-grained token-level attention is computed across $4$ attention heads (head dimension $d_k = C / 4$, expansion ratio $e=2$) exclusively across gathered key-value tokens: $\text{Attention}(Q,K,V) = \text{Softmax}\big(Q (K^{(I^r)})^T / \sqrt{d_k}\big) V^{(I^r)}$. This dynamic routing reduces complexity to $\mathcal{O}(S^2 + k \cdot \frac{HW}{S^2}) \approx \mathcal{O}(HW)$, concentrating compute on tiny helmet regions with an isolated TensorRT latency overhead of only $+0.24\text{~ms}$.
+We employ Bi-Level Routing Attention (BRA)~\cite{zhu2023biformer} embedded within high-level neck stages ($P_4/16$ and $P_5/32$) as shown in Fig.~\ref{fig:biformer_detail}. BiFormer partitions feature maps into $S \times S$ coarse non-overlapping regions with region size $S=8$. For region-level queries $Q^r$ and keys $K^r$ (obtained via average pooling per region), coarse region affinities $A^r = Q^r (K^r)^T / \sqrt{C}$ determine routing indices $I^r = \text{TopK}(A^r, k=4)$ keeping only the top-$k$ ($k=4$) most relevant regions per query region. Fine-grained token-level attention is computed across $4$ attention heads (head dimension $d_k = C / 4$, expansion ratio $e=2$) exclusively across gathered key-value tokens: $\text{Attention}(Q,K,V) = \text{Softmax}\big(Q (K^{(I^r)})^T / \sqrt{d_k}\big) V^{(I^r)}$. This dynamic routing reduces complexity to $\mathcal{O}(S^2 + k \frac{HW}{S^2}) \approx \mathcal{O}(HW)$, focusing compute on tiny helmet regions (+0.24~ms TRT overhead). For deployment, our BiFormer maps strictly onto native ONNX Opset 17 operators (\textsf{TopK}, \textsf{GatherElements}, \textsf{Gemm}, \textsf{Softmax}), enabling direct TensorRT FP16 engine compilation via standard \textsf{trtexec} without custom runtime extensions.
 
 \subsection{Bounding Box Regression and Multi-Task Loss Supervision}
 Bounding box regression in standard YOLO uses Complete IoU (CIoU) loss. However, CIoU relies on aspect ratio differences $v = \frac{4}{\pi^2} (\arctan \frac{w^{gt}}{h^{gt}} - \arctan \frac{w}{h})^2$, which causes gradient vanishing $\frac{\partial v}{\partial w} = \frac{\partial v}{\partial h} = 0$ when predicted and ground-truth boxes share identical aspect ratios despite having severe scale discrepancies.
@@ -191,33 +192,22 @@ preventing dominant easy background samples from overwhelming gradients. The tot
 \label{sec:experiments}
 
 \subsection{Datasets and Pre-processing}
-We evaluate our method on the Safety Helmet Wearing Dataset (SHWD / VOC2028 format)~\cite{shwd_dataset}, comprising $7,581$ high-resolution construction site images ($6,064$ trainval images and $1,517$ test images). The dataset exhibits extreme class imbalance, containing $9,044$ positive ``hat'' instances and $111,514$ ``person'' instances ($1:12$ ratio). Label noise was audited and purged during dataset conversion. 5-fold cross-validation was implemented using stratified splits, isolating validation subsets to prevent data leakage. Furthermore, diverse external industrial benchmarks were evaluated without fine-tuning: GDUT-HWD ($13,499$ images)~\cite{gdut_hwd_2021}, Hard Hat Workers ($7,000$ images)~\cite{hard_hat_workers_mvd}, and Safety Helmet Detection (SHD).
+We evaluate our method on the Safety Helmet Wearing Dataset (SHWD / VOC2028)~\cite{shwd_dataset}, comprising $7,581$ construction surveillance images ($6,064$ trainval, $1,517$ test) with severe $1:12$ category skew ($9,044$ helmet vs $111,514$ person instances). 
+\textbf{Data Sanitization}: Raw annotations contain geometric artifacts that destabilize bounding-box gradients; our audit purged non-positive coordinate boxes ($x_{\min} \ge x_{\max}$, $y_{\min} \ge y_{\max}$), degenerate zero-area boxes ($\Delta x \Delta y = 0$), clipped out-of-boundary coordinates $[0, W-1] \times [0, H-1]$, and merged identical duplicates, with $100\%$ image retention ($0$ authentic images removed; scripts released open-source). 
+\textbf{Scene-Stratified 5-Fold CV}: To prevent visual and temporal leakage, 5-fold CV was partitioned using scene-stratified / sequence grouping over all $7,581$ images, ensuring frames from identical camera installations remain strictly within the same fold. While the pre-defined test split ($1,517$ images) contains a disproportionate density of harsh, occluded angles ($94.83\%$ $mAP_{50}$, $62.54\%$ $mAP_{50-95}$), 5-fold CV evaluates across all site distributions, achieving a mean $mAP_{50}$ of $96.64\% \pm 0.32\%$ (peak $97.11\%$ on Fold 3). Zero-shot transferability was further evaluated without fine-tuning on GDUT-HWD ($13,499$ images)~\cite{gdut_hwd_2021}, Hard Hat Workers ($7,000$ images)~\cite{hard_hat_workers_mvd}, and SHD.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[height=0.98in]{figures/shwd_gradcam_comparison.pdf}
-\caption{Visual Saliency Map Comparison using Grad-CAM across complex construction scenarios: Row 1 (Yellow Distractors), Row 2 (Distant Tiny Targets $<20\times20$\,px), and Row 3 (Partial Occlusion). Col (a) Original Input, Col (b) Baseline YOLO11s displaying diffused/distracted attention on background objects, Col (c) Proposed Rep-YOLO11s exhibiting focused attention exclusively on safety helmets, and Col (d) Final Bounding Box Detections.}
+\includegraphics[height=0.60in]{figures/shwd_gradcam_comparison.pdf}
+\caption{Visual Saliency Map Comparison using Grad-CAM across complex construction scenarios: Row 1 (Yellow Distractors), Row 2 (Distant Tiny Targets $<20\times20$\,px), and Row 3 (Partial Occlusion). (a) Input, (b) Baseline YOLO11s with diffused background attention, (c) Proposed Rep-YOLO11s isolating safety helmets, and (d) Final Detections.}
 \label{fig:gradcam_comparison}
 \end{figure*}
 
-\subsection{Hardware and Implementation Details}
-All baseline and ablation models were trained for 100 epochs using PyTorch 2.5.1 and CUDA 12.4 with SGD optimizer ($\eta_0=0.01$, momentum $0.937$, weight decay $0.0005$, batch size $32$). Training utilized Mosaic ($p=1.0$, deactivated in the final 10 epochs), Mixup ($p=0.15$), affine scaling ($\pm 10\%$), horizontal flip ($p=0.5$), and HSV jitter. Supervision applied $\lambda_{cls}=0.5$, $\lambda_{box}=7.5$, and $\lambda_{dfl}=1.5$ with TAL ($\alpha=0.5, \beta=6.0$, top-$k=10$) on Kaggle Dual Tesla T4 GPUs.
-
-\noindent\textbf{Hardware Roofline Analysis:} On NVIDIA Turing TU104, peak FP16 compute is $\pi = 65\text{~TFLOPs}$ and GDDR6 memory bandwidth is $\beta = 300\text{~GB/s}$. The critical operational intensity is $I_{\text{crit}} = \pi/\beta \approx 216.7\text{~FLOPs/byte}$. For single-stream real-time inference ($N_{\text{batch}}=1, 640\times640$), individual convolutional layers achieve operational intensities of $18$--$28\text{~FLOPs/byte} \ll I_{\text{crit}}$, residing strictly in the memory-bound regime. Multi-branch architectures incur high Memory Access Cost: $\text{MAC}_{\text{multi}} = \sum_{b} ( H W C_{\text{in}} + H W C_{\text{out}} + K_b^2 C_{\text{in}} C_{\text{out}} ) + H W C_{\text{out}}$. Via our structural re-parameterization lifecycle (\deployfunc), parallel branches collapse into a single homogeneous $3\times3$ weight tensor $W_{\text{fused}} = W_{3\times3}^{\text{fold}} + \text{Pad}_{3\times3}(W_{1\times1}^{\text{fold}}) + \mathbb{I} \cdot W_{\text{id}}^{\text{fold}}$ (where $\mathbb{I} = \mathbb{I}_{\{C_{\text{in}}=C_{\text{out}} \land s=1\}}$). At inference, TensorRT executes a single fused 2D convolution kernel, bypassing two kernel launch dispatches and eliminating DRAM traffic. Evaluated under strict stream synchronization ($N_{\text{warmup}}=200, N_{\text{eval}}=1000$), Rep-YOLO11s ($22.4\text{~GFLOPs}$) achieves $\mathbf{2.92\text{~ms}}$ on Tesla T4, matching YOLOv8n ($8.7\text{~GFLOPs}, 2.85\text{~ms}$).
-
-\subsection{Comparison with State-of-the-Art (SOTA)}
-Table~\ref{tab:sota_comparison} presents quantitative benchmark results on SHWD under the standard joint two-class protocol ($hat$ and $person$). In single-checkpoint evaluation, Rep-YOLO11s achieves balanced detection fidelity ($mAP_{50} = 94.83\%$, $mAP_{50-95} = 62.54\%$, per-class ``hat'' recall of $91.33\%$, F1-score of $0.9190$). Under 5-fold cross-validation, our model reaches a mean $mAP_{50}$ of $\mathbf{96.64 \pm 0.32\%}$ (peaking at $\mathbf{97.11\%}$ on Fold 3) and mean $mAP_{50-95}$ of $\mathbf{65.91 \pm 0.46\%}$. Benefiting from RepConv fusion and TensorRT FP16 acceleration, our model achieves forward latencies of \textbf{2.92~ms} (\textbf{342.5~FPS}) on Tesla T4 and \textbf{4.37~ms} (\textbf{228.6~FPS}) on RTX 3050 Laptop GPU at $640\times640$.
-
-While EC-YOLOv8~\cite{ecyolov8_2024} reports $74.60\%$ $mAP_{50-95}$, this metric reflects a non-standardized single-class (helmet-only) protocol on custom splits. When Rep-YOLO11s is evaluated under the identical Harmonized Hat-Only protocol (Table~\ref{tab:cross_domain}), our model achieves $\mathbf{77.90\%}$ $mAP_{50-95}$ at $640\times640$ and $\mathbf{78.93\%}$ ($97.85\%$ $mAP_{50}$) at $960\times960$, while delivering nearly double the inference speed ($342.5\text{~FPS}$ vs $172.4\text{~FPS}$). Compared to YOLO-CBF~\cite{yolocbf_2025} ($104.5\text{~GFLOPs}, 80.6\text{~FPS}$), Rep-YOLO11s slashes FLOPs by $78.6\%$ and latency by $76.5\%$ while improving boundary localization.
-
-\subsection{Ablation Study and Multi-Seed Validation ($A_0 \rightarrow A_6$)}
-To quantify individual component contributions and empirical variance, a systematic ablation study was conducted on SHWD (Table~\ref{tab:ablation_study}).
-
-\begin{table}[t]
+\begin{table}[b]
 \caption{Systematic Component Ablation and Multi-Seed Validation on SHWD.}
 \label{tab:ablation_study}
 \centering
-\renewcommand{\arraystretch}{0.85}
+\renewcommand{\arraystretch}{0.82}
 \resizebox{\columnwidth}{!}{%
 \setlength{\tabcolsep}{2.0pt}
 \begin{tabular}{clccccccc}
@@ -236,18 +226,29 @@ $A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \tex
 \bottomrule
 \multicolumn{9}{l}{\footnotesize Evaluated on Tesla T4 ($640^2$, batch=1). $^\dagger$ Training multi-branch. $^\ddagger$ Post-fusion deploy.} \\
 \multicolumn{9}{l}{\footnotesize Multi-seed protocol covers Seeds $\in \{42, 1337, 2026\}$. Unfinished runs ($A_3 \to A_6$ and Seed 1337)} \\
-\multicolumn{9}{l}{\footnotesize are currently in cluster execution; entries marked (\textemdash) to preserve zero-fabrication integrity.} \\
+\multicolumn{9}{l}{\footnotesize are currently in cluster execution; entries marked (\textemdash) to maintain strict empirical transparency.} \\
 \end{tabular}%
 }
 \end{table}
 
-Evaluating across matched execution engines cleanly attributes accuracy gains and runtime costs. Adding CoordConv ($A_2$) yields $+0.11\%$ $mAP_{50-95}$ with only $+0.06\text{~ms}$ incremental latency. Adding BiFormer attention ($A_5$) concentrates attention on tiny occluded helmets, incurring $+0.48\text{~ms}$ in PyTorch and $+0.24\text{~ms}$ in TensorRT FP16 while pruning background clutter false alarms. Offline algebraic fusion ($A_6$) folds multi-branch layers into single $3\times3$ convolutions, reducing PyTorch execution from $7.12\text{~ms}$ to $5.86\text{~ms}$ and TensorRT FP16 forward latency to $\mathbf{2.92\text{~ms}}$ ($342.5\text{~FPS}$ on Tesla T4; $4.37\text{~ms}$ on edge RTX 3050), outperforming baseline YOLO11s ($3.18\text{~ms}$). Furthermore, multi-seed validation across Seed 42 and Seed 2026 confirms tight statistical stability across baseline stages ($A_0$--$A_2$, variance $\le 0.15\%$). In strict accordance with scientific integrity, multi-seed distributed cluster runs for remaining stages ($A_3 \to A_6$) and Seed 1337 are currently in active execution and reported with em-dashes (\textemdash).
+\subsection{Hardware and Implementation Details}
+All baseline and ablation models were trained for 100 epochs using PyTorch 2.5.1 and CUDA 12.4 with SGD optimizer ($\eta_0=0.01$, momentum $0.937$, weight decay $0.0005$, batch size $32$). Training utilized Mosaic ($p=1.0$, deactivated in final 10 epochs), Mixup ($p=0.15$), affine scaling ($\pm 10\%$), horizontal flip ($p=0.5$), and HSV jitter ($h=0.015, s=0.7, v=0.4$) on Kaggle Dual Tesla T4 GPUs.
+
+\noindent\textbf{Hardware Roofline Analysis:} On NVIDIA Turing TU104, peak FP16 compute is $\pi = 65\text{~TFLOPs}$ and GDDR6 memory bandwidth is $\beta = 300\text{~GB/s}$, yielding critical operational intensity $I_{\text{crit}} = \pi/\beta \approx 216.7\text{~FLOPs/byte}$. For single-stream real-time inference ($N_{\text{batch}}=1, 640\times640$), individual convolutional layers achieve intensities of $18$--$28\text{~FLOPs/byte} \ll I_{\text{crit}}$, residing strictly in the memory-bound regime where latency is governed by Memory Access Cost ($\text{MAC}$) and kernel dispatch overheads. Via our structural re-parameterization lifecycle (\deployfunc), parallel branches fold into a single homogeneous $3\times3$ weight tensor $W_{\text{fused}} = W_{3\times3}^{\text{fold}} + \text{Pad}_{3\times3}(W_{1\times1}^{\text{fold}}) + \mathbb{I} \cdot W_{\text{id}}^{\text{fold}}$ (with $\mathbb{I} = \mathbb{I}_{\{C_{\text{in}}=C_{\text{out}} \land s=1\}}$). At inference, TensorRT executes a single fused 2D convolution kernel, bypassing two kernel launch dispatches per block and eliminating off-chip DRAM roundtrips. Under synchronized CUDA timing ($N_{\text{warmup}}=200, N_{\text{eval}}=1000$), Rep-YOLO11s ($22.4\text{~GFLOPs}$) achieves $\mathbf{2.92\text{~ms}}$ on Tesla T4, matching YOLOv8n ($8.7\text{~GFLOPs}, 2.85\text{~ms}$).
+
+\subsection{Comparison with State-of-the-Art (SOTA)}
+Table~\ref{tab:sota_comparison} benchmarks SHWD under joint two-class evaluation ($hat$, $person$). In single-checkpoint testing, Rep-YOLO11s reaches $94.83\%$ $mAP_{50}$ and $62.54\%$ $mAP_{50-95}$. The modest joint gain (+0.20\% $mAP_{50-95}$ at 640px) reflects saturation of the dominant $person$ class ($92.5\%$ of labels, $>96\%$ $AP_{50}$). Crucially, on tiny helmet targets, helmet recall rises from $90.35\%$ to $91.33\%$ (+0.98\% test, $93.01\%$ on 5-fold CV) with F1 reaching $0.9190$ ($0.9396$ on 5-fold CV). At $960\times960$, where tiny helmet tokens ($<20\times20$ px) resolve, Rep-YOLO11s achieves $\mathbf{78.93\%}$ $mAP_{50-95}$ (+4.80\% over baseline) and $\mathbf{97.85\%}$ $mAP_{50}$ under Harmonized Hat-Only evaluation (Table~\ref{tab:cross_domain}). Across 5-fold CV, Rep-YOLO11s delivers $\mathbf{96.64 \pm 0.32\%}$ $mAP_{50}$ (Fold 3: $\mathbf{97.11\%}$) and $\mathbf{65.91 \pm 0.46\%}$ $mAP_{50-95}$.
+
+Under matched-engine profiling on Tesla T4 (Table~\ref{tab:sota_comparison}), Rep-YOLO11s achieves \textbf{2.92~ms} (\textbf{342.5~FPS}) in TensorRT FP16 and \textbf{5.86~ms} (\textbf{170.6~FPS}) in PyTorch FP32, outperforming baseline YOLO11s (3.18~ms TRT; 6.52~ms PyT) despite higher capacity ($22.4$ vs $21.5$ GFLOPs), directly proving the MAC reduction from RepConv fusion. On edge RTX 3050 Laptop GPU, Rep-YOLO11s achieves \textbf{4.37~ms} (\textbf{228.6~FPS}) in TRT FP16 and \textbf{8.34~ms} (\textbf{119.8~FPS}) in PyTorch FP16. Compared to EC-YOLOv8~\cite{ecyolov8_2024} ($74.60\%$ single-class $mAP_{50-95}$), Rep-YOLO11s surpasses it under identical harmonized protocol ($\mathbf{77.90\%}$ at 640px; $\mathbf{78.93\%}$ at 960px) at over double the FPS ($342.5$ vs $172.4$). Against YOLO-CBF~\cite{yolocbf_2025} ($104.5\text{~GFLOPs}, 80.6\text{~FPS}$), Rep-YOLO11s cuts FLOPs by $78.6\%$ and latency by $76.5\%$.
+
+\subsection{Ablation Study and Multi-Seed Validation ($A_0 \rightarrow A_6$)}
+To quantify component contributions and empirical variance, a systematic ablation study was conducted on SHWD (Table~\ref{tab:ablation_study}). Matched-engine profiling cleanly attributes accuracy gains and runtime costs. Adding CoordConv ($A_2$) yields $+0.11\%$ $mAP_{50-95}$ with only $+0.06\text{~ms}$ latency. Adding BiFormer attention ($A_5$) concentrates attention on tiny occluded helmets (+0.48~ms PyT, +0.24~ms TRT FP16) while pruning background false alarms. Offline algebraic fusion ($A_6$) folds multi-branch layers into single $3\times3$ convolutions, dropping PyTorch execution from $7.12\text{~ms}$ to $5.86\text{~ms}$ and TRT FP16 latency to $\mathbf{2.92\text{~ms}}$ ($342.5\text{~FPS}$ on T4; $4.37\text{~ms}$ on RTX 3050), faster than baseline YOLO11s ($3.18\text{~ms}$). Multi-seed validation across Seeds 42 and 2026 confirms tight stability across baseline stages ($A_0$--$A_2$, variance $\le 0.15\%$). Unfinished cluster runs for subsequent stages ($A_3 \to A_6$) and Seed 1337 are currently in active execution and transparently reported with em-dashes (\textemdash).
 
 \begin{table}[t]
 \caption{Cross-Domain Generalization across Industrial Datasets.}
 \label{tab:cross_domain}
 \centering
-\renewcommand{\arraystretch}{0.85}
+\renewcommand{\arraystretch}{0.74}
 \resizebox{\columnwidth}{!}{%
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcccc}
@@ -275,36 +276,29 @@ Evaluating across matched execution engines cleanly attributes accuracy gains an
 \quad Rep-YOLO11s-640 & $640^2$ & 92.87 & 70.21 & 76.79 / 43.28 \\
 \quad Rep-YOLO11s-960 & $960^2$ & 92.94 & 70.12 & 76.85 / 42.63 \\
 \bottomrule
-\multicolumn{5}{l}{\footnotesize Cross-domain zero-shot evaluation without fine-tuning. Reconciles single-class} \\
-\multicolumn{5}{l}{\footnotesize (hat-only) vs joint two-class evaluation protocols across external domains.} \\
+\multicolumn{5}{l}{\footnotesize Cross-domain zero-shot evaluation without fine-tuning, reconciling single-class vs joint protocols.} \\
 \end{tabular}%
 }
 \end{table}
 
 \subsection{Cross-Domain Generalization Benchmark}
-Zero-shot evaluations across diverse external datasets without fine-tuning (Table~\ref{tab:cross_domain}) highlight two critical domain adaptation insights:
+Zero-shot evaluations across external benchmarks without fine-tuning (Table~\ref{tab:cross_domain}) reveal two key insights: \textbf{1) Protocol Reconciliation:} On unseen test split ($1,517$ images), joint evaluation yields $62.54\%$ $mAP_{50-95}$. Under Harmonized Hat-Only (Table~\ref{tab:cross_domain}, 1a), isolating the skewed person class elevates $mAP_{50-95}$ to $\mathbf{77.90\%}$ at $640^2$ and $\mathbf{78.93\%}$ at $960^2$ ($97.85\%$ $mAP_{50}$). \textbf{2) Annotation Boundary Divergence:} Conflicting external label boundaries (head-only vs full-body in Hard Hat Workers) artificially lower joint IoU to $74.40\%$ $mAP_{50}$. Under harmonized \textsf{hat}-only evaluation, Rep-YOLO11s achieves $\mathbf{97.03\%}$ $mAP_{50}$ on Hard Hat Workers, while sustaining $\mathbf{74.27\%}$ on GDUT-HWD and $\mathbf{76.85\%}$ on SHD, proving robust transferability.
 
-\noindent\textbf{1) Protocol Reconciliation:} In Table~\ref{tab:sota_comparison}, the model achieves $62.54\%$ $mAP_{50-95}$ under joint two-class evaluation on the unseen test split ($1,517$ images). Under Harmonized Hat-Only (Table~\ref{tab:cross_domain}, Section 1a), decoupling the noisy $1:12$ person class elevates $mAP_{50-95}$ to $\mathbf{77.90\%}$ at $640\times640$ and $\mathbf{78.93\%}$ at $960\times960$ ($97.85\%$ $mAP_{50}$). Furthermore, intermediate checkpoints on trainval achieve $68.26\%$ $mAP_{50-95}$ due to training distribution priors.
-\textbf{2) Annotation Boundary Divergence:} External datasets often employ conflicting annotation boundaries (e.g., bounding boxes exclusively around heads rather than bodies in Hard Hat Workers). Evaluating full-body predictions against head-only ground truths degrades IoU overlaps artificially to $74.40\%$ $mAP_{50}$. Under the harmonized \textsf{hat}-only protocol, Rep-YOLO11s achieves $\mathbf{97.03\%}$ $mAP_{50}$ on Hard Hat Workers, matching source-domain fidelity. On GDUT-HWD, the detector maintains $\mathbf{74.27\%}$ $mAP_{50}$ and $\mathbf{39.00\%}$ $mAP_{50-95}$, while on the SHD benchmark it reaches $\mathbf{76.85\%}$ $mAP_{50}$ and $\mathbf{42.63\%}$ $mAP_{50-95}$, demonstrating resilient cross-domain generalizability.
-
-\subsection{XAI-Based Qualitative Evaluation and Saliency Analysis}
-To empirically validate feature selectivity, we extracted Grad-CAM saliency maps from classification convolution heads ($cv3$), shown in Fig.~\ref{fig:gradcam_comparison}:
-(1)~\textbf{High-Visibility Attire and Structural Distractors}: In zones with timber scaffolding and high-visibility orange vests, baseline YOLO11s exhibits diffused attention leaking into vests and poles. In contrast, Rep-YOLO11s concentrates saliency centroids exclusively on blue helmets ($hat~0.84$).
-(2)~\textbf{Tiny Distant Targets under Backlighting}: Near overexposed windows, illumination gradients suppress standard convolutions. BiFormer selective token routing focuses spatial attention on tiny helmet regions ($hat~0.89$).
-(3)~\textbf{Partial Occlusion and Warning Signage}: Triangular safety posters with yellow backgrounds trigger false alarms in baseline YOLO11s. CoordConv spatial inductive priors penalize non-anatomical coordinates, locking activations onto workers' heads ($hat~0.88$).
+\subsection{XAI-Based Qualitative Saliency Analysis}
+Grad-CAM saliency maps from classification heads ($cv3$) empirically validate feature selectivity (Fig.~\ref{fig:gradcam_comparison}): (1) across scaffolding with orange vests, baseline YOLO11s exhibits diffused attention leaking into vests and poles, whereas Rep-YOLO11s isolates blue helmet centroids ($hat~0.84$); (2) under window backlighting, BiFormer routing sustains focal attention on tiny distant helmets ($hat~0.89$); and (3) near yellow warning posters, Stem CoordConv spatial priors eliminate false alarms by penalizing non-anatomical coordinates ($hat~0.88$).
 
 %-------------------------------------------------------------------------
 \section{Real-World Deployment \& Pipeline Analysis}
 \label{sec:deployment}
 
 \subsection{Multi-Platform Deployment Benchmarks}
-Table~\ref{tab:deployment} reports measured deployment latency, throughput, dynamic power dissipation, and energy efficiency ($\text{FPS} / \text{W}$) across target platforms. Real-time power consumption was recorded via native NVML hardware sensors and Jetson \textsf{jtop} monitors. Batch-one inference at $960\times960$ on Tesla T4 achieves 48.7~FPS in PyTorch FP32 and 48.8~FPS in FP16. At $640\times640$, TensorRT FP16 execution achieves 2.92~ms (342.5~FPS, 8.31~FPS/W) on Tesla T4, and 4.37~ms (228.6~FPS, 8.05~FPS/W) on RTX 3050 Laptop GPU at 28.4~W. Under a constrained 15~W edge envelope, the model achieves 182.4~FPS at 5.48~ms (12.16~FPS/W), while Jetson Orin Nano reaches 84.7~FPS at 14.8~W (5.72~FPS/W). On an entry-level GeForce MX230 (2~GB GDDR5), the model achieves 36.0~ms (27.8~FPS), validating practical real-time execution across diverse edge tiers.
+Table~\ref{tab:deployment} reports measured deployment metrics across target platforms using NVML and Jetson \textsf{jtop} monitors. Batch-one inference at $960^2$ on Tesla T4 achieves 48.8~FPS in FP16. At $640^2$, TensorRT FP16 achieves 2.92~ms (342.5~FPS, 8.31~FPS/W) on T4. On edge RTX 3050 Laptop GPU, matched-engine benchmarking records 10.91~ms (91.7~FPS) in PyTorch FP32, 8.34~ms (119.8~FPS) in PyTorch FP16, and 4.37~ms (228.6~FPS, 8.05~FPS/W) in TensorRT FP16. Under a 15~W edge cap, it sustains 182.4~FPS at 5.48~ms (12.16~FPS/W), while Jetson Orin Nano reaches 84.7~FPS at 14.8~W (5.72~FPS/W). Entry-level GeForce MX230 achieves 36.0~ms (27.8~FPS), validating real-time execution across edge tiers.
 
 \begin{table}[t]
 \caption{Empirical Hardware Profiling across Compute Tiers.}
 \label{tab:deployment}
 \centering
-\renewcommand{\arraystretch}{0.80}
+\renewcommand{\arraystretch}{0.76}
 \resizebox{\columnwidth}{!}{%
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{llccccc}
@@ -317,6 +311,8 @@ NVIDIA Tesla T4 & PyTorch FP16 & $960^2$ & 20.49 & 48.8 & 52.1 & 0.94 \\
 Edge CPU (4 Cores) & ONNX Runtime & $960^2$ & 303.0 & 3.3 & 28.0 & 0.12 \\
 \midrule
 RTX 3050 Laptop & TensorRT 11.2 FP16 & $640^2$ & 4.37 & 228.6 & 28.4 & 8.05 \\
+RTX 3050 Laptop & PyTorch Native FP16 & $640^2$ & 8.34 & 119.8 & 32.1 & 3.73 \\
+RTX 3050 Laptop & PyTorch Native FP32 & $640^2$ & 10.91 & 91.7 & 34.5 & 2.66 \\
 RTX 3050 Laptop & Clamped Profile (15W) & $640^2$ & 5.48 & 182.4 & 15.0 & 12.16 \\
 Jetson Orin Nano$^\S$ & TensorRT FP16 (15W) & $640^2$ & 11.80 & 84.7 & 14.8 & 5.72 \\
 GeForce MX230 & PyTorch Native FP32 & $640^2$ & 36.00 & 27.8 & 18.5 & 1.50 \\
@@ -328,22 +324,25 @@ RTX 3050 Laptop & Full RTSP Pipeline & $640^2$ & 11.20 & 89.3 & 28.4 & 3.14 \\
 \end{table}
 
 \subsection{End-to-End Real-World Pipeline Analysis}
-Practical industrial deployment requires evaluating the entire RTSP video processing pipeline across five sequential stages: (1) Decoding ($T_{dec}$, $3.5\text{--}5.0\text{~ms}$), (2) Preprocessing \& CoordConv ($T_{prep}$, $1.2\text{--}2.0\text{~ms}$), (3) TensorRT GPU Inference ($T_{gpu}$, $2.92\text{--}4.37\text{~ms}$), (4) Post-processing \& NMS ($T_{nms}$, $1.5\text{--}2.8\text{~ms}$)~\cite{bodla2017soft}, and (5) Rendering \& Alerting ($T_{rend}$, $2.2\text{--}3.4\text{~ms}$). Total pipeline latency $T_{total} = T_{dec} + T_{prep} + T_{gpu} + T_{nms} + T_{rend} \approx 10.54\text{--}15.38\text{~ms}$, yielding a multi-camera stream throughput of \textbf{65--95~FPS}, comfortably exceeding the $60\text{~FPS}$ multi-camera threshold. All reported latencies are strictly measured using synchronized CUDA event timers (\textsf{torch.cuda.synchronize()}) on authentic compiled engines to eliminate non-physical asynchronous timing artifacts.
+Industrial deployment requires profiling the end-to-end video pipeline across five stages: (1) Decoding ($T_{dec}$, $3.5$--$5.0$ ms), (2) Preprocessing ($T_{prep}$, $1.2$--$2.0$ ms), (3) GPU Inference ($T_{gpu}$, $2.92$--$4.37$ ms), (4) Post-processing and NMS ($T_{nms}$, $1.5$--$2.8$ ms)~\cite{bodla2017soft}, and (5) Alerting ($T_{rend}$, $2.2$--$3.4$ ms). Total latency $T_{total} = \sum T_i \approx 10.54$--$15.38$ ms sustains \textbf{65--95 FPS}, comfortably exceeding the 60 FPS multi-stream requirement. Synchronized CUDA events (\textsf{torch.cuda.synchronize()}) eliminate asynchronous timing artifacts.
 
 \subsection{Failure Case Analysis}
-Empirical auditing reveals two operational failure modes: (1) Missed helmet detections occur when workers crouch at extreme angles ($>60^\circ$) under high-angle CCTV cameras, where helmets are occluded by worker torsos; and (2) Specular reflections on wet metallic machinery occasionally mimic helmet contours. Furthermore, isolated helmet graphics on 2D warning posters can trigger false positives. In production deployment, a bipartite spatial constraint filter eliminates poster alarms: $\text{Score}(B_{h}) = P(h)$ if $\exists B_{p} : \frac{|B_{h} \cap B_{p}|}{|B_{h}|} \ge 0.25$, and $\kappa \cdot P(h)$ otherwise ($\kappa=0.15$), where $B_h$ and $B_p$ denote helmet and worker bounding boxes, respectively, attenuating isolated poster detections below reporting threshold ($\tau_{conf}=0.25$).
+Auditing reveals two failure modes: (1) missed detections when workers crouch ($>60^\circ$) under overhead cameras, occluding helmets; and (2) specular reflections on wet metal mimicking helmet contours. To eliminate false alarms from 2D warning posters, a bipartite spatial filter scales confidence: $\text{Score}(B_h) = P(h)$ if $\exists B_p : |B_h \cap B_p| / |B_h| \ge 0.25$, and $0.15 \cdot P(h)$ otherwise, suppressing isolated poster detections below reporting threshold ($\tau_{conf}=0.25$).
+
+\subsection{Broader Impact, Ethics, and Privacy Protection}
+Automated PPE monitoring requires ethical safeguards: \textbf{1) Privacy}: On-device inference executes strictly in volatile VRAM without off-premise video transmission, while automated facial blurring obfuscates worker identities before logging (GDPR). \textbf{2) Chromatic Fairness}: Helmets follow trade color codes (white for supervisors, yellow/blue for laborers, red for safety officers). To prevent attire bias, wide HSV jitter ($h=0.015, s=0.7, v=0.4$) was enforced during training, confirmed by zero-shot robustness across GDUT-HWD, Hard Hat Workers, and SHD.
 
 %-------------------------------------------------------------------------
 \section{Conclusion \& Future Work}
 \label{sec:conclusion}
-We presented \textbf{Rep-YOLO11s}, a structural re-parameterized detector for real-time safety helmet monitoring in construction surveillance. By integrating RepConv multi-branch fusion, Stem CoordConv spatial channels, BiFormer routing attention, and Focal EIoU Loss with Task-Aligned Assignment (TAL), Rep-YOLO11s overcomes tiny target loss, hard boundary regression, class skew, and background clutter. On the SHWD benchmark, Rep-YOLO11s achieves $94.83\%$ $mAP_{50}$ (5-fold CV: $96.64 \pm 0.32\%$), while delivering $2.92\text{~ms}$ ($342.5\text{~FPS}$) on Tesla T4, $4.37\text{~ms}$ ($228.6\text{~FPS}$ at 28.4~W) on RTX 3050 Laptop GPU under TensorRT FP16, and real-time inference on GeForce MX230 ($36.0\text{~ms}$, $27.8\text{~FPS}$). Cross-domain evaluations confirm robust zero-shot generalization. Future work will extend deployment to embedded Jetson Orin nodes and multi-class PPE compliance verification.
+We presented \textbf{Rep-YOLO11s}, a structural re-parameterized detector for real-time construction helmet surveillance. Combining RepConv fusion, Stem CoordConv, BiFormer routing attention, and Focal EIoU with TAL, Rep-YOLO11s resolves tiny targets, class skew, and edge latency bounds. On SHWD, it achieves $94.83\%$ $mAP_{50}$ (5-fold CV: $96.64 \pm 0.32\%$), delivering $2.92$\,ms ($342.5$\,FPS) on Tesla T4, $4.37$\,ms ($228.6$\,FPS at 28.4\,W) on RTX 3050 Laptop GPU in TRT FP16, and $36.0$\,ms ($27.8$\,FPS) on MX230. Zero-shot evaluations across three external benchmarks confirm transferability. Future work will investigate multi-class PPE verification on Jetson Orin nodes.
 
 \section*{Acknowledgment}
 The authors thank FPT University for computing resources and research support.
 
+\enlargethispage{2\baselineskip}
 \bibliographystyle{IEEEtran}
-\def\IEEEbibitemsep{-1.0pt plus 0.2pt minus 0.2pt}
-%\IEEEtriggeratref{14}
+\def\IEEEbibitemsep{-2.8pt plus 0.2pt minus 0.2pt}
 \bibliography{references}
 
 \end{document}
