@@ -59,14 +59,14 @@ X.~Ding, X.~Zhang, N.~Ma, J.~Han, G.~Ding, and J.~Sun, ``{RepVGG}: Making {VGG}-
 \bibitem{liu2018coordconv}
 R.~Liu, J.~Lehman, P.~Molino, F.~P. Such, E.~Frank, A.~Sergeev, and J.~Yosinski, ``An intriguing failing of convolutional neural networks and the {CoordConv} solution,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~31, 2018, pp. 9605--9616.
 
+\bibitem{zhu2023biformer}
+L.~Zhu, X.~Wang, Z.~Ke, W.~Zhang, and R.~W.~H. Lau, ``{BiFormer}: Vision transformer with bi-level routing attention,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2023, pp. 10\,323--10\,333.
+
 \bibitem{lin2017feature}
 T.-Y. Lin, P.~Doll{\'a}r, R.~Girshick, K.~He, B.~Hariharan, and S.~Belongie, ``Feature pyramid networks for object detection,'' in \emph{IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 2017, pp. 2117--2125.
 
 \bibitem{liu2018path}
 S.~Liu, L.~Qi, H.~Qin, J.~Shi, and J.~Jia, ``Path aggregation network for instance segmentation,'' in \emph{IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 2018, pp. 8759--8768.
-
-\bibitem{zhu2023biformer}
-L.~Zhu, X.~Wang, Z.~Ke, W.~Zhang, and R.~W.~H. Lau, ``{BiFormer}: Vision transformer with bi-level routing attention,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2023, pp. 10\,323--10\,333.
 
 \bibitem{zhang2022focal}
 Y.-R. Zhang, W.~Ren, Z.~Zhang, K.~Jia, L.~Wang, and T.~Tan, ``Focal and efficient {IOU} loss for accurate bounding box regression,'' \emph{Neurocomputing}, vol. 506, pp. 146--157, 2022.

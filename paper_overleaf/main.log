@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  7 OCT 2026 19:17
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  8 OCT 2026 19:47
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -255,20 +255,20 @@ File: l3backend-pdftex.def 2025-04-14 L3 backend support: PDF output (pdfTeX)
 ) (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
 
 -- Lines per column: 56 (exact).
 (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
@@ -277,109 +277,70 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
-LaTeX Font Info:    Calculating math sizes for size <11> on input line 37.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 37.
+LaTeX Font Info:    Calculating math sizes for size <11> on input line 48.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 48.
  (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 37.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 48.
  (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for OMS+ptm on input line 37.
+LaTeX Font Info:    Trying to load font information for OMS+ptm on input line 48.
  (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/psnfss/omsptm.fd
 File: omsptm.fd 
 )
 LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 37.
-
-Underfull \hbox (badness 4366) in paragraph at lines 43--45
-[]\OT1/ptm/b/it/9 Index Terms\OT1/ptm/b/n/9 ---Safety Hel-met De-tec-tion, Struc-tural Re-
- []
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 48.
 
 
-
-
-Underfull \hbox (badness 4518) in paragraph at lines 52--53
-[]\OT1/ptm/b/n/10 Spatial Dis-trac-tor Con-fu-sion\OT1/ptm/m/n/10 : Con-struc-tion sites
- []
-
-LaTeX Font Info:    Trying to load font information for OT1+phv on input line 58.
+LaTeX Font Info:    Trying to load font information for OT1+phv on input line 66.
 (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/psnfss/ot1phv.fd
 File: ot1phv.fd 2020/03/25 scalable font definitions for OT1/phv.
 )
-Underfull \hbox (badness 2050) in paragraph at lines 58--59
-[]\OT1/ptm/b/n/10 RepConv Struc-tural Fu-sion\OT1/ptm/m/n/10 : Multi-branch train-ing
- []
-
-
 
 [1{c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/base/8r.enc}
 
 
 ]
-Underfull \hbox (badness 4132) in paragraph at lines 73--74
-\OT1/ptm/m/n/10 au-dit-ing. EC-YOLOv8 [5] in-cor-po-rated ECA at-ten-tion,
- []
-
-
-
-<figures/rep_yolo11s_overall_ieee.png, id=19, 511.9125pt x 640.3925pt>
+<figures/rep_yolo11s_overall_ieee.png, id=24, 511.9125pt x 640.3925pt>
 File: figures/rep_yolo11s_overall_ieee.png Graphic file (type png)
 <use figures/rep_yolo11s_overall_ieee.png>
-Package pdftex.def Info: figures/rep_yolo11s_overall_ieee.png  used on input line 84.
-(pdftex.def)             Requested size: 252.0pt x 315.24126pt.
+Package pdftex.def Info: figures/rep_yolo11s_overall_ieee.png  used on input line 91.
+(pdftex.def)             Requested size: 77.98647pt x 97.55956pt.
+
+
+<figures/repconv_detail_ieee.png, id=25, 511.9125pt x 146.5475pt>
+File: figures/repconv_detail_ieee.png Graphic file (type png)
+<use figures/repconv_detail_ieee.png>
+Package pdftex.def Info: figures/repconv_detail_ieee.png  used on input line 100.
+(pdftex.def)             Requested size: 186.81136pt x 53.4802pt.
+<figures/biformer_detail_ieee.png, id=26, 511.9125pt x 163.61125pt>
+File: figures/biformer_detail_ieee.png Graphic file (type png)
+<use figures/biformer_detail_ieee.png>
+Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 106.
+(pdftex.def)             Requested size: 167.33035pt x 53.4802pt.
 
 
 [2 <./figures/rep_yolo11s_overall_ieee.png (PNG copy)>]
-<figures/repconv_detail_ieee.png, id=26, 511.9125pt x 146.5475pt>
-File: figures/repconv_detail_ieee.png Graphic file (type png)
-<use figures/repconv_detail_ieee.png>
-Package pdftex.def Info: figures/repconv_detail_ieee.png  used on input line 99.
-(pdftex.def)             Requested size: 252.84283pt x 72.38133pt.
-<figures/biformer_detail_ieee.png, id=27, 511.9125pt x 163.61125pt>
-File: figures/biformer_detail_ieee.png Graphic file (type png)
-<use figures/biformer_detail_ieee.png>
-Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 105.
-(pdftex.def)             Requested size: 252.84283pt x 80.80931pt.
 
 
 
-
-[3]
-
-
-
-[4 <./figures/repconv_detail_ieee.png (PNG copy)> <./figures/biformer_detail_ieee.png (PNG copy)>]
-Underfull \vbox (badness 1394) has occurred while \output is active []
-
-
-
-<figures/shwd_gradcam_comparison.pdf, id=37, 770.88pt x 564.18782pt>
+[3 <./figures/repconv_detail_ieee.png (PNG copy)> <./figures/biformer_detail_ieee.png (PNG copy)>]
+<figures/shwd_gradcam_comparison.pdf, id=39, 770.88pt x 564.18782pt>
 File: figures/shwd_gradcam_comparison.pdf Graphic file (type pdf)
 <use figures/shwd_gradcam_comparison.pdf>
-Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 322.
-(pdftex.def)             Requested size: 143.17517pt x 104.79128pt.
-
-
-[5]
-<figures/shwd_system_pipeline.pdf, id=46, 1112.95805pt x 513.11702pt>
-File: figures/shwd_system_pipeline.pdf Graphic file (type pdf)
-<use figures/shwd_system_pipeline.pdf>
-Package pdftex.def Info: figures/shwd_system_pipeline.pdf  used on input line 341.
-(pdftex.def)             Requested size: 231.83954pt x 106.88084pt.
+Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 198.
+(pdftex.def)             Requested size: 96.77145pt x 70.82428pt.
 
 
 
-Underfull \vbox (badness 3713) has occurred while \output is active []
+
+[4]
 
 
 
-[6 <./figures/shwd_gradcam_comparison.pdf> <./figures/shwd_system_pipeline.pdf>]
-
-(./main.bbl
-
-[7]
+[5 <./figures/shwd_gradcam_comparison.pdf>] (./main.bbl
 
 )
 
@@ -395,25 +356,25 @@ Before submitting the final camera ready copy, remember to:
 
 
 
-[8] (./main.aux)
+[6] (./main.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-05-26>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4145 strings out of 469867
- 66998 string characters out of 5482749
- 501380 words of memory out of 5000000
- 32385 multiletter control sequences out of 15000+600000
- 680704 words of font info for 146 fonts, out of 8000000 for 9000
+ 4129 strings out of 469867
+ 66494 string characters out of 5482749
+ 502382 words of memory out of 5000000
+ 32371 multiletter control sequences out of 15000+600000
+ 679808 words of font info for 145 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 57i,14n,65p,2261b,358s stack positions out of 10000i,1000n,20000p,200000b,200000s
-<c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (8 pages, 2773228 bytes).
+ 57i,14n,65p,1962b,358s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on main.pdf (6 pages, 2741448 bytes).
 PDF statistics:
- 303 PDF objects out of 1000 (max. 8388607)
- 103 compressed objects within 2 object streams
+ 155 PDF objects out of 1000 (max. 8388607)
+ 91 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 26 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 21 words of extra memory for PDF output out of 10000 (max. 10000000)
 
