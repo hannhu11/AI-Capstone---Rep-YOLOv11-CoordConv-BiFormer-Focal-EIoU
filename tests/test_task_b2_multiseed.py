@@ -401,6 +401,7 @@ class TestTaskB2NotebookStructure:
             assert "IS_RESUME_MODE = True" in cell_5_src
             assert "START_ABLATION_ID = \"A3\"" in cell_5_src
             assert f"SEED = {seed}" in cell_5_src
+            assert "seed = SEED" in cell_5_src
             assert "VERIFIED_PRIOR_RUNS" in cell_5_src
 
             # Check that Cell 2 materializes RepConv with fuse_convs
@@ -411,6 +412,33 @@ class TestTaskB2NotebookStructure:
                     decoded = base64.b64decode(b64_val.encode('ascii')).decode('utf-8')
                     assert "def fuse_convs(self)" in decoded
                     assert "def forward_fuse(self" in decoded
+
+    def test_cell5_resume_logic_execution_simulation(self):
+        """Simulates Cell 5 setup and resume logic to guarantee zero NameError in Python runtime."""
+        for seed in [42, 1337, 2026]:
+            from scripts.build_kaggle_task_b2_notebook import create_single_seed_notebook
+            nb = create_single_seed_notebook(seed=seed, account_num=1, is_resume=True)
+            cell_5_src = "".join(nb["cells"][5]["source"])
+
+            # Extract setup portion up to the training loop
+            loop_marker = "for ab in ABLATIONS:"
+            assert loop_marker in cell_5_src
+            setup_code = cell_5_src.split(loop_marker)[0]
+
+            # Mock Kaggle directories and execution environment
+            import tempfile
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                mock_env = {
+                    "Path": Path,
+                    "__file__": "mock_test.py",
+                    "OUTPUT_DIR": Path(tmp_dir),
+                    "CHECKPOINTS_DIR": Path(tmp_dir) / "checkpoints",
+                }
+                # Ensure execution does not throw NameError
+                exec(setup_code, mock_env)
+                assert mock_env["SEED"] == seed
+                assert mock_env["seed"] == seed
+                assert "is_already_completed" in mock_env
 
     def test_repconv_fusion_methods(self):
         """Verifies that RepConv block defines fuse_convs and forward_fuse required by Ultralytics DetectionModel.fuse()."""

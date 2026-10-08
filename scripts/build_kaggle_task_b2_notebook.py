@@ -704,6 +704,7 @@ from pathlib import Path
 
 # CONFIGURATION FOR DEDICATED SEED {seed}
 SEED = {seed}
+seed = SEED
 IS_RESUME_MODE = {is_resume}
 START_ABLATION_ID = "A3" if IS_RESUME_MODE else "A0"
 ALL_ABLATION_IDS = ["A0", "A1", "A2", "A3", "A4", "A5", "A6"]
@@ -773,11 +774,7 @@ VERIFIED_PRIOR_RUNS = {{
         {{"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 42, "mAP50": 95.62, "mAP50_95": 62.95, "precision": 94.01, "recall": 89.20, "train_time_min": 102.5, "checkpoint": "seed_42_A1_best.pt"}},
         {{"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 42, "mAP50": 95.35, "mAP50_95": 62.65, "precision": 93.60, "recall": 88.90, "train_time_min": 93.0, "checkpoint": "seed_42_A2_best.pt"}},
     ],
-    1337: [
-        {{"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 1337, "mAP50": 95.50, "mAP50_95": 62.83, "precision": 93.91, "recall": 89.05, "train_time_min": 90.1, "checkpoint": "seed_1337_A0_best.pt"}},
-        {{"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 1337, "mAP50": 95.76, "mAP50_95": 63.02, "precision": 94.15, "recall": 89.34, "train_time_min": 105.7, "checkpoint": "seed_1337_A1_best.pt"}},
-        {{"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 1337, "mAP50": 95.19, "mAP50_95": 62.57, "precision": 93.42, "recall": 88.80, "train_time_min": 91.3, "checkpoint": "seed_1337_A2_best.pt"}},
-    ],
+    1337: [],
     2026: [
         {{"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 2026, "mAP50": 95.63, "mAP50_95": 63.01, "precision": 94.02, "recall": 89.21, "train_time_min": 95.1, "checkpoint": "seed_2026_A0_best.pt"}},
         {{"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 2026, "mAP50": 95.58, "mAP50_95": 62.88, "precision": 93.95, "recall": 89.15, "train_time_min": 104.6, "checkpoint": "seed_2026_A1_best.pt"}},
@@ -786,7 +783,7 @@ VERIFIED_PRIOR_RUNS = {{
 }}
 
 if IS_RESUME_MODE:
-    for pre in VERIFIED_PRIOR_RUNS.get(seed, []):
+    for pre in VERIFIED_PRIOR_RUNS.get(SEED, []):
         if ALL_ABLATION_IDS.index(pre["ablation_id"]) < start_idx:
             if not any(r.get("ablation_id") == pre["ablation_id"] for r in results_records):
                 results_records.append(pre)
@@ -796,32 +793,44 @@ if IS_RESUME_MODE:
         json.dump(results_records, f, indent=2)
     print(f"[RESUME SETUP] Initialized results cache with {{len(results_records)}} completed baseline records.")
 
+# Check if prior records exist for this seed
+has_prior_runs = len(results_records) > 0
+if IS_RESUME_MODE and not has_prior_runs:
+    print(f"[NOTICE] No prior runs detected for Seed {{SEED}}. Initiating complete execution from A0.")
+    START_ABLATION_ID = "A0"
+    start_idx = 0
+    ACTIVE_TARGET_IDS = ALL_ABLATION_IDS
+
 def is_already_completed(ab_id: str) -> bool:
     for rec in results_records:
         if rec.get("ablation_id") == ab_id:
             if ab_id in ACTIVE_TARGET_IDS:
-                ckpt_path = CHECKPOINTS_DIR / f"seed_{seed}_{{ab_id}}_best.pt"
+                ckpt_path = CHECKPOINTS_DIR / f"seed_{{SEED}}_{{ab_id}}_best.pt"
                 return ckpt_path.exists()
             return True
     return False
 
+completed_ids = [r.get("ablation_id") for r in results_records]
+pending_ids = [ab_id for ab_id in ALL_ABLATION_IDS if ab_id not in completed_ids]
+
 print("=" * 80)
-suite_label = f"RESUME ABLATION SUITE ({{START_ABLATION_ID}} -> A6)" if IS_RESUME_MODE else f"FULL ABLATION SUITE (A0 -> A6)"
+suite_label = f"RESUME ABLATION SUITE ({{len(completed_ids)}} Done -> {{len(pending_ids)}} Remaining)" if IS_RESUME_MODE else f"FULL ABLATION SUITE (A0 -> A6)"
 print(f"[START] DEDICATED SEED {seed} {{suite_label}}")
 print(f"   Target Account : Kaggle Account {account_num}")
 print(f"   Random Seed    : {{SEED}}")
-print(f"   Active Models  : {{ACTIVE_TARGET_IDS}}")
+print(f"   Completed Runs : {{completed_ids if completed_ids else 'None (Clean Start)'}}")
+print(f"   Pending Models : {{pending_ids}}")
 print(f"   Batch Size     : {{BATCH_SIZE}} | ImgSz: {{IMGSZ}}")
 print(f"   Hyperparameters: lr0={{LR0}}, lrf={{LRF}}, patience={{PATIENCE}}, cos_lr={{COS_LR}}, close_mosaic={{CLOSE_MOSAIC}}")
 print("=" * 80)
 
 for ab in ABLATIONS:
     ab_id = ab["id"]
-    ckpt_name = f"seed_{seed}_{{ab_id}}_best.pt"
+    ckpt_name = f"seed_{{SEED}}_{{ab_id}}_best.pt"
     target_ckpt = CHECKPOINTS_DIR / ckpt_name
 
     if is_already_completed(ab_id):
-        print(f"[SKIP] Ablation {{ab_id}} (Seed {seed}) already completed in cache. Moving to next.")
+        print(f"[SKIP] Ablation {{ab_id}} (Seed {{SEED}}) already completed in cache. Moving to next.")
         continue
 
     print("\\n----------------------------------------------------------------------")
