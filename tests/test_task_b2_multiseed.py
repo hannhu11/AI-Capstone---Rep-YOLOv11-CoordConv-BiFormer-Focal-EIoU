@@ -415,6 +415,7 @@ class TestTaskB2NotebookStructure:
 
     def test_cell5_resume_logic_execution_simulation(self):
         """Simulates Cell 5 setup and resume logic to guarantee zero NameError in Python runtime."""
+        import tempfile
         for seed in [42, 1337, 2026]:
             from scripts.build_kaggle_task_b2_notebook import create_single_seed_notebook
             nb = create_single_seed_notebook(seed=seed, account_num=1, is_resume=True)
@@ -425,17 +426,15 @@ class TestTaskB2NotebookStructure:
             assert loop_marker in cell_5_src
             setup_code = cell_5_src.split(loop_marker)[0]
 
-            # Mock Kaggle directories and execution environment
-            import tempfile
             with tempfile.TemporaryDirectory() as tmp_dir:
+                # Redirect /kaggle/working and /kaggle/input to isolated tmp_dir
+                isolated_code = setup_code.replace('"/kaggle/working', f'r"{tmp_dir}').replace('"/kaggle/input', f'r"{tmp_dir}')
                 mock_env = {
                     "Path": Path,
                     "__file__": "mock_test.py",
-                    "OUTPUT_DIR": Path(tmp_dir),
-                    "CHECKPOINTS_DIR": Path(tmp_dir) / "checkpoints",
                 }
                 # Ensure execution does not throw NameError
-                exec(setup_code, mock_env)
+                exec(isolated_code, mock_env)
                 assert mock_env["SEED"] == seed
                 assert mock_env["seed"] == seed
                 assert "is_already_completed" in mock_env

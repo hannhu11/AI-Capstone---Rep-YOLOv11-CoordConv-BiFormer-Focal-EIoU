@@ -740,10 +740,13 @@ results_records = []
 csv_results_path = OUTPUT_DIR / "seed_{seed}_ablation_results.csv"
 log_file = OUTPUT_DIR / "seed_{seed}_ablation_log.json"
 
-if csv_results_path.exists():
-    df_cached = pd.read_csv(csv_results_path)
-    results_records = df_cached.to_dict(orient="records")
-    print(f"[RESUME] Loaded {{len(results_records)}} completed ablation runs from {{csv_results_path.name}}.")
+if csv_results_path.exists() and csv_results_path.stat().st_size > 0:
+    try:
+        df_cached = pd.read_csv(csv_results_path)
+        results_records = df_cached.to_dict(orient="records")
+        print(f"[RESUME] Loaded {{len(results_records)}} completed ablation runs from {{csv_results_path.name}}.")
+    except Exception as e:
+        print(f"[RESUME] Notice: Could not parse cached results: {{e}}")
 
 # 1. Scan /kaggle/input for any previous seed results if attached as dataset
 input_csvs = list(Path("/kaggle/input").glob(f"**/*seed_{seed}_ablation_results.csv"))
@@ -787,11 +790,12 @@ if IS_RESUME_MODE:
         if ALL_ABLATION_IDS.index(pre["ablation_id"]) < start_idx:
             if not any(r.get("ablation_id") == pre["ablation_id"] for r in results_records):
                 results_records.append(pre)
-    df_curr = pd.DataFrame(results_records)
-    df_curr.to_csv(csv_results_path, index=False)
-    with open(log_file, "w", encoding="utf-8") as f:
-        json.dump(results_records, f, indent=2)
-    print(f"[RESUME SETUP] Initialized results cache with {{len(results_records)}} completed baseline records.")
+    if len(results_records) > 0:
+        df_curr = pd.DataFrame(results_records)
+        df_curr.to_csv(csv_results_path, index=False)
+        with open(log_file, "w", encoding="utf-8") as f:
+            json.dump(results_records, f, indent=2)
+        print(f"[RESUME SETUP] Initialized results cache with {{len(results_records)}} completed baseline records.")
 
 # Check if prior records exist for this seed
 has_prior_runs = len(results_records) > 0
