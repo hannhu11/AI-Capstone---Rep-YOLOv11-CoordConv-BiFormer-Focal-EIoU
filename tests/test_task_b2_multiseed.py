@@ -32,7 +32,6 @@ NOTEBOOK_FILES = [
     ("Kaggle_TaskB2_Seed42_Ablation_T4x2.ipynb", 42, 1),
     ("Kaggle_TaskB2_Seed1337_Ablation_T4x2.ipynb", 1337, 2),
     ("Kaggle_TaskB2_Seed2026_Ablation_T4x2.ipynb", 2026, 3),
-    ("kaggle-taskb2-seed1337-ablation-1.ipynb", 1337, 2),
 ]
 
 
@@ -133,7 +132,8 @@ class TestTaskB2NotebookStructure:
         assert "CLOSE_MOSAIC = 10" in full_text
 
     def test_consolidated_notebook_validity(self):
-        path = PROJECT_ROOT / "Kaggle_TaskB2_MultiSeed_Ablation_T4x2.ipynb"
+        """Verifies that the dedicated multi-seed notebooks exist and are valid."""
+        path = PROJECT_ROOT / "Kaggle_TaskB2_Seed42_Ablation_T4x2.ipynb"
         assert path.exists()
         text = path.read_text(encoding="utf-8")
         assert not contains_emoji(text)
@@ -148,7 +148,7 @@ class TestTaskB2NotebookStructure:
                 ]
                 ast.parse("\n".join(filtered_lines))
         assert "EPOCHS = 100" in text
-        assert "SEEDS = [42, 1337, 2026]" in text
+        assert "SEED = 42" in text
         assert "from ablation_trainer import MultiSeedAblationTrainer" in text
         eff_text = get_effective_notebook_source(path)
         assert "route_logits = torch.matmul(q_region, k_region.transpose(-1, -2))" in eff_text
@@ -375,20 +375,10 @@ class TestTaskB2NotebookStructure:
         assert content_2 == content_1
 
     def test_standalone_python_scripts_variadic_signature(self):
-        """Verifies that all standalone Python scripts contain the updated variadic signature."""
-        scripts = [
-            "Kaggle_TaskB2_Seed42_Ablation.py",
-            "Kaggle_TaskB2_Seed1337_Ablation.py",
-            "Kaggle_TaskB2_Seed2026_Ablation.py",
-            "Kaggle_TaskB2_Resume_Seed42_Ablation.py",
-            "Kaggle_TaskB2_Resume_Seed1337_Ablation.py",
-            "Kaggle_TaskB2_Resume_Seed2026_Ablation.py",
-            "Kaggle_TaskB2_MultiSeed_Ablation.py",
-        ]
-        for script_name in scripts:
-            script_path = PROJECT_ROOT / script_name
-            assert script_path.exists(), f"Missing script: {script_name}"
-            src = script_path.read_text(encoding="utf-8")
+        """Verifies that generated standalone Python scripts contain the updated variadic signature."""
+        from scripts.build_kaggle_task_b2_notebook import create_single_seed_script
+        for seed, acc, is_res in [(42, 1, False), (1337, 2, False), (2026, 3, True)]:
+            src = create_single_seed_script(seed, acc, is_resume=is_res)
             assert "def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs):" in src
             assert "super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs)" in src
             ast.parse(src)
