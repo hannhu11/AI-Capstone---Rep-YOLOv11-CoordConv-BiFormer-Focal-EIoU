@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  8 OCT 2026 21:22
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  9 OCT 2026 01:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -293,9 +293,6 @@ File: omsptm.fd
 LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 48.
 
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
 
 LaTeX Font Info:    Trying to load font information for OT1+phv on input line 66.
 (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/psnfss/ot1phv.fd
@@ -306,22 +303,37 @@ File: ot1phv.fd 2020/03/25 scalable font definitions for OT1/phv.
 
 
 ]
+Underfull \hbox (badness 3492) in paragraph at lines 77--78
+[]\OT1/ptm/m/n/10 Real-time single-stage de-tec-tion has pro-gressed from
+ []
+
+
+Underfull \hbox (badness 1708) in paragraph at lines 77--78
+\OT1/ptm/m/n/10 YOLOv7 [1] through YOLOv10 [2] and YOLO11 [3].
+ []
 
 <figures/rep_yolo11s_overall_ieee.png, id=24, 511.9125pt x 640.3925pt>
 File: figures/rep_yolo11s_overall_ieee.png Graphic file (type png)
 <use figures/rep_yolo11s_overall_ieee.png>
-Package pdftex.def Info: figures/rep_yolo11s_overall_ieee.png  used on input line 92.
-(pdftex.def)             Requested size: 64.6997pt x 80.93808pt.
+Package pdftex.def Info: figures/rep_yolo11s_overall_ieee.png  used on input line 124.
+(pdftex.def)             Requested size: 252.0pt x 315.24126pt.
 <figures/repconv_detail_ieee.png, id=25, 511.9125pt x 146.5475pt>
 File: figures/repconv_detail_ieee.png Graphic file (type png)
 <use figures/repconv_detail_ieee.png>
-Package pdftex.def Info: figures/repconv_detail_ieee.png  used on input line 101.
-(pdftex.def)             Requested size: 151.46593pt x 43.36243pt.
+Package pdftex.def Info: figures/repconv_detail_ieee.png  used on input line 133.
+(pdftex.def)             Requested size: 250.26031pt x 71.64342pt.
 <figures/biformer_detail_ieee.png, id=26, 511.9125pt x 163.61125pt>
 File: figures/biformer_detail_ieee.png Graphic file (type png)
 <use figures/biformer_detail_ieee.png>
-Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 107.
-(pdftex.def)             Requested size: 135.67178pt x 43.36243pt.
+Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 139.
+(pdftex.def)             Requested size: 250.26031pt x 79.98546pt.
+
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 157--159
+\OT1/ptm/m/n/10 where $\OML/cmm/m/it/10 W[] \OMS/cmsy/m/n/10 2 \U/msb/m/n/10 R[]$ \OT1/ptm/m/n/10 and $\OML/cmm/m/it/10 W[] \OMS/cmsy/m/n/10 2
+ []
+
 
 
 [2 <./figures/rep_yolo11s_overall_ieee.png (PNG copy)>]
@@ -329,19 +341,30 @@ Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 10
 
 
 [3 <./figures/repconv_detail_ieee.png (PNG copy)> <./figures/biformer_detail_ieee.png (PNG copy)>]
-<figures/shwd_gradcam_comparison.pdf, id=39, 770.88pt x 564.18782pt>
-File: figures/shwd_gradcam_comparison.pdf Graphic file (type pdf)
-<use figures/shwd_gradcam_comparison.pdf>
-Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 202.
-(pdftex.def)             Requested size: 59.24855pt x 43.36243pt.
+Underfull \hbox (badness 2512) in paragraph at lines 223--226
+[]\OT1/ptm/m/n/10 We eval-u-ate on the Safety Hel-met Wear-ing Dataset
+ []
+
 
 
 
 
 [4]
-Underfull \vbox (badness 2591) has occurred while \output is active []
+
+<figures/shwd_gradcam_comparison.pdf, id=43, 770.88pt x 564.18782pt>
+File: figures/shwd_gradcam_comparison.pdf Graphic file (type pdf)
+<use figures/shwd_gradcam_comparison.pdf>
+Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 320.
+(pdftex.def)             Requested size: 252.0pt x 184.42635pt.
+
+Underfull \hbox (badness 4505) in paragraph at lines 332--333
+\OT1/ptm/m/n/10 ($[]$FPS, $\OT1/cmr/m/n/10 24\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 70$\OT1/ptm/m/n/10 FPS/W) with $\OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 28%$ $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 drop
+ []
 
 
+Underfull \hbox (badness 1596) in paragraph at lines 332--333
+\OT1/ptm/m/n/10 ($\OT1/cmr/m/n/10 12\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 16$\OT1/ptm/m/n/10 FPS/W); Jet-son Orin Nano reaches $\OT1/cmr/m/n/10 84\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 7$\OT1/ptm/m/n/10 FPS and
+ []
 
 
 
@@ -368,15 +391,15 @@ L3 programming layer <2025-05-26>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4131 strings out of 469867
- 66522 string characters out of 5482749
- 502820 words of memory out of 5000000
- 32373 multiletter control sequences out of 15000+600000
- 679808 words of font info for 145 fonts, out of 8000000 for 9000
+ 4136 strings out of 469867
+ 66587 string characters out of 5482749
+ 494598 words of memory out of 5000000
+ 32378 multiletter control sequences out of 15000+600000
+ 681020 words of font info for 147 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 57i,14n,65p,2185b,358s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,14n,65p,1994b,358s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (6 pages, 2743018 bytes).
+Output written on main.pdf (6 pages, 2742384 bytes).
 PDF statistics:
  155 PDF objects out of 1000 (max. 8388607)
  91 compressed objects within 1 object stream
