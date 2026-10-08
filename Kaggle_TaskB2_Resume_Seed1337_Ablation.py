@@ -1,9 +1,9 @@
 """
 =============================================================================
-KAGGLE STANDALONE SCRIPT: TASK B2 STATISTICAL ABLATION (SEED 2026) FULL (A0 -> A6)
+KAGGLE STANDALONE SCRIPT: TASK B2 STATISTICAL ABLATION (SEED 1337) RESUME (A3 -> A6)
 IEEE AAIML 2027 Reviewer Rebuttal - Safety Helmet Detection (SHWD / VOC2028)
 Author: Nguyen Han Nhu (FPT University)
-Target Account: Kaggle Account 3 | Dual Tesla T4 x2 (32GB VRAM)
+Target Account: Kaggle Account 2 | Dual Tesla T4 x2 (32GB VRAM)
 Epochs: 100 per ablation, patience=30, cos_lr=True, batch=32, imgsz=640
 =============================================================================
 """
@@ -20,7 +20,7 @@ import zipfile
 from pathlib import Path
 
 print("=" * 80)
-print("[INFO] KAGGLE DUAL TESLA T4 ENVIRONMENT SETUP - SEED 2026")
+print("[INFO] KAGGLE DUAL TESLA T4 ENVIRONMENT SETUP - SEED 1337")
 print("=" * 80)
 print(f"Python Version : {sys.version.split()[0]}")
 
@@ -389,7 +389,7 @@ print("[SUCCESS] All 7 ablation architectures verified successfully.")
 
 # ==============================================================================
 
-# CELL 5: DEDICATED SEED 2026 ABLATION TRAINING PIPELINE
+# CELL 5: DEDICATED SEED 1337 ABLATION TRAINING PIPELINE
 import gc
 import json
 import time
@@ -398,9 +398,9 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-# CONFIGURATION FOR DEDICATED SEED 2026
-SEED = 2026
-IS_RESUME_MODE = False
+# CONFIGURATION FOR DEDICATED SEED 1337
+SEED = 1337
+IS_RESUME_MODE = True
 START_ABLATION_ID = "A3" if IS_RESUME_MODE else "A0"
 ALL_ABLATION_IDS = ["A0", "A1", "A2", "A3", "A4", "A5", "A6"]
 start_idx = ALL_ABLATION_IDS.index(START_ABLATION_ID)
@@ -426,14 +426,14 @@ CLOSE_MOSAIC = 10
 LR0 = 0.01
 LRF = 0.01
 
-OUTPUT_DIR = Path("/kaggle/working/TaskB2_Seed2026_Outputs")
+OUTPUT_DIR = Path("/kaggle/working/TaskB2_Seed1337_Outputs")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 CHECKPOINTS_DIR = OUTPUT_DIR / "checkpoints"
 CHECKPOINTS_DIR.mkdir(parents=True, exist_ok=True)
 
 results_records = []
-csv_results_path = OUTPUT_DIR / "seed_2026_ablation_results.csv"
-log_file = OUTPUT_DIR / "seed_2026_ablation_log.json"
+csv_results_path = OUTPUT_DIR / "seed_1337_ablation_results.csv"
+log_file = OUTPUT_DIR / "seed_1337_ablation_log.json"
 
 if csv_results_path.exists():
     df_cached = pd.read_csv(csv_results_path)
@@ -441,7 +441,7 @@ if csv_results_path.exists():
     print(f"[RESUME] Loaded {len(results_records)} completed ablation runs from {csv_results_path.name}.")
 
 # 1. Scan /kaggle/input for any previous seed results if attached as dataset
-input_csvs = list(Path("/kaggle/input").glob(f"**/*seed_2026_ablation_results.csv"))
+input_csvs = list(Path("/kaggle/input").glob(f"**/*seed_1337_ablation_results.csv"))
 for p_csv in input_csvs:
     try:
         df_p = pd.read_csv(p_csv)
@@ -453,7 +453,7 @@ for p_csv in input_csvs:
         print(f"[INPUT-DATASET] Notice: Could not parse {p_csv}: {e}")
 
 # 2. Also copy any attached checkpoints into checkpoints directory
-for cand_pt in Path("/kaggle/input").glob(f"**/*seed_2026_*.pt"):
+for cand_pt in Path("/kaggle/input").glob(f"**/*seed_1337_*.pt"):
     target_dest = CHECKPOINTS_DIR / cand_pt.name
     if not target_dest.exists():
         try:
@@ -496,15 +496,15 @@ def is_already_completed(ab_id: str) -> bool:
     for rec in results_records:
         if rec.get("ablation_id") == ab_id:
             if ab_id in ACTIVE_TARGET_IDS:
-                ckpt_path = CHECKPOINTS_DIR / f"seed_2026_{ab_id}_best.pt"
+                ckpt_path = CHECKPOINTS_DIR / f"seed_1337_{ab_id}_best.pt"
                 return ckpt_path.exists()
             return True
     return False
 
 print("=" * 80)
 suite_label = f"RESUME ABLATION SUITE ({START_ABLATION_ID} -> A6)" if IS_RESUME_MODE else f"FULL ABLATION SUITE (A0 -> A6)"
-print(f"[START] DEDICATED SEED 2026 {suite_label}")
-print(f"   Target Account : Kaggle Account 3")
+print(f"[START] DEDICATED SEED 1337 {suite_label}")
+print(f"   Target Account : Kaggle Account 2")
 print(f"   Random Seed    : {SEED}")
 print(f"   Active Models  : {ACTIVE_TARGET_IDS}")
 print(f"   Batch Size     : {BATCH_SIZE} | ImgSz: {IMGSZ}")
@@ -513,11 +513,11 @@ print("=" * 80)
 
 for ab in ABLATIONS:
     ab_id = ab["id"]
-    ckpt_name = f"seed_2026_{ab_id}_best.pt"
+    ckpt_name = f"seed_1337_{ab_id}_best.pt"
     target_ckpt = CHECKPOINTS_DIR / ckpt_name
 
     if is_already_completed(ab_id):
-        print(f"[SKIP] Ablation {ab_id} (Seed 2026) already completed in cache. Moving to next.")
+        print(f"[SKIP] Ablation {ab_id} (Seed 1337) already completed in cache. Moving to next.")
         continue
 
     print("\n----------------------------------------------------------------------")
@@ -532,7 +532,7 @@ for ab in ABLATIONS:
     import ablation_trainer
     ablation_trainer.CURRENT_ABLATION_MODEL = model.model
 
-    run_name = f"run_{ab_id}_seed_2026"
+    run_name = f"run_{ab_id}_seed_1337"
     t_start = time.time()
 
     try:
@@ -621,7 +621,7 @@ for ab in ABLATIONS:
     with open(log_file, "w", encoding="utf-8") as f:
         json.dump(results_records, f, indent=2)
 
-    print(f"[DONE] Completed {ab_id} Seed 2026: mAP50 = {map50:.2f}%, mAP50-95 = {map50_95:.2f}% ({train_time_min:.1f} min)")
+    print(f"[DONE] Completed {ab_id} Seed 1337: mAP50 = {map50:.2f}%, mAP50-95 = {map50_95:.2f}% ({train_time_min:.1f} min)")
 
     # Clean VRAM
     del model
@@ -629,19 +629,19 @@ for ab in ABLATIONS:
     torch.cuda.empty_cache()
     gc.collect()
 
-print("\n[SUCCESS] All ablation models for Seed 2026 completed successfully.")
+print("\n[SUCCESS] All ablation models for Seed 1337 completed successfully.")
 
 # ==============================================================================
 
-# CELL 6: TABULATION AND ABLATION COMPARISON (SEED 2026)
+# CELL 6: TABULATION AND ABLATION COMPARISON (SEED 1337)
 import pandas as pd
 from tabulate import tabulate
 
-csv_file = OUTPUT_DIR / "seed_2026_ablation_results.csv"
+csv_file = OUTPUT_DIR / "seed_1337_ablation_results.csv"
 if csv_file.exists():
     df = pd.read_csv(csv_file)
     print("=" * 80)
-    print("[RESULTS] ABLATION SUITE METRICS - SEED 2026")
+    print("[RESULTS] ABLATION SUITE METRICS - SEED 1337")
     print("=" * 80)
     print(tabulate(df, headers="keys", tablefmt="pipe", showindex=False))
 
@@ -669,11 +669,11 @@ if csv_file.exists():
 
 # ==============================================================================
 
-# CELL 7: AUTOMATED ARTIFACT PACKAGING (SEED 2026)
+# CELL 7: AUTOMATED ARTIFACT PACKAGING (SEED 1337)
 import zipfile
 from pathlib import Path
 
-zip_filename = Path("/kaggle/working/TaskB2_Seed2026_Outputs.zip")
+zip_filename = Path("/kaggle/working/TaskB2_Seed1337_Outputs.zip")
 print("=" * 80)
 print(f"[PACKAGE] ARCHIVING ARTIFACTS TO: {zip_filename.name}...")
 print("=" * 80)

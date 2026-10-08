@@ -67,6 +67,12 @@ class CoordConv(nn.Module):
             coords.append(rr)
         return self.conv(torch.cat([x, *coords], dim=1))
 
+    def fuse(self) -> None:
+        pass
+
+    def fuse_convs(self) -> None:
+        pass
+
 
 class RepConv(nn.Module):
     """
@@ -155,11 +161,28 @@ class RepConv(nn.Module):
         )
         self.rbr_reparam.weight.data = kernel.detach().clone()
         self.rbr_reparam.bias.data = bias.detach().clone()
+        self.conv = self.rbr_reparam
         del self.rbr_dense
         del self.rbr_1x1
         if hasattr(self, "rbr_identity"):
             del self.rbr_identity
         self.deploy = True
+
+    def fuse_convs(self) -> None:
+        """Alias for switch_to_deploy compatible with Ultralytics DetectionModel.fuse()."""
+        self.switch_to_deploy()
+
+    def fuse(self) -> None:
+        """Additional alias for model fusion."""
+        self.switch_to_deploy()
+
+    def forward_fuse(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass for fused deploy mode."""
+        if hasattr(self, "conv"):
+            return self.act(self.conv(x))
+        elif hasattr(self, "rbr_reparam"):
+            return self.act(self.rbr_reparam(x))
+        return self.forward(x)
 
 
 class BiFormerBlockLite(nn.Module):
@@ -227,6 +250,12 @@ class BiFormerBlockLite(nn.Module):
         y = y.permute(0, 5, 1, 3, 2, 4).reshape(b, c, hp, wp)
         y = y[:, :, :h, :w]
         return x + self.norm(self.proj(y))
+
+    def fuse(self) -> None:
+        pass
+
+    def fuse_convs(self) -> None:
+        pass
 
 
 def xywh_to_xyxy(boxes: torch.Tensor) -> torch.Tensor:

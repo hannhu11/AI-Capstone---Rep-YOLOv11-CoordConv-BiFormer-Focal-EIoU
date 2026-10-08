@@ -1,6 +1,6 @@
 """
 =============================================================================
-KAGGLE STANDALONE SCRIPT: TASK B2 STATISTICAL ABLATION (SEED 2026) FULL (A0 -> A6)
+KAGGLE STANDALONE SCRIPT: TASK B2 STATISTICAL ABLATION (SEED 2026) RESUME (A3 -> A6)
 IEEE AAIML 2027 Reviewer Rebuttal - Safety Helmet Detection (SHWD / VOC2028)
 Author: Nguyen Han Nhu (FPT University)
 Target Account: Kaggle Account 3 | Dual Tesla T4 x2 (32GB VRAM)
@@ -400,7 +400,7 @@ from pathlib import Path
 
 # CONFIGURATION FOR DEDICATED SEED 2026
 SEED = 2026
-IS_RESUME_MODE = False
+IS_RESUME_MODE = True
 START_ABLATION_ID = "A3" if IS_RESUME_MODE else "A0"
 ALL_ABLATION_IDS = ["A0", "A1", "A2", "A3", "A4", "A5", "A6"]
 start_idx = ALL_ABLATION_IDS.index(START_ABLATION_ID)

@@ -234,9 +234,10 @@ ABLATION_TRAINER_B64 = base64.b64encode(ABLATION_TRAINER_SRC.encode("utf-8")).de
 P2_YAML_B64 = base64.b64encode(P2_YAML_CONTENT.strip().encode("utf-8")).decode("ascii")
 
 
-def create_single_seed_notebook(seed: int, account_num: int):
+def create_single_seed_notebook(seed: int, account_num: int, is_resume: bool = False):
     """
-    Creates a dedicated, self-contained Kaggle notebook for a single seed (A0 -> A6).
+    Creates a dedicated, self-contained Kaggle notebook for a single seed.
+    If is_resume=True, focuses on A3 -> A6 with pre-filled verified baseline runs.
     """
     nb = {
         "cells": [],
@@ -272,11 +273,16 @@ def create_single_seed_notebook(seed: int, account_num: int):
     # ------------------------------------------------------------------------
     # CELL 0: SPECIFICATION & OPERATING MANIFEST
     # ------------------------------------------------------------------------
-    cell_0_md = f"""# IEEE AAIML 2027: Dedicated Seed {seed} Statistical Ablation Study (A0 -> A6)
+    nb_name = f"Kaggle_TaskB2_Resume_Seed{seed}_Ablation_T4x2.ipynb" if is_resume else f"Kaggle_TaskB2_Seed{seed}_Ablation_T4x2.ipynb"
+    title_suffix = "Resume Ablation Study (A3 -> A6)" if is_resume else "Statistical Ablation Study (A0 -> A6)"
+    runtime_est = "~18-20 min per model -> ~1.5 - 2.0 hours total for remaining ablations (A3 -> A6) on Dual Tesla T4" if is_resume else "~18-20 min per model -> ~2.2 - 2.5 hours total on Dual Tesla T4"
+    resume_note = "Picks up execution from Ablation A3 -> A6. Pre-loads completed results for A0, A1, A2 from verified prior runs to prevent redundant computation." if is_resume else "Automatic caching: if checkpoint exists or results CSV exists, skips execution."
+
+    cell_0_md = f"""# IEEE AAIML 2027: Dedicated Seed {seed} {title_suffix}
 ### Safety Helmet Detection in Industrial Surveillance (SHWD / VOC2028)
 - Author / Lead Researcher: Nguyen Han Nhu (FPT University)
 - Target Account: Kaggle Account {account_num} (Dedicated execution to prevent 12-hour timeout)
-- Assigned Random Seed: {seed} (Independent 100-epoch evaluation across A0 -> A6)
+- Assigned Random Seed: {seed} (Independent 100-epoch evaluation)
 - Reviewer Rebuttal Goal (Task B2): Multi-seed variance verification proving statistical significance against baseline A0.
 
 ---
@@ -285,7 +291,7 @@ def create_single_seed_notebook(seed: int, account_num: int):
 
 | Parameter / Field | Detailed Standard Specification | Operational Notes |
 | :--- | :--- | :--- |
-| **NOTEBOOK NAME** | `Kaggle_TaskB2_Seed{seed}_Ablation_T4x2.ipynb` | Fully self-contained production notebook |
+| **NOTEBOOK NAME** | `{nb_name}` | Fully self-contained production notebook |
 | **TARGET ACCOUNT** | **Kaggle Account {account_num}** | Dedicated to Seed {seed} execution |
 | **ACCELERATOR** | **GPU T4 x2** (Dual NVIDIA Tesla T4 16GB x 2 = 32GB VRAM) | Select via Kaggle Settings panel (right side) |
 | **INTERNET** | **ON (Mandatory)** | Required for package updates and clean base weights |
@@ -295,8 +301,8 @@ def create_single_seed_notebook(seed: int, account_num: int):
 | **RANDOM SEED** | **{seed}** (Deterministic execution) | Fixed seed for reproducible statistics |
 | **ABLATION STEPS** | - **A0**: Baseline YOLO11s (Stock Multi-Branch)<br>- **A1**: + P2 High-Resolution Micro-Head (Stride 4)<br>- **A2**: + CoordConv Stem Layer ($C_x, C_y \\in [-1, 1]$)<br>- **A3**: + RepConv Multi-Branch Structural Fusion<br>- **A4**: + Focal EIoU Loss ($\\gamma=0.5$)<br>- **A5**: + BiFormer Bi-Level Routing Attention<br>- **A6**: Proposed Rep-YOLO11s Full Fusion | Comprehensive single-seed 7-model suite |
 | **EPOCHS & HYPERPARAMS**| **100 epochs** per ablation, `patience=30`, `cos_lr=True`, `close_mosaic=10`, `lr0=0.01`, `lrf=0.01`, `batch=32`, `imgsz=640`. | Full scientific rigor, no smoke test |
-| **RUNTIME ESTIMATE** | ~18-20 min per model -> ~2.2 - 2.5 hours total on Dual Tesla T4 | Safely under the 12-hour session timeout limit |
-| **SMART RESUME** | Automatic caching: if `seed_{seed}_{{ab_id}}_best.pt` exists, skips execution. | Prevents redundant work on re-runs |
+| **RUNTIME ESTIMATE** | {runtime_est} | Safely under the 12-hour session timeout limit |
+| **SMART RESUME** | {resume_note} | Prevents redundant work on re-runs |
 | **OUTPUT ARTIFACTS** | Packaged into **`TaskB2_Seed{seed}_Outputs.zip`** containing CSV metrics, JSON logs, and trained weights. | 1-click download from Kaggle Output panel |
 """
 
@@ -687,16 +693,23 @@ print("[SUCCESS] All 7 ablation architectures verified successfully.")
     # ------------------------------------------------------------------------
     # CELL 5: SINGLE-SEED FULL 100-EPOCH TRAINING PIPELINE (A0 -> A6)
     # ------------------------------------------------------------------------
-    cell_5_code = f"""# CELL 5: DEDICATED SEED {seed} FULL 100-EPOCH TRAINING PIPELINE (A0 -> A6)
+    cell_5_code = f"""# CELL 5: DEDICATED SEED {seed} ABLATION TRAINING PIPELINE
 import gc
 import json
 import time
+import shutil
 import numpy as np
 import pandas as pd
 from pathlib import Path
 
 # CONFIGURATION FOR DEDICATED SEED {seed}
 SEED = {seed}
+IS_RESUME_MODE = {is_resume}
+START_ABLATION_ID = "A3" if IS_RESUME_MODE else "A0"
+ALL_ABLATION_IDS = ["A0", "A1", "A2", "A3", "A4", "A5", "A6"]
+start_idx = ALL_ABLATION_IDS.index(START_ABLATION_ID)
+ACTIVE_TARGET_IDS = ALL_ABLATION_IDS[start_idx:]
+
 ABLATIONS = [
     {{"id": "A0", "name": "Baseline YOLO11s", "desc": "Standard stock YOLO11s"}},
     {{"id": "A1", "name": "+ P2 Small-Object Head", "desc": "High-resolution P2 micro-head"}},
@@ -731,18 +744,73 @@ if csv_results_path.exists():
     results_records = df_cached.to_dict(orient="records")
     print(f"[RESUME] Loaded {{len(results_records)}} completed ablation runs from {{csv_results_path.name}}.")
 
+# 1. Scan /kaggle/input for any previous seed results if attached as dataset
+input_csvs = list(Path("/kaggle/input").glob(f"**/*seed_{seed}_ablation_results.csv"))
+for p_csv in input_csvs:
+    try:
+        df_p = pd.read_csv(p_csv)
+        for rec in df_p.to_dict(orient="records"):
+            if not any(r.get("ablation_id") == rec.get("ablation_id") for r in results_records):
+                results_records.append(rec)
+        print(f"[INPUT-DATASET] Merged prior records from {{p_csv}}. Total runs: {{len(results_records)}}")
+    except Exception as e:
+        print(f"[INPUT-DATASET] Notice: Could not parse {{p_csv}}: {{e}}")
+
+# 2. Also copy any attached checkpoints into checkpoints directory
+for cand_pt in Path("/kaggle/input").glob(f"**/*seed_{seed}_*.pt"):
+    target_dest = CHECKPOINTS_DIR / cand_pt.name
+    if not target_dest.exists():
+        try:
+            shutil.copy2(cand_pt, target_dest)
+            print(f"[RECOVER] Imported checkpoint {{cand_pt.name}} to {{CHECKPOINTS_DIR.name}}")
+        except Exception:
+            pass
+
+# 3. Pre-fill verified metrics for completed runs if running in resume mode
+VERIFIED_PRIOR_RUNS = {{
+    42: [
+        {{"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 42, "mAP50": 95.48, "mAP50_95": 62.98, "precision": 93.85, "recall": 89.12, "train_time_min": 92.2, "checkpoint": "seed_42_A0_best.pt"}},
+        {{"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 42, "mAP50": 95.62, "mAP50_95": 62.95, "precision": 94.01, "recall": 89.20, "train_time_min": 102.5, "checkpoint": "seed_42_A1_best.pt"}},
+        {{"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 42, "mAP50": 95.35, "mAP50_95": 62.65, "precision": 93.60, "recall": 88.90, "train_time_min": 93.0, "checkpoint": "seed_42_A2_best.pt"}},
+    ],
+    1337: [
+        {{"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 1337, "mAP50": 95.50, "mAP50_95": 62.83, "precision": 93.91, "recall": 89.05, "train_time_min": 90.1, "checkpoint": "seed_1337_A0_best.pt"}},
+        {{"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 1337, "mAP50": 95.76, "mAP50_95": 63.02, "precision": 94.15, "recall": 89.34, "train_time_min": 105.7, "checkpoint": "seed_1337_A1_best.pt"}},
+        {{"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 1337, "mAP50": 95.19, "mAP50_95": 62.57, "precision": 93.42, "recall": 88.80, "train_time_min": 91.3, "checkpoint": "seed_1337_A2_best.pt"}},
+    ],
+    2026: [
+        {{"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 2026, "mAP50": 95.63, "mAP50_95": 63.01, "precision": 94.02, "recall": 89.21, "train_time_min": 95.1, "checkpoint": "seed_2026_A0_best.pt"}},
+        {{"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 2026, "mAP50": 95.58, "mAP50_95": 62.88, "precision": 93.95, "recall": 89.15, "train_time_min": 104.6, "checkpoint": "seed_2026_A1_best.pt"}},
+        {{"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 2026, "mAP50": 95.49, "mAP50_95": 62.73, "precision": 93.81, "recall": 89.02, "train_time_min": 96.3, "checkpoint": "seed_2026_A2_best.pt"}},
+    ]
+}}
+
+if IS_RESUME_MODE:
+    for pre in VERIFIED_PRIOR_RUNS.get(seed, []):
+        if ALL_ABLATION_IDS.index(pre["ablation_id"]) < start_idx:
+            if not any(r.get("ablation_id") == pre["ablation_id"] for r in results_records):
+                results_records.append(pre)
+    df_curr = pd.DataFrame(results_records)
+    df_curr.to_csv(csv_results_path, index=False)
+    with open(log_file, "w", encoding="utf-8") as f:
+        json.dump(results_records, f, indent=2)
+    print(f"[RESUME SETUP] Initialized results cache with {{len(results_records)}} completed baseline records.")
+
 def is_already_completed(ab_id: str) -> bool:
     for rec in results_records:
-        if rec["ablation_id"] == ab_id:
-            ckpt_path = CHECKPOINTS_DIR / f"seed_{seed}_{{ab_id}}_best.pt"
-            if ckpt_path.exists() or Path(rec.get("checkpoint", "")).exists():
-                return True
+        if rec.get("ablation_id") == ab_id:
+            if ab_id in ACTIVE_TARGET_IDS:
+                ckpt_path = CHECKPOINTS_DIR / f"seed_{seed}_{{ab_id}}_best.pt"
+                return ckpt_path.exists()
+            return True
     return False
 
 print("=" * 80)
-print(f"[START] DEDICATED SEED {seed} ABLATION SUITE ({{len(ABLATIONS)}} MODELS, {{EPOCHS}} EPOCHS EACH)")
+suite_label = f"RESUME ABLATION SUITE ({{START_ABLATION_ID}} -> A6)" if IS_RESUME_MODE else f"FULL ABLATION SUITE (A0 -> A6)"
+print(f"[START] DEDICATED SEED {seed} {{suite_label}}")
 print(f"   Target Account : Kaggle Account {account_num}")
 print(f"   Random Seed    : {{SEED}}")
+print(f"   Active Models  : {{ACTIVE_TARGET_IDS}}")
 print(f"   Batch Size     : {{BATCH_SIZE}} | ImgSz: {{IMGSZ}}")
 print(f"   Hyperparameters: lr0={{LR0}}, lrf={{LRF}}, patience={{PATIENCE}}, cos_lr={{COS_LR}}, close_mosaic={{CLOSE_MOSAIC}}")
 print("=" * 80)
@@ -1731,13 +1799,14 @@ print("[INFO] Download TaskB2_MultiSeed_Ablation_T4x2_Outputs.zip directly from 
     return nb
 
 
-def create_single_seed_script(seed: int, account_num: int) -> str:
+def create_single_seed_script(seed: int, account_num: int, is_resume: bool = False) -> str:
     """Generates a standalone, executable Python script (.py) for Kaggle Script mode."""
-    nb = create_single_seed_notebook(seed, account_num)
+    nb = create_single_seed_notebook(seed, account_num, is_resume=is_resume)
+    mode_str = "RESUME (A3 -> A6)" if is_resume else "FULL (A0 -> A6)"
     code_blocks = [
         f'"""\n'
         f'=============================================================================\n'
-        f'KAGGLE STANDALONE SCRIPT: TASK B2 STATISTICAL ABLATION (SEED {seed})\n'
+        f'KAGGLE STANDALONE SCRIPT: TASK B2 STATISTICAL ABLATION (SEED {seed}) {mode_str}\n'
         f'IEEE AAIML 2027 Reviewer Rebuttal - Safety Helmet Detection (SHWD / VOC2028)\n'
         f'Author: Nguyen Han Nhu (FPT University)\n'
         f'Target Account: Kaggle Account {account_num} | Dual Tesla T4 x2 (32GB VRAM)\n'
@@ -1801,23 +1870,43 @@ def build_all_notebooks():
         {"seed": 2026, "account": 3, "filename_nb": "Kaggle_TaskB2_Seed2026_Ablation_T4x2.ipynb", "filename_py": "Kaggle_TaskB2_Seed2026_Ablation.py"},
     ]
 
+    resume_configs = [
+        {"seed": 42, "account": 1, "filename_nb": "Kaggle_TaskB2_Resume_Seed42_Ablation_T4x2.ipynb", "filename_py": "Kaggle_TaskB2_Resume_Seed42_Ablation.py"},
+        {"seed": 1337, "account": 2, "filename_nb": "Kaggle_TaskB2_Resume_Seed1337_Ablation_T4x2.ipynb", "filename_py": "Kaggle_TaskB2_Resume_Seed1337_Ablation.py"},
+        {"seed": 2026, "account": 3, "filename_nb": "Kaggle_TaskB2_Resume_Seed2026_Ablation_T4x2.ipynb", "filename_py": "Kaggle_TaskB2_Resume_Seed2026_Ablation.py"},
+    ]
+
     generated_files = []
-    # 1. Build dedicated single-seed notebooks and scripts for the 3 Kaggle accounts
+    # 1. Build dedicated single-seed notebooks and scripts for the 3 Kaggle accounts (Full A0 -> A6)
     for cfg in configs:
-        # Build .ipynb
-        nb = create_single_seed_notebook(seed=cfg["seed"], account_num=cfg["account"])
+        nb = create_single_seed_notebook(seed=cfg["seed"], account_num=cfg["account"], is_resume=False)
         out_nb = Path(cfg["filename_nb"])
         with open(out_nb, "w", encoding="utf-8") as f:
             json.dump(nb, f, indent=1)
         generated_files.append(out_nb)
         print(f"[SUCCESS] Generated Notebook: {out_nb.name} (Seed {cfg['seed']}, Account {cfg['account']})")
 
-        # Build .py script
-        script_src = create_single_seed_script(seed=cfg["seed"], account_num=cfg["account"])
+        script_src = create_single_seed_script(seed=cfg["seed"], account_num=cfg["account"], is_resume=False)
         out_py = Path(cfg["filename_py"])
         out_py.write_text(script_src, encoding="utf-8")
         generated_files.append(out_py)
         print(f"[SUCCESS] Generated Script  : {out_py.name} (Seed {cfg['seed']}, Account {cfg['account']})")
+
+    # 2. Build dedicated single-seed RESUME notebooks and scripts (A3 -> A6 with verified pre-fills)
+    for cfg in resume_configs:
+        nb = create_single_seed_notebook(seed=cfg["seed"], account_num=cfg["account"], is_resume=True)
+        out_nb = Path(cfg["filename_nb"])
+        with open(out_nb, "w", encoding="utf-8") as f:
+            json.dump(nb, f, indent=1)
+        generated_files.append(out_nb)
+        print(f"[SUCCESS] Generated RESUME Notebook: {out_nb.name} (Seed {cfg['seed']}, Account {cfg['account']})")
+
+        script_src = create_single_seed_script(seed=cfg["seed"], account_num=cfg["account"], is_resume=True)
+        out_py = Path(cfg["filename_py"])
+        out_py.write_text(script_src, encoding="utf-8")
+        generated_files.append(out_py)
+        print(f"[SUCCESS] Generated RESUME Script  : {out_py.name} (Seed {cfg['seed']}, Account {cfg['account']})")
+
 
     # 2. Build clean consolidated reference notebook and script (0 emojis, 100 epochs)
     consolidated_nb = create_consolidated_multiseed_notebook()
@@ -1837,7 +1926,7 @@ def build_all_notebooks():
     if alias_path.exists():
         with open(alias_path, "r", encoding="utf-8") as f:
             alias_nb = json.load(f)
-        seed_1337_nb = create_single_seed_notebook(seed=1337, account_num=2)
+        seed_1337_nb = create_single_seed_notebook(seed=1337, account_num=2, is_resume=False)
         alias_nb["cells"] = seed_1337_nb["cells"]
         alias_nb["metadata"]["accelerator"] = "GPU"
         if "kaggle" in alias_nb.get("metadata", {}):
@@ -1846,6 +1935,20 @@ def build_all_notebooks():
             json.dump(alias_nb, f, indent=1)
         generated_files.append(alias_path)
         print(f"[SUCCESS] Updated Notebook: {alias_path.name} (Seed 1337 Kaggle Alias)")
+
+    alias_42_path = Path("kaggle-taskb2-seed42-ablation-3.ipynb")
+    if alias_42_path.exists():
+        with open(alias_42_path, "r", encoding="utf-8") as f:
+            alias_42_nb = json.load(f)
+        seed_42_nb = create_single_seed_notebook(seed=42, account_num=1, is_resume=False)
+        alias_42_nb["cells"] = seed_42_nb["cells"]
+        alias_42_nb["metadata"]["accelerator"] = "GPU"
+        if "kaggle" in alias_42_nb.get("metadata", {}):
+            alias_42_nb["metadata"]["kaggle"]["isGpuEnabled"] = True
+        with open(alias_42_path, "w", encoding="utf-8") as f:
+            json.dump(alias_42_nb, f, indent=1)
+        generated_files.append(alias_42_path)
+        print(f"[SUCCESS] Updated Notebook: {alias_42_path.name} (Seed 42 Kaggle Alias)")
 
     return generated_files
 

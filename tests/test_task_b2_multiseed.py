@@ -375,11 +375,14 @@ class TestTaskB2NotebookStructure:
         assert content_2 == content_1
 
     def test_standalone_python_scripts_variadic_signature(self):
-        """Verifies that all 4 standalone Python scripts contain the updated variadic signature."""
+        """Verifies that all standalone Python scripts contain the updated variadic signature."""
         scripts = [
             "Kaggle_TaskB2_Seed42_Ablation.py",
             "Kaggle_TaskB2_Seed1337_Ablation.py",
             "Kaggle_TaskB2_Seed2026_Ablation.py",
+            "Kaggle_TaskB2_Resume_Seed42_Ablation.py",
+            "Kaggle_TaskB2_Resume_Seed1337_Ablation.py",
+            "Kaggle_TaskB2_Resume_Seed2026_Ablation.py",
             "Kaggle_TaskB2_MultiSeed_Ablation.py",
         ]
         for script_name in scripts:
@@ -389,6 +392,83 @@ class TestTaskB2NotebookStructure:
             assert "def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs):" in src
             assert "super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs)" in src
             ast.parse(src)
+
+    def test_resume_notebooks_validity(self):
+        """Verifies that the dedicated Resume notebooks are valid and configured for A3 -> A6 execution."""
+        import base64
+        resume_nbs = [
+            ("Kaggle_TaskB2_Resume_Seed42_Ablation_T4x2.ipynb", 42, 1),
+            ("Kaggle_TaskB2_Resume_Seed1337_Ablation_T4x2.ipynb", 1337, 2),
+            ("Kaggle_TaskB2_Resume_Seed2026_Ablation_T4x2.ipynb", 2026, 3),
+        ]
+        for nb_name, seed, acc in resume_nbs:
+            nb_path = PROJECT_ROOT / nb_name
+            assert nb_path.exists(), f"Missing resume notebook: {nb_name}"
+            with open(nb_path, "r", encoding="utf-8") as f:
+                nb = json.load(f)
+            assert len(nb["cells"]) >= 7
+            cell_5_src = "".join(nb["cells"][5]["source"])
+            assert "IS_RESUME_MODE = True" in cell_5_src
+            assert "START_ABLATION_ID = \"A3\"" in cell_5_src
+            assert f"SEED = {seed}" in cell_5_src
+            assert "VERIFIED_PRIOR_RUNS" in cell_5_src
+
+            # Check that Cell 2 materializes RepConv with fuse_convs
+            cell_2_src = "".join(nb["cells"][2]["source"])
+            for line in cell_2_src.splitlines():
+                if line.startswith('custom_modules_b64 = "'):
+                    b64_val = line.split('"')[1]
+                    decoded = base64.b64decode(b64_val.encode('ascii')).decode('utf-8')
+                    assert "def fuse_convs(self)" in decoded
+                    assert "def forward_fuse(self" in decoded
+
+    def test_repconv_fusion_methods(self):
+        """Verifies that RepConv block defines fuse_convs and forward_fuse required by Ultralytics DetectionModel.fuse()."""
+        import torch
+        from custom_ablation_modules import RepConv
+        block = RepConv(64, 64, k=3, s=1, deploy=False)
+        assert hasattr(block, "fuse_convs"), "RepConv must define fuse_convs for Ultralytics fuse() compatibility"
+        assert hasattr(block, "forward_fuse"), "RepConv must define forward_fuse for Ultralytics fuse() compatibility"
+        assert hasattr(block, "fuse"), "RepConv must define fuse alias"
+
+        block.eval()
+        x = torch.randn(2, 64, 32, 32)
+        with torch.no_grad():
+            y_eval = block(x)
+            assert y_eval.shape == (2, 64, 32, 32)
+
+            # Call fuse_convs
+            block.fuse_convs()
+            assert block.deploy is True
+            assert hasattr(block, "conv")
+            assert hasattr(block, "rbr_reparam")
+
+            y_deploy = block.forward_fuse(x)
+            assert y_deploy.shape == (2, 64, 32, 32)
+            assert torch.allclose(y_eval, y_deploy, atol=1e-4)
+
+    def test_yolo_model_fuse_compatibility(self):
+        """Verifies that Ultralytics model.fuse() executes cleanly with custom RepConv without AttributeError."""
+        import torch
+        from ultralytics import YOLO
+        import ultralytics.nn.modules as un_mod
+        import ultralytics.nn.tasks as un_tasks
+        from custom_ablation_modules import RepConv
+
+        un_mod.RepConv = RepConv
+        setattr(un_tasks, 'RepConv', RepConv)
+
+        model = YOLO("yolo11s.pt")
+        c1, c2, s = model.model.model[1].conv.in_channels, model.model.model[1].conv.out_channels, model.model.model[1].conv.stride[0]
+        rep = RepConv(c1, c2, k=3, s=s)
+        rep.i, rep.f, rep.type = 1, -1, 'RepConv'
+        model.model.model[1] = rep
+
+        # This should execute with zero errors
+        model.model.fuse()
+        dummy = torch.randn(1, 3, 640, 640)
+        out = model(dummy)
+        assert len(out) > 0
 
 
 
