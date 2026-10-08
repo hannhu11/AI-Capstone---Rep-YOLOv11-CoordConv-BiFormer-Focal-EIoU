@@ -565,3 +565,77 @@ class TestMultiSeedAggregationUtility:
         )
         assert res is None
 
+    def test_biformer_numerical_stability_extreme_logits(self):
+        """Verifies that BiFormerBlockLite never produces NaN under extreme affinity scales or gradient bursts."""
+        import torch
+        from custom_ablation_modules import BiFormerBlockLite
+        block = BiFormerBlockLite(channels=64, num_heads=4, region_size=8, topk=4)
+        block.train()
+
+        # Input with large values that would trigger FP16 exp overflow (>88)
+        x = torch.randn(2, 64, 24, 24) * 25.0
+        x.requires_grad = True
+
+        out = block(x)
+        assert torch.isfinite(out).all(), "BiFormer output contains NaN or Inf under high-magnitude input!"
+        assert not torch.isnan(out).any()
+
+        # Test backward pass to ensure gradient stability
+        loss = out.sum()
+        loss.backward()
+        assert x.grad is not None
+        assert torch.isfinite(x.grad).all(), "BiFormer gradients contain NaN or Inf!"
+
+    def test_multi_input_resume_skips_completed_a0_to_a4(self, tmp_path):
+        """Verifies that Seed 2026 resume notebook merges inputs from multiple prior notebooks and correctly completes A0-A4."""
+        from scripts.build_kaggle_task_b2_notebook import create_single_seed_notebook
+        import pandas as pd
+        import tempfile
+
+        nb = create_single_seed_notebook(seed=2026, account_num=3, is_resume=True)
+        cell_5_src = "".join(nb["cells"][5]["source"])
+
+        # Extract setup code
+        loop_marker = "for ab in ABLATIONS:"
+        setup_code = cell_5_src.split(loop_marker)[0]
+
+        # Create mock /kaggle/input with Notebook 2 (A0, A1, A2) and Notebook 5 (A3, A4)
+        input_root = tmp_path / "kaggle_input"
+        input_root.mkdir()
+        nb2_dir = input_root / "kaggle-taskb2-seed2026-ablation-2" / "TaskB2_Seed2026_Outputs"
+        nb2_dir.mkdir(parents=True)
+        df_nb2 = pd.DataFrame([
+            {"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 2026, "mAP50": 95.63, "mAP50_95": 63.01},
+            {"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 2026, "mAP50": 95.58, "mAP50_95": 62.88},
+            {"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 2026, "mAP50": 95.49, "mAP50_95": 62.73},
+        ])
+        df_nb2.to_csv(nb2_dir / "seed_2026_ablation_results.csv", index=False)
+
+        nb5_dir = input_root / "kaggle-taskb2-resume-seed2026-ablation-5" / "TaskB2_Seed2026_Outputs"
+        nb5_dir.mkdir(parents=True)
+        df_nb5 = pd.DataFrame([
+            {"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 2026, "mAP50": 95.63, "mAP50_95": 63.01},
+            {"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 2026, "mAP50": 95.58, "mAP50_95": 62.88},
+            {"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 2026, "mAP50": 95.49, "mAP50_95": 62.73},
+            {"ablation_id": "A3", "ablation_name": "+ RepConv Re-Param", "seed": 2026, "mAP50": 94.72, "mAP50_95": 62.38},
+            {"ablation_id": "A4", "ablation_name": "+ Focal EIoU Loss", "seed": 2026, "mAP50": 95.31, "mAP50_95": 62.48},
+        ])
+        df_nb5.to_csv(nb5_dir / "seed_2026_ablation_results.csv", index=False)
+
+        working_dir = tmp_path / "kaggle_working"
+        working_dir.mkdir()
+
+        isolated_code = setup_code.replace('"/kaggle/working', f'r"{working_dir}').replace('"/kaggle/input', f'r"{input_root}')
+        mock_env = {"Path": Path, "__file__": "mock_test.py"}
+        exec(isolated_code, mock_env)
+
+        is_already_completed = mock_env["is_already_completed"]
+        assert is_already_completed("A0") is True
+        assert is_already_completed("A1") is True
+        assert is_already_completed("A2") is True
+        assert is_already_completed("A3") is True
+        assert is_already_completed("A4") is True
+        assert is_already_completed("A5") is False
+        assert is_already_completed("A6") is False
+
+

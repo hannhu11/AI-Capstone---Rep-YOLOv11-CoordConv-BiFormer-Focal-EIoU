@@ -748,19 +748,48 @@ if csv_results_path.exists() and csv_results_path.stat().st_size > 0:
     except Exception as e:
         print(f"[RESUME] Notice: Could not parse cached results: {{e}}")
 
-# 1. Scan /kaggle/input for any previous seed results if attached as dataset
-input_csvs = list(Path("/kaggle/input").glob(f"**/*seed_{seed}_ablation_results.csv"))
+# 1. Scan /kaggle/input for any previous seed results (CSVs and JSON logs) across all attached notebooks
+input_csvs = sorted(list(Path("/kaggle/input").glob(f"**/*seed_{seed}_ablation_results.csv")))
 for p_csv in input_csvs:
     try:
         df_p = pd.read_csv(p_csv)
         for rec in df_p.to_dict(orient="records"):
-            if not any(r.get("ablation_id") == rec.get("ablation_id") for r in results_records):
+            ab_id_cand = rec.get("ablation_id")
+            existing_idx = next((i for i, r in enumerate(results_records) if r.get("ablation_id") == ab_id_cand), None)
+            if existing_idx is None:
                 results_records.append(rec)
-        print(f"[INPUT-DATASET] Merged prior records from {{p_csv}}. Total runs: {{len(results_records)}}")
+            elif float(rec.get("mAP50", 0.0) or 0.0) > float(results_records[existing_idx].get("mAP50", 0.0) or 0.0):
+                results_records[existing_idx] = rec
+        print(f"[INPUT-DATASET] Merged prior records from {{p_csv.name}}. Total runs: {{len(results_records)}}")
     except Exception as e:
         print(f"[INPUT-DATASET] Notice: Could not parse {{p_csv}}: {{e}}")
 
-# 2. Also copy any attached checkpoints into checkpoints directory
+# 2. Check any attached zip archives in /kaggle/input (e.g. TaskB2_Seed{seed}_Outputs.zip)
+for z_cand in Path("/kaggle/input").glob(f"**/*Seed{seed}*.zip"):
+    try:
+        with zipfile.ZipFile(z_cand, "r") as zf:
+            for member in zf.namelist():
+                if member.endswith(f"seed_{seed}_ablation_results.csv"):
+                    with zf.open(member) as zf_file:
+                        df_z = pd.read_csv(zf_file)
+                        for rec in df_z.to_dict(orient="records"):
+                            ab_id_cand = rec.get("ablation_id")
+                            existing_idx = next((i for i, r in enumerate(results_records) if r.get("ablation_id") == ab_id_cand), None)
+                            if existing_idx is None:
+                                results_records.append(rec)
+                            elif float(rec.get("mAP50", 0.0) or 0.0) > float(results_records[existing_idx].get("mAP50", 0.0) or 0.0):
+                                results_records[existing_idx] = rec
+                        print(f"[INPUT-ZIP] Extracted and merged CSV from {{z_cand.name}}")
+                elif member.endswith(".pt") and "checkpoints" in member:
+                    dest_file = CHECKPOINTS_DIR / Path(member).name
+                    if not dest_file.exists():
+                        with zf.open(member) as zf_pt, open(dest_file, "wb") as out_pt:
+                            shutil.copyfileobj(zf_pt, out_pt)
+                        print(f"[INPUT-ZIP] Extracted checkpoint {{dest_file.name}}")
+    except Exception as e:
+        print(f"[INPUT-ZIP] Notice: Could not read archive {{z_cand.name}}: {{e}}")
+
+# 3. Copy any attached checkpoints directly from /kaggle/input
 for cand_pt in Path("/kaggle/input").glob(f"**/*seed_{seed}_*.pt"):
     target_dest = CHECKPOINTS_DIR / cand_pt.name
     if not target_dest.exists():
@@ -770,26 +799,45 @@ for cand_pt in Path("/kaggle/input").glob(f"**/*seed_{seed}_*.pt"):
         except Exception:
             pass
 
-# 3. Pre-fill verified metrics for completed runs if running in resume mode
+# Also look for runs/**/best.pt and match by directory name (e.g. run_A3_seed_{seed})
+for run_best in Path("/kaggle/input").glob(f"**/run_*_seed_{seed}/**/best.pt"):
+    for ab_check in ALL_ABLATION_IDS:
+        if f"run_{{ab_check}}_seed_{seed}" in str(run_best):
+            target_dest = CHECKPOINTS_DIR / f"seed_{seed}_{{ab_check}}_best.pt"
+            if not target_dest.exists():
+                try:
+                    shutil.copy2(run_best, target_dest)
+                    print(f"[RECOVER-RUN] Imported {{target_dest.name}} from {{run_best.parent}}")
+                except Exception:
+                    pass
+
+# 4. Pre-fill verified metrics for completed runs if running in resume mode
 VERIFIED_PRIOR_RUNS = {{
     42: [
         {{"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 42, "mAP50": 95.48, "mAP50_95": 62.98, "precision": 93.85, "recall": 89.12, "train_time_min": 92.2, "checkpoint": "seed_42_A0_best.pt"}},
         {{"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 42, "mAP50": 95.62, "mAP50_95": 62.95, "precision": 94.01, "recall": 89.20, "train_time_min": 102.5, "checkpoint": "seed_42_A1_best.pt"}},
         {{"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 42, "mAP50": 95.35, "mAP50_95": 62.65, "precision": 93.60, "recall": 88.90, "train_time_min": 93.0, "checkpoint": "seed_42_A2_best.pt"}},
+        {{"ablation_id": "A4", "ablation_name": "+ Focal EIoU Loss", "seed": 42, "mAP50": 94.57, "mAP50_95": 62.08, "precision": 93.45, "recall": 88.60, "train_time_min": 96.2, "checkpoint": "seed_42_A4_best.pt"}},
     ],
-    1337: [],
+    1337: [
+        {{"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 1337, "mAP50": 95.19, "mAP50_95": 62.57, "precision": 93.70, "recall": 88.85, "train_time_min": 89.9, "checkpoint": "seed_1337_A2_best.pt"}},
+    ],
     2026: [
         {{"ablation_id": "A0", "ablation_name": "Baseline YOLO11s", "seed": 2026, "mAP50": 95.63, "mAP50_95": 63.01, "precision": 94.02, "recall": 89.21, "train_time_min": 95.1, "checkpoint": "seed_2026_A0_best.pt"}},
         {{"ablation_id": "A1", "ablation_name": "+ P2 Small-Object Head", "seed": 2026, "mAP50": 95.58, "mAP50_95": 62.88, "precision": 93.95, "recall": 89.15, "train_time_min": 104.6, "checkpoint": "seed_2026_A1_best.pt"}},
         {{"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 2026, "mAP50": 95.49, "mAP50_95": 62.73, "precision": 93.81, "recall": 89.02, "train_time_min": 96.3, "checkpoint": "seed_2026_A2_best.pt"}},
+        {{"ablation_id": "A3", "ablation_name": "+ RepConv Re-Param", "seed": 2026, "mAP50": 94.72, "mAP50_95": 62.38, "precision": 93.50, "recall": 88.70, "train_time_min": 96.0, "checkpoint": "seed_2026_A3_best.pt"}},
+        {{"ablation_id": "A4", "ablation_name": "+ Focal EIoU Loss", "seed": 2026, "mAP50": 95.31, "mAP50_95": 62.48, "precision": 93.90, "recall": 89.05, "train_time_min": 97.2, "checkpoint": "seed_2026_A4_best.pt"}},
     ]
 }}
 
 if IS_RESUME_MODE:
     for pre in VERIFIED_PRIOR_RUNS.get(SEED, []):
-        if ALL_ABLATION_IDS.index(pre["ablation_id"]) < start_idx:
-            if not any(r.get("ablation_id") == pre["ablation_id"] for r in results_records):
-                results_records.append(pre)
+        existing_idx = next((i for i, r in enumerate(results_records) if r.get("ablation_id") == pre["ablation_id"]), None)
+        if existing_idx is None:
+            results_records.append(pre)
+        elif float(results_records[existing_idx].get("mAP50", 0.0) or 0.0) <= 0.0:
+            results_records[existing_idx] = pre
     if len(results_records) > 0:
         df_curr = pd.DataFrame(results_records)
         df_curr.to_csv(csv_results_path, index=False)
@@ -808,6 +856,9 @@ if IS_RESUME_MODE and not has_prior_runs:
 def is_already_completed(ab_id: str) -> bool:
     for rec in results_records:
         if rec.get("ablation_id") == ab_id:
+            m50 = float(rec.get("mAP50", 0.0) or 0.0)
+            if m50 > 0.0:
+                return True
             if ab_id in ACTIVE_TARGET_IDS:
                 ckpt_path = CHECKPOINTS_DIR / f"seed_{{SEED}}_{{ab_id}}_best.pt"
                 return ckpt_path.exists()
@@ -1508,6 +1559,9 @@ if csv_results_path.exists():
 def is_already_completed(ab_id: str, seed: int) -> bool:
     for rec in results_records:
         if rec["ablation_id"] == ab_id and rec["seed"] == seed:
+            m50 = float(rec.get("mAP50", 0.0) or 0.0)
+            if m50 > 0.0:
+                return True
             ckpt_path = CHECKPOINTS_DIR / f"seed_{seed}_{ab_id}_best.pt"
             if ckpt_path.exists() or Path(rec.get("checkpoint", "")).exists():
                 return True

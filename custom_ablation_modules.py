@@ -228,6 +228,7 @@ class BiFormerBlockLite(nn.Module):
         q_region = q_tokens.mean(dim=2)
         k_region = k_tokens.mean(dim=2)
         route_logits = torch.matmul(q_region, k_region.transpose(-1, -2)) / (c ** 0.5)
+        route_logits = torch.clamp(route_logits.float(), min=-50.0, max=50.0)
         topk = min(self.topk, gh * gw)
         route_idx = route_logits.topk(topk, dim=-1).indices
 
@@ -242,13 +243,18 @@ class BiFormerBlockLite(nn.Module):
             qh = q_cur.reshape(b, rs * rs, self.num_heads, head_dim).transpose(1, 2)
             kh = k_sel.reshape(b, topk * rs * rs, self.num_heads, head_dim).transpose(1, 2)
             vh = v_sel.reshape(b, topk * rs * rs, self.num_heads, head_dim).transpose(1, 2)
-            attn = torch.softmax(torch.matmul(qh, kh.transpose(-1, -2)) / (head_dim ** 0.5), dim=-1)
+
+            # High-precision float32 softmax with clamp [-50, 50] to eliminate FP16 AMP overflow (exp(88+) -> inf -> NaN)
+            attn_scores = torch.matmul(qh.float(), kh.float().transpose(-1, -2)) / (head_dim ** 0.5)
+            attn_scores = torch.clamp(attn_scores, min=-50.0, max=50.0)
+            attn = torch.softmax(attn_scores, dim=-1).to(qh.dtype)
             out = torch.matmul(attn, vh).transpose(1, 2).reshape(b, rs * rs, c)
             out_regions.append(out)
 
         y = torch.stack(out_regions, dim=1).reshape(b, gh, gw, rs, rs, c)
         y = y.permute(0, 5, 1, 3, 2, 4).reshape(b, c, hp, wp)
         y = y[:, :, :h, :w]
+        y = torch.nan_to_num(y, nan=0.0)
         return x + self.norm(self.proj(y))
 
     def fuse(self) -> None:
