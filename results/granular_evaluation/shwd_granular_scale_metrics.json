@@ -1,0 +1,72 @@
+{
+  "Baseline_YOLO11s": {
+    "overall": {
+      "mAP50_95": 61.42,
+      "mAP50": 93.6,
+      "mAP75": 64.78,
+      "AP_small": 46.55,
+      "AP_medium": 67.65,
+      "AP_large": 77.01,
+      "AR_small": 54.96,
+      "AR_medium": 72.55,
+      "AR_large": 80.95
+    },
+    "hat": {
+      "mAP50_95": 73.46,
+      "mAP50": 93.31,
+      "mAP75": 84.26,
+      "AP_small": 49.77,
+      "AP_medium": 74.73,
+      "AP_large": 87.39,
+      "AR_small": 58.18,
+      "AR_medium": 78.96,
+      "AR_large": 90.35
+    },
+    "person": {
+      "mAP50_95": 49.38,
+      "mAP50": 93.88,
+      "mAP75": 45.29,
+      "AP_small": 43.32,
+      "AP_medium": 60.57,
+      "AP_large": 66.63,
+      "AR_small": 51.75,
+      "AR_medium": 66.13,
+      "AR_large": 71.55
+    }
+  },
+  "Proposed_RepYOLO11s": {
+    "overall": {
+      "mAP50_95": 61.1,
+      "mAP50": 93.55,
+      "mAP75": 64.37,
+      "AP_small": 46.07,
+      "AP_medium": 67.06,
+      "AP_large": 76.59,
+      "AR_small": 54.07,
+      "AR_medium": 72.02,
+      "AR_large": 80.42
+    },
+    "hat": {
+      "mAP50_95": 72.95,
+      "mAP50": 93.13,
+      "mAP75": 84.03,
+      "AP_small": 48.53,
+      "AP_medium": 74.18,
+      "AP_large": 87.64,
+      "AR_small": 56.43,
+      "AR_medium": 78.53,
+      "AR_large": 90.41
+    },
+    "person": {
+      "mAP50_95": 49.24,
+      "mAP50": 93.97,
+      "mAP75": 44.7,
+      "AP_small": 43.61,
+      "AP_medium": 59.94,
+      "AP_large": 65.54,
+      "AR_small": 51.72,
+      "AR_medium": 65.51,
+      "AR_large": 70.43
+    }
+  }
+}
