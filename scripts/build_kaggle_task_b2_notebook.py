@@ -109,12 +109,18 @@ setattr(un_tasks, 'BiFormerBlockLite', BiFormerBlockLite)
 
 # 3. Hook AblationBboxLoss for Focal EIoU support
 class AblationBboxLoss(ul_loss.BboxLoss):
-    def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask):
+    def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs):
+        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
+        if cur_ab not in ["A4", "A6"]:
+            try:
+                return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs)
+            except TypeError:
+                return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+
         weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
         p_box = pred_bboxes[fg_mask]
         t_box = target_bboxes[fg_mask]
-        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
-        if cur_ab in ["A4", "A6"] and p_box.shape[0] > 0:
+        if p_box.shape[0] > 0:
             px1, py1, px2, py2 = p_box.unbind(-1)
             tx1, ty1, tx2, ty2 = t_box.unbind(-1)
             pw = (px2 - px1).clamp(min=1e-7)
@@ -145,11 +151,14 @@ class AblationBboxLoss(ul_loss.BboxLoss):
             loss_box_sample = iou.pow(gamma) * eiou
             loss_iou = (loss_box_sample.unsqueeze(-1) * weight).sum() / target_scores_sum
         else:
-            iou = ul_loss.bbox_iou(p_box, t_box, xywh=False, CIoU=True)
-            loss_iou = ((1.0 - iou) * weight).sum() / target_scores_sum
+            loss_iou = torch.tensor(0.0).to(pred_dist.device)
 
         if self.dfl_loss and p_box.shape[0] > 0:
-            target_ltrb = ul_loss.bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
+            try:
+                target_ltrb = ul_loss.bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
+            except AttributeError:
+                from ultralytics.utils.tal import bbox2dist
+                target_ltrb = bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
             loss_dfl = self.dfl_loss(pred_dist[fg_mask].view(-1, self.dfl_loss.reg_max), target_ltrb[fg_mask]) * weight
             loss_dfl = loss_dfl.sum() / target_scores_sum
         else:
@@ -394,12 +403,18 @@ if "class AblationBboxLoss" not in loss_src:
 import os
 import torch
 class AblationBboxLoss(BboxLoss):
-    def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask):
+    def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs):
+        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
+        if cur_ab not in ["A4", "A6"]:
+            try:
+                return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs)
+            except TypeError:
+                return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+
         weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
         p_box = pred_bboxes[fg_mask]
         t_box = target_bboxes[fg_mask]
-        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
-        if cur_ab in ["A4", "A6"] and p_box.shape[0] > 0:
+        if p_box.shape[0] > 0:
             px1, py1, px2, py2 = p_box.unbind(-1)
             tx1, ty1, tx2, ty2 = t_box.unbind(-1)
             pw = (px2 - px1).clamp(min=1e-7)
@@ -426,10 +441,13 @@ class AblationBboxLoss(BboxLoss):
             loss_box_sample = iou.pow(gamma) * eiou
             loss_iou = (loss_box_sample.unsqueeze(-1) * weight).sum() / target_scores_sum
         else:
-            iou = bbox_iou(p_box, t_box, xywh=False, CIoU=True)
-            loss_iou = ((1.0 - iou) * weight).sum() / target_scores_sum
+            loss_iou = torch.tensor(0.0).to(pred_dist.device)
         if self.dfl_loss and p_box.shape[0] > 0:
-            target_ltrb = bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
+            try:
+                target_ltrb = bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
+            except NameError:
+                from ultralytics.utils.tal import bbox2dist
+                target_ltrb = bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
             loss_dfl = self.dfl_loss(pred_dist[fg_mask].view(-1, self.dfl_loss.reg_max), target_ltrb[fg_mask]) * weight
             loss_dfl = loss_dfl.sum() / target_scores_sum
         else:
@@ -1072,12 +1090,18 @@ if "class AblationBboxLoss" not in loss_src:
 import os
 import torch
 class AblationBboxLoss(BboxLoss):
-    def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask):
+    def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs):
+        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
+        if cur_ab not in ["A4", "A6"]:
+            try:
+                return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs)
+            except TypeError:
+                return super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+
         weight = target_scores.sum(-1)[fg_mask].unsqueeze(-1)
         p_box = pred_bboxes[fg_mask]
         t_box = target_bboxes[fg_mask]
-        cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
-        if cur_ab in ["A4", "A6"] and p_box.shape[0] > 0:
+        if p_box.shape[0] > 0:
             px1, py1, px2, py2 = p_box.unbind(-1)
             tx1, ty1, tx2, ty2 = t_box.unbind(-1)
             pw = (px2 - px1).clamp(min=1e-7)
@@ -1104,10 +1128,13 @@ class AblationBboxLoss(BboxLoss):
             loss_box_sample = iou.pow(gamma) * eiou
             loss_iou = (loss_box_sample.unsqueeze(-1) * weight).sum() / target_scores_sum
         else:
-            iou = bbox_iou(p_box, t_box, xywh=False, CIoU=True)
-            loss_iou = ((1.0 - iou) * weight).sum() / target_scores_sum
+            loss_iou = torch.tensor(0.0).to(pred_dist.device)
         if self.dfl_loss and p_box.shape[0] > 0:
-            target_ltrb = bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
+            try:
+                target_ltrb = bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
+            except NameError:
+                from ultralytics.utils.tal import bbox2dist
+                target_ltrb = bbox2dist(anchor_points, target_bboxes, self.dfl_loss.reg_max - 1)
             loss_dfl = self.dfl_loss(pred_dist[fg_mask].view(-1, self.dfl_loss.reg_max), target_ltrb[fg_mask]) * weight
             loss_dfl = loss_dfl.sum() / target_scores_sum
         else:

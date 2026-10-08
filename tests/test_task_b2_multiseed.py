@@ -218,8 +218,66 @@ class TestTaskB2NotebookStructure:
             assert "class RepConv" in src
             assert "class BiFormerBlockLite" in src
             assert "def focal_eiou_loss" in src
+            train_src = (tmp_path / "ablation_trainer.py").read_text(encoding="utf-8")
+            assert "class AblationBboxLoss" in train_src
+            assert "*args, **kwargs" in train_src
         finally:
             os.chdir(orig_cwd)
+
+    @pytest.mark.parametrize("filename,expected_seed,expected_account", NOTEBOOK_FILES)
+    def test_ablation_bbox_loss_variadic_forward(self, filename, expected_seed, expected_account):
+        """Verifies that AblationBboxLoss.forward accepts *args and **kwargs without TypeError across versions."""
+        path = PROJECT_ROOT / filename
+        eff_text = get_effective_notebook_source(path)
+        assert "def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs):" in eff_text
+        assert "super().forward(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs)" in eff_text
+
+    def test_ablation_bbox_loss_execution_compatibility(self, tmp_path):
+        """Executes AblationBboxLoss with both 7 and 9 arguments (+ kwargs) on dummy tensors."""
+        import torch
+        import os
+        from scripts.build_kaggle_task_b2_notebook import ABLATION_TRAINER_SRC
+        scope = {}
+        exec(ABLATION_TRAINER_SRC, scope)
+        AblationBboxLoss = scope["AblationBboxLoss"]
+
+        loss_fn = AblationBboxLoss(reg_max=16)
+        bs, na, nc = 2, 10, 2
+        pred_dist = torch.randn(bs, na, 64)
+        pred_bboxes = torch.rand(bs, na, 4) * 640
+        anchor_points = torch.rand(bs, na, 2) * 640
+        target_bboxes = torch.rand(bs, na, 4) * 640
+        target_scores = torch.rand(bs, na, nc)
+        target_scores_sum = torch.tensor(5.0)
+        fg_mask = torch.zeros(bs, na, dtype=torch.bool)
+        fg_mask[0, :3] = True
+        fg_mask[1, :2] = True
+        imgsz = torch.tensor([640, 640])
+        stride_tensor = torch.ones(na, 1) * 8
+
+        # 1. Baseline CIoU path (A0) with 7 positional args (Legacy Ultralytics)
+        os.environ["CURRENT_ABLATION_ID"] = "A0"
+        l_iou_7, l_dfl_7 = loss_fn(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+        assert torch.isfinite(l_iou_7)
+        assert torch.isfinite(l_dfl_7)
+
+        # 2. Baseline CIoU path (A0) with 9 positional args (New Ultralytics v8.4+)
+        l_iou_9, l_dfl_9 = loss_fn(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, imgsz, stride_tensor)
+        assert torch.isfinite(l_iou_9)
+        assert torch.isfinite(l_dfl_9)
+
+        # 3. Focal EIoU path (A6) with 7 positional args
+        os.environ["CURRENT_ABLATION_ID"] = "A6"
+        l_iou_a6_7, l_dfl_a6_7 = loss_fn(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask)
+        assert torch.isfinite(l_iou_a6_7)
+        assert torch.isfinite(l_dfl_a6_7)
+
+        # 4. Focal EIoU path (A6) with 9 positional args + kwargs
+        l_iou_a6_9, l_dfl_a6_9 = loss_fn(pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, imgsz, stride_tensor, custom_kw=123)
+        assert torch.isfinite(l_iou_a6_9)
+        assert torch.isfinite(l_dfl_a6_9)
+        assert torch.allclose(l_iou_a6_7, l_iou_a6_9)
+        assert torch.allclose(l_dfl_a6_7, l_dfl_a6_9)
 
 
 
