@@ -67,6 +67,12 @@ class CoordConv(nn.Module):
             coords.append(rr)
         return self.conv(torch.cat([x, *coords], dim=1))
 
+    def fuse(self) -> None:
+        pass
+
+    def fuse_convs(self) -> None:
+        pass
+
 
 class RepConv(nn.Module):
     """
@@ -155,11 +161,28 @@ class RepConv(nn.Module):
         )
         self.rbr_reparam.weight.data = kernel.detach().clone()
         self.rbr_reparam.bias.data = bias.detach().clone()
+        self.conv = self.rbr_reparam
         del self.rbr_dense
         del self.rbr_1x1
         if hasattr(self, "rbr_identity"):
             del self.rbr_identity
         self.deploy = True
+
+    def fuse_convs(self) -> None:
+        """Alias for switch_to_deploy compatible with Ultralytics DetectionModel.fuse()."""
+        self.switch_to_deploy()
+
+    def fuse(self) -> None:
+        """Additional alias for model fusion."""
+        self.switch_to_deploy()
+
+    def forward_fuse(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass for fused deploy mode."""
+        if hasattr(self, "conv"):
+            return self.act(self.conv(x))
+        elif hasattr(self, "rbr_reparam"):
+            return self.act(self.rbr_reparam(x))
+        return self.forward(x)
 
 
 class BiFormerBlockLite(nn.Module):
@@ -202,19 +225,20 @@ class BiFormerBlockLite(nn.Module):
         k_tokens = k_regions.permute(0, 2, 3, 4, 5, 1).reshape(b, gh * gw, rs * rs, c)
         v_tokens = v_regions.permute(0, 2, 3, 4, 5, 1).reshape(b, gh * gw, rs * rs, c)
 
-        q_region = q_tokens.mean(dim=2)
-        k_region = k_tokens.mean(dim=2)
+        q_region = q_tokens.mean(dim=2).float()
+        k_region = k_tokens.mean(dim=2).float()
         route_logits = torch.matmul(q_region, k_region.transpose(-1, -2)) / (c ** 0.5)
-        route_logits = torch.clamp(route_logits.float(), min=-50.0, max=50.0)
+        route_logits = torch.nan_to_num(route_logits, nan=-1e4, posinf=1e4, neginf=-1e4)
         topk = min(self.topk, gh * gw)
         route_idx = route_logits.topk(topk, dim=-1).indices
 
         out_regions = []
         head_dim = c // self.num_heads
+        batch_idx = torch.arange(b, device=x.device).unsqueeze(1)
         for region_idx in range(gh * gw):
             selected = route_idx[:, region_idx]
-            k_sel = torch.stack([k_tokens[bi, selected[bi]].reshape(topk * rs * rs, c) for bi in range(b)], dim=0)
-            v_sel = torch.stack([v_tokens[bi, selected[bi]].reshape(topk * rs * rs, c) for bi in range(b)], dim=0)
+            k_sel = k_tokens[batch_idx, selected].reshape(b, topk * rs * rs, c)
+            v_sel = v_tokens[batch_idx, selected].reshape(b, topk * rs * rs, c)
             q_cur = q_tokens[:, region_idx]
 
             qh = q_cur.reshape(b, rs * rs, self.num_heads, head_dim).transpose(1, 2)
@@ -223,16 +247,24 @@ class BiFormerBlockLite(nn.Module):
 
             # High-precision float32 softmax with clamp [-50, 50] to eliminate FP16 AMP overflow (exp(88+) -> inf -> NaN)
             attn_scores = torch.matmul(qh.float(), kh.float().transpose(-1, -2)) / (head_dim ** 0.5)
+            attn_scores = torch.nan_to_num(attn_scores, nan=-50.0, posinf=50.0, neginf=-50.0)
             attn_scores = torch.clamp(attn_scores, min=-50.0, max=50.0)
-            attn = torch.softmax(attn_scores, dim=-1).to(qh.dtype)
-            out = torch.matmul(attn, vh).transpose(1, 2).reshape(b, rs * rs, c)
+            attn = torch.softmax(attn_scores, dim=-1)
+            out = torch.matmul(attn, vh.float()).to(qh.dtype).transpose(1, 2).reshape(b, rs * rs, c)
             out_regions.append(out)
 
         y = torch.stack(out_regions, dim=1).reshape(b, gh, gw, rs, rs, c)
         y = y.permute(0, 5, 1, 3, 2, 4).reshape(b, c, hp, wp)
         y = y[:, :, :h, :w]
         y = torch.nan_to_num(y, nan=0.0)
-        return x + self.norm(self.proj(y))
+        out_final = x + self.norm(self.proj(y))
+        return torch.nan_to_num(out_final, nan=0.0)
+
+    def fuse(self) -> None:
+        pass
+
+    def fuse_convs(self) -> None:
+        pass
 
 
 def xywh_to_xyxy(boxes: torch.Tensor) -> torch.Tensor:

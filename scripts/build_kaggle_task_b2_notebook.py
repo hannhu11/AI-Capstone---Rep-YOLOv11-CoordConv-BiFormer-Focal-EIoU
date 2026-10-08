@@ -749,12 +749,28 @@ if csv_results_path.exists() and csv_results_path.stat().st_size > 0:
         print(f"[RESUME] Notice: Could not parse cached results: {{e}}")
 
 # 1. Scan /kaggle/input for any previous seed results (CSVs and JSON logs) across all attached notebooks
-input_csvs = sorted(list(Path("/kaggle/input").glob(f"**/*seed_{seed}_ablation_results.csv")))
+input_csvs = sorted(list(set(
+    list(Path("/kaggle/input").glob(f"**/*seed_{seed}_ablation_results.csv")) +
+    list(Path("/kaggle/input").glob(f"**/*seed{seed}*ablation*.csv")) +
+    list(Path("/kaggle/input").glob(f"**/*seed_{seed}*.csv")) +
+    list(Path("/kaggle/input").glob(f"**/*ablation*results*.csv"))
+)))
 for p_csv in input_csvs:
     try:
         df_p = pd.read_csv(p_csv)
         for rec in df_p.to_dict(orient="records"):
+            if "seed" in rec and rec["seed"] is not None and not pd.isna(rec["seed"]):
+                try:
+                    if int(rec["seed"]) != seed:
+                        continue
+                except (ValueError, TypeError):
+                    pass
+            m50 = float(rec.get("mAP50", 0.0) or 0.0)
+            if m50 <= 0.0:
+                continue
             ab_id_cand = rec.get("ablation_id")
+            if not ab_id_cand:
+                continue
             existing_idx = next((i for i, r in enumerate(results_records) if r.get("ablation_id") == ab_id_cand), None)
             if existing_idx is None:
                 results_records.append(rec)
@@ -859,10 +875,6 @@ def is_already_completed(ab_id: str) -> bool:
             m50 = float(rec.get("mAP50", 0.0) or 0.0)
             if m50 > 0.0:
                 return True
-            if ab_id in ACTIVE_TARGET_IDS:
-                ckpt_path = CHECKPOINTS_DIR / f"seed_{{SEED}}_{{ab_id}}_best.pt"
-                return ckpt_path.exists()
-            return True
     return False
 
 completed_ids = [r.get("ablation_id") for r in results_records]
@@ -1558,12 +1570,9 @@ if csv_results_path.exists():
 
 def is_already_completed(ab_id: str, seed: int) -> bool:
     for rec in results_records:
-        if rec["ablation_id"] == ab_id and rec["seed"] == seed:
+        if rec.get("ablation_id") == ab_id and rec.get("seed") == seed:
             m50 = float(rec.get("mAP50", 0.0) or 0.0)
             if m50 > 0.0:
-                return True
-            ckpt_path = CHECKPOINTS_DIR / f"seed_{seed}_{ab_id}_best.pt"
-            if ckpt_path.exists() or Path(rec.get("checkpoint", "")).exists():
                 return True
     return False
 
@@ -2016,6 +2025,13 @@ def build_all_notebooks():
             json.dump(alias_42_nb, f, indent=1)
         generated_files.append(alias_42_path)
         print(f"[SUCCESS] Updated Notebook: {alias_42_path.name} (Seed 42 Kaggle Alias)")
+
+    alias_2026_resume_path = Path("kaggle-taskb2-resume-seed2026-ablation-5.ipynb")
+    seed_2026_resume_nb = create_single_seed_notebook(seed=2026, account_num=3, is_resume=True)
+    with open(alias_2026_resume_path, "w", encoding="utf-8") as f:
+        json.dump(seed_2026_resume_nb, f, indent=1)
+    generated_files.append(alias_2026_resume_path)
+    print(f"[SUCCESS] Updated Notebook: {alias_2026_resume_path.name} (Seed 2026 Resume Kaggle Alias)")
 
     return generated_files
 

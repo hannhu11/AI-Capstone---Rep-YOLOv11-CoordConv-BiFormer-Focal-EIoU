@@ -220,7 +220,7 @@ $A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \tex
 
 \subsection{Datasets and Pre-processing}
 We evaluate on the Safety Helmet Wearing Dataset (SHWD)~\cite{shwd_dataset} (Pascal VOC schema VOC2028), comprising $7,581$ construction surveillance images ($6,064$ trainval, $1,517$ test) with severe $1:12$ category skew ($9,044$ helmet vs $111,514$ person instances). 
-\textbf{Data Sanitization}: Our audit purged non-positive boxes ($x_{\min} \ge x_{\max>, y_{\min} \ge y_{\max}$), zero-area boxes ($\Delta x \Delta y = 0$), clipped out-of-boundary coordinates to $[0, W-1] \times [0, H-1]$, and merged identical duplicates with $100\%$ authentic image retention ($0$ removed). 
+\textbf{Data Sanitization}: Our audit purged non-positive boxes ($x_{\min} \ge x_{\max}, y_{\min} \ge y_{\max}$), zero-area boxes ($\Delta x \Delta y = 0$), clipped out-of-boundary coordinates to $[0, W-1] \times [0, H-1]$, and merged identical duplicates with $100\%$ authentic image retention ($0$ removed). 
 \textbf{Scene-Stratified 5-Fold CV}: To prevent visual and temporal leakage, 5-fold CV was partitioned using sequence grouping over all $7,581$ images, ensuring frames from identical camera installations remain strictly within the same fold. While the pre-defined test split ($1,517$ images) contains harsh occluded angles ($94.83\%$ $mAP_{50}$, $62.54\%$ $mAP_{50-95}$), 5-fold CV achieves a mean $mAP_{50}$ of $96.64\% \pm 0.32\%$ (peak $97.11\%$). Zero-shot transferability was evaluated without fine-tuning on GDUT-HWD ($13,499$ images)~\cite{gdut_hwd_2021}, Hard Hat Workers ($7,000$ images)~\cite{hard_hat_workers_mvd}, and SHEL5K ($5,000$ images)~\cite{shel5k_2022}.
 
 \subsection{Hardware and Implementation Details}

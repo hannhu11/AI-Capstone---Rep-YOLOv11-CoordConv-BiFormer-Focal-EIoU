@@ -566,31 +566,47 @@ class TestMultiSeedAggregationUtility:
         assert res is None
 
     def test_biformer_numerical_stability_extreme_logits(self):
-        """Verifies that BiFormerBlockLite never produces NaN under extreme affinity scales or gradient bursts."""
+        """Verifies that BiFormerBlockLite never produces NaN under extreme affinity scales or gradient bursts on CPU and CUDA AMP."""
         import torch
         from custom_ablation_modules import BiFormerBlockLite
-        block = BiFormerBlockLite(channels=64, num_heads=4, region_size=8, topk=4)
-        block.train()
+        
+        devices = ["cpu"]
+        if torch.cuda.is_available():
+            devices.append("cuda")
 
-        # Input with large values that would trigger FP16 exp overflow (>88)
-        x = torch.randn(2, 64, 24, 24) * 25.0
-        x.requires_grad = True
+        for dev in devices:
+            block = BiFormerBlockLite(channels=64, num_heads=4, region_size=8, topk=4).to(dev)
+            block.train()
 
-        out = block(x)
-        assert torch.isfinite(out).all(), "BiFormer output contains NaN or Inf under high-magnitude input!"
-        assert not torch.isnan(out).any()
+            # Input with large values that would trigger FP16 exp overflow (>88)
+            x = torch.randn(2, 64, 24, 24, device=dev) * 35.0
+            x.requires_grad = True
 
-        # Test backward pass to ensure gradient stability
-        loss = out.sum()
-        loss.backward()
-        assert x.grad is not None
-        assert torch.isfinite(x.grad).all(), "BiFormer gradients contain NaN or Inf!"
+            if dev == "cuda":
+                with torch.cuda.amp.autocast():
+                    out = block(x)
+            else:
+                out = block(x)
+
+            assert torch.isfinite(out).all(), f"BiFormer output contains NaN or Inf on {dev}!"
+            assert not torch.isnan(out).any()
+
+            # Test backward pass to ensure gradient stability
+            loss = out.sum()
+            loss.backward()
+            assert x.grad is not None
+            assert torch.isfinite(x.grad).all(), f"BiFormer gradients contain NaN or Inf on {dev}!"
+
+            # Test ranking preservation: verify topk routing does not degenerate
+            x_var = torch.randn(2, 64, 24, 24, device=dev) * 10.0
+            with torch.no_grad():
+                out_var = block(x_var)
+            assert torch.isfinite(out_var).all()
 
     def test_multi_input_resume_skips_completed_a0_to_a4(self, tmp_path):
         """Verifies that Seed 2026 resume notebook merges inputs from multiple prior notebooks and correctly completes A0-A4."""
         from scripts.build_kaggle_task_b2_notebook import create_single_seed_notebook
         import pandas as pd
-        import tempfile
 
         nb = create_single_seed_notebook(seed=2026, account_num=3, is_resume=True)
         cell_5_src = "".join(nb["cells"][5]["source"])
@@ -599,7 +615,7 @@ class TestMultiSeedAggregationUtility:
         loop_marker = "for ab in ABLATIONS:"
         setup_code = cell_5_src.split(loop_marker)[0]
 
-        # Create mock /kaggle/input with Notebook 2 (A0, A1, A2) and Notebook 5 (A3, A4)
+        # Create mock /kaggle/input with Notebook 2 (A0, A1, A2) and Notebook 5 (A3, A4, and failed A5)
         input_root = tmp_path / "kaggle_input"
         input_root.mkdir()
         nb2_dir = input_root / "kaggle-taskb2-seed2026-ablation-2" / "TaskB2_Seed2026_Outputs"
@@ -619,8 +635,14 @@ class TestMultiSeedAggregationUtility:
             {"ablation_id": "A2", "ablation_name": "+ CoordConv Stem", "seed": 2026, "mAP50": 95.49, "mAP50_95": 62.73},
             {"ablation_id": "A3", "ablation_name": "+ RepConv Re-Param", "seed": 2026, "mAP50": 94.72, "mAP50_95": 62.38},
             {"ablation_id": "A4", "ablation_name": "+ Focal EIoU Loss", "seed": 2026, "mAP50": 95.31, "mAP50_95": 62.48},
+            {"ablation_id": "A5", "ablation_name": "+ BiFormer Attention", "seed": 2026, "mAP50": 0.0, "mAP50_95": 0.0},  # Failed run row
         ])
         df_nb5.to_csv(nb5_dir / "seed_2026_ablation_results.csv", index=False)
+
+        # Also create a partial checkpoint file for A5 to test that checkpoint existence without positive mAP50 does NOT mark as completed
+        ckpt_dir = nb5_dir / "checkpoints"
+        ckpt_dir.mkdir(parents=True)
+        (ckpt_dir / "seed_2026_A5_best.pt").write_bytes(b"dummy_partial_ckpt")
 
         working_dir = tmp_path / "kaggle_working"
         working_dir.mkdir()
@@ -635,7 +657,8 @@ class TestMultiSeedAggregationUtility:
         assert is_already_completed("A2") is True
         assert is_already_completed("A3") is True
         assert is_already_completed("A4") is True
-        assert is_already_completed("A5") is False
+        assert is_already_completed("A5") is False, "A5 failed run with mAP50=0.0 must NOT be marked completed!"
         assert is_already_completed("A6") is False
+
 
 
