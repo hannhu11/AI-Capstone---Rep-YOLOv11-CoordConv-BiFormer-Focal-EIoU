@@ -47,9 +47,6 @@ Z.~Wu, J.~Qin, X.~Xiang, and Y.~Tan, ``{YOLO-CBF}: Optimized {YOLOv7} algorithm 
 \bibitem{zhao2025yolodcrcf}
 J.~Zhao, Z.~Yang, B.~Li, and Y.~Zhao, ``{YOLO-DCRCF}: An algorithm for detecting the wearing of safety helmets and gloves in power grid operation environments,'' \emph{Journal of Imaging}, vol.~11, no.~9, p. 320, 2025.
 
-\bibitem{song2024improved}
-X.~Song, T.~Zhang, and W.~Yi, ``An improved {YOLOv8} safety helmet wearing detection network,'' \emph{Scientific Reports}, vol.~14, p. 17550, 2024.
-
 \bibitem{dabfnet2024}
 J.~Wang, H.~Zhang, and Y.~Liu, ``{DABFNet}: Dual-attention bilateral feature pyramid network for safety helmet detection in complex construction surveillance,'' \emph{IEEE Transactions on Circuits and Systems for Video Technology}, vol.~34, no.~8, pp. 7120--7134, 2024.
 
@@ -58,6 +55,9 @@ Z.~Chen, L.~Zhao, and P.~Sun, ``{MAF-YOLO}: Multi-scale adaptive fusion network 
 
 \bibitem{tinyformer2024}
 W.~Liu, P.~Zhang, and G.~Chen, ``{TinyFormer}: A lightweight transformer for tiny object detection in complex surveillance,'' \emph{arXiv preprint arXiv:2605.25046}, 2024.
+
+\bibitem{tong2023wise}
+Z.~Tong, Y.~Chen, Z.~Wang, and R.~Xiang, ``Wise-{IoU}: Bounding box regression loss with dynamic focusing mechanism,'' \emph{arXiv preprint arXiv:2301.10051}, 2023.
 
 \bibitem{ding2021repvgg}
 X.~Ding, X.~Zhang, N.~Ma, J.~Han, G.~Ding, and J.~Sun, ``{RepVGG}: Making {VGG}-style {ConvNets} great again,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2021, pp. 13\,733--13\,742.
@@ -94,9 +94,6 @@ W.~Jia, S.~Xu, Z.~Liang, D.~Zhao, H.~Min, and S.~Li, ``{GDUT-HWD}: A large-scale
 
 \bibitem{hard_hat_workers_mvd}
 A.~MVD, ``Hard hat workers dataset,'' \url{https://www.kaggle.com/datasets/andrewmvd/hard-hat-detection}, 2021.
-
-\bibitem{shel5k_2022}
-R.~Dianat, M.~Ghayoumi, M.~Kakhki, and R.~Alimohammadi, ``{SHEL5K}: An extended dataset for safety helmet and personal protective equipment detection in complex industrial workplaces,'' \emph{Data in Brief}, vol.~44, p. 108532, 2022.
 
 \bibitem{bodla2017soft}
 N.~Bodla, B.~Singh, R.~Chellappa, and L.~S. Davis, ``Soft-{NMS}--improving object detection with one line of code,'' in \emph{IEEE International Conference on Computer Vision (ICCV)}, 2017, pp. 5561--5569.
