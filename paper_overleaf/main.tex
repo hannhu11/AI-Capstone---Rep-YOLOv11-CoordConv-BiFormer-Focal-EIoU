@@ -39,9 +39,8 @@
 \title{Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance\thanks{This research is supported by FPT University. This paper is prepared for presentation at the 2027 2nd International Conference on Advances in Artificial Intelligence and Machine Learning (AAIML 2027), Tokyo, Japan. Corresponding author: Nhu Han (email: nhu.han@fpt.edu.vn).}}
 
 \author{
-\IEEEauthorblockN{Nhu Han\IEEEauthorrefmark{1}, Van-Thanh Nguyen\IEEEauthorrefmark{1}, Tuan-Dung Nguyen\IEEEauthorrefmark{1}, and Ha-Anh Vu\IEEEauthorrefmark{2}}
-\IEEEauthorblockA{\IEEEauthorrefmark{1}Department of Artificial Intelligence, \IEEEauthorrefmark{2}Department of Information Technology\\
-FPT University, Ho Chi Minh City, Vietnam\\
+\IEEEauthorblockN{Nhu Han, Van-Thanh Nguyen, Tuan-Dung Nguyen, and Ha-Anh Vu}
+\IEEEauthorblockA{FPT University, Ho Chi Minh City, Vietnam\\
 Email: \{nhu.han, thanhnv, dungnt\}@fpt.edu.vn, anhvh@fe.edu.vn}
 }
 
@@ -160,9 +159,9 @@ where $W^{3\times3} \in \mathbb{R}^{C_{out} \times C_{in} \times 3 \times 3}$ an
 
 During deployment conversion (\deployfunc), each Conv-BN sequence is first collapsed into an equivalent kernel $W'$ and bias vector $b'$:
 \begin{equation}
-W'_{i,:,:,:} = \frac{\gamma_i}{\sqrt{\sigma_i^2 + \epsilon}} W_{i,:,:,:}, \quad b'_i = \beta_i - \frac{\gamma_i \mu_i}{\sqrt{\sigma_i^2 + \epsilon}}.
+W'_i = \frac{\gamma_i}{\sqrt{\sigma_i^2 + \epsilon}} W_i, \quad b'_i = \beta_i - \frac{\gamma_i \mu_i}{\sqrt{\sigma_i^2 + \epsilon}},
 \end{equation}
-Next, $W'_{1\times1}$ is zero-padded into a $3\times3$ kernel $W'_{1\times1 \to 3\times3}$ at center position $(2,2)$. When $C_{in}=C_{out}$ and $s=1$, the identity branch transforms into an equivalent $3\times3$ Dirac delta kernel $W'_{id}$ where $W'_{id, c, c, 2, 2} = 1$ and 0 elsewhere, folded with $\text{BN}_{id}$; when $C_{in} \neq C_{out}$ or $s > 1$, $W'_{id} = \mathbf{0}$ and $b'_{id} = \mathbf{0}$. Finally, fused kernel $W_{fused} = W'_{3\times3} + W'_{1\times1 \to 3\times3} + W'_{id}$ and bias $b_{fused} = b'_{3\times3} + b'_{1\times1} + b'_{id}$ are obtained by linear summation. This algebraic transformation converts the multi-branch structure into a plain $3\times3$ convolution layer, eliminating redundant GPU memory buffers and kernel launches to minimize Memory Access Cost (MAC).
+where $W_i \in \mathbb{R}^{C_{in} \times 3 \times 3}$ denotes the 3D convolution kernel slice for the $i$-th output channel. Next, $W'_{1\times1}$ is zero-padded into a $3\times3$ kernel $W'_{1\times1 \to 3\times3}$ at center position $(2,2)$. When $C_{in}=C_{out}$ and $s=1$, the identity branch transforms into an equivalent $3\times3$ Dirac delta kernel $W'_{id}$ where $W'_{id, c, c, 2, 2} = 1$ and 0 elsewhere, folded with $\text{BN}_{id}$; when $C_{in} \neq C_{out}$ or $s > 1$, $W'_{id} = \mathbf{0}$ and $b'_{id} = \mathbf{0}$. Finally, fused kernel $W_{fused} = W'_{3\times3} + W'_{1\times1 \to 3\times3} + W'_{id}$ and bias $b_{fused} = b'_{3\times3} + b'_{1\times1} + b'_{id}$ are obtained by linear summation. This algebraic transformation converts the multi-branch structure into a plain $3\times3$ convolution layer, eliminating redundant GPU memory buffers and kernel launches to minimize Memory Access Cost (MAC).
 
 \subsection{Spatial Coordinate Convolution (CoordConv)}
 Standard convolutions apply spatial translation equivariance, treating feature patterns identically regardless of image location. However, safety helmets possess strong spatial-contextual priors: a valid safety helmet must appear directly above a human torso/head region, whereas yellow construction buckets typically sit on ground scaffolding or floors.
