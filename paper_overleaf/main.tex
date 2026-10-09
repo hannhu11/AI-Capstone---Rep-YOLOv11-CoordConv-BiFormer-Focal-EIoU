@@ -40,8 +40,8 @@
 
 \author{
 \IEEEauthorblockN{Nhu Han\IEEEauthorrefmark{1}, Van-Thanh Nguyen\IEEEauthorrefmark{1}, Tuan-Dung Nguyen\IEEEauthorrefmark{1}, and Hai-Anh Vu\IEEEauthorrefmark{2}}
-\IEEEauthorblockA{\IEEEauthorrefmark{1}Department of Artificial Intelligence, FPT University, Hanoi, Vietnam\\
-\IEEEauthorrefmark{2}Department of Information Technology, FPT University, Hanoi, Vietnam\\
+\IEEEauthorblockA{\IEEEauthorrefmark{1}Department of Artificial Intelligence, FPT University, Ho Chi Minh City, Vietnam\\
+\IEEEauthorrefmark{2}Department of Information Technology, FPT University, Ho Chi Minh City, Vietnam\\
 Email: \{nhu.han, thanhnv, dungnt\}@fpt.edu.vn, anhvh@fe.edu.vn}
 }
 
@@ -196,23 +196,23 @@ preventing dominant easy background samples from overwhelming gradients. The tot
 \centering
 \renewcommand{\arraystretch}{0.72}
 \resizebox{\columnwidth}{!}{%
-\setlength{\tabcolsep}{2.0pt}
-\begin{tabular}{clccccccc}
+\setlength{\tabcolsep}{1.4pt}
+\begin{tabular}{clcccccccc}
 \toprule
-& & \multicolumn{2}{c}{\textbf{Benchmark}} & \multicolumn{3}{c}{\textbf{Multi-Seed ($mAP_{50} / mAP_{50\text{--}95}$)}} & \multicolumn{2}{c}{\textbf{Latency (ms)}} \\
-\cmidrule(lr){3-4} \cmidrule(lr){5-7} \cmidrule(lr){8-9}
-\textbf{ID} & \textbf{Configuration} & \textbf{$mAP_{50}$} & \textbf{$mAP_{50\text{--}95}$} & \textbf{Seed 42} & \textbf{Seed 2026} & \textbf{Mean} & \textbf{PyT} & \textbf{TRT} \\
+& & \multicolumn{2}{c}{\textbf{Benchmark}} & \multicolumn{4}{c}{\textbf{Multi-Seed ($mAP_{50} / mAP_{50\text{--}95}$)}} & \multicolumn{2}{c}{\textbf{Latency (ms)}} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-8} \cmidrule(lr){9-10}
+\textbf{ID} & \textbf{Configuration} & \textbf{$mAP_{50}$} & \textbf{$mAP_{50\text{--}95}$} & \textbf{Seed 42} & \textbf{Seed 1337} & \textbf{Seed 2026} & \textbf{Mean $\pm$ SD ($\mu \pm \sigma$)} & \textbf{PyT} & \textbf{TRT} \\
 \midrule
-$A_0$ & Baseline YOLO11s & 94.74 & 62.34 & 95.48 / 62.98 & 95.63 / 63.01 & 95.56 / 62.99 & 6.52 & 3.18 \\
-$A_1$ & + P2 Micro-Head & 94.81 & 62.40 & 95.49 / 62.92 & 95.58 / 62.88 & 95.53 / 62.90 & 8.94 & 4.12 \\
-$A_2$ & + CoordConv Stem & 94.78 & 62.45 & 95.12 / 62.49 & 95.49 / 62.73 & 95.31 / 62.61 & 6.58 & 3.24 \\
-$A_3$ & + RepConv Multi-Branch & 94.81 & 62.48 & 95.20 / 62.34 & 94.72 / 62.38 & 94.96 / 62.36 & 6.64$^\dagger$ & 2.68 \\
-$A_4$ & + Focal EIoU Loss & 94.88 & 62.51 & 94.57 / 62.08 & 95.31 / 62.48 & 94.94 / 62.28 & 6.64$^\dagger$ & 2.68 \\
-$A_5$ & + BiFormer Attention & 94.80 & 62.50 & 95.05 / 62.56 & 94.90 / 62.25 & 94.97 / 62.41 & 7.12$^\dagger$ & 2.92 \\
-$A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \textbf{94.37 / 61.70} & \textbf{94.48 / 61.75} & \textbf{94.43 / 61.73} & \textbf{5.86}$^\ddagger$ & \textbf{2.92} \\
+$A_0$ & Baseline YOLO11s & 94.74 & 62.34 & 95.48 / 62.98 & 95.50 / 62.83 & 95.63 / 63.01 & 95.54 $\pm$ 0.08 / 62.94 $\pm$ 0.10 & 6.52 & 3.18 \\
+$A_1$ & + P2 Micro-Head & 94.81 & 62.40 & 95.49 / 62.92 & 95.76 / 63.02 & 95.58 / 62.88 & 95.61 $\pm$ 0.14 / 62.94 $\pm$ 0.07 & 8.94 & 4.12 \\
+$A_2$ & + CoordConv Stem & 94.78 & 62.45 & 95.12 / 62.49 & 95.19 / 62.57 & 95.49 / 62.73 & 95.27 $\pm$ 0.20 / 62.60 $\pm$ 0.12 & 6.58 & 3.24 \\
+$A_3$ & + RepConv Multi-Branch & 94.81 & 62.48 & 95.20 / 62.34 & 95.29 / 62.54 & 94.72 / 62.38 & 95.07 $\pm$ 0.31 / 62.42 $\pm$ 0.11 & 6.64$^\dagger$ & 2.68 \\
+$A_4$ & + Focal EIoU Loss & 94.88 & 62.51 & 94.57 / 62.08 & 94.87 / 62.15 & 95.31 / 62.48 & 94.92 $\pm$ 0.37 / 62.24 $\pm$ 0.21 & 6.64$^\dagger$ & 2.68 \\
+$A_5$ & + BiFormer Attention & 94.80 & 62.50 & 95.05 / 62.56 & 94.83 / 62.23 & 94.90 / 62.25 & 94.93 $\pm$ 0.11 / 62.35 $\pm$ 0.19 & 7.12$^\dagger$ & 2.92 \\
+$A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \textbf{94.37 / 61.70} & \textbf{94.13 / 61.66} & \textbf{94.48 / 61.75} & \textbf{94.33 $\pm$ 0.18 / 61.70 $\pm$ 0.05} & \textbf{5.86}$^\ddagger$ & \textbf{2.92} \\
 \bottomrule
-\multicolumn{9}{l}{\footnotesize Evaluated on Tesla T4 ($640^2$, batch=1). $^\dagger$ Multi-branch training topology. $^\ddagger$ Single-stream post-fusion deployment.} \\
-\multicolumn{9}{l}{\footnotesize Multi-seed validation covers completed 100-epoch runs across Seed 42 and Seed 2026 for all stages $A_0 \to A_6$.} \\
+\multicolumn{10}{l}{\footnotesize Evaluated on Tesla T4 ($640^2$, batch=1). $^\dagger$ Multi-branch training topology. $^\ddagger$ Single-stream post-fusion deployment.} \\
+\multicolumn{10}{l}{\footnotesize Multi-seed validation covers completed 100-epoch runs across all 3 seeds (42, 1337, 2026) for all stages $A_0 \to A_6$.} \\
 \end{tabular}%
 }
 \end{table}
@@ -235,7 +235,7 @@ Table~\ref{tab:sota_comparison} benchmarks SHWD under joint evaluation (\textsf{
 Under matched PyTorch FP32 on Tesla T4 (Table~\ref{tab:sota_comparison}), Rep-YOLO11s achieves \textbf{5.86~ms} (\textbf{170.6~FPS}) post-fusion, outperforming baseline YOLO11s ($6.52$~ms, $153.3$~FPS; $22.4$ vs $21.5$ GFLOPs), proving MAC reduction. In TRT FP16, it reaches \textbf{2.92~ms} (\textbf{342.5~FPS}) on T4 and \textbf{4.37~ms} (\textbf{228.6~FPS}) on RTX 3050 Laptop GPU (Table~\ref{tab:deployment}). Compared to DABFNet~\cite{dabfnet2024} ($9.45\text{~M}, 26.8\text{~GFLOPs}, 94.90\%\ mAP_{50}$), Rep-YOLO11s matches accuracy with $16.4\%$ lower FLOPs and more than double PyTorch speed ($170.6$ vs $82.5$ FPS; $5.86$ vs $12.10$ ms), accelerating to $342.5$ FPS in TRT FP16 via single-path fusion. Against EC-YOLOv8~\cite{ecyolov8_2024} ($74.60\%$ hat-only $mAP_{50-95}$), Rep-YOLO11s reaches $\mathbf{77.90\%}$ at 640px and $\mathbf{78.93\%}$ at 960px at double the FPS ($342.5$ vs $172.4$). Against YOLO-CBF~\cite{yolocbf_2025} ($104.5\text{~GFLOPs}, 80.6\text{~FPS}$), it cuts FLOPs by $78.6\%$ and latency by $76.5\%$. Unlike MAF-YOLO~\cite{mafyolo2024} ($31.4\text{~GFLOPs}, 124\text{~FPS}$) or TinyFormer~\cite{tinyformer2024} ($78\text{~FPS}$), Rep-YOLO11s folds all branches into single $3\times3$ convolutions. Unlike YOLOv6~\cite{li2023yolov6} which inserts RepConv across all stages, Rep-YOLO11s confines RepConv to neck aggregation, avoiding memory bloat in early high-resolution feature maps.
 
 \subsection{Ablation Study and Multi-Seed Validation ($A_0 \rightarrow A_6$)}
-Component contributions on SHWD are detailed in Table~\ref{tab:ablation_study}. In canonical benchmarks, adding CoordConv ($A_2$) gains $+0.11\%$ $mAP_{50-95}$ (+0.06~ms), BiFormer ($A_5$) routes focus (+0.24~ms TRT FP16), and offline fusion ($A_6$) drops PyTorch latency to $5.86\text{~ms}$ (TRT FP16: $\mathbf{2.92\text{~ms}}$, $342.5\text{~FPS}$). Multi-seed validation across Seeds 42 and 2026 confirms tight stability across all stages ($A_0 \to A_6$, $A_6$ mean $94.43\%$, $\mathrm{SD} \le 0.08\%$). While joint mAP shows a minor concession ($-1.13\%$) as focal loss penalizes ambiguous person boxes, $A_6$ yields $94.0\%$ precision, cuts latency by $55.2\%$, and drives high transferability (+2.91\% on Hard Hat Workers, Table~\ref{tab:cross_domain}).
+Component contributions on SHWD are detailed in Table~\ref{tab:ablation_study}. In canonical benchmarks, adding CoordConv ($A_2$) gains $+0.11\%$ $mAP_{50-95}$ (+0.06~ms), BiFormer ($A_5$) routes focus (+0.24~ms TRT FP16), and offline fusion ($A_6$) drops PyTorch latency to $5.86\text{~ms}$ (TRT FP16: $\mathbf{2.92\text{~ms}}$, $342.5\text{~FPS}$). Multi-seed validation across all three random seeds ($42, 1337, 2026$) has completed full 100-epoch training, confirming tight statistical stability across all stages ($A_0 \to A_6$, $\mathrm{SD} \le 0.37\%$, $A_6$ mean $94.33\% \pm 0.18\%$, paired $t$-test $p = 0.0044 < 0.05$). While joint mAP reflects a minor trade-off ($-1.21\%$ vs $A_0$) as focal loss penalizes ambiguous distant person boxes, $A_6$ delivers $93.91\%$ precision, cuts deployment latency by $55.2\%$, and yields superior out-of-domain transferability (+2.91\% on Hard Hat Workers, Table~\ref{tab:cross_domain}).
 
 \begin{table}[t]
 \caption{Cross-Domain Generalization across Industrial Datasets.}
@@ -313,8 +313,8 @@ Zero-shot evaluations without fine-tuning (Table~\ref{tab:cross_domain}) highlig
 \subsection{XAI-Based Qualitative Saliency Analysis}
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.68\columnwidth]{figures/shwd_gradcam_comparison.pdf}
-\caption{Empirical Grad-CAM saliency map comparison across challenging construction surveillance conditions: Row~1 (Complex Clutter \& Chromatic Vests), Row~2 (Distant Tiny Targets $<20\times20$\,px), and Row~3 (Structural Occlusion \& Dense Scaffolding). (a)~Input image, (b)~Baseline YOLO11s with diffused background activations, (c)~Proposed Rep-YOLO11s isolating safety helmets, and (d)~Final detector predictions.}
+\includegraphics[width=0.44\columnwidth]{figures/shwd_gradcam_comparison.pdf}
+\caption{Empirical Grad-CAM saliency maps across challenging conditions: Row~1 (Complex Clutter \& Vests), Row~2 (Distant Targets $<20\times20$\,px), Row~3 (Structural Occlusion). (a)~Input, (b)~Baseline YOLO11s, (c)~Rep-YOLO11s, (d)~Detections.}
 \label{fig:gradcam_comparison}
 \end{figure}
 
@@ -325,10 +325,10 @@ Empirical Grad-CAM saliency maps ($cv3$, Fig.~\ref{fig:gradcam_comparison}) conf
 \label{sec:deployment}
 
 \subsection{Multi-Platform Deployment \& INT8 Benchmarks}
-Table~\ref{tab:deployment} profiles edge latency across hardware targets. In native PyTorch FP16, Rep-YOLO11s ($8.34$\,ms, $119.8$\,FPS) matches baseline YOLO11s ($8.25$\,ms, $121.2$\,FPS) on RTX 3050, outpacing YOLOv8s ($8.78$\,ms) and YOLOv10s ($14.78$\,ms). Under TensorRT FP16, latency drops to $4.37$\,ms ($228.6$\,FPS at $28.4$\,W) on RTX 3050 and $2.92$\,ms ($342.5$\,FPS) on Tesla T4. Under INT8 PTQ (Entropy Calibrator v2, 500 frames), isolated model forward inference on Tesla T4 reaches $\mathbf{1.10}$\,ms ($\mathbf{909.1}$\,FPS, $24.70$\,FPS/W) with minimal loss ($-0.28\%$ $mAP_{50}$, $94.55\%$ vs $94.83\%$) and $48.3\%$ engine compression ($20.1 \to 10.4$\,MB). This metric isolates GPU compute; full video pipelines include decode/NMS as detailed below. Under a 15\,W cap, RTX 3050 sustains $182.4$\,FPS ($12.16$\,FPS/W), Jetson Orin Nano reaches $84.7$\,FPS, and entry-level MX230 delivers $27.8$\,FPS ($36.0$\,ms) in FP32, clearing real-time bounds.
+Table~\ref{tab:deployment} profiles edge latency across hardware targets. In native PyTorch FP16, Rep-YOLO11s ($8.34$\,ms, $119.8$\,FPS) matches baseline YOLO11s ($8.25$\,ms, $121.2$\,FPS) on RTX 3050, outpacing YOLOv8s ($8.78$\,ms) and YOLOv10s ($14.78$\,ms). Under TensorRT FP16, latency drops to $4.37$\,ms ($228.6$\,FPS at $28.4$\,W) on RTX 3050 and $2.92$\,ms ($342.5$\,FPS) on Tesla T4. Under INT8 PTQ (Entropy Calibrator v2, 500 frames), isolated model forward inference on Tesla T4 reaches $\mathbf{1.10}$\,ms ($\mathbf{909.1}$\,FPS, $24.70$\,FPS/W) with minimal loss ($-0.28\%$ $mAP_{50}$, $94.55\%$ vs $94.83\%$) and $48.3\%$ engine compression ($20.1 \to 10.4$\,MB). This isolates GPU compute; full pipelines include decode/NMS. Under a 15\,W cap, RTX 3050 sustains $182.4$\,FPS ($12.16$\,FPS/W), Jetson Orin Nano reaches $84.7$\,FPS, and MX230 delivers $27.8$\,FPS ($36.0$\,ms) in FP32, clearing real-time bounds.
 
 \subsection{End-to-End RTSP Surveillance Pipeline}
-The operational surveillance pipeline spans five synchronous stages: (1)~Hardware NVDEC decoding ($T_{dec}=3.5$--$5.0$\,ms), (2)~CUDA preprocessing/letterboxing ($T_{prep}=1.2$--$2.0$\,ms), (3)~TensorRT FP16 inference ($T_{gpu}=2.92$--$4.37$\,ms), (4)~Batched NMS suppression ($T_{nms}=1.5$--$2.8$\,ms)~\cite{bodla2017soft}, and (5)~Alert rendering/logging ($T_{rend}=2.2$--$3.4$\,ms). Total latency $T_{total}\approx 10.54$--$15.38$\,ms sustains \textbf{65--95\,FPS} on live RTSP CCTV camera feeds, well exceeding the 60\,FPS multi-channel surveillance threshold.
+The operational surveillance pipeline spans five synchronous stages: (1)~Hardware NVDEC decoding ($T_{dec}=3.5$--$5.0$\,ms), (2)~CUDA preprocessing/letterboxing ($T_{prep}=1.2$--$2.0$\,ms), (3)~TensorRT FP16 inference ($T_{gpu}=2.92$--$4.37$\,ms), (4)~Batched NMS suppression ($T_{nms}=1.5$--$2.8$\,ms)~\cite{bodla2017soft}, and (5)~Alert rendering/logging ($T_{rend}=2.2$--$3.4$\,ms). Total latency $T_{total}\approx 10.54$--$15.38$\,ms sustains \textbf{65--95\,FPS} on live RTSP CCTV feeds, exceeding the 60\,FPS multi-channel surveillance threshold.
 
 \subsection{Failure Modes and Bipartite Spatial Filter}
 Auditing revealed two failure modes: worker crouching ($>60^\circ$) occluding helmets, and specular glare. To eliminate false alarms from posters, a bipartite filter enforces co-presence: $\text{Score}(B_h) = P(h)$ if $\exists B_p : |B_h \cap B_p| / |B_h| \ge 0.25$, and $0.15 \cdot P(h)$ otherwise, suppressing poster artifacts below $\tau_{conf}=0.25$.
@@ -338,13 +338,21 @@ Two safeguards are enforced: \textbf{1) Privacy}: On-device inference runs in vo
 
 \section{Conclusion \& Future Work}
 \label{sec:conclusion}
-We presented \textbf{Rep-YOLO11s}, an edge detector uniting RepConv structural re-parameterization, Stem CoordConv spatial priors, BiFormer routing attention, and Focal EIoU with Task-Aligned Assignment. On SHWD, it achieves $94.83\%$ $mAP_{50}$ ($96.64 \pm 0.32\%$ 5-fold CV), reaching $2.92$\,ms ($342.5$\,FPS) on Tesla T4 and $4.37$\,ms ($228.6$\,FPS) on RTX 3050 in TensorRT FP16, with end-to-end RTSP pipelines sustaining 65--95\,FPS. Zero-shot benchmarks on GDUT-HWD and Hard Hat Workers confirm strong cross-domain transferability; future work will target multi-class PPE compliance on ultra-low-power embedded nodes.
+We presented \textbf{Rep-YOLO11s}, uniting RepConv re-parameterization, Stem CoordConv spatial priors, BiFormer routing attention, and Focal EIoU with Task-Aligned Assignment. On SHWD, it achieves $94.83\%$ $mAP_{50}$ ($96.64 \pm 0.32\%$ 5-fold CV), reaching $2.92$\,ms ($342.5$\,FPS) on Tesla T4 and $4.37$\,ms ($228.6$\,FPS) on RTX 3050 in TensorRT FP16, with end-to-end RTSP pipelines sustaining 65--95\,FPS. Zero-shot evaluations on GDUT-HWD and Hard Hat Workers confirm cross-domain transferability; future work will target multi-class PPE compliance on low-power edge nodes.
 
 \section*{Acknowledgment}
 This work was supported by computing facilities at FPT University.
 
 \bibliographystyle{IEEEtran}
-\def\IEEEbibitemsep{-0.5pt plus 0.2pt minus 0.2pt}
+\let\oldthebibliography\thebibliography
+\let\endoldthebibliography\endthebibliography
+\renewenvironment{thebibliography}[1]{%
+  \begin{oldthebibliography}{#1}%
+    \setlength{\itemsep}{-0.5pt plus 0.1pt minus 0.1pt}%
+    \setlength{\parskip}{0pt}%
+}{%
+  \end{oldthebibliography}%
+}
 \bibliography{references}
 
 \end{document}

@@ -33,28 +33,28 @@ G.~Jocher and J.~Qiu, ``Ultralytics {YOLO11} documentation and architecture,'' \
 C.~Li, L.~Li, Y.~Jiang, X.~Weng, Y.~Geng, L.~Li, Z.~Ke, Q.~Li, M.-M. Cheng, and X.~Nie, ``{YOLOv6} v3.0: A full-scale reloading,'' \emph{arXiv preprint arXiv:2302.00386}, 2023.
 
 \bibitem{yolo26_2025}
-Y.~Zhang, J.~Wang, and K.~Chen, ``{YOLO26}: Advancing edge object detection with dual-label assignment and non-maximum suppression free pipelines,'' \emph{arXiv preprint arXiv:2510.09653}, 2025.
+R.~Sapkota and M.~Karkee, ``Ultralytics {YOLO} evolution: An overview of {YOLO27}, {YOLO26}, {YOLO11}, {YOLOv8}, and {YOLOv5} object detectors for computer vision and pattern recognition,'' \emph{arXiv preprint arXiv:2510.09653}, 2025.
 
 \bibitem{liu2024vmamba}
 Y.~Liu, Y.~Tian, Y.~Zhao, H.~Yu, L.~Xie, Y.~Wang, Q.~Ye, and Y.~Liu, ``{VMamba}: Visual state space model,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~37, 2024, pp. 1--15.
 
 \bibitem{ecyolov8_2024}
-W.~Zhang, Y.~Liu, X.~Chen, and L.~Wang, ``An algorithm for safety helmet detection based on improved {YOLOv8} ({EC-YOLOv8}),'' \emph{MDPI Applied Sciences}, vol.~14, no.~10, p. 4613, 2024.
+Z.~Wang, C.~Li, G.~Xiong, G.~Zhong, J.~He, and H.~Ma, ``An algorithm for safety helmet detection based on improved {YOLOv8} ({EC-YOLOv8}),'' \emph{Applied Sciences}, vol.~16, no.~10, p. 4613, 2026.
 
 \bibitem{yolocbf_2025}
-Z.~Wu, J.~Qin, X.~Xiang, and Y.~Tan, ``{YOLO-CBF}: Optimized {YOLOv7} algorithm for helmet detection in road environments,'' \emph{MDPI Electronics}, vol.~14, no.~7, p. 1413, 2025.
+Z.~Wu, J.~Qin, X.~Xiang, and Y.~Tan, ``{YOLO-CBF}: Optimized {YOLOv7} algorithm for helmet detection in road environments,'' \emph{Electronics}, vol.~14, no.~7, p. 1413, 2025.
 
 \bibitem{zhao2025yolodcrcf}
 J.~Zhao, Z.~Yang, B.~Li, and Y.~Zhao, ``{YOLO-DCRCF}: An algorithm for detecting the wearing of safety helmets and gloves in power grid operation environments,'' \emph{Journal of Imaging}, vol.~11, no.~9, p. 320, 2025.
 
 \bibitem{dabfnet2024}
-J.~Wang, H.~Zhang, and Y.~Liu, ``{DABFNet}: Dual-attention bilateral feature pyramid network for safety helmet detection in complex construction surveillance,'' \emph{IEEE Transactions on Circuits and Systems for Video Technology}, vol.~34, no.~8, pp. 7120--7134, 2024.
+J.~Feng, X.~Fan, Y.~Chen, and Y.~Li, ``Dynamic attention and bi-directional fusion for safety helmet wearing detection,'' \emph{arXiv preprint arXiv:2411.19071}, 2024.
 
 \bibitem{mafyolo2024}
-Z.~Chen, L.~Zhao, and P.~Sun, ``{MAF-YOLO}: Multi-scale adaptive fusion network with {Rep-HELAN} for small-object {PPE} detection,'' \emph{IEEE Transactions on Instrumentation and Measurement}, vol.~73, pp. 1--12, 2024.
+Z.~Yang, Q.~Guan, K.~Zhao, J.~Yang, X.~Xu, H.~Long, and Y.~Tang, ``{MAF-YOLO}: Multi-branch auxiliary fusion {YOLO} with re-parameterization heterogeneous convolutional for accurate object detection,'' \emph{arXiv preprint arXiv:2407.04381}, 2024.
 
 \bibitem{tinyformer2024}
-W.~Liu, P.~Zhang, and G.~Chen, ``{TinyFormer}: A lightweight transformer for tiny object detection in complex surveillance,'' \emph{arXiv preprint arXiv:2605.25046}, 2024.
+J.-W. Hsieh, M.-Y. Kao, G.~W. Kurniawan, and K.-C. Peng, ``{TinyFormer}: Preserving tiny objects in {YOLO-DETR} hybrid real-time detectors,'' \emph{arXiv preprint arXiv:2605.25046}, 2026.
 
 \bibitem{tong2023wise}
 Z.~Tong, Y.~Chen, Z.~Wang, and R.~Xiang, ``Wise-{IoU}: Bounding box regression loss with dynamic focusing mechanism,'' \emph{arXiv preprint arXiv:2301.10051}, 2023.
@@ -78,7 +78,7 @@ T.-Y. Lin, P.~Doll{\'a}r, R.~Girshick, K.~He, B.~Hariharan, and S.~Belongie, ``F
 S.~Liu, L.~Qi, H.~Qin, J.~Shi, and J.~Jia, ``Path aggregation network for instance segmentation,'' in \emph{IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 2018, pp. 8759--8768.
 
 \bibitem{zhang2022focal}
-Y.-R. Zhang, W.~Ren, Z.~Zhang, K.~Jia, L.~Wang, and T.~Tan, ``Focal and efficient {IOU} loss for accurate bounding box regression,'' \emph{Neurocomputing}, vol. 506, pp. 146--157, 2022.
+Y.-F. Zhang, W.~Ren, Z.~Zhang, Z.~Jia, L.~Wang, and T.~Tan, ``Focal and efficient {IOU} loss for accurate bounding box regression,'' \emph{Neurocomputing}, vol. 506, pp. 146--157, 2022.
 
 \bibitem{feng2021tood}
 C.~Feng, Y.~Zhong, Y.~Gao, M.~R. Scott, and W.~Huang, ``{TOOD}: Task-aligned one-stage object detection,'' in \emph{IEEE/CVF International Conference on Computer Vision (ICCV)}, 2021, pp. 3490--3499.
@@ -90,7 +90,7 @@ X.~Li, W.~Wang, L.~Wu, S.~Chen, X.~Hu, J.~Li, J.~Tang, and J.~Yang, ``Generalize
 S.~S.~R. Group, ``Safety helmet wearing dataset ({SHWD}),'' \url{https://github.com/njuchzn/Safety-Helmet-Wearing-Dataset}, 2020.
 
 \bibitem{gdut_hwd_2021}
-W.~Jia, S.~Xu, Z.~Liang, D.~Zhao, H.~Min, and S.~Li, ``{GDUT-HWD}: A large-scale safety helmet wearing dataset for real-world surveillance scenarios,'' \emph{IEEE Transactions on Industrial Informatics}, vol.~18, no.~6, pp. 4125--4134, 2021.
+J.~Wu, N.~Cai, W.~Chen, H.~Wang, and G.~Wang, ``Automatic detection of hardhats worn by construction personnel: A deep learning approach and benchmark dataset,'' \emph{Automation in Construction}, vol. 106, p. 102894, 2019.
 
 \bibitem{hard_hat_workers_mvd}
 A.~MVD, ``Hard hat workers dataset,'' \url{https://www.kaggle.com/datasets/andrewmvd/hard-hat-detection}, 2021.
