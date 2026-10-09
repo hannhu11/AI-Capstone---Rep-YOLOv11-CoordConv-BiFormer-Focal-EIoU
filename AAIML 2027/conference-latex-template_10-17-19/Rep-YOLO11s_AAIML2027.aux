@@ -4,7 +4,7 @@
 \citation{wang2024yolov10}
 \citation{ultralytics2024yolo11}
 \citation{li2023yolov6}
-\citation{yolo26_2025}
+\citation{wang2024yolov10,yolo26_2025}
 \citation{liu2024vmamba}
 \citation{ecyolov8_2024}
 \citation{yolocbf_2025}
@@ -20,6 +20,11 @@
 \citation{yolocbf_2025}
 \citation{fuYolov8nFADSStudyEnhancing2024}
 \citation{dabfnet2024}
+\citation{mafyolo2024}
+\citation{tinyformer2024}
+\citation{ultralytics2024yolo11}
+\citation{gdut_hwd_2021}
+\citation{hard_hat_workers_mvd}
 \citation{ding2021repvgg}
 \citation{ding2021repvgg}
 \citation{zhu2023biformer}
@@ -28,64 +33,54 @@
 \citation{lin2017feature,liu2018path}
 \@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{2}{}\protected@file@percent }
 \newlabel{sec:related}{{II}{2}{}{section.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-A}}Real-Time Object Detection Frameworks}{2}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-B}}Safety Helmet Detection in Complex Environments}{2}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {II-C}}Structural Re-parameterization and Spatial Encoding}{2}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Overall Architecture of Rep-YOLO11s. The pipeline integrates: (1) Stem CoordConv ($[RGB, X, Y] \to 5\times 640\times 640$); (2) Multi-scale backbone (P1 Stem, P2--P4 C3k2, P5 SPPF+C2PSA); (3) PAN neck with Bi-Level Routing Attention (BRA) and RepConv; (4) Decoupled detection heads ($cv3, cv2$); and (5) Decoupled multi-task loss supervision with TAL, Focal-EIoU, and DFL.}}{2}{}\protected@file@percent }
+\newlabel{fig:architecture_overview}{{1}{2}{}{figure.1}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {III}Proposed Methodology}{2}{}\protected@file@percent }
 \newlabel{sec:method}{{III}{2}{}{section.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-A}}Overall System Architecture}{2}{}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Overall Architecture of Rep-YOLO11s. The pipeline integrates: (1) Stem CoordConv ($[RGB, X, Y] \to 5\times 640\times 640$); (2) Multi-scale backbone (P1 Stem, P2--P4 C3k2, P5 SPPF+C2PSA); (3) PAN neck with Bi-Level Routing Attention (BRA) and RepConv; (4) Decoupled detection heads ($cv3, cv2$); and (5) Decoupled multi-task loss supervision with TAL, Focal-EIoU, and DFL.}}{2}{}\protected@file@percent }
-\newlabel{fig:architecture_overview}{{1}{2}{}{figure.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Structural Re-parameterization (RepConv) Mechanics}{2}{}\protected@file@percent }
-\citation{zhu2023biformer}
-\citation{tong2023wise}
-\citation{zhang2022focal}
-\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Comprehensive Comparison with State-of-the-Art (SOTA) Models on the SHWD / VOC2028 Benchmark. Best results are highlighted in \textbf  {bold}, second-best results are \underline  {underlined}.}}{3}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Performance Comparison of State-of-the-Art Methods on the SHWD and Cross-Domain Benchmarks.}}{3}{}\protected@file@percent }
 \newlabel{tab:sota_comparison}{{I}{3}{}{table.1}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces RepConv Structural Re-Parameterization Lifecycle~\cite  {ding2021repvgg}. Multi-branch training topology (left) is algebraically folded into a single $3\times 3$ kernel (right) for deployment.}}{3}{}\protected@file@percent }
 \newlabel{fig:repconv_detail}{{2}{3}{}{figure.2}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Bi-Level Routing Attention (BRA) Architecture~\cite  {zhu2023biformer}. Coarse region partitioning ($S=8, k=4$) filters out $93.75\%$ irrelevant tokens before computing fine-grained token attention.}}{3}{}\protected@file@percent }
 \newlabel{fig:biformer_detail}{{3}{3}{}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-B}}Structural Re-parameterization (RepConv) Mechanics}{3}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-C}}Spatial Coordinate Convolution (CoordConv)}{3}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Bi-Level Routing Attention (BiFormer)}{3}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-E}}Bounding Box Regression and Multi-Task Loss Supervision}{3}{}\protected@file@percent }
+\citation{zhu2023biformer}
+\citation{tong2023wise}
+\citation{zhang2022focal}
 \citation{feng2021tood}
 \citation{li2020generalized}
 \citation{shwd_dataset}
 \citation{gdut_hwd_2021}
 \citation{hard_hat_workers_mvd}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-D}}Bi-Level Routing Attention (BiFormer)}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {III-E}}Bounding Box Regression and Multi-Task Loss Supervision}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Experimental Setup \& Results}{4}{}\protected@file@percent }
+\newlabel{sec:experiments}{{IV}{4}{}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Datasets and Pre-processing}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Hardware and Implementation Details}{4}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Systematic Component Ablation and Multi-Seed Validation on SHWD.}}{4}{}\protected@file@percent }
+\newlabel{tab:ablation_study}{{II}{4}{}{table.2}{}}
 \citation{dabfnet2024}
 \citation{ecyolov8_2024}
 \citation{yolocbf_2025}
 \citation{mafyolo2024}
 \citation{tinyformer2024}
 \citation{li2023yolov6}
-\@writefile{toc}{\contentsline {section}{\numberline {IV}Experimental Setup \& Results}{4}{}\protected@file@percent }
-\newlabel{sec:experiments}{{IV}{4}{}{section.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Datasets and Pre-processing}{4}{}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Systematic Component Ablation and Multi-Seed Validation on SHWD.}}{4}{}\protected@file@percent }
-\newlabel{tab:ablation_study}{{II}{4}{}{table.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Hardware and Implementation Details}{4}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Comparison with State-of-the-Art (SOTA)}{4}{}\protected@file@percent }
-\citation{gdut_hwd_2021}
-\citation{hard_hat_workers_mvd}
 \citation{hard_hat_workers_mvd}
 \citation{ecyolov8_2024}
 \citation{hard_hat_workers_mvd}
 \citation{gdut_hwd_2021}
-\citation{bodla2017soft}
-\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Cross-Domain Generalization across Industrial Datasets.}}{5}{}\protected@file@percent }
-\newlabel{tab:cross_domain}{{III}{5}{}{table.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Comparison with State-of-the-Art (SOTA)}{5}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Ablation Study and Multi-Seed Validation ($A_0 \rightarrow A_6$)}{5}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Cross-Domain Generalization Benchmark}{5}{}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Matched-Engine Latency (RTX 3050) and Multi-Platform Profiling.}}{5}{}\protected@file@percent }
-\newlabel{tab:deployment}{{IV}{5}{}{table.4}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Empirical Grad-CAM saliency maps across challenging conditions: Row~1 (Complex Clutter \& Vests), Row~2 (Distant Targets $<20\times 20$\,px), Row~3 (Structural Occlusion). (a)~Input, (b)~Baseline YOLO11s, (c)~Rep-YOLO11s, (d)~Detections.}}{5}{}\protected@file@percent }
 \newlabel{fig:gradcam_comparison}{{4}{5}{}{figure.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-F}}XAI-Based Qualitative Saliency Analysis}{5}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {V}Real-World Deployment \& Pipeline Analysis}{5}{}\protected@file@percent }
-\newlabel{sec:deployment}{{V}{5}{}{section.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Multi-Platform Deployment \& INT8 Benchmarks}{5}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Matched-Engine Latency (RTX 3050) and Multi-Platform Profiling.}}{5}{}\protected@file@percent }
+\newlabel{tab:deployment}{{III}{5}{}{table.3}{}}
+\citation{bodla2017soft}
 \bibstyle{IEEEtran}
 \bibdata{references}
 \bibcite{wang2023yolov7}{1}
@@ -104,19 +99,20 @@
 \bibcite{ding2021repvgg}{14}
 \bibcite{liu2018coordconv}{15}
 \bibcite{fuYolov8nFADSStudyEnhancing2024}{16}
-\bibcite{zhu2023biformer}{17}
-\bibcite{lin2017feature}{18}
-\bibcite{liu2018path}{19}
-\bibcite{zhang2022focal}{20}
-\bibcite{feng2021tood}{21}
-\bibcite{li2020generalized}{22}
-\bibcite{shwd_dataset}{23}
-\bibcite{gdut_hwd_2021}{24}
-\bibcite{hard_hat_workers_mvd}{25}
+\bibcite{gdut_hwd_2021}{17}
+\bibcite{hard_hat_workers_mvd}{18}
+\bibcite{zhu2023biformer}{19}
+\bibcite{lin2017feature}{20}
+\bibcite{liu2018path}{21}
+\bibcite{zhang2022focal}{22}
+\bibcite{feng2021tood}{23}
+\bibcite{li2020generalized}{24}
+\bibcite{shwd_dataset}{25}
 \bibcite{bodla2017soft}{26}
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}End-to-End RTSP Surveillance Pipeline}{6}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-C}}Failure Modes and Bipartite Spatial Filter}{6}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-D}}Ethics, Privacy, and Chromatic Fairness}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {V}Real-World Deployment \& Pipeline Analysis}{6}{}\protected@file@percent }
+\newlabel{sec:deployment}{{V}{6}{}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-A}}Edge Hardware Profiling and Energy Efficiency}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {V-B}}Surveillance Pipeline, False-Alarm Safeguards, and Ethics}{6}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion \& Future Work}{6}{}\protected@file@percent }
 \newlabel{sec:conclusion}{{VI}{6}{}{section.6}{}}
 \@writefile{toc}{\contentsline {section}{References}{6}{}\protected@file@percent }

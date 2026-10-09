@@ -68,6 +68,12 @@ R.~Liu, J.~Lehman, P.~Molino, F.~P. Such, E.~Frank, A.~Sergeev, and J.~Yosinski,
 \bibitem{fuYolov8nFADSStudyEnhancing2024}
 Z.~Fu, J.~Ling, X.~Yuan, H.~Li, H.~Li, and Y.~Li, ``{YOLOv8n-FADS}: A study for enhancing miners' helmet detection accuracy in complex underground environments,'' \emph{Sensors}, vol.~24, no.~12, p. 3767, 2024.
 
+\bibitem{gdut_hwd_2021}
+J.~Wu, N.~Cai, W.~Chen, H.~Wang, and G.~Wang, ``Automatic detection of hardhats worn by construction personnel: A deep learning approach and benchmark dataset,'' \emph{Automation in Construction}, vol. 106, p. 102894, 2019.
+
+\bibitem{hard_hat_workers_mvd}
+{Andrew MVD}, ``Hard hat workers dataset,'' \url{https://www.kaggle.com/datasets/andrewmvd/hard-hat-detection}, 2021.
+
 \bibitem{zhu2023biformer}
 L.~Zhu, X.~Wang, Z.~Ke, W.~Zhang, and R.~W.~H. Lau, ``{BiFormer}: Vision transformer with bi-level routing attention,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2023, pp. 10\,323--10\,333.
 
@@ -88,12 +94,6 @@ X.~Li, W.~Wang, L.~Wu, S.~Chen, X.~Hu, J.~Li, J.~Tang, and J.~Yang, ``Generalize
 
 \bibitem{shwd_dataset}
 {NJVisionPower}, ``Safety helmet wearing dataset ({SHWD}),'' \url{https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset}, 2020.
-
-\bibitem{gdut_hwd_2021}
-J.~Wu, N.~Cai, W.~Chen, H.~Wang, and G.~Wang, ``Automatic detection of hardhats worn by construction personnel: A deep learning approach and benchmark dataset,'' \emph{Automation in Construction}, vol. 106, p. 102894, 2019.
-
-\bibitem{hard_hat_workers_mvd}
-{Andrew MVD}, ``Hard hat workers dataset,'' \url{https://www.kaggle.com/datasets/andrewmvd/hard-hat-detection}, 2021.
 
 \bibitem{bodla2017soft}
 N.~Bodla, B.~Singh, R.~Chellappa, and L.~S. Davis, ``Soft-{NMS}--improving object detection with one line of code,'' in \emph{IEEE International Conference on Computer Vision (ICCV)}, 2017, pp. 5561--5569.
