@@ -21,7 +21,7 @@
 \BIBdecl
 
 \bibitem{wang2023yolov7}
-C.-Y. Wang, A.~Bochkovskiy, and H.-Y.~M. Liao, ``{YOLOv7}: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2023, pp. 7464--7475.
+C.-Y. Wang, A.~Bochkovskiy, and H.-Y.~M. Liao, ``{YOLOv7}: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2023, \mbox{pp.~7464--7475}.
 
 \bibitem{wang2024yolov10}
 A.~Wang, H.~Chen, L.~Liu, K.~Chen, Z.~Lin, J.~Han, and G.~Ding, ``{YOLOv10}: Real-time end-to-end object detection,'' \emph{arXiv preprint arXiv:2405.14458}, 2024.
@@ -60,10 +60,10 @@ J.-W. Hsieh, M.-Y. Kao, G.~W. Kurniawan, and K.-C. Peng, ``{TinyFormer}: Preserv
 Z.~Tong, Y.~Chen, Z.~Xu, and R.~Yu, ``Wise-{IoU}: Bounding box regression loss with dynamic focusing mechanism,'' \emph{arXiv preprint arXiv:2301.10051}, 2023.
 
 \bibitem{ding2021repvgg}
-X.~Ding, X.~Zhang, N.~Ma, J.~Han, G.~Ding, and J.~Sun, ``{RepVGG}: Making {VGG}-style {ConvNets} great again,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2021, pp. 13\,733--13\,742.
+X.~Ding, X.~Zhang, N.~Ma, J.~Han, G.~Ding, and J.~Sun, ``{RepVGG}: Making {VGG}-style {ConvNets} great again,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2021, \mbox{pp.~13\,733--13\,742}.
 
 \bibitem{liu2018coordconv}
-R.~Liu, J.~Lehman, P.~Molino, F.~P. Such, E.~Frank, A.~Sergeev, and J.~Yosinski, ``An intriguing failing of convolutional neural networks and the {CoordConv} solution,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~31, 2018, pp. 9605--9616.
+R.~Liu, J.~Lehman, P.~Molino, F.~P. Such, E.~Frank, A.~Sergeev, and J.~Yosinski, ``An intriguing failing of convolutional neural networks and the {CoordConv} solution,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~31, 2018, \mbox{pp.~9605--9616}.
 
 \bibitem{fuYolov8nFADSStudyEnhancing2024}
 Z.~Fu, J.~Ling, X.~Yuan, H.~Li, H.~Li, and Y.~Li, ``{YOLOv8n-FADS}: A study for enhancing miners' helmet detection accuracy in complex underground environments,'' \emph{Sensors}, vol.~24, no.~12, p. 3767, 2024.
@@ -75,27 +75,27 @@ J.~Wu, N.~Cai, W.~Chen, H.~Wang, and G.~Wang, ``Automatic detection of hardhats 
 {Andrew MVD}, ``Hard hat workers dataset,'' \url{https://www.kaggle.com/datasets/andrewmvd/hard-hat-detection}, 2021.
 
 \bibitem{zhu2023biformer}
-L.~Zhu, X.~Wang, Z.~Ke, W.~Zhang, and R.~W.~H. Lau, ``{BiFormer}: Vision transformer with bi-level routing attention,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2023, pp. 10\,323--10\,333.
+L.~Zhu, X.~Wang, Z.~Ke, W.~Zhang, and R.~W.~H. Lau, ``{BiFormer}: Vision transformer with bi-level routing attention,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2023, \mbox{pp.~10\,323--10\,333}.
 
 \bibitem{lin2017feature}
-T.-Y. Lin, P.~Doll{\'a}r, R.~Girshick, K.~He, B.~Hariharan, and S.~Belongie, ``Feature pyramid networks for object detection,'' in \emph{IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 2017, pp. 2117--2125.
+T.-Y. Lin, P.~Doll{\'a}r, R.~Girshick, K.~He, B.~Hariharan, and S.~Belongie, ``Feature pyramid networks for object detection,'' in \emph{IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 2017, \mbox{pp.~2117--2125}.
 
 \bibitem{liu2018path}
-S.~Liu, L.~Qi, H.~Qin, J.~Shi, and J.~Jia, ``Path aggregation network for instance segmentation,'' in \emph{IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 2018, pp. 8759--8768.
+S.~Liu, L.~Qi, H.~Qin, J.~Shi, and J.~Jia, ``Path aggregation network for instance segmentation,'' in \emph{IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 2018, \mbox{pp.~8759--8768}.
 
 \bibitem{zhang2022focal}
-Y.-F. Zhang, W.~Ren, Z.~Zhang, Z.~Jia, L.~Wang, and T.~Tan, ``Focal and efficient {IOU} loss for accurate bounding box regression,'' \emph{Neurocomputing}, vol. 506, pp. 146--157, 2022.
+Y.-F. Zhang, W.~Ren, Z.~Zhang, Z.~Jia, L.~Wang, and T.~Tan, ``Focal and efficient {IOU} loss for accurate bounding box regression,'' \emph{Neurocomputing}, vol. 506, \mbox{pp.~146--157}, 2022.
 
 \bibitem{feng2021tood}
-C.~Feng, Y.~Zhong, Y.~Gao, M.~R. Scott, and W.~Huang, ``{TOOD}: Task-aligned one-stage object detection,'' in \emph{IEEE/CVF International Conference on Computer Vision (ICCV)}, 2021, pp. 3490--3499.
+C.~Feng, Y.~Zhong, Y.~Gao, M.~R. Scott, and W.~Huang, ``{TOOD}: Task-aligned one-stage object detection,'' in \emph{IEEE/CVF International Conference on Computer Vision (ICCV)}, 2021, \mbox{pp.~3490--3499}.
 
 \bibitem{li2020generalized}
-X.~Li, W.~Wang, L.~Wu, S.~Chen, X.~Hu, J.~Li, J.~Tang, and J.~Yang, ``Generalized focal loss: Learning qualified and distributed bounding boxes for dense object detection,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~33, 2020, pp. 21\,002--21\,012.
+X.~Li, W.~Wang, L.~Wu, S.~Chen, X.~Hu, J.~Li, J.~Tang, and J.~Yang, ``Generalized focal loss: Learning qualified and distributed bounding boxes for dense object detection,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~33, 2020, \mbox{pp.~21\,002--21\,012}.
 
 \bibitem{shwd_dataset}
 {NJVisionPower}, ``Safety helmet wearing dataset ({SHWD}),'' \url{https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset}, 2020.
 
 \bibitem{bodla2017soft}
-N.~Bodla, B.~Singh, R.~Chellappa, and L.~S. Davis, ``Soft-{NMS}--improving object detection with one line of code,'' in \emph{IEEE International Conference on Computer Vision (ICCV)}, 2017, pp. 5561--5569.
+N.~Bodla, B.~Singh, R.~Chellappa, and L.~S. Davis, ``Soft-{NMS}: Improving object detection with one line of code,'' in \emph{IEEE International Conference on Computer Vision (ICCV)}, 2017, \mbox{pp.~5561--5569}.
 
 \end{thebibliography}
