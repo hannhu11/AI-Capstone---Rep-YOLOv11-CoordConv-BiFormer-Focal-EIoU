@@ -313,12 +313,12 @@ Zero-shot evaluations without fine-tuning (Table~\ref{tab:cross_domain}) highlig
 \subsection{XAI-Based Qualitative Saliency Analysis}
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.84\columnwidth]{figures/shwd_gradcam_comparison.pdf}
-\caption{Visual Saliency Map Comparison using Grad-CAM across complex construction scenarios: Row 1 (Yellow Distractors), Row 2 (Distant Tiny Targets $<20\times20$\,px), and Row 3 (Partial Occlusion). (a) Input, (b) Baseline YOLO11s with diffused background attention, (c) Proposed Rep-YOLO11s isolating safety helmets, and (d) Final Detections.}
+\includegraphics[width=0.68\columnwidth]{figures/shwd_gradcam_comparison.pdf}
+\caption{Empirical Grad-CAM saliency map comparison across challenging construction surveillance conditions: Row~1 (Complex Clutter \& Chromatic Vests), Row~2 (Distant Tiny Targets $<20\times20$\,px), and Row~3 (Structural Occlusion \& Dense Scaffolding). (a)~Input image, (b)~Baseline YOLO11s with diffused background activations, (c)~Proposed Rep-YOLO11s isolating safety helmets, and (d)~Final detector predictions.}
 \label{fig:gradcam_comparison}
 \end{figure}
 
-Grad-CAM saliency maps ($cv3$, Fig.~\ref{fig:gradcam_comparison}) confirm selectivity: (1)~on scaffolding with orange vests, baseline YOLO11s diffuses attention to vests, whereas Rep-YOLO11s isolates blue helmets ($hat~0.84$); (2)~under backlighting, BiFormer routing sustains focus on distant helmets ($hat~0.89$); and (3)~near yellow posters, CoordConv priors suppress false alarms by penalizing ground coordinates ($hat~0.88$).
+Empirical Grad-CAM saliency maps ($cv3$, Fig.~\ref{fig:gradcam_comparison}) confirm component selectivity: (1)~on high-visibility chromatic vests (Row~1), baseline YOLO11s diffuses attention to torsos, whereas Rep-YOLO11s sharply isolates helmet crowns ($hat~0.88$, $0.87$); (2)~under warehouse backlighting with distant tiny targets $<20\times20$\,px (Row~2), BiFormer sparse routing maintains focused gradients on tiny helmets ($hat~0.74$, $0.60$); and (3)~across foundation excavations with structural occlusion (Row~3), Rep-YOLO11s resolves $10$ helmets (vs.\ $6$ by baseline) without spurious alarms.
 
 %-------------------------------------------------------------------------
 \section{Real-World Deployment \& Pipeline Analysis}
