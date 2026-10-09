@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 00:10
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 00:16
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -436,6 +436,11 @@ File: figures/biformer_detail_ieee.png Graphic file (type png)
 Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 145.
 (pdftex.def)             Requested size: 250.26031pt x 79.98546pt.
 
+Underfull \hbox (badness 3271) in paragraph at lines 152--153
+\OT1/ptm/m/n/10 a Structural Re-parameterized Backbone enhanced with
+ []
+
+
 
 [2 <./figures/rep_yolo11s_overall_ieee.png (PNG copy)>]
 
@@ -444,46 +449,19 @@ Underfull \hbox (badness 3260) in paragraph at lines 173--175
 \OT1/ptm/m/n/10 This algebraic transformation converts the multi-branch
  []
 
-! Missing { inserted.
-<to be read again> 
-                   \unhbox 
-l.179 ...$X_\mbox{{\text{Coord}} = [X; C_x; C_y]$}
-                                                   is fed to the stem stage ...
-A left brace was mandatory here, so I've put one in.
-You might want to delete and/or insert some corrections
-so that I will find a matching right brace soon.
-(If you're confused by all this, try typing `I}' now.)
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.179 ...$X_\mbox{{\text{Coord}} = [X; C_x; C_y]$}
-                                                   is fed to the stem stage ...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-! Missing } inserted.
-<inserted text> 
-                }
-l.179 ...; C_x; C_y]$} is fed to the stem stage ($
-                                                  c_1{=}5$, $c_2{=}64$, $k{=...
-I've inserted something that you may have forgotten.
-(See the <inserted text> above.)
-With luck, this will get me unwedged. But if you
-really didn't forget anything, try typing `2' now; then
-my insertion and my current dilemma will both disappear.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.179 ...C_x; C_y]$} is fed to the stem stage ($c_
-                                                  1{=}5$, $c_2{=}64$, $k{=}3...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
 
 Underfull \hbox (badness 1789) in paragraph at lines 179--180
 \OT1/ptm/m/n/10 raw RGB input $\OML/cmm/m/it/10 X$ \OT1/ptm/m/n/10 with normalized spatial coordinates
+ []
+
+
+Underfull \hbox (badness 1424) in paragraph at lines 179--180
+\OML/cmm/m/it/10 c[][]\OT1/cmr/m/n/10 64$\OT1/ptm/m/n/10 , $\OML/cmm/m/it/10 k[]\OT1/cmr/m/n/10 3$\OT1/ptm/m/n/10 , $\OML/cmm/m/it/10 s[]\OT1/cmr/m/n/10 2$\OT1/ptm/m/n/10 ). All subsequent backbone and neck
+ []
+
+
+Underfull \hbox (badness 1546) in paragraph at lines 179--180
+\OT1/ptm/m/n/10 preserving global coordinate priors at negligible latency
  []
 
 
@@ -715,7 +693,7 @@ Here is how much of TeX's memory you used:
  14 hyphenation exceptions out of 8191
  57i,14n,65p,1814b,331s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Rep-YOLO11s_AAIML2027.pdf (6 pages, 7043265 bytes).
+Output written on Rep-YOLO11s_AAIML2027.pdf (6 pages, 7042982 bytes).
 PDF statistics:
  127 PDF objects out of 1000 (max. 8388607)
  73 compressed objects within 1 object stream
