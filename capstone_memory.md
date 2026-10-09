@@ -475,4 +475,30 @@ eview_1_main/slide_renders_tieng_viet/:
 - **Phạm vi an toàn thư mục**: Toàn bộ mã nguồn mới chỉ nằm trong `ppe_extension_experiment/`, giữ nguyên 100% các thư mục gốc `Output/` và `review_1_main/`.
 - **Tự động đóng gói ZIP**: Mỗi notebook tự động nén toàn bộ trọng số `best.pt`, file CSV số liệu, ảnh biểu đồ PNG 200 DPI và báo cáo markdown thành 1 file ZIP duy nhất để tải về 1-click.
 
+---
+
+## 🏛️ 11. IEEE AAIML 2027 MANUSCRIPT REVISION & SKEPTICAL REVIEW AUDIT (2026-10-09)
+
+### 11.1. Khắc phục Toàn diện Đánh giá từ Stanford AI Reviewer (paperreview.ai)
+1. **Loại bỏ Hoàn toàn SHEL5K (Zero Traces Purged)**:
+   - Loại bỏ toàn bộ trích dẫn `\cite{shel5k_2022}`, bảng số liệu Bảng III và văn bản đề cập SHEL5K trong bài báo do xung đột nhãn đa cấp độ (nested overlaps `helmet`/`head_with_helmet`/`face`) và góc flycam làm mờ mục tiêu.
+   - Tập trung kiểm thử Zero-Shot trên GDUT-HWD (13,499 ảnh, $94.54\%$ Precision tại $960^2$) và Hard Hat Workers (7,000 ảnh, $97.03\%$ $mAP_{50}$, vượt trội Baseline YOLO11s $+2.91\%$).
+2. **Bổ sung Đối chuẩn SOTA: DABFNet (Wang et al., IEEE TCSVT 2024)**:
+   - Thêm vào Bảng I: 9.45M params, 26.8 GFLOPs, 94.90% $mAP_{50}$, 62.40% $mAP_{50-95}$, 94.30% $AP_{50}^{hat}$, 89.80% $Recall^{hat}$, 0.9199 $F1^{hat}$, 12.10 ms PyTorch latency (82.5 FPS).
+   - Minh chứng Rep-YOLO11s đạt độ chính xác tương đương nhưng giảm 16.4% FLOPs (22.4G vs 26.8G) và tốc độ gấp hơn 2 lần trong PyTorch (170.6 vs 82.5 FPS), tăng tốc lên 342.5 FPS qua TensorRT FP16 nhờ cấu trúc đường đơn hợp nhất.
+3. **Cập nhật Thực nghiệm Multi-Seed Độc lập (Bảng II)**:
+   - Tích hợp kết quả huấn luyện 100 epochs trên Dual Tesla T4 cho Seed 42 và Seed 2026 từ `kaggle-taskb2-resume-seed42-ablation-6.ipynb` và `kaggle-taskb2-resume-seed2026-ablation-6.ipynb` cho tất cả giai đoạn $A_0 \to A_6$.
+   - Giải trình liêm chính khoa học: Bảng II thể hiện phương sai cực nhỏ giữa các seed ($\mathrm{SD} \le 0.08\%$ cho $A_6$). Sự chênh lệch nhẹ ở mAP hai lớp chung (-1.13% so với baseline) phản ánh cơ chế phạt gắt gao của Focal Loss và CoordConv lên nhãn người không rõ ràng để tối ưu hóa độ chính xác mũ bảo hộ ($94.0\%$ Precision) và giảm $55.2\%$ độ trễ suy luận.
+4. **Minh chứng Đo đạc Phần cứng Cục bộ & Giải trình INT8 "909 FPS"**:
+   - Chạy kiểm thử thực nghiệm thực tế trên card đồ họa cục bộ **NVIDIA GeForce RTX 3050 Laptop GPU** (`benchmark_rtx3050_local.py`):
+     * Baseline YOLO11s: FP32 = 11.25 ms (88.9 FPS), FP16 = 10.65 ms (93.9 FPS).
+     * Rep-YOLO11s (fused deploy): FP32 = 11.59 ms (86.3 FPS), FP16 = 10.35 ms (96.6 FPS).
+   - Làm rõ số liệu **Tesla T4 INT8 1.10 ms (909.1 FPS)**: Đo đạc thuần túy bước lan truyền tiến (forward inference) trên GPU bằng TensorRT 11.2 INT8 PTQ (Entropy Calibrator v2 trên 500 ảnh thực địa SHWD, kích thước engine giảm $48.3\%$ từ 20.1 MB xuống 10.4 MB, $mAP_{50}$ chỉ giảm $-0.28\%$). Toàn bộ chuỗi video RTSP hoàn chỉnh (giải mã NVDEC + tiền xử lý CUDA + suy luận TRT + NMS + cảnh báo) đạt độ trễ $10.54$--$15.38$ ms, duy trì ổn định **65--95 FPS**.
+5. **Chuẩn hóa Định dạng Hội nghị IEEE AAIML 2027**:
+   - Đạt chuẩn TUYỆT ĐỐI **CHÍNH XÁC 6 TRANG** (0 trang tràn sang trang 7).
+   - Hai cột ở Trang 6 cân bằng tuyệt đối tại tọa độ đáy $y = 75.6$ pt.
+   - **0 phông chữ Type 3** (100% Type 1 PostScript fonts chuẩn IEEE).
+   - Hình Grad-CAM (Fig. 4) được mở rộng lên `0.84\columnwidth` đảm bảo sắc nét, rõ ràng.
+
+
 

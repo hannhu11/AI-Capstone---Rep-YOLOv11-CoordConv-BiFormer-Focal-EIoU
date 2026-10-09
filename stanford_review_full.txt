@@ -1,0 +1,275 @@
+
+--- PAGE 1 ---
+Get detailed AI feedback on your research paper (free!)
+View Your Review
+Structural Re-Parameterization, Spatial
+Coordinate Encoding, and Cross-Domain
+Robustness for Real-Time Safety Helmet
+Detection in Construction Surveillance
+2027 2nd International Conference on Advances in Artificial Intelligence and Machine
+Learning (AAIML 2027) - Applied AI and Computer Vision Track
+Submitted: October 8, 2026
+Summary
+This paper presents Rep-YOLO11s, a real-time safety helmet detector designed for
+edge surveillance under memory-bandwidth constraints. The method combines
+structural re-parameterization (RepConv) restricted to neck aggregation, a single
+stem-level CoordConv for spatial priors, Bi-Level Routing Attention (BiFormer)
+placed in high-level neck stages with ONNX/TensorRT-compatible operators, and
+a decoupled training objective using Focal-EIoU for bounding-box regression and
+Task-Aligned Assignment (TAL) for label imbalance. On SHWD the model achieves
+94.83% mAP50 and 62.54% mAP50–95 (with 5-fold CV mAP50 = 96.64% ± 0.32)
+and reports strong edge latency (2.92 ms on T4 in TensorRT FP16), plus mixed
+S paperreview.ai
+By Stanford ML Group
+Upload Paper View Review Tech Overview
+10/9/26, 9:47 AM Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=qVL4nUBWIuaqquT7Pwdf1wPRgTP5Qj5-9DeNi77JuvI 1/9
+--- PAGE 2 ---
+cross-domain zero-shot results under a “Harmonized Hat-Only” evaluation
+protocol.
+Strengths
+Technical novelty and innovation
+Experimental rigor and validation
+Clarity of presentation
+Significance of contributions
+Roofline-guided co-design that explicitly optimizes for batch=1 memory-
+bound regimes; careful placement of RepConv only in neck stages and
+single-layer CoordConv is a deliberate, hardware-aware choice.
+•
+Deployment-oriented BiFormer configuration (S=8, k=4) with a routing
+scheme that maps to native ONNX Opset operators (TopK/Gather),
+avoiding custom plugins and improving portability.
+•
+Clean algebraic fusion pipeline for RepConv with correct branch-guarding
+and clear derivation for BN folding and identity handling.
+•
+Systematic ablation isolates the incremental contributions of CoordConv,
+RepConv fusion, Focal-EIoU, and BiFormer, and includes multi-seed
+checks (albeit partially incomplete).
+•
+Comprehensive latency profiling across multiple engines (PyTorch
+FP32/FP16, TensorRT FP16/INT8) and devices (T4, RTX 3050 with power
+caps, Orin Nano, MX230), including FPS/J efficiency.
+•
+Scene-stratified 5-fold cross-validation to reduce leakage risk, with mean
+± SD reporting.
+•
+Method descriptions are precise, with the BiFormer routing flow and
+RepConv fusion equations clearly stated; hardware roofline discussion is
+concrete and connected to design choices.
+•
+Deployment details (export path, opset, runtime compatibility) are
+explicit, which is valuable for applied AI.
+•
+The work addresses an important applied safety problem and provides a
+deployable, high-throughput solution under realistic constraints (RTSP
+•
+10/9/26, 9:47 AM Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=qVL4nUBWIuaqquT7Pwdf1wPRgTP5Qj5-9DeNi77JuvI 2/9
+--- PAGE 3 ---
+Weaknesses
+Technical limitations or concerns
+Experimental gaps or methodological issues
+Clarity or presentation issues
+Missing related work or comparisons
+pipeline timings and power-efficiency).
+The ONNX/TensorRT mapping of sparse attention is practically useful for
+the community.
+•
+Overall accuracy gains over a strong YOLO11s baseline on SHWD are
+small (≈+0.2 mAP50–95), suggesting mostly incremental improvements.
+•
+Cross-domain “robustness” claims are uneven: performance on GDUT-
+HWD and SHEL5K is comparable or worse than the baseline in several
+settings, which weakens the generalization narrative.
+•
+The method largely aggregates known components (CoordConv,
+RepConv, BiFormer, Focal-EIoU, TAL) with limited algorithmic novelty
+beyond careful integration and placement.
+•
+Some ablation entries are marked as unfinished and omitted,
+undermining the completeness of evidence.
+•
+The proposed “Harmonized Hat-Only Protocol” is non-standard; while it
+helps reconcile label schema mismatches, it complicates fair cross-dataset
+comparisons and may overstate transfer.
+•
+SOTA comparisons are missing for some pertinent helmet-focused works
+in the results tables (e.g., DABFNet has closely matching mAP metrics on
+SHWD but is not included in the main benchmarking table).
+•
+A few marketing-like phrases and heavy emphasis on select best-case
+numbers (e.g., INT8 “909 FPS”) could benefit from clearer context (full
+pipeline vs. model-only, exact measurement setup).
+•
+The paper mixes joint two-class and hat-only evaluations; stronger
+framing is needed so readers can interpret the relative importance of
+each protocol and how results translate to compliance monitoring.
+•
+10/9/26, 9:47 AM Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=qVL4nUBWIuaqquT7Pwdf1wPRgTP5Qj5-9DeNi77JuvI 3/9
+--- PAGE 4 ---
+Detailed Comments
+Technical soundness evaluation
+Experimental evaluation assessment
+Recent applied PPE datasets and methods (e.g., SFCHD/SCALE) and open-
+vocabulary/association pipelines are discussed minimally or not
+compared empirically; this would strengthen cross-domain validation.
+•
+More discussion contrasting BiFormer with alternative efficient attention
+or local-context modules used in helmet detectors (e.g., WIoU/WIoU-v3,
+DAHead/BWFPN, MAFPN/RepHELAN) would help position the design
+choices.
+•
+The structural re-parameterization derivations for merging 3×3, 1×1, and
+identity branches with BN into a single 3×3 kernel are correct and
+consistent with RepVGG/YOLOv6 literature; branch-guarding for identity
+is well specified.
+•
+The stem-only CoordConv prior is a sensible design that preserves
+translation equivariance downstream while injecting global coordinates at
+negligible overhead.
+•
+The BiFormer routing description aligns with the original BRA approach
+and the claimed 93.75% token pruning for S=8, k=4 is mathematically
+consistent. The choice to place BRA in higher-level neck stages is
+reasonable to limit overhead.
+•
+The Focal-EIoU formulation is sound and aligns with prior work; pairing
+with TAL decouples class imbalance from localization, which is coherent
+for a 1:12 skew scenario.
+•
+The SHWD results match or slightly surpass strong baselines and are in
+line with DABFNet’s reported mAPs, indicating that the method is
+competitive on the primary dataset.
+•
+Ablation gains are modest but mostly consistent with the intended roles
+of each component (CoordConv small lift with tiny cost; BiFormer small
+accuracy lift with small TRT overhead; fusion improves PyTorch latency).
+•
+10/9/26, 9:47 AM Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=qVL4nUBWIuaqquT7Pwdf1wPRgTP5Qj5-9DeNi77JuvI 4/9
+--- PAGE 5 ---
+Comparison with related work (using the summaries provided)
+Discussion of broader impact and significance
+Cross-domain evaluations reveal the sensitivity to label protocols; the
+reported precision advantages with reduced recall on SHEL5K caution
+against overstating transferability. A standardized cross-dataset
+annotation alignment or additional fine-tuning experiments would help.
+•
+Latency audits are unusually thorough, including matched-engine runs,
+power caps, and FPS/J; however, clearer reporting on end-to-end vs.
+model-only timing in the headline figures would improve interpretability.
+The INT8 PTQ result is impressive; calibration details are partially given
+(500 frames), but accuracy drop and measurement conditions should be
+more fully documented.
+•
+Relative to DABFNet (dynamic attention head + BWFPN + WIoU-v3), Rep-
+YOLO11s achieves comparable SHWD performance with a more
+deployment-focused attention (BiFormer) and an emphasis on TRT
+exportability; however, the paper does not provide a side-by-side table
+entry for DABFNet, which would be appropriate given the close metrics.
+•
+Compared to MAF-YOLO’s multi-branch MAFPN + re-parameterized
+heterogeneous kernels, this paper’s choice to restrict re-parameterization
+to neck stages and avoid heavy multi-branch necks better aligns with the
+memory-bound regime and yields stronger reported FPS, consistent with
+RepGhost/RepVGG philosophies.
+•
+The adoption of Focal-EIoU is aligned with prior findings (2101.08158),
+though the literature also suggests complementary or alternative losses
+(e.g., WIoU-v3) that sometimes favor small objects; a small-scale
+comparative experiment could clarify the chosen loss’s trade-offs for tiny
+helmets.
+•
+The paper’s “Harmonized Hat-Only Protocol” echoes challenges
+highlighted in open-vocabulary helmet association work (2410.12225),
+where inconsistent labels across datasets degrade evaluation reliability.
+While the proposed harmonization helps, it falls short of standardized re-
+annotation or association-aware protocols recommended in that
+literature.
+•
+The work addresses a critical applied safety domain where speed,
+deployability, and portability matter. The explicit ONNX/TensorRT
+•
+10/9/26, 9:47 AM Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=qVL4nUBWIuaqquT7Pwdf1wPRgTP5Qj5-9DeNi77JuvI 5/9
+--- PAGE 6 ---
+Questions for Authors
+1. Can you provide a public code/model release (including ONNX/TRT exports
+and switch_to_deploy scripts) and exact inference pipelines used for latency
+measurements, so the community can reproduce the reported timings and
+FPS/J metrics?
+2. How exactly is the “Harmonized Hat-Only Protocol” constructed per dataset
+(mapping rules, ignored classes, IOU thresholds, NMS, confidence thresholds)?
+Could you share a standardized evaluation harness to facilitate fair cross-
+dataset comparisons?
+3. DABFNet reports mAP50=94.9 and mAP50–95=62.6 on SHWD; can you include
+DABFNet in your main comparison table with matched image size/engines and
+add a runtime comparison, to contextualize Rep-YOLO11s against a closely
+performing PPE-specific baseline?
+4. Cross-domain results on GDUT-HWD and SHEL5K are mixed; did you attempt
+minimal fine-tuning (e.g., 1–5% labeled data) or domain adaptation, and if so,
+how do the relative gains compare to baseline YOLO11s?
+5. For INT8 PTQ (909 FPS on T4), what are the post-quantization accuracy
+changes on mAP50–95 and hat recall, and how sensitive are they to the
+calibration set composition and size beyond 500 frames?
+6. Could you provide additional ablations comparing Focal-EIoU with WIoU-v3 or
+CIoU on the tiny-helmet subset (e.g., <20×20 px) to validate that the chosen
+loss is indeed optimal for small-object localization in this setting?
+mapping for sparse attention and careful roofline alignment are valuable
+to practitioners.
+Privacy and fairness considerations (on-device inference, face blurring,
+chromatic augmentation) are positive, though a more formal bias audit
+across helmet colors/lighting conditions would strengthen this section.
+•
+The mixed cross-domain performance suggests that deployment in new
+environments will still require protocol alignment or minimal fine-tuning;
+open-sourcing code/models and harmonization scripts would amplify
+community value.
+•
+10/9/26, 9:47 AM Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=qVL4nUBWIuaqquT7Pwdf1wPRgTP5Qj5-9DeNi77JuvI 6/9
+--- PAGE 7 ---
+7. How does BiFormer compare to lighter local-context modules (e.g., depthwise
+DWConv with larger kernels, or CBAM/ECA) when measured on a strict latency
+budget (e.g., ≤3.0 ms T4 TRT FP16)? Please include accuracy/speed trade-offs.
+Overall Assessment
+This is a solid applied engineering paper that thoughtfully integrates known
+components with a clear deployment focus and provides unusually thorough
+latency audits across devices and engines. The technical soundness is good, the
+design decisions are well-motivated by a roofline analysis, and the exportability of
+sparse attention without custom plugins is a pragmatic contribution. However, the
+empirical accuracy gains over a strong YOLO11s baseline are modest on SHWD,
+key ablation runs are left incomplete, and cross-domain results are mixed despite
+the claim of robust transfer. The novelty is moderate, as the method primarily
+combines existing ideas with careful placement rather than introducing new
+algorithms. For a top-tier applied AI/vision track, I view this as borderline: it
+provides real value for deployability and reproducibility in an important domain,
+but it would benefit from stronger comparative baselines (e.g., DABFNet in the
+main table), fully completed ablations, standardized cross-dataset evaluation, and
+a public release of code/models. I lean toward a weak reject in the current form,
+with a path to acceptance if the above issues are addressed.
+We Value Your Feedback
+How helpful is the review?
+10/9/26, 9:47 AM Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=qVL4nUBWIuaqquT7Pwdf1wPRgTP5Qj5-9DeNi77JuvI 7/9
+--- PAGE 8 ---
+Not helpful Helpful Very helpful
+Is there any critical error (excluding minor inconsistency) in the
+review?
+Yes No
+Does the review provide actionable suggestions for improvement?
+Yes No
+Additional comments (optional)
+Share any other thoughts or feedback...
+0 / 500 characters
+Your feedback is anonymous and helps us improve our service
+Note: Reviews are AI generated and may contain errors. Please use them as guidance and apply your own judgment.
+Submit Feedback
+10/9/26, 9:47 AM Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=qVL4nUBWIuaqquT7Pwdf1wPRgTP5Qj5-9DeNi77JuvI 8/9
+--- PAGE 9 ---
+Questions or feedback? Contact us at aireviewer@cs.stanford.edu
+10/9/26, 9:47 AM Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=qVL4nUBWIuaqquT7Pwdf1wPRgTP5Qj5-9DeNi77JuvI 9/9

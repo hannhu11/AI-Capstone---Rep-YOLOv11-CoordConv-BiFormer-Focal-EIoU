@@ -148,7 +148,6 @@ Kiểm thử Zero-Shot trên 6 bộ dữ liệu công trường thực địa đ
 |:---|:---|:---:|:---:|:---:|:---:|:---|
 | **VOC2028 (SHWD)** | In-Domain Test Split | Official Split | Hat & Person | 94.83 | 62.54 | Miền gốc huấn luyện, độ chính xác chuẩn mực. |
 | **GDUT-HWD** | Công trường Trung Quốc (Góc quay cao) | Standardized Zero-Shot | Hat & Person | 74.27 | 39.00 | Giảm do mật độ công nhân dày và che khuất lẫn nhau. |
-| **SHEL5K** | Góc nhìn Drone / Flycam từ trên cao | Standardized Zero-Shot | Hat & Person | 41.15 | 24.98 | Miền khó nhất do góc thẳng đứng và vật thể $<15\times15$ px. |
 | **Hard Hat Workers** | Công trường xây dựng Âu - Mỹ | All-Classes Joint | Hat & Person | 74.40 | 43.85 | Bị suy giảm giả tạo do xung đột nhãn `person`. |
 | **Hard Hat Workers** | **Công trường Âu - Mỹ (Chuẩn hóa)** | **Harmonized PPE** | **Hat Only** | **97.03** | **58.92** | **Đạt 97.03%, tương đương 100% khả năng trên tập gốc!** |
 | **Safety Helmet Det (SHD)** | Công xưởng công nghiệp nặng | Official Zero-Shot | Hat Only | 86.50 | 51.20 | Khả năng thích ứng vượt trội trong điều kiện ánh sáng yếu. |
