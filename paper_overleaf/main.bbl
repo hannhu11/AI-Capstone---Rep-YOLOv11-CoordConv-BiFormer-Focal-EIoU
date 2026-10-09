@@ -30,13 +30,13 @@ A.~Wang, H.~Chen, L.~Liu, K.~Chen, Z.~Lin, J.~Han, and G.~Ding, ``{YOLOv10}: Rea
 G.~Jocher and J.~Qiu, ``Ultralytics {YOLO11} documentation and architecture,'' \url{https://docs.ultralytics.com/models/yolo11}, 2024.
 
 \bibitem{li2023yolov6}
-C.~Li, L.~Li, Y.~Jiang, X.~Weng, Y.~Geng, L.~Li, Z.~Ke, Q.~Li, M.-M. Cheng, and X.~Nie, ``{YOLOv6} v3.0: A full-scale reloading,'' \emph{arXiv preprint arXiv:2302.00386}, 2023.
+C.~Li, L.~Li, Y.~Geng, H.~Jiang, M.~Cheng, B.~Zhang, Z.~Ke, X.~Xu, and X.~Chu, ``{YOLOv6} v3.0: A full-scale reloading,'' \emph{arXiv preprint arXiv:2301.05586}, 2023.
 
 \bibitem{yolo26_2025}
 R.~Sapkota and M.~Karkee, ``Ultralytics {YOLO} evolution: An overview of {YOLO27}, {YOLO26}, {YOLO11}, {YOLOv8}, and {YOLOv5} object detectors for computer vision and pattern recognition,'' \emph{arXiv preprint arXiv:2510.09653}, 2025.
 
 \bibitem{liu2024vmamba}
-Y.~Liu, Y.~Tian, Y.~Zhao, H.~Yu, L.~Xie, Y.~Wang, Q.~Ye, and Y.~Liu, ``{VMamba}: Visual state space model,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~37, 2024, pp. 1--15.
+Y.~Liu, Y.~Tian, Y.~Zhao, H.~Yu, L.~Xie, Y.~Wang, Q.~Ye, J.~Jiao, and Y.~Liu, ``{VMamba}: Visual state space model,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~37, 2024, pp. 1--15.
 
 \bibitem{ecyolov8_2024}
 Z.~Wang, C.~Li, G.~Xiong, G.~Zhong, J.~He, and H.~Ma, ``An algorithm for safety helmet detection based on improved {YOLOv8} ({EC-YOLOv8}),'' \emph{Applied Sciences}, vol.~16, no.~10, p. 4613, 2026.
@@ -57,7 +57,7 @@ Z.~Yang, Q.~Guan, K.~Zhao, J.~Yang, X.~Xu, H.~Long, and Y.~Tang, ``{MAF-YOLO}: M
 J.-W. Hsieh, M.-Y. Kao, G.~W. Kurniawan, and K.-C. Peng, ``{TinyFormer}: Preserving tiny objects in {YOLO-DETR} hybrid real-time detectors,'' \emph{arXiv preprint arXiv:2605.25046}, 2026.
 
 \bibitem{tong2023wise}
-Z.~Tong, Y.~Chen, Z.~Wang, and R.~Xiang, ``Wise-{IoU}: Bounding box regression loss with dynamic focusing mechanism,'' \emph{arXiv preprint arXiv:2301.10051}, 2023.
+Z.~Tong, Y.~Chen, Z.~Xu, and R.~Yu, ``Wise-{IoU}: Bounding box regression loss with dynamic focusing mechanism,'' \emph{arXiv preprint arXiv:2301.10051}, 2023.
 
 \bibitem{ding2021repvgg}
 X.~Ding, X.~Zhang, N.~Ma, J.~Han, G.~Ding, and J.~Sun, ``{RepVGG}: Making {VGG}-style {ConvNets} great again,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2021, pp. 13\,733--13\,742.
@@ -66,7 +66,7 @@ X.~Ding, X.~Zhang, N.~Ma, J.~Han, G.~Ding, and J.~Sun, ``{RepVGG}: Making {VGG}-
 R.~Liu, J.~Lehman, P.~Molino, F.~P. Such, E.~Frank, A.~Sergeev, and J.~Yosinski, ``An intriguing failing of convolutional neural networks and the {CoordConv} solution,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~31, 2018, pp. 9605--9616.
 
 \bibitem{fuYolov8nFADSStudyEnhancing2024}
-Z.~Fu, J.~Ling, X.~Yuan, H.~Li, H.~Li, and Y.~Li, ``Yolov8n-{{FADS}}: {{A Study}} for {{Enhancing Miners}}' {{Helmet Detection Accuracy}} in {{Complex Underground Environments}},'' \emph{Sensors}, vol.~24, no.~12, p. 3767, 2024.
+Z.~Fu, J.~Ling, X.~Yuan, H.~Li, H.~Li, and Y.~Li, ``{YOLOv8n-FADS}: A study for enhancing miners' helmet detection accuracy in complex underground environments,'' \emph{Sensors}, vol.~24, no.~12, p. 3767, 2024.
 
 \bibitem{zhu2023biformer}
 L.~Zhu, X.~Wang, Z.~Ke, W.~Zhang, and R.~W.~H. Lau, ``{BiFormer}: Vision transformer with bi-level routing attention,'' in \emph{IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}, 2023, pp. 10\,323--10\,333.
@@ -87,13 +87,13 @@ C.~Feng, Y.~Zhong, Y.~Gao, M.~R. Scott, and W.~Huang, ``{TOOD}: Task-aligned one
 X.~Li, W.~Wang, L.~Wu, S.~Chen, X.~Hu, J.~Li, J.~Tang, and J.~Yang, ``Generalized focal loss: Learning qualified and distributed bounding boxes for dense object detection,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~33, 2020, pp. 21\,002--21\,012.
 
 \bibitem{shwd_dataset}
-S.~S.~R. Group, ``Safety helmet wearing dataset ({SHWD}),'' \url{https://github.com/njuchzn/Safety-Helmet-Wearing-Dataset}, 2020.
+{NJVisionPower}, ``Safety helmet wearing dataset ({SHWD}),'' \url{https://github.com/njvisionpower/Safety-Helmet-Wearing-Dataset}, 2020.
 
 \bibitem{gdut_hwd_2021}
 J.~Wu, N.~Cai, W.~Chen, H.~Wang, and G.~Wang, ``Automatic detection of hardhats worn by construction personnel: A deep learning approach and benchmark dataset,'' \emph{Automation in Construction}, vol. 106, p. 102894, 2019.
 
 \bibitem{hard_hat_workers_mvd}
-A.~MVD, ``Hard hat workers dataset,'' \url{https://www.kaggle.com/datasets/andrewmvd/hard-hat-detection}, 2021.
+{Andrew MVD}, ``Hard hat workers dataset,'' \url{https://www.kaggle.com/datasets/andrewmvd/hard-hat-detection}, 2021.
 
 \bibitem{bodla2017soft}
 N.~Bodla, B.~Singh, R.~Chellappa, and L.~S. Davis, ``Soft-{NMS}--improving object detection with one line of code,'' in \emph{IEEE International Conference on Computer Vision (ICCV)}, 2017, pp. 5561--5569.
