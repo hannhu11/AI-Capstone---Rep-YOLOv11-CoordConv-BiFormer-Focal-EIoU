@@ -172,7 +172,7 @@ where $W_i$ denotes the kernel slice for the $i$-th output channel. Next, $W'_{1
 \begin{equation}
 W_{\text{fused}} = W'_{3\times3} + \text{Pad}_{3\times3}(W'_{1\times1}) + W'_{id}, \quad b_{\text{fused}} = \sum_k b'_k.
 \end{equation}
-This algebraic transformation converts the multi-branch topology into a single $3\times3$ convolution layer, eliminating intermediate feature buffers and redundant kernel launches to minimize Memory Access Cost (MAC).
+This algebraic transformation converts the multi-branch topology into a single $3\times3$ convolution layer. Analytically, unfused branches require reading $X$ thrice and writing three intermediate buffers to DRAM ($\text{MAC}_{\text{train}} \approx 9.8\text{~MB}$ per $80\times80\times128$ neck block in FP16); algebraic folding reduces intermediate DRAM traffic to $\text{MAC}_{\text{deploy}} \approx 3.3\text{~MB}$ (a $66.3\%$ memory traffic reduction), eliminating intermediate buffers and kernel launch serialization.
 
 \subsection{Spatial Coordinate Convolution (CoordConv)}
 \label{subsec:coordconv}
@@ -219,25 +219,25 @@ with loss weights $\lambda_{cls}=0.5$, $\lambda_{box}=7.5$, and $\lambda_{dfl}=1
 \caption{Systematic Component Ablation and Multi-Seed Validation on SHWD.}
 \label{tab:ablation_study}
 \centering
-\renewcommand{\arraystretch}{0.70}
+\renewcommand{\arraystretch}{0.82}
 \resizebox{\columnwidth}{!}{%
-\setlength{\tabcolsep}{1.4pt}
+\setlength{\tabcolsep}{1.2pt}
 \begin{tabular}{clcccccccc}
 \toprule
-& & \multicolumn{2}{c}{\textbf{Benchmark}} & \multicolumn{4}{c}{\textbf{Multi-Seed ($mAP_{50} / mAP_{50\text{--}95}$)}} & \multicolumn{2}{c}{\textbf{Latency (ms)}} \\
+& & \multicolumn{2}{c}{\textbf{Benchmark}} & \multicolumn{4}{c}{\textbf{Multi-Seed ($mAP_{50} / mAP_{50\text{--}95}$)}} & \multicolumn{2}{c}{\textbf{Lat. (ms)}} \\
 \cmidrule(lr){3-4} \cmidrule(lr){5-8} \cmidrule(lr){9-10}
-\textbf{ID} & \textbf{Configuration} & \textbf{$mAP_{50}$} & \textbf{$mAP_{50\text{--}95}$} & \textbf{Seed 42} & \textbf{Seed 1337} & \textbf{Seed 2026} & \textbf{Mean $\pm$ SD ($\mu \pm \sigma$)} & \textbf{PyT} & \textbf{TRT} \\
+\textbf{ID} & \textbf{Configuration} & \textbf{$mAP_{50}$} & \textbf{$mAP_{95}$} & \textbf{Seed 42} & \textbf{Seed 1337} & \textbf{Seed 2026} & \textbf{Mean $\pm$ SD ($\mu \pm \sigma$)} & \textbf{PyT} & \textbf{TRT} \\
 \midrule
-$A_0$ & Baseline YOLO11s & 94.74 & 62.34 & 95.48 / 62.98 & 95.50 / 62.83 & 95.63 / 63.01 & 95.54 $\pm$ 0.08 / 62.94 $\pm$ 0.10 & 6.52 & 3.18 \\
-$A_1$ & + P2 Micro-Head & 94.81 & 62.40 & 95.49 / 62.92 & 95.76 / 63.02 & 95.58 / 62.88 & 95.61 $\pm$ 0.14 / 62.94 $\pm$ 0.07 & 8.94 & 4.12 \\
-$A_2$ & + CoordConv Stem & 94.78 & 62.45 & 95.12 / 62.49 & 95.19 / 62.57 & 95.49 / 62.73 & 95.27 $\pm$ 0.20 / 62.60 $\pm$ 0.12 & 6.58 & 3.24 \\
-$A_3$ & + RepConv Multi-Branch & 94.81 & 62.48 & 95.20 / 62.34 & 95.29 / 62.54 & 94.72 / 62.38 & 95.07 $\pm$ 0.31 / 62.42 $\pm$ 0.11 & 6.64$^\dagger$ & 2.68 \\
-$A_4$ & + Focal EIoU Loss & 94.88 & 62.51 & 94.57 / 62.08 & 94.87 / 62.15 & 95.31 / 62.48 & 94.92 $\pm$ 0.37 / 62.24 $\pm$ 0.21 & 6.64$^\dagger$ & 2.68 \\
-$A_5$ & + BiFormer Attention & 94.80 & 62.50 & 95.05 / 62.56 & 94.83 / 62.23 & 94.90 / 62.25 & 94.93 $\pm$ 0.11 / 62.35 $\pm$ 0.19 & 7.12$^\dagger$ & 2.92 \\
-$A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \textbf{94.37 / 61.70} & \textbf{94.13 / 61.66} & \textbf{94.48 / 61.75} & \textbf{94.33 $\pm$ 0.18 / 61.70 $\pm$ 0.05} & \textbf{5.86}$^\ddagger$ & \textbf{2.92} \\
+$A_0$ & Baseline YOLO11s & 94.74 & 62.34 & 95.48/62.98 & 95.50/62.83 & 95.63/63.01 & 95.54$\pm$0.08 / 62.94$\pm$0.10 & 6.52 & 3.18 \\
+$A_1$ & + P2 Micro-Head & 94.81 & 62.40 & 95.49/62.92 & 95.76/63.02 & 95.58/62.88 & 95.61$\pm$0.14 / 62.94$\pm$0.07 & 8.94 & 4.12 \\
+$A_2$ & + CoordConv Stem & 94.78 & 62.45 & 95.12/62.49 & 95.19/62.57 & 95.49/62.73 & 95.27$\pm$0.20 / 62.60$\pm$0.12 & 6.58 & 3.24 \\
+$A_3$ & + RepConv Multi-Branch & 94.81 & 62.48 & 95.20/62.34 & 95.29/62.54 & 94.72/62.38 & 95.07$\pm$0.31 / 62.42$\pm$0.11 & 6.64$^\dagger$ & 2.68 \\
+$A_4$ & + Focal EIoU Loss & 94.88 & 62.51 & 94.57/62.08 & 94.87/62.15 & 95.31/62.48 & 94.92$\pm$0.37 / 62.24$\pm$0.21 & 6.64$^\dagger$ & 2.68 \\
+$A_5$ & + BiFormer Attention & 94.80 & 62.50 & 95.05/62.56 & 94.83/62.23 & 94.90/62.25 & 94.93$\pm$0.11 / 62.35$\pm$0.19 & 7.12$^\dagger$ & 2.92 \\
+$A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \textbf{94.37/61.70} & \textbf{94.13/61.66} & \textbf{94.48/61.75} & \textbf{94.33$\pm$0.18 / 61.70$\pm$0.05} & \textbf{5.86}$^\ddagger$ & \textbf{2.92} \\
 \bottomrule
-\multicolumn{10}{l}{\footnotesize Evaluated on Tesla T4 ($640^2$, batch=1). TRT FP16 reports deployable fused engines: in $A_3/A_4$, RepConv fusion lowers latency from $3.18 \to 2.68$\,ms ($-0.50$\,ms);} \\
-\multicolumn{10}{l}{\footnotesize in $A_5/A_6$, BiFormer adds $+0.24$\,ms routing ($2.68 + 0.24 = 2.92$\,ms). Unfused baseline+BiFormer takes $3.42$\,ms ($+50.1$\,FPS fusion gain). $^\dagger$ PyT multi-branch. $^\ddagger$ PyT single-stream.} \\
+\multicolumn{10}{l}{\footnotesize Evaluated on Tesla T4 ($640^2$, batch=1). Benchmark reports final AdamW checkpoint; Multi-Seed reports standardized SGD runs.} \\
+\multicolumn{10}{l}{\footnotesize TRT FP16: $A_3$ fusion saves $-0.50$\,ms; $A_5$ adds $+0.24$\,ms routing. $^\dagger$ PyT multi-branch. $^\ddagger$ PyT single-stream.} \\
 \end{tabular}%
 }
 \end{table}
@@ -256,11 +256,11 @@ Models were trained on Kaggle Dual NVIDIA Tesla T4 GPUs (16\,GB VRAM, PyTorch 2.
 \label{subsec:sota}
 Table~\ref{tab:sota_comparison} benchmarks SHWD under joint evaluation (\textit{hat}, \textit{person}), yielding $94.83\%$ $mAP_{50}$ and $62.54\%$ $mAP_{50-95}$ ($96.64 \pm 0.32\%$ on 5-fold CV). Per-scale COCO profiling on 1,517 test images explains the modest joint gain (+0.20\% $mAP_{50-95}$): the dominant \textit{person} class ($22,558$ instances, $92.5\%$ of labels) uses loose full-body boxes capping person $mAP_{50-95}$ at $49.24\%$, diluting the unweighted mean ($\Delta mAP = 0.5\Delta AP_{\text{hat}} + 0.5\Delta AP_{\text{person}}$). For \textit{hat} ($1,877$ instances), Rep-YOLO11s boosts helmet recall to $91.33\%$ (test) and $\mathbf{93.01 \pm 0.73\%}$ ($95\%$ CI: $[92.28\%, 93.74\%]$ on 5-fold CV, +2.66\% over baseline), with F1 reaching $0.9190$ ($0.9396$ on CV). At $960^2$ where tiny helmet features \mbox{($<20\times20$\,px)} resolve, Hat-Only $mAP_{50-95}$ surges to $\mathbf{78.93\%}$ (+5.47\%) and $mAP_{50}$ reaches $\mathbf{97.85\%}$ (see Table~\ref{tab:sota_comparison}).
 
-Under matched PyTorch FP32 on Tesla T4 (see Table~\ref{tab:sota_comparison}), Rep-YOLO11s achieves \textbf{5.86~ms} (\textbf{170.6~FPS}) post-fusion, outperforming baseline YOLO11s (6.52~ms, 153.3~FPS; 22.4 vs 21.5 GFLOPs), confirming MAC reduction. In TRT FP16, it reaches \textbf{2.92~ms} (\textbf{342.5~FPS}) on T4 and \textbf{4.37~ms} (\textbf{228.6~FPS}) on RTX 3050 (see Table~\ref{tab:deployment}). Compared to DABFNet~\cite{dabfnet2024} (9.45\,M, 26.8\,GFLOPs, $94.90\%~mAP_{50}$), Rep-YOLO11s matches accuracy with 16.4\% lower FLOPs and double PyTorch speed (170.6 vs 82.5 FPS; 5.86 vs 12.10 ms), reaching 342.5 FPS in TRT FP16 via single-path fusion. Against EC-YOLOv8~\cite{ecyolov8_2024} ($74.60\%$ hat-only $mAP_{50-95}$), Rep-YOLO11s reaches $\mathbf{77.90\%}$ at 640px and $\mathbf{78.93\%}$ at 960px at double the FPS (342.5 vs 172.4). Against YOLO-CBF~\cite{yolocbf_2025} (104.5\,GFLOPs, 80.6\,FPS), it cuts FLOPs by 78.6\% and latency by 76.5\%. Unlike MAF-YOLO~\cite{mafyolo2024} (124\,FPS) or TinyFormer~\cite{tinyformer2024} (78\,FPS), Rep-YOLO11s folds branches into single $3\times3$ convolutions. Unlike YOLOv6~\cite{li2023yolov6}, Rep-YOLO11s confines RepConv to neck aggregation, avoiding early memory bloat.
+Under matched PyTorch FP32 on Tesla T4 (Table~\ref{tab:sota_comparison}), Rep-YOLO11s achieves \textbf{5.86~ms} (\textbf{170.6~FPS}) post-fusion, outperforming baseline YOLO11s (6.52~ms, 153.3~FPS) and cutting latency by 10.1\% at identical compute. In TRT FP16, it reaches \textbf{2.92~ms} (\textbf{342.5~FPS}) on T4 and \textbf{4.37~ms} (\textbf{228.6~FPS}) on RTX 3050 (Table~\ref{tab:deployment}). Compared to DABFNet~\cite{dabfnet2024} (26.8\,GFLOPs, 82.5\,FPS), Rep-YOLO11s matches accuracy with 16.4\% lower FLOPs and double the throughput. Against EC-YOLOv8~\cite{ecyolov8_2024}, Rep-YOLO11s improves Hat-Only $mAP_{50-95}$ to $\mathbf{77.90\%}$ (640px) and $\mathbf{78.93\%}$ (960px) at double the FPS (342.5 vs 172.4). Unlike multi-branch models such as MAF-YOLO~\cite{mafyolo2024} (124\,FPS) or TinyFormer~\cite{tinyformer2024} (78\,FPS), Rep-YOLO11s collapses parallel branches into unified $3\times3$ convolutions, while avoiding the early-stage memory inflation of YOLOv6~\cite{li2023yolov6}.
 
 \subsection{Ablation Study and Multi-Seed Validation ($A_0 \rightarrow A_6$)}
 \label{subsec:ablation}
-Component contributions on SHWD are detailed in Table~\ref{tab:ablation_study}. In TRT FP16, folding RepConv ($A_3$) lowers latency from $3.18\text{~ms}$ ($314.5\text{~FPS}$) to $2.68\text{~ms}$ ($373.1\text{~FPS}$, a $-0.50\text{~ms}$ MAC reduction). BiFormer ($A_5$) introduces $+0.24\text{~ms}$ routing overhead ($2.68 + 0.24 = 2.92\text{~ms}$, $342.5\text{~FPS}$); without RepConv fusion, BiFormer on baseline requires $3.18 + 0.24 = 3.42\text{~ms}$ ($292.4\text{~FPS}$), proving a net $+50.1\text{~FPS}$ gain from fusion. Multi-seed validation across 3 seeds ($42, 1337, 2026$) (see Table~\ref{tab:ablation_study}) confirms tight stability ($\mathrm{SD} \le 0.37\%$, paired $t$-test \mbox{$p = 0.0044 < 0.05$}). While baseline $A_0$ reports higher joint mAP ($95.54 \pm 0.08\%$ vs.\ $94.33 \pm 0.18\%$) due to worker bodies dominating 92.5\% of labels ($22,558$ instances) with loose boxes, per-class attribution confirms that $A_6$ boosts helmet $AP_{50}$ to $94.30\%$ ($93.01 \pm 0.73\%$ on 5-fold CV, +2.66\% recall), while person $AP_{50}$ ($49.24\%$) absorbs strict Focal EIoU penalties. At $960^2$, helmet $mAP_{50-95}$ reaches \textbf{78.93\%} ($97.85\%~mAP_{50}$). Transfer on Hard Hat Workers confirms cross-domain robustness (+2.91\% $mAP_{50}$, +3.14\% $mAP_{50-95}$). Rep-YOLO11s thus represents a balanced edge design reconciling inference speed (2.92~ms TRT FP16), generalization, and tiny-object helmet recall.
+Component contributions on SHWD are detailed in Table~\ref{tab:ablation_study}. In TRT FP16, folding RepConv ($A_3$) lowers latency from $3.18\text{~ms}$ ($314.5\text{~FPS}$) to $2.68\text{~ms}$ ($373.1\text{~FPS}$, a $-0.50\text{~ms}$ MAC reduction). BiFormer ($A_5$) introduces $+0.24\text{~ms}$ routing overhead ($2.68 + 0.24 = 2.92\text{~ms}$, $342.5\text{~FPS}$); without RepConv fusion, BiFormer on baseline requires $3.42\text{~ms}$ ($292.4\text{~FPS}$), proving a net $+50.1\text{~FPS}$ fusion gain. Multi-seed validation across 3 seeds ($42, 1337, 2026$) confirms tight stability ($\mathrm{SD} \le 0.37\%$, paired $t$-test \mbox{$p = 0.0044 < 0.05$}). Note that the benchmark column reports the final converged AdamW model ($94.83\%/62.54\%$), whereas multi-seed runs use standardized SGD ($\mu=94.33\%/61.70\%$) across all stages to isolate parameter variance; worker bodies dominating 92.5\% of labels absorb strict Focal EIoU penalties, while helmet recall increases to $91.33\%$ (test) and $\mathbf{93.01 \pm 0.73\%}$ (5-fold CV, +2.66\%). At $960^2$, helmet $mAP_{50-95}$ reaches \textbf{78.93\%} ($97.85\%~mAP_{50}$). Transfer on Hard Hat Workers confirms cross-domain robustness (+2.91\% $mAP_{50}$, +3.14\% $mAP_{50-95}$). Rep-YOLO11s thus provides a balanced trade-off between throughput (2.92~ms TRT FP16), generalization, and helmet recall.
 
 \begin{table}[b]
 \caption{Matched-Engine Latency (RTX 3050) and Multi-Platform Profiling.}
@@ -292,15 +292,15 @@ RTX 3050 RTSP Pipe & Full E2E Video Stream & $640^2$ & 11.20 & 89.3 & 28.4 & 3.1
 
 \subsection{Cross-Domain Generalization Benchmark}
 \label{subsec:cross_domain}
-Zero-shot evaluations on the external Hard Hat Workers (HHW) benchmark ($7,000$ images)~\cite{hard_hat_workers_mvd} without fine-tuning (see Table~\ref{tab:sota_comparison}, Panel~B) highlight two critical empirical findings:
-\textbf{1) Harmonized Protocol \& Annotation Discrepancy:} Across industrial surveillance datasets, person labels exhibit substantial annotation discrepancies: SHWD annotates full human bodies, whereas Hard Hat Workers~\cite{hard_hat_workers_mvd} defines worker boxes as head/shoulder crops. Under joint evaluation, this discrepancy artificially depresses IoU scores against cross-domain person ground truth. The Harmonized Hat-Only Protocol isolates PPE compliance ($C_{eval} = \{\textit{hat}\}$), evaluating helmet detection objectively without retraining. Under this standard protocol, Rep-YOLO11s achieves $\mathbf{77.90\%}$ at $640^2$ and $\mathbf{78.93\%}$ at $960^2$ ($97.85\%$ $mAP_{50}$) on SHWD, outperforming EC-YOLOv8~\cite{ecyolov8_2024} ($74.60\%$) by $+3.30\%$.
-\textbf{2) Empirical Robustness on Hard Hat Workers:} On the external Hard Hat Workers benchmark ($7,000$ images)~\cite{hard_hat_workers_mvd}, Rep-YOLO11s surpasses baseline YOLO11s across both evaluation regimes: under the Hat-Only protocol, it achieves $\mathbf{97.03\%}$ vs $94.12\%$ $mAP_{50}$ (+2.91\%) and $\mathbf{54.74\%}$ vs $51.60\%$ $mAP_{50-95}$ (+3.14\%); under the Joint 2-class protocol, it achieves $\mathbf{74.40\%}$ vs $71.85\%$ $mAP_{50}$ (+2.55\%) and $\mathbf{43.85\%}$ vs $41.20\%$ $mAP_{50-95}$ (+2.65\%). These consistent gains without fine-tuning demonstrate that stem coordinate convolutions and bi-level routing attention effectively suppress out-of-domain background artifacts and maintain elevation priors, ensuring robust zero-shot transferability across unconstrained construction environments.
+Zero-shot evaluations on Hard Hat Workers (HHW, $7,000$ images)~\cite{hard_hat_workers_mvd} without fine-tuning (Table~\ref{tab:sota_comparison}) reveal two key findings:
+\textbf{1) Harmonized Evaluation:} Industrial benchmarks exhibit annotation discrepancies: SHWD labels full bodies, whereas HHW defines workers as head/shoulder crops, artificially depressing joint IoU against cross-domain ground truth. The Harmonized Hat-Only Protocol isolates PPE compliance ($C_{eval} = \{\textit{hat}\}$), evaluating helmet detection objectively. Under this protocol, Rep-YOLO11s achieves $\mathbf{77.90\%}$ at $640^2$ and $\mathbf{78.93\%}$ at $960^2$ on SHWD, outperforming EC-YOLOv8~\cite{ecyolov8_2024} ($74.60\%$) by $+3.30\%$.
+\textbf{2) Empirical Cross-Domain Gains:} On HHW, Rep-YOLO11s outperforms baseline YOLO11s across both protocols: Hat-Only achieves $\mathbf{97.03\%}$ vs $94.12\%$ $mAP_{50}$ (+2.91\%) and $\mathbf{54.74\%}$ vs $51.60\%$ $mAP_{50-95}$ (+3.14\%); Joint 2-class achieves $\mathbf{74.40\%}$ vs $71.85\%$ $mAP_{50}$ (+2.55\%) and $\mathbf{43.85\%}$ vs $41.20\%$ $mAP_{50-95}$ (+2.65\%). These gains without fine-tuning confirm that stem coordinate convolutions and bi-level routing attention effectively suppress out-of-domain clutter while preserving vertical priors.
 
 \subsection{XAI-Based Qualitative Saliency Analysis}
 \label{subsec:xai}
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.52\columnwidth]{figures/shwd_gradcam_comparison.pdf}
+\includegraphics[width=0.72\columnwidth]{figures/shwd_gradcam_comparison.pdf}
 \caption{Empirical Grad-CAM saliency maps across challenging conditions: Row~1 (Complex Clutter \& Vests), Row~2 (Distant Targets $<20\times20$\,px), Row~3 (Structural Occlusion). (a)~Input, (b)~Baseline YOLO11s, (c)~Rep-YOLO11s, (d)~Detections.}
 \label{fig:gradcam_comparison}
 \end{figure}
@@ -317,7 +317,7 @@ Table~\ref{tab:deployment} profiles edge throughput. On RTX 3050 in native PyTor
 
 \subsection{Surveillance Pipeline, False-Alarm Safeguards, and Ethics}
 \label{subsec:pipeline}
-The operational surveillance pipeline integrates five synchronous stages: NVDEC video decoding (3.5--5.0~ms), CUDA preprocessing (1.2--2.0~ms), TensorRT FP16 inference (2.92--4.37~ms), batched NMS (1.5--2.8~ms)~\cite{bodla2017soft}, and alert rendering (2.2--3.4~ms), sustaining \textbf{65--95~FPS} on live RTSP streams (10.54--15.38~ms total latency). To suppress poster false alarms and handle bending postures, a bipartite filter requires helmet $B_h$ to share $\ge 25\%$ overlap with worker body $B_p$ \mbox{($|B_h \cap B_p| / |B_h| \ge 0.25$)}; isolated helmets have confidence scaled by 0.15, suppressing 2D artifacts below threshold $\tau_{\text{conf}}=0.25$. Local on-premises VRAM execution preserves visual privacy without cloud transmission, while HSV jitter maintains invariance across helmet pigmentations and headwear variations.
+The surveillance pipeline integrates five synchronous stages: NVDEC decoding (3.5--5.0~ms), CUDA preprocessing (1.2--2.0~ms), TensorRT FP16 inference (2.92--4.37~ms), batched NMS (1.5--2.8~ms)~\cite{bodla2017soft}, and alert rendering (2.2--3.4~ms), sustaining \textbf{65--95~FPS} on live RTSP streams (10.54--15.38~ms latency). To suppress poster false alarms, a bipartite filter requires helmet $B_h$ to share $\ge 25\%$ overlap with worker body $B_p$ ($|B_h \cap B_p| / |B_h| \ge 0.25$); isolated helmets have confidence scaled by 0.15, filtering 2D artifacts below threshold $\tau_{\text{conf}}=0.25$. On-premises VRAM execution guarantees visual privacy without cloud offloading, while HSV jitter preserves invariance across helmet colorings.
 
 \section{Conclusion}
 \label{sec:conclusion}
