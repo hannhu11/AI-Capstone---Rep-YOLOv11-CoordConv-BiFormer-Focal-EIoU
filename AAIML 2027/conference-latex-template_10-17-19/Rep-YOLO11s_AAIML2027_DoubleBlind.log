@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 19:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 20:54
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -339,13 +339,8 @@ Underfull \hbox (badness 2486) in paragraph at lines 68--69
  []
 
 
-Underfull \hbox (badness 1490) in paragraph at lines 70--71
-\OT1/ptm/m/n/10 physical edge latency. Experimental results confirm that
- []
-
-
-Underfull \hbox (badness 2027) in paragraph at lines 70--71
-\OT1/ptm/m/n/10 structural re-parameterization eliminates runtime memory
+Underfull \hbox (badness 1603) in paragraph at lines 70--71
+\OT1/ptm/m/n/10 and physical edge latency. Experimental results confirm
  []
 
 
@@ -485,6 +480,9 @@ Underfull \hbox (badness 5939) in paragraph at lines 204--205
  []
 
 
+Underfull \vbox (badness 1867) has occurred while \output is active []
+
+
 
 
 Underfull \hbox (badness 2512) in paragraph at lines 246--249
@@ -492,33 +490,33 @@ Underfull \hbox (badness 2512) in paragraph at lines 246--249
  []
 
 
-Underfull \hbox (badness 2735) in paragraph at lines 246--249
-\OT1/ptm/m/n/10 annotations while retaining all 7,581 authentic images.
+Underfull \hbox (badness 2088) in paragraph at lines 246--249
+\OT1/ptm/m/n/10 (SHWD) [24] (in standard Pascal VOC XML format),
  []
 
 
-Underfull \hbox (badness 1803) in paragraph at lines 246--249
-\OT1/ptm/m/n/10 grouping over all $\OT1/cmr/m/n/10 7\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 581$ \OT1/ptm/m/n/10 images, ensuring frames from
+Underfull \hbox (badness 2644) in paragraph at lines 246--249
+\OT1/ptm/m/n/10 purged inverted coordinates ($\OML/cmm/m/it/10 x[] \OMS/cmsy/m/n/10 ^^U \OML/cmm/m/it/10 x[]$\OT1/ptm/m/n/10 ), removed
  []
 
 
-Underfull \hbox (badness 1939) in paragraph at lines 246--249
-\OT1/ptm/m/n/10 harsh occlusions ($\OT1/cmr/m/n/10 94\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 83%$ $\OML/cmm/m/it/10 mAP[]$\OT1/ptm/m/n/10 , $\OT1/cmr/m/n/10 62\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 54%$ $\OML/cmm/m/it/10 mAP[]$\OT1/ptm/m/n/10 ),
+Underfull \hbox (badness 2221) in paragraph at lines 246--249
+\OT1/ptm/m/n/10 within the same fold. While the pre-defined test split
  []
 
 
-Underfull \hbox (badness 3557) in paragraph at lines 256--257
-\OT1/ptm/m/n/10 on 1,517 test images explains the modest joint gain
+Underfull \hbox (badness 1755) in paragraph at lines 246--249
+\OT1/ptm/m/n/10 evaluated on the Hard Hat Workers benchmark ($\OT1/cmr/m/n/10 7\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 000$
  []
 
 
-Underfull \hbox (badness 2469) in paragraph at lines 256--257
-\OT1/ptm/m/n/10 ($\OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 9396$ \OT1/ptm/m/n/10 on CV). At $\OT1/cmr/m/n/10 960[]$ \OT1/ptm/m/n/10 where tiny helmet features
+Underfull \hbox (badness 4819) in paragraph at lines 256--257
+\OML/cmm/m/it/10 mAP[]$\OT1/ptm/m/n/10 ): for \OT1/ptm/m/it/10 hat \OT1/ptm/m/n/10 ($\OT1/cmr/m/n/10 1\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 877$ \OT1/ptm/m/n/10 instances), Rep-YOLO11s
  []
 
 
-Underfull \hbox (badness 4084) in paragraph at lines 256--257
-[] \OT1/ptm/m/n/10 resolve, Hat-Only $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 surges to
+Underfull \hbox (badness 1694) in paragraph at lines 256--257
+\OT1/ptm/m/n/10 achieves $\OML/cmm/m/it/10 AP[] \OT1/cmr/m/n/10 = 96\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 10%$\OT1/ptm/m/n/10 , $\OML/cmm/m/it/10 AP[] \OT1/cmr/m/n/10 = 64\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 80%$\OT1/ptm/m/n/10 , and
  []
 
 
@@ -537,6 +535,18 @@ Underfull \hbox (badness 1603) in paragraph at lines 258--259
 Underfull \hbox (badness 1648) in paragraph at lines 258--259
 \OT1/ptm/m/n/10 improves Hat-Only $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 to $[]$ (640px) and
  []
+
+
+Underfull \hbox (badness 1742) in paragraph at lines 262--263
+\OT1/ptm/m/n/10 stages ($\OML/cmm/m/it/10 A[] \OMS/cmsy/m/n/10 ! \OML/cmm/m/it/10 A[]$\OT1/ptm/m/n/10 , $\OML/cmm/m/it/10 ^^V \OT1/cmr/m/n/10 = 94\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 33%\OML/cmm/m/it/10 =\OT1/cmr/m/n/10 61\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 70%$\OT1/ptm/m/n/10 ) to isolate
+ []
+
+
+Underfull \hbox (badness 1540) in paragraph at lines 262--263
+\OT1/ptm/m/n/10 ($\OML/cmm/m/it/10 A[]$ \OT1/ptm/m/n/10 vs $\OML/cmm/m/it/10 A[]$\OT1/ptm/m/n/10 ), eliminating optimizer confounding. Worker
+ []
+
+
 
 
 Underfull \hbox (badness 3815) in paragraph at lines 294--297
@@ -558,8 +568,6 @@ Underfull \hbox (badness 3503) in paragraph at lines 294--297
 \OT1/ptm/m/n/10 vs $\OT1/cmr/m/n/10 41\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 20%$ $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 (+2.65%). These gains without
  []
 
-
-
 <figures/shwd_gradcam_comparison.pdf, id=37, 827.25058pt x 598.87741pt>
 File: figures/shwd_gradcam_comparison.pdf Graphic file (type pdf)
 <use figures/shwd_gradcam_comparison.pdf>
@@ -571,13 +579,13 @@ Underfull \hbox (badness 7030) in paragraph at lines 303--303
  []
 
 
+
+[5 <./figures/shwd_gradcam_comparison.pdf>]
 Underfull \hbox (badness 3471) in paragraph at lines 315--316
 \OT1/ptm/m/n/10 and YOLOv10s (14.78ms). TensorRT FP16 accelerates
  []
 
 
-
-[5 <./figures/shwd_gradcam_comparison.pdf>]
 Underfull \hbox (badness 3557) in paragraph at lines 319--320
 []\OT1/ptm/m/n/10 The surveillance pipeline integrates five synchronous
  []
@@ -652,13 +660,13 @@ L3 programming layer <2025-05-26>
 Here is how much of TeX's memory you used:
  4031 strings out of 469867
  65597 string characters out of 5482749
- 487768 words of memory out of 5000000
+ 488379 words of memory out of 5000000
  32288 multiletter control sequences out of 15000+600000
  670317 words of font info for 121 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  57i,14n,65p,1811b,331s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Rep-YOLO11s_AAIML2027_DoubleBlind.pdf (6 pages, 7041462 bytes).
+Output written on Rep-YOLO11s_AAIML2027_DoubleBlind.pdf (6 pages, 7042607 bytes).
 PDF statistics:
  127 PDF objects out of 1000 (max. 8388607)
  73 compressed objects within 1 object stream
