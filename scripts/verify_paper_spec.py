@@ -29,10 +29,9 @@ def verify_paper(pdf_path, tex_path, log_path, bib_path):
             errors.append(f"Author {author} missing in {tex_path}")
     if "FPT University, Ho Chi Minh City, Vietnam" not in tex_content:
         errors.append(f"Affiliation missing in {tex_path}")
-    if r"\{Nhunhse183644, thanhnvSE180387, dungtptse180382\}@fpt.edu.vn" not in tex_content:
-        errors.append(f"Student emails missing in {tex_path}")
-    if "AnhVH54@fe.edu.vn" not in tex_content:
-        errors.append(f"Advisor email missing in {tex_path}")
+    for email in ["Nhunhse183644@fpt.edu.vn", "thanhnvSE180387@fpt.edu.vn", "dungtptse180382@fpt.edu.vn", "AnhVH54@fe.edu.vn"]:
+        if email not in tex_content:
+            errors.append(f"Email {email} missing in {tex_path}")
     if "Corresponding author: Nguyen Han Nhu (email: Nhunhse183644@fpt.edu.vn)" not in tex_content:
         errors.append(f"Corresponding author footnote missing in {tex_path}")
     print("[PASS] Author roster, emails, affiliation, and corresponding author verified")
