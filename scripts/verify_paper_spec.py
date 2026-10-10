@@ -52,6 +52,26 @@ def verify_paper(pdf_path, tex_path, log_path, bib_path):
     else:
         print("[PASS] 0 Roofline buzzword occurrences in .tex")
 
+    if re.search(r'co-design', tex_content, re.IGNORECASE):
+        errors.append(f"Co-design buzzword found in {tex_path} (must be replaced with hardware-aware architecture)")
+    else:
+        print("[PASS] 0 Co-design buzzword occurrences in .tex")
+
+    if re.search(r'face\s+blur', tex_content, re.IGNORECASE):
+        errors.append(f"Unsubstantiated face blurring claim found in {tex_path}")
+    else:
+        print("[PASS] 0 Face blurring claim occurrences in .tex")
+
+    if re.search(r'crouch', tex_content, re.IGNORECASE):
+        errors.append(f"Unsubstantiated crouching angle claim found in {tex_path}")
+    else:
+        print("[PASS] 0 Crouching angle claim occurrences in .tex")
+
+    if r'\section{Conclusion}' not in tex_content:
+        errors.append(f"Section VI must be exactly '\\section{{Conclusion}}' in {tex_path}")
+    else:
+        print("[PASS] Section VI named '\\section{Conclusion}' in .tex")
+
     # 3. Check bib file for gdut
     with open(bib_path, 'r', encoding='utf-8', errors='ignore') as f:
         bib_content = f.read()
@@ -113,6 +133,12 @@ def verify_paper(pdf_path, tex_path, log_path, bib_path):
             errors.append(f"Future Work found in PDF text on Page {i+1}")
         if re.search(r'roofline', t, re.IGNORECASE):
             errors.append(f"Roofline buzzword found in PDF text on Page {i+1}")
+        if re.search(r'co-design', t, re.IGNORECASE):
+            errors.append(f"Co-design buzzword found in PDF text on Page {i+1}")
+        if re.search(r'face\s+blur', t, re.IGNORECASE):
+            errors.append(f"Face blurring claim found in PDF text on Page {i+1}")
+        if re.search(r'crouch', t, re.IGNORECASE):
+            errors.append(f"Crouching angle claim found in PDF text on Page {i+1}")
     if not re.search(r'gdut', full_pdf_text, re.IGNORECASE):
         print("[PASS] 0 GDUT occurrences in PDF text")
     if not re.search(r'acknowledg', full_pdf_text, re.IGNORECASE):
@@ -121,6 +147,12 @@ def verify_paper(pdf_path, tex_path, log_path, bib_path):
         print("[PASS] 0 Future Work occurrences in PDF text")
     if not re.search(r'roofline', full_pdf_text, re.IGNORECASE):
         print("[PASS] 0 Roofline buzzword occurrences in PDF text")
+    if not re.search(r'co-design', full_pdf_text, re.IGNORECASE):
+        print("[PASS] 0 Co-design buzzword occurrences in PDF text")
+    if not re.search(r'face\s+blur', full_pdf_text, re.IGNORECASE):
+        print("[PASS] 0 Face blurring claim occurrences in PDF text")
+    if not re.search(r'crouch', full_pdf_text, re.IGNORECASE):
+        print("[PASS] 0 Crouching angle claim occurrences in PDF text")
 
     # 8. Check for word-splitting hyphens across all pages
     hyphenated_words = []

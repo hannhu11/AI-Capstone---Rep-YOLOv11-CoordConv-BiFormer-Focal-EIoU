@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 11:17
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 11:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -292,8 +292,8 @@ Underfull \hbox (badness 1622) in paragraph at lines 57--59
  []
 
 
-Underfull \hbox (badness 4084) in paragraph at lines 57--59
-\OT1/ptm/b/n/9 co-design for memory-constrained edge deployment. Our
+Underfull \hbox (badness 7326) in paragraph at lines 57--59
+\OT1/ptm/b/n/9 addresses single-batch streaming latency bottlenecks by
  []
 
 
@@ -502,6 +502,21 @@ Underfull \hbox (badness 1939) in paragraph at lines 239--242
  []
 
 
+Underfull \hbox (badness 1424) in paragraph at lines 244--245
+[]\OT1/ptm/m/n/10 Models were trained on Kaggle Dual NVIDIA Tesla
+ []
+
+
+Underfull \hbox (badness 1552) in paragraph at lines 244--245
+\OT1/ptm/m/n/10 T4 GPUs (16GB VRAM, PyTorch 2.5.1, CUDA 12.4)
+ []
+
+
+Underfull \hbox (badness 2564) in paragraph at lines 244--245
+\OT1/ptm/m/n/10 for 100 epochs using SGD ($\OML/cmm/m/it/10 ^^Q[] \OT1/cmr/m/n/10 = 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 01$\OT1/ptm/m/n/10 , momentum
+ []
+
+
 Underfull \hbox (badness 3557) in paragraph at lines 247--248
 \OT1/ptm/m/n/10 on 1,517 test images explains the modest joint gain
  []
@@ -551,6 +566,16 @@ Underfull \hbox (badness 2384) in paragraph at lines 252--253
 
 Underfull \hbox (badness 3884) in paragraph at lines 252--253
 \OT1/cmr/m/n/10 62\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 94 \OMS/cmsy/m/n/10 ^^F \OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 10%$ \OT1/ptm/m/n/10 vs. $\OT1/cmr/m/n/10 61\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 70 \OMS/cmsy/m/n/10 ^^F \OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 05%$ $\OML/cmm/m/it/10 mAP[]$\OT1/ptm/m/n/10 ). This
+ []
+
+
+Underfull \hbox (badness 2285) in paragraph at lines 252--253
+\OT1/ptm/m/n/10 at $\OT1/cmr/m/n/10 960[]$\OT1/ptm/m/n/10 . Out-of-domain transfer on Hard Hat Workers
+ []
+
+
+Underfull \hbox (badness 2253) in paragraph at lines 252--253
+\OT1/ptm/m/n/10 (Table I[]) demonstrates true cross-domain generalization,
  []
 
 
@@ -623,11 +648,6 @@ Underfull \hbox (badness 6542) in paragraph at lines 308--309
  []
 
 
-Underfull \hbox (badness 2080) in paragraph at lines 308--309
-\OT1/ptm/m/n/10 false alarms and handle crouching [], a bipartite
- []
-
-
 Underfull \hbox (badness 5711) in paragraph at lines 312--313
 \OT1/ptm/m/n/10 Assignment. On SHWD, it achieves $\OT1/cmr/m/n/10 94\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 83%$ $\OML/cmm/m/it/10 mAP[]$
  []
@@ -687,13 +707,13 @@ L3 programming layer <2025-05-26>
 Here is how much of TeX's memory you used:
  4018 strings out of 469867
  64894 string characters out of 5482749
- 488985 words of memory out of 5000000
+ 489025 words of memory out of 5000000
  32275 multiletter control sequences out of 15000+600000
  670317 words of font info for 121 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 57i,14n,65p,1789b,331s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,14n,65p,1782b,331s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (6 pages, 7043308 bytes).
+Output written on main.pdf (6 pages, 7042940 bytes).
 PDF statistics:
  127 PDF objects out of 1000 (max. 8388607)
  73 compressed objects within 1 object stream
