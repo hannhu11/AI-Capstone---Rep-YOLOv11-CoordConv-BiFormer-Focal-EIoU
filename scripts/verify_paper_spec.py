@@ -4,8 +4,8 @@ import re
 import hashlib
 import fitz
 
-def verify_paper(pdf_path, tex_path, log_path, bib_path):
-    print(f"\n=== Verifying {pdf_path} ===")
+def verify_paper(pdf_path, tex_path, log_path, bib_path, is_double_blind=False):
+    print(f"\n=== Verifying {pdf_path} (Double-Blind: {is_double_blind}) ===")
     errors = []
     warnings = []
 
@@ -24,17 +24,27 @@ def verify_paper(pdf_path, tex_path, log_path, bib_path):
         print("[PASS] 0 GDUT occurrences in .tex")
 
     # Author and Affiliation verification
-    for author in ["Nguyen Han Nhu", "Nguyen Van Thanh", "Tran Pham Tuan Dung", "Ha Anh Vu"]:
-        if author not in tex_content:
-            errors.append(f"Author {author} missing in {tex_path}")
-    if "Department of Artificial Intelligence, FPT University, Ho Chi Minh City, Vietnam" not in tex_content:
-        errors.append(f"Full affiliation 'Department of Artificial Intelligence, FPT University, Ho Chi Minh City, Vietnam' missing in {tex_path}")
-    for email in ["Nhunhse183644@fpt.edu.vn", "thanhnvSE180387@fpt.edu.vn", "dungtptse180382@fpt.edu.vn", "AnhVH54@fe.edu.vn"]:
-        if email not in tex_content:
-            errors.append(f"Email {email} missing in {tex_path}")
-    if "Corresponding author: Nguyen Han Nhu (email: Nhunhse183644@fpt.edu.vn)" not in tex_content:
-        errors.append(f"Corresponding author footnote missing in {tex_path}")
-    print("[PASS] Author roster, emails, affiliation, and corresponding author verified")
+    if is_double_blind:
+        if "Anonymous Authors" not in tex_content:
+            errors.append(f"'Anonymous Authors' missing in {tex_path}")
+        if "Paper under Double-Blind Review" not in tex_content:
+            errors.append(f"'Paper under Double-Blind Review' missing in {tex_path}")
+        for forbidden in ["Nguyen Han Nhu", "Nguyen Van Thanh", "Tran Pham Tuan Dung", "Ha Anh Vu", "FPT University", "Nhunhse183644"]:
+            if forbidden.lower() in tex_content.lower():
+                errors.append(f"Forbidden identifying text '{forbidden}' found in double-blind {tex_path}")
+        print("[PASS] Double-Blind anonymity verified in .tex")
+    else:
+        for author in ["Nguyen Han Nhu", "Nguyen Van Thanh", "Tran Pham Tuan Dung", "Ha Anh Vu"]:
+            if author not in tex_content:
+                errors.append(f"Author {author} missing in {tex_path}")
+        if "Department of Artificial Intelligence, FPT University, Ho Chi Minh City, Vietnam" not in tex_content:
+            errors.append(f"Full affiliation 'Department of Artificial Intelligence, FPT University, Ho Chi Minh City, Vietnam' missing in {tex_path}")
+        for email in ["Nhunhse183644@fpt.edu.vn", "thanhnvSE180387@fpt.edu.vn", "dungtptse180382@fpt.edu.vn", "AnhVH54@fe.edu.vn"]:
+            if email not in tex_content:
+                errors.append(f"Email {email} missing in {tex_path}")
+        if "Corresponding author: Nguyen Han Nhu (email: Nhunhse183644@fpt.edu.vn)" not in tex_content:
+            errors.append(f"Corresponding author footnote missing in {tex_path}")
+        print("[PASS] Author roster, emails, affiliation, and corresponding author verified")
 
     # Content checks: Acknowledgment, Future Work, roofline must be absent
     if re.search(r'acknowledg', tex_content, re.IGNORECASE):
@@ -154,6 +164,13 @@ def verify_paper(pdf_path, tex_path, log_path, bib_path):
     if not re.search(r'crouch', full_pdf_text, re.IGNORECASE):
         print("[PASS] 0 Crouching angle claim occurrences in PDF text")
 
+    if is_double_blind:
+        for forbidden in ["Nguyen Han Nhu", "Nguyen Van Thanh", "Tran Pham Tuan Dung", "Ha Anh Vu", "FPT University", "Nhunhse183644"]:
+            if forbidden.lower() in full_pdf_text.lower():
+                errors.append(f"Forbidden identifying text '{forbidden}' found in double-blind PDF text")
+        if not any("Forbidden identifying" in e for e in errors):
+            print("[PASS] ZERO identifying author/institution text in double-blind PDF")
+
     # 8. Check for word-splitting hyphens across all pages
     hyphenated_words = []
     for i, page in enumerate(doc):
@@ -202,31 +219,25 @@ def verify_paper(pdf_path, tex_path, log_path, bib_path):
 
     return errors, warnings
 
-def verify_all_pdf_deliverables():
-    print("\n=== Verifying All 6 PDF Deliverables Synchronization ===")
-    pdf_paths = [
-        'AAIML 2027/conference-latex-template_10-17-19/Rep-YOLO11s_AAIML2027.pdf',
-        'Rep-YOLO11s_AAIML2027_Submission_Final.pdf',
-        'AAIML2027_Submission.pdf',
-        'AAIML 2027/Rep-YOLO11s_AAIML2027_Submission.pdf',
-        'AAIML 2027/Rep-YOLO11s_AAIML2027.pdf',
-        'paper_overleaf/main.pdf'
-    ]
-    canonical = 'AAIML 2027/conference-latex-template_10-17-19/Rep-YOLO11s_AAIML2027.pdf'
-    canon_bytes = open(canonical, 'rb').read()
-    canon_hash = hashlib.sha256(canon_bytes).hexdigest()
-
-    hashes = {}
+def sync_pdf_group(canonical, targets, group_name):
+    print(f"\n=== Verifying {group_name} Synchronization ===")
     errors = []
     warnings = []
+    if not os.path.exists(canonical):
+        errors.append(f"Canonical {group_name} missing: {canonical}")
+        return errors, warnings
+
+    canon_bytes = open(canonical, 'rb').read()
+    canon_hash = hashlib.sha256(canon_bytes).hexdigest()
+    hashes = {canonical: canon_hash}
     locked_files = []
 
-    for p in pdf_paths:
+    for p in targets:
         if not os.path.exists(p):
             errors.append(f"Deliverable missing: {p}")
             continue
-        # Attempt auto-sync if different
-        cur_hash = hashlib.sha256(open(p, 'rb').read()).hexdigest()
+        cur_bytes = open(p, 'rb').read()
+        cur_hash = hashlib.sha256(cur_bytes).hexdigest()
         if cur_hash != canon_hash:
             try:
                 with open(p, 'wb') as f:
@@ -241,13 +252,12 @@ def verify_all_pdf_deliverables():
     non_locked = {p: h for p, h in hashes.items() if p not in locked_files}
     unique_non_locked = set(non_locked.values())
     if len(unique_non_locked) > 1:
-        errors.append(f"PDF deliverables are NOT synchronized! Distinct hashes: {unique_non_locked}")
+        errors.append(f"{group_name} deliverables are NOT synchronized! Distinct hashes: {unique_non_locked}")
     else:
-        print(f"[PASS] All {len(non_locked)} unlocked PDF deliverables are 100% bit-for-bit identical")
+        print(f"[PASS] All {len(non_locked)} {group_name} deliverables are 100% bit-for-bit identical")
 
     if locked_files:
-        warnings.append(f"Files currently locked by external viewer: {locked_files} (please close reader to sync)")
-        print(f"[INFO] Notice: {locked_files} is held open by an external application (e.g. WPS PDF reader).")
+        warnings.append(f"Files currently locked by external viewer: {locked_files}")
 
     return errors, warnings
 
@@ -255,30 +265,62 @@ if __name__ == '__main__':
     all_errors = []
     all_warnings = []
 
-    # 1. Verify AAIML 2027 template
+    # 1. Verify Camera-Ready AAIML 2027 template
     err1, warn1 = verify_paper(
         'AAIML 2027/conference-latex-template_10-17-19/Rep-YOLO11s_AAIML2027.pdf',
         'AAIML 2027/conference-latex-template_10-17-19/Rep-YOLO11s_AAIML2027.tex',
         'AAIML 2027/conference-latex-template_10-17-19/Rep-YOLO11s_AAIML2027.log',
-        'AAIML 2027/conference-latex-template_10-17-19/references.bib'
+        'AAIML 2027/conference-latex-template_10-17-19/references.bib',
+        is_double_blind=False
     )
     all_errors.extend(err1)
     all_warnings.extend(warn1)
 
-    # 2. Verify Overleaf directory
+    # 2. Verify Overleaf Camera-Ready directory
     err2, warn2 = verify_paper(
         'paper_overleaf/main.pdf',
         'paper_overleaf/main.tex',
         'paper_overleaf/main.log',
-        'paper_overleaf/references.bib'
+        'paper_overleaf/references.bib',
+        is_double_blind=False
     )
     all_errors.extend(err2)
     all_warnings.extend(warn2)
 
-    # 3. Verify all 6 PDFs synchronization
-    err3, warn3 = verify_all_pdf_deliverables()
+    # 3. Verify Double-Blind Submission PDF
+    err3, warn3 = verify_paper(
+        'AAIML 2027/conference-latex-template_10-17-19/Rep-YOLO11s_AAIML2027_DoubleBlind.pdf',
+        'AAIML 2027/conference-latex-template_10-17-19/Rep-YOLO11s_AAIML2027_DoubleBlind.tex',
+        'AAIML 2027/conference-latex-template_10-17-19/Rep-YOLO11s_AAIML2027_DoubleBlind.log',
+        'AAIML 2027/conference-latex-template_10-17-19/references.bib',
+        is_double_blind=True
+    )
     all_errors.extend(err3)
     all_warnings.extend(warn3)
+
+    # 4. Verify Camera-Ready Deliverables Synchronization
+    cr_canonical = 'AAIML 2027/conference-latex-template_10-17-19/Rep-YOLO11s_AAIML2027.pdf'
+    cr_targets = [
+        'Rep-YOLO11s_AAIML2027_Submission_Final.pdf',
+        'AAIML 2027/Rep-YOLO11s_AAIML2027.pdf',
+        'AAIML2027_CameraReady.pdf',
+        'paper_overleaf/main.pdf'
+    ]
+    err4, warn4 = sync_pdf_group(cr_canonical, cr_targets, "Camera-Ready Group")
+    all_errors.extend(err4)
+    all_warnings.extend(warn4)
+
+    # 5. Verify Double-Blind Deliverables Synchronization (MUST BE ANONYMOUS)
+    db_canonical = 'AAIML 2027/conference-latex-template_10-17-19/Rep-YOLO11s_AAIML2027_DoubleBlind.pdf'
+    db_targets = [
+        'Rep-YOLO11s_AAIML2027_Submission_DoubleBlind.pdf',
+        'AAIML 2027/Rep-YOLO11s_AAIML2027_Submission_DoubleBlind.pdf',
+        'AAIML2027_Submission.pdf',
+        'AAIML 2027/Rep-YOLO11s_AAIML2027_Submission.pdf'
+    ]
+    err5, warn5 = sync_pdf_group(db_canonical, db_targets, "Double-Blind Group (Portal Submission Safe)")
+    all_errors.extend(err5)
+    all_warnings.extend(warn5)
 
     print("\n=== FINAL SPEC VERIFICATION SUMMARY ===")
     print(f"Total Errors: {len(all_errors)}")
@@ -292,3 +334,4 @@ if __name__ == '__main__':
         sys.exit(1)
     print("\n[SUCCESS] ALL SPECIFICATIONS RIGOROUSLY VERIFIED!")
     sys.exit(0)
+

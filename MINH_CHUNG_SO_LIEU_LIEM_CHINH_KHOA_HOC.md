@@ -200,8 +200,8 @@ Dưới đây là đối chiếu và giải trình khoa học chi tiết cho t�
   - *Harmonized Hat-Only (640px)*: $mAP_{50} = \mathbf{97.03\%}$ (+2.91% so với baseline 94.12%), $mAP_{50-95} = \mathbf{54.74\%}$ (+3.14% so với baseline 51.60%).
 
 ### Câu hỏi 3: Phân tích INT8 PTQ (1.10 ms trên T4) và độ nhạy Calibrator:
-- Trong bài báo đã ghi rõ: Chỉ số 1.10 ms / 909 FPS là thời gian suy luận riêng biệt của mô hình (Isolated TensorRT Core Inference) theo tính toán mô phỏng lý thuyết Tensor Core INT8.
-- Để bảo đảm liêm chính khoa học tuyệt đối, bài báo nêu rõ rằng quy trình công nghiệp khuyến nghị sử dụng **TensorRT FP16** (2.92 ms trên T4, 4.37 ms trên RTX 3050) để bảo toàn 100% độ chính xác cho các mũ bảo hộ ở xa kích thước siêu nhỏ ($<20\times20$ pixels) mà không gặp rủi ro quantization noise từ PTQ.
+- Trước đây, chỉ số 1.10 ms / 909 FPS xuất phát từ tính toán mô phỏng lý thuyết Tensor Core INT8. 
+- **Quyết định liêm chính khoa học**: Để bảo đảm tính trung thực tuyệt đối (Zero-Fabrication Empirical Standard), nhóm tác giả đã **XÓA BỎ HOÀN TOÀN** mọi dòng và số liệu liên quan đến INT8 "909 FPS" ra khỏi Bảng III cũng như toàn bộ bài báo. Bài báo hiện tại chỉ công bố số đo thực nghiệm **TensorRT FP16 vật lý thật** (2.92 ms trên T4, 4.37 ms trên RTX 3050) để bảo toàn 100% độ chính xác cho các mũ bảo hộ ở xa kích thước siêu nhỏ ($<20\times20$ pixels) mà không gặp rủi ro quantization noise từ PTQ.
 
 ### Câu hỏi 4: Chứng minh giải tích cho tuyên bố giảm Memory Access Cost (MAC) và lưu lượng DRAM:
 - **Công thức giải tích**: Xét một khối cổ mạng đặc trưng (neck block) kích thước $H \times W = 80 \times 80$, $C = 128$ ở độ chính xác FP16:
