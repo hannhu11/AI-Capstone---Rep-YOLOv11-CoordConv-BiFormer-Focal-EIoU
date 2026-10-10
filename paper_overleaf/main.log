@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 07:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 07:57
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -294,23 +294,23 @@ Underfull \hbox (badness 3657) in paragraph at lines 55--55
  []
 
 
-Underfull \hbox (badness 1622) in paragraph at lines 57--59
-\OT1/ptm/b/n/9 sites. However, edge-based surveillance pipelines encounter
+Underfull \hbox (badness 1735) in paragraph at lines 57--59
+\OT1/ptm/b/n/9 filter background tokens and concentrate computation on
  []
 
 
-Underfull \hbox (badness 1917) in paragraph at lines 57--59
-\OT1/ptm/b/n/9 To suppress false alarms from ground-level clutter, stem
+Underfull \hbox (badness 1496) in paragraph at lines 57--59
+\OT1/ptm/b/n/9 tiny targets. Model training is stabilized using decoupled
  []
 
 
-Underfull \hbox (badness 3058) in paragraph at lines 57--59
-\OT1/ptm/b/n/9 In addition, bi-level routing attention is integrated into
+Underfull \hbox (badness 1874) in paragraph at lines 57--59
+\OT1/ptm/b/n/9 Dataset and the external Hard Hat Workers benchmark
  []
 
 
-Underfull \hbox (badness 1742) in paragraph at lines 57--59
-\OT1/ptm/b/n/9 neck stages to dynamically filter background tokens and
+Underfull \hbox (badness 1496) in paragraph at lines 57--59
+\OT1/ptm/b/n/9 GPUs and embedded devices. The end-to-end surveillance
  []
 
 
@@ -336,23 +336,18 @@ Underfull \hbox (badness 1845) in paragraph at lines 68--69
  []
 
 
-Underfull \hbox (badness 6995) in paragraph at lines 70--71
-[]\OT1/ptm/m/n/10 We evaluate Rep-YOLO11s on the Safety Helmet
+Underfull \hbox (badness 1490) in paragraph at lines 70--71
+\OT1/ptm/m/n/10 physical edge latency. Experimental results confirm that
  []
 
 
-Underfull \hbox (badness 2875) in paragraph at lines 70--71
-\OT1/ptm/m/n/10 allowing our model to match the execution speed of
+Underfull \hbox (badness 2027) in paragraph at lines 70--71
+\OT1/ptm/m/n/10 structural re-parameterization eliminates runtime memory
  []
 
 
-Underfull \hbox (badness 4048) in paragraph at lines 70--71
-\OT1/ptm/m/n/10 detection precision on small helmet targets. Zero-shot
- []
-
-
-Underfull \hbox (badness 2644) in paragraph at lines 70--71
-\OT1/ptm/m/n/10 PPE protocols, confirming that our design successfully
+Underfull \hbox (badness 1406) in paragraph at lines 70--71
+\OT1/ptm/m/n/10 of lightweight architectures while achieving substantially
  []
 
 
@@ -571,6 +566,16 @@ Underfull \hbox (badness 1831) in paragraph at lines 286--289
  []
 
 
+Underfull \hbox (badness 1509) in paragraph at lines 286--289
+\OT1/ptm/m/n/10 human bodies, whereas Hard Hat Workers [17] defines
+ []
+
+
+Underfull \hbox (badness 5548) in paragraph at lines 286--289
+\OT1/ptm/m/n/10 standard protocol, Rep-YOLO11s achieves $[]$ at
+ []
+
+
 Underfull \hbox (badness 1629) in paragraph at lines 286--289
 \OT1/ptm/m/n/10 Rep-YOLO11s surpasses baseline YOLO11s across both
  []
@@ -691,9 +696,9 @@ Here is how much of TeX's memory you used:
  32293 multiletter control sequences out of 15000+600000
  670317 words of font info for 121 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 57i,14n,65p,1797b,331s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,14n,65p,1806b,331s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (6 pages, 7043071 bytes).
+Output written on main.pdf (6 pages, 7043027 bytes).
 PDF statistics:
  127 PDF objects out of 1000 (max. 8388607)
  73 compressed objects within 1 object stream
