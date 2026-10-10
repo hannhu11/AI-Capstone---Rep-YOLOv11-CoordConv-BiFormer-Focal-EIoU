@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 16:31
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 16:37
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -329,8 +329,23 @@ Underfull \hbox (badness 4792) in paragraph at lines 67--68
 
 
 
-Underfull \hbox (badness 3792) in paragraph at lines 69--70
-\OT1/ptm/m/n/10 regions and preserve fine-grained spatial features; and
+Underfull \hbox (badness 7291) in paragraph at lines 69--70
+\OT1/ptm/m/n/10 (see Fig. 1[]): structural re-parameterization (RepConv)
+ []
+
+
+Underfull \hbox (badness 2735) in paragraph at lines 69--70
+\OT1/ptm/m/n/10 blocks embedded in the feature aggregation neck that
+ []
+
+
+Underfull \hbox (badness 1478) in paragraph at lines 69--70
+\OT1/ptm/m/n/10 maintain rich multi-branch representation during training
+ []
+
+
+Underfull \hbox (badness 2486) in paragraph at lines 69--70
+\OT1/ptm/m/n/10 (BiFormer) to prune irrelevant background regions and
  []
 
 
@@ -559,18 +574,43 @@ Underfull \hbox (badness 4569) in paragraph at lines 259--260
  []
 
 
-Underfull \hbox (badness 5622) in paragraph at lines 263--264
-\OT1/ptm/m/n/10 MAC reduction). BiFormer ($\OML/cmm/m/it/10 A[]$\OT1/ptm/m/n/10 ) introduces $\OT1/cmr/m/n/10 +0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 24[]$
+Underfull \hbox (badness 3954) in paragraph at lines 263--264
+[]\OT1/ptm/m/n/10 Component contributions on SHWD are detailed in
  []
 
 
-Underfull \hbox (badness 1424) in paragraph at lines 263--264
-\OT1/ptm/m/n/10 without RepConv fusion, BiFormer on baseline requires
+Underfull \hbox (badness 1769) in paragraph at lines 263--264
+\OT1/ptm/m/n/10 Table II[]. In TRT FP16, folding RepConv ($\OML/cmm/m/it/10 A[]$\OT1/ptm/m/n/10 ) lowers
  []
 
 
-Underfull \hbox (badness 2027) in paragraph at lines 263--264
-\OT1/ptm/m/n/10 gain from fusion. Multi-seed validation across 3 seeds
+Underfull \hbox (badness 2443) in paragraph at lines 263--264
+\OT1/cmr/m/n/10 +0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 24[]$ \OT1/ptm/m/n/10 routing overhead ($\OT1/cmr/m/n/10 2\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 68 + 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 24 = 2\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 92[]$\OT1/ptm/m/n/10 ,
+ []
+
+
+Underfull \hbox (badness 1789) in paragraph at lines 263--264
+\OT1/ptm/m/n/10 requires $\OT1/cmr/m/n/10 3\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 18 + 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 24 = 3\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 42[]$ \OT1/ptm/m/n/10 ($\OT1/cmr/m/n/10 292\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 4[]$\OT1/ptm/m/n/10 ), proving
+ []
+
+
+Underfull \hbox (badness 2573) in paragraph at lines 263--264
+\OT1/ptm/m/n/10 vs. $\OT1/cmr/m/n/10 94\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 33 \OMS/cmsy/m/n/10 ^^F \OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 18%$\OT1/ptm/m/n/10 ) due to worker bodies dominating
+ []
+
+
+Underfull \hbox (badness 3009) in paragraph at lines 263--264
+\OT1/ptm/m/n/10 92.5% of labels ($\OT1/cmr/m/n/10 22\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 558$ \OT1/ptm/m/n/10 instances) with loose boxes,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 263--264
+\OT1/ptm/m/n/10 per-class attribution confirms that $\OML/cmm/m/it/10 A[]$ \OT1/ptm/m/n/10 boosts helmet
+ []
+
+
+Underfull \hbox (badness 6775) in paragraph at lines 263--264
+\OT1/ptm/m/n/10 EIoU penalties. At $\OT1/cmr/m/n/10 960[]$\OT1/ptm/m/n/10 , helmet $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 reaches
  []
 
 
@@ -618,11 +658,6 @@ Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line
 
 Underfull \hbox (badness 7030) in paragraph at lines 307--307
 \OT1/ptm/m/n/8 Row 3 (Structural Occlusion). (a) Input, (b) Baseline YOLO11s,
- []
-
-
-Underfull \hbox (badness 3989) in paragraph at lines 311--312
-\OT1/ptm/m/n/10 whereas Rep-YOLO11s sharply isolates helmet crowns
  []
 
 
@@ -708,7 +743,7 @@ Here is how much of TeX's memory you used:
  14 hyphenation exceptions out of 8191
  57i,14n,65p,1782b,331s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (6 pages, 7043455 bytes).
+Output written on main.pdf (6 pages, 7043533 bytes).
 PDF statistics:
  127 PDF objects out of 1000 (max. 8388607)
  73 compressed objects within 1 object stream
