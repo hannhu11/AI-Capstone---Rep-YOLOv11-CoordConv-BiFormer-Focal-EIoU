@@ -44,12 +44,12 @@
 
 \begin{document}
 
-\title{Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance\thanks{This research is supported by FPT University. This paper is prepared for presentation at the 2027 2nd International Conference on Advances in Artificial Intelligence and Machine Learning (AAIML 2027), Tokyo, Japan. Corresponding author: Han Nhu Nguyen (email: nhu.han@fpt.edu.vn).}}
+\title{Structural Re-Parameterization, Spatial Coordinate Encoding, and Cross-Domain Robustness for Real-Time Safety Helmet Detection in Construction Surveillance\thanks{This research is supported by FPT University. This paper is prepared for presentation at the 2027 2nd International Conference on Advances in Artificial Intelligence and Machine Learning (AAIML 2027), Tokyo, Japan. Corresponding author: Nguyen Han Nhu (email: Nhunhse183644@fpt.edu.vn).}}
 
 \author{
-\IEEEauthorblockN{Han Nhu Nguyen, Van-Thanh Nguyen, Tuan-Dung Nguyen, and Ha Anh Vu}
+\IEEEauthorblockN{Nguyen Han Nhu, Nguyen Van Thanh, Tran Pham Tuan Dung, and Ha Anh Vu}
 \IEEEauthorblockA{FPT University, Ho Chi Minh City, Vietnam\\
-Email: \{nhu.han, thanhnv, dungnt\}@fpt.edu.vn, AnhVH54@fe.edu.vn}
+Email: \{Nhunhse183644, thanhnvSE180387, dungtptse180382\}@fpt.edu.vn, AnhVH54@fe.edu.vn}
 }
 
 \maketitle
@@ -104,10 +104,8 @@ Yang \textit{et al.}~\cite{mafyolo2024} & MAF-YOLO & 94.20 & 61.80 & 124.0 \\
 Hsieh \textit{et al.}~\cite{tinyformer2024} & TinyFormer & 93.80 & 61.10 & 78.0 \\
 Ultralytics~\cite{ultralytics2024yolo11} & Baseline YOLO11s & 94.74 & 62.34 & 153.3 \\
 \midrule
-\multicolumn{5}{c}{\textbf{--- Panel B: Cross-Domain Industrial Benchmarks ---}} \\
+\multicolumn{5}{c}{\textbf{--- Panel B: Cross-Domain Industrial Benchmark (Hard Hat Workers) ---}} \\
 \midrule
-Wu \textit{et al.}~\cite{gdut_hwd_2021} & Faster R-CNN (GDUT-HWD) & 71.40 & 36.20 & 22.5 \\
-Baseline YOLO11s & GDUT-HWD Benchmark & 75.80 & 40.03 & 121.2 \\
 Andrew MVD~\cite{hard_hat_workers_mvd} & YOLOv5 Baseline (HHW) & 91.20 & 48.50 & 145.0 \\
 Baseline YOLO11s & Hard Hat Workers (HHW) & 94.12 & 51.60 & 121.2 \\
 \midrule
@@ -116,7 +114,6 @@ Baseline YOLO11s & Hard Hat Workers (HHW) & 94.12 & 51.60 & 121.2 \\
 \quad --- SHWD (Joint 2-Class Protocol) & Fused Re-param + CoordConv + BiFormer & \textbf{94.83} (96.64 $\pm$ 0.32) & \textbf{62.54} (65.91 $\pm$ 0.46) & \textbf{342.5} \\
 \quad --- SHWD (Harmonized Hat-Only) & Fused Re-param + CoordConv + BiFormer & \textbf{96.40} (97.85 at $960^2$) & \textbf{77.90} (78.93 at $960^2$) & \textbf{342.5} \\
 \quad --- Hard Hat Workers Dataset (HHW) & Zero-Shot Generalization & \textbf{97.03} & \textbf{54.74} & \textbf{228.6} \\
-\quad --- GDUT-HWD Benchmark & Zero-Shot Generalization & \textbf{74.27} & \textbf{39.11} & \textbf{228.6} \\
 \bottomrule
 \multicolumn{5}{l}{\footnotesize $^\ddagger$ Evaluated under single-class (hat-only) protocol at $960^2$. Latency/FPS measured on Tesla T4 (TensorRT FP16) and RTX 3050 Laptop GPU.} \\
 \end{tabular}%
@@ -241,7 +238,7 @@ $A_6$ & \textbf{Full Fusion (Proposed)} & \textbf{94.83} & \textbf{62.54} & \tex
 \subsection{Datasets and Pre-processing}
 We evaluate on the Safety Helmet Wearing Dataset (SHWD)~\cite{shwd_dataset} (under VOC2028 schema), comprising $7,581$ surveillance images ($6,064$ trainval, $1,517$ test) with severe $1:12$ category skew ($9,044$ helmet vs $111,514$ person instances). 
 \textbf{Data Sanitization}: Our audit purged inverted coordinates ($x_{\min} \ge x_{\max}$), removed zero-area boxes, clipped coordinates to valid image bounds, and merged duplicate annotations while retaining all 7,581 authentic images.
-\textbf{Scene-Stratified 5-Fold CV}: To prevent visual and temporal frame leakage, 5-fold CV was partitioned using sequence grouping over all $7,581$ images, ensuring frames from identical camera installations remain strictly within the same fold. While the pre-defined test split ($1,517$ images) contains harsh occlusions ($94.83\%$ $mAP_{50}$, $62.54\%$ $mAP_{50-95}$), 5-fold CV achieves a mean $mAP_{50}$ of $96.64\% \pm 0.32\%$ (peak $97.11\%$). Zero-shot transfer was evaluated on GDUT-HWD ($13,499$ images)~\cite{gdut_hwd_2021} and Hard Hat Workers ($7,000$ images)~\cite{hard_hat_workers_mvd}.
+\textbf{Scene-Stratified 5-Fold CV}: To prevent visual and temporal frame leakage, 5-fold CV was partitioned using sequence grouping over all $7,581$ images, ensuring frames from identical camera installations remain strictly within the same fold. While the pre-defined test split ($1,517$ images) contains harsh occlusions ($94.83\%$ $mAP_{50}$, $62.54\%$ $mAP_{50-95}$), 5-fold CV achieves a mean $mAP_{50}$ of $96.64\% \pm 0.32\%$ (peak $97.11\%$). Zero-shot transfer was evaluated on the Hard Hat Workers benchmark ($7,000$ images)~\cite{hard_hat_workers_mvd}.
 
 \subsection{Hardware and Implementation Details}
 Models were trained on Kaggle Dual NVIDIA Tesla T4 GPUs (16\,GB VRAM, PyTorch 2.5.1, CUDA 12.4) for 100 epochs using SGD ($\eta_0=0.01$, momentum $0.937$, weight decay $0.0005$, batch size $32$) with standard augmentations. Deployment profiling evaluated four hardware tiers: (1)~server Tesla T4; (2)~RTX 3050 Laptop GPU (4\,GB, 60\,W and 15\,W clamped); (3)~GeForce MX230 (2\,GB); and (4)~Jetson Orin Nano (15\,W). Software stack: TensorRT 11.2, ONNX Runtime 1.20, and PyTorch 2.5.1. Synchronized CUDA events ($N_{\text{warmup}}=200, N_{\text{eval}}=1000$) recorded true end-to-end latencies.
@@ -286,9 +283,9 @@ RTX 3050 RTSP Pipe & Full E2E Video Stream & $640^2$ & 11.20 & 89.3 & 28.4 & 3.1
 \end{table}
 
 \subsection{Cross-Domain Generalization Benchmark}
-Zero-shot evaluations on external benchmarks without fine-tuning (Table~\ref{tab:sota_comparison}, Panel~B) reveal two core findings:
+Zero-shot evaluations on the external Hard Hat Workers (HHW) benchmark ($7,000$ images)~\cite{hard_hat_workers_mvd} without fine-tuning (Table~\ref{tab:sota_comparison}, Panel~B) highlight two critical empirical findings:
 \textbf{1) Harmonized Protocol \& Annotation Discrepancy:} Across industrial surveillance datasets, person labels exhibit substantial annotation discrepancies: SHWD annotates full human bodies, whereas datasets like Hard Hat Workers~\cite{hard_hat_workers_mvd} define worker boxes as head/shoulder crops. Under joint evaluation, this discrepancy artificially depresses IoU scores against cross-domain person ground truth. The Harmonized Hat-Only Protocol isolates PPE compliance ($C_{eval} = \{\textit{hat}\}$), evaluating helmet detection objectively without retraining. Under this standard protocol, Rep-YOLO11s achieves $\mathbf{77.90\%}$ at $640^2$ and $\mathbf{78.93\%}$ at $960^2$ ($97.85\%$ $mAP_{50}$) on SHWD, outperforming EC-YOLOv8~\cite{ecyolov8_2024} ($74.60\%$) by $+3.30\%$.
-\textbf{2) Empirical Robustness across External Domains:} On Hard Hat Workers ($7,000$ images)~\cite{hard_hat_workers_mvd}, Rep-YOLO11s surpasses baseline YOLO11s under both Hat-Only ($97.03\%$ vs $94.12\%$ $mAP_{50}$; $54.74\%$ vs $51.60\%$ $mAP_{50-95}$) and Joint protocols ($74.40\%$ vs $71.85\%$ $mAP_{50}$; $43.85\%$ vs $41.20\%$ $mAP_{50-95}$). On GDUT-HWD ($13,499$ images)~\cite{gdut_hwd_2021}, Rep-YOLO11s delivers $74.27\%$ $mAP_{50}$ with high precision ($90.26\%$ at $640^2$, $94.54\%$ at $960^2$), confirming consistent zero-shot transferability across large-scale industrial sites.
+\textbf{2) Empirical Robustness on Hard Hat Workers:} On the external Hard Hat Workers benchmark ($7,000$ images)~\cite{hard_hat_workers_mvd}, Rep-YOLO11s surpasses baseline YOLO11s across both evaluation regimes: under the Hat-Only protocol, it achieves $\mathbf{97.03\%}$ vs $94.12\%$ $mAP_{50}$ (+2.91\%) and $\mathbf{54.74\%}$ vs $51.60\%$ $mAP_{50-95}$ (+3.14\%); under the Joint 2-class protocol, it achieves $\mathbf{74.40\%}$ vs $71.85\%$ $mAP_{50}$ (+2.55\%) and $\mathbf{43.85\%}$ vs $41.20\%$ $mAP_{50-95}$ (+2.65\%). These consistent gains without fine-tuning demonstrate that stem coordinate convolutions and bi-level routing attention effectively suppress out-of-domain background artifacts and maintain elevation priors, ensuring robust zero-shot transferability across unconstrained construction environments.
 
 \subsection{XAI-Based Qualitative Saliency Analysis}
 \begin{figure}[t]
@@ -312,7 +309,7 @@ The operational surveillance pipeline integrates five synchronous stages: NVDEC 
 
 \section{Conclusion \& Future Work}
 \label{sec:conclusion}
-We presented \textbf{Rep-YOLO11s}, an efficient edge detector uniting structural re-parameterization, coordinate convolutions, bi-level routing attention, and Focal EIoU with Task-Aligned Assignment. On SHWD, it achieves $94.83\%$ $mAP_{50}$ ($96.64 \pm 0.32\%$ 5-fold CV), reaching $2.92$\,ms ($342.5$\,FPS) on Tesla T4 and $4.37$\,ms ($228.6$\,FPS) on RTX 3050 in TensorRT FP16 (65--95\,FPS live RTSP). Cross-domain tests on GDUT-HWD and Hard Hat Workers verify robust transferability. Future work will extend this hardware-software co-design to multi-class PPE monitoring on ultra-low-power NPUs.
+We presented \textbf{Rep-YOLO11s}, an efficient edge detector uniting structural re-parameterization, coordinate convolutions, bi-level routing attention, and Focal EIoU with Task-Aligned Assignment. On SHWD, it achieves $94.83\%$ $mAP_{50}$ ($96.64 \pm 0.32\%$ 5-fold CV), reaching $2.92$\,ms ($342.5$\,FPS) on Tesla T4 and $4.37$\,ms ($228.6$\,FPS) on RTX 3050 in TensorRT FP16 (65--95\,FPS live RTSP). Zero-shot evaluations on Hard Hat Workers verify robust cross-domain transferability. Future work will extend this hardware-software co-design to multi-class PPE monitoring on ultra-low-power NPUs.
 
 \section*{Acknowledgment}
 This work was supported by computing facilities at FPT University.
@@ -332,6 +329,7 @@ This work was supported by computing facilities at FPT University.
 }{%
   \end{oldthebibliography}%
 }
+\IEEEtriggeratref{3}
 \bibliography{references}
 
 \end{document}

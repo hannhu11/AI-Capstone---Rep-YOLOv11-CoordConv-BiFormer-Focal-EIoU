@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 00:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 07:51
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -284,6 +284,16 @@ File: omsptm.fd
 LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 55.
 
+Underfull \hbox (badness 10000) in paragraph at lines 55--55
+[][][]\OT1/ptm/m/n/8 This research is supported by FPT University. This paper is
+ []
+
+
+Underfull \hbox (badness 3657) in paragraph at lines 55--55
+\OT1/ptm/m/n/8 prepared for presentation at the 2027 2nd International Conference
+ []
+
+
 Underfull \hbox (badness 1622) in paragraph at lines 57--59
 \OT1/ptm/b/n/9 sites. However, edge-based surveillance pipelines encounter
  []
@@ -412,31 +422,31 @@ Underfull \hbox (badness 1983) in paragraph at lines 81--82
 
 
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 123.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 120.
 (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 123.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 120.
  (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 <figures/rep_yolo11s_overall_ieee.png, id=10, 511.9125pt x 640.3925pt>
 File: figures/rep_yolo11s_overall_ieee.png Graphic file (type png)
 <use figures/rep_yolo11s_overall_ieee.png>
-Package pdftex.def Info: figures/rep_yolo11s_overall_ieee.png  used on input line 130.
+Package pdftex.def Info: figures/rep_yolo11s_overall_ieee.png  used on input line 127.
 (pdftex.def)             Requested size: 252.0pt x 315.24126pt.
 <figures/repconv_detail_ieee.png, id=11, 511.9125pt x 146.5475pt>
 File: figures/repconv_detail_ieee.png Graphic file (type png)
 <use figures/repconv_detail_ieee.png>
-Package pdftex.def Info: figures/repconv_detail_ieee.png  used on input line 139.
+Package pdftex.def Info: figures/repconv_detail_ieee.png  used on input line 136.
 (pdftex.def)             Requested size: 250.26031pt x 71.64342pt.
 <figures/biformer_detail_ieee.png, id=12, 511.9125pt x 163.61125pt>
 File: figures/biformer_detail_ieee.png Graphic file (type png)
 <use figures/biformer_detail_ieee.png>
-Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 145.
+Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 142.
 (pdftex.def)             Requested size: 250.26031pt x 79.98546pt.
 
-Underfull \hbox (badness 3271) in paragraph at lines 152--153
+Underfull \hbox (badness 3271) in paragraph at lines 149--150
 \OT1/ptm/m/n/10 a Structural Re-parameterized Backbone enhanced with
  []
 
@@ -445,137 +455,139 @@ Underfull \hbox (badness 3271) in paragraph at lines 152--153
 [2 <./figures/rep_yolo11s_overall_ieee.png (PNG copy)>]
 
 
-Underfull \hbox (badness 3260) in paragraph at lines 173--175
+Underfull \hbox (badness 3260) in paragraph at lines 170--172
 \OT1/ptm/m/n/10 This algebraic transformation converts the multi-branch
  []
 
 
-Underfull \hbox (badness 1789) in paragraph at lines 179--180
+Underfull \hbox (badness 1789) in paragraph at lines 176--177
 \OT1/ptm/m/n/10 raw RGB input $\OML/cmm/m/it/10 X$ \OT1/ptm/m/n/10 with normalized spatial coordinates
  []
 
 
-Underfull \hbox (badness 1424) in paragraph at lines 179--180
+Underfull \hbox (badness 1424) in paragraph at lines 176--177
 \OML/cmm/m/it/10 c[][]\OT1/cmr/m/n/10 64$\OT1/ptm/m/n/10 , $\OML/cmm/m/it/10 k[]\OT1/cmr/m/n/10 3$\OT1/ptm/m/n/10 , $\OML/cmm/m/it/10 s[]\OT1/cmr/m/n/10 2$\OT1/ptm/m/n/10 ). All subsequent backbone and neck
  []
 
 
-Underfull \hbox (badness 1546) in paragraph at lines 179--180
+Underfull \hbox (badness 1546) in paragraph at lines 176--177
 \OT1/ptm/m/n/10 preserving global coordinate priors at negligible latency
  []
 
 
 
 [3 <./figures/repconv_detail_ieee.png (PNG copy)> <./figures/biformer_detail_ieee.png (PNG copy)>]
-Underfull \hbox (badness 6173) in paragraph at lines 198--200
+Underfull \hbox (badness 6173) in paragraph at lines 195--197
 \OT1/ptm/m/n/10 Non-zero gradients [] persist
  []
 
 
-Underfull \hbox (badness 5939) in paragraph at lines 201--202
+Underfull \hbox (badness 5939) in paragraph at lines 198--199
 [] []\OT1/ptm/m/n/10 , dynamically selecting
  []
 
 
-Underfull \vbox (badness 1867) has occurred while \output is active []
 
 
-
-
-Underfull \hbox (badness 2512) in paragraph at lines 242--245
+Underfull \hbox (badness 2512) in paragraph at lines 239--242
 []\OT1/ptm/m/n/10 We evaluate on the Safety Helmet Wearing Dataset
  []
 
 
-Underfull \hbox (badness 2005) in paragraph at lines 242--245
-\OT1/ptm/m/n/10 coordinates ($\OML/cmm/m/it/10 x[] \OMS/cmsy/m/n/10 ^^U \OML/cmm/m/it/10 x[]$\OT1/ptm/m/n/10 ), removed zero-area boxes,
+Underfull \hbox (badness 2735) in paragraph at lines 239--242
+\OT1/ptm/m/n/10 annotations while retaining all 7,581 authentic images.
  []
 
 
-Underfull \hbox (badness 1484) in paragraph at lines 242--245
-\OT1/ptm/m/n/10 images. \OT1/ptm/b/n/10 Scene-Stratified 5-Fold CV\OT1/ptm/m/n/10 : To prevent visual
+Underfull \hbox (badness 1803) in paragraph at lines 239--242
+\OT1/ptm/m/n/10 grouping over all $\OT1/cmr/m/n/10 7\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 581$ \OT1/ptm/m/n/10 images, ensuring frames from
  []
 
 
-Underfull \hbox (badness 2221) in paragraph at lines 242--245
-\OT1/ptm/m/n/10 within the same fold. While the pre-defined test split
+Underfull \hbox (badness 1939) in paragraph at lines 239--242
+\OT1/ptm/m/n/10 harsh occlusions ($\OT1/cmr/m/n/10 94\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 83%$ $\OML/cmm/m/it/10 mAP[]$\OT1/ptm/m/n/10 , $\OT1/cmr/m/n/10 62\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 54%$ $\OML/cmm/m/it/10 mAP[]$\OT1/ptm/m/n/10 ),
  []
 
 
-Underfull \hbox (badness 3557) in paragraph at lines 250--251
+Underfull \hbox (badness 3557) in paragraph at lines 247--248
 \OT1/ptm/m/n/10 on 1,517 test images explains the modest joint gain
  []
 
 
-Underfull \hbox (badness 2469) in paragraph at lines 250--251
+Underfull \hbox (badness 2469) in paragraph at lines 247--248
 \OT1/ptm/m/n/10 ($\OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 9396$ \OT1/ptm/m/n/10 on CV). At $\OT1/cmr/m/n/10 960[]$ \OT1/ptm/m/n/10 where tiny helmet features
  []
 
 
-Underfull \hbox (badness 4084) in paragraph at lines 250--251
+Underfull \hbox (badness 4084) in paragraph at lines 247--248
 [] \OT1/ptm/m/n/10 resolve, Hat-Only $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 surges to
  []
 
 
 
 [4]
-Underfull \hbox (badness 1484) in paragraph at lines 252--253
+Underfull \hbox (badness 1484) in paragraph at lines 249--250
 \OT1/ptm/m/n/10 outperforming baseline YOLO11s (6.52 ms, 153.3 FPS;
  []
 
 
-Underfull \hbox (badness 4713) in paragraph at lines 252--253
+Underfull \hbox (badness 4713) in paragraph at lines 249--250
 \OT1/ptm/m/n/10 (31.4GFLOPs, 124FPS) or TinyFormer [12] (78FPS),
  []
 
 
-Underfull \hbox (badness 5607) in paragraph at lines 252--253
+Underfull \hbox (badness 5607) in paragraph at lines 249--250
 \OT1/ptm/m/n/10 Rep-YOLO11s folds all branches into single $\OT1/cmr/m/n/10 3 \OMS/cmsy/m/n/10 ^^B \OT1/cmr/m/n/10 3$
  []
 
 
-Underfull \hbox (badness 3954) in paragraph at lines 255--256
+Underfull \hbox (badness 3954) in paragraph at lines 252--253
 []\OT1/ptm/m/n/10 Component contributions on SHWD are detailed in
  []
 
 
-Underfull \hbox (badness 3312) in paragraph at lines 255--256
+Underfull \hbox (badness 3312) in paragraph at lines 252--253
 \OT1/ptm/m/n/10 Table II[]. In canonical benchmarks, adding CoordConv
  []
 
 
-Underfull \hbox (badness 3439) in paragraph at lines 255--256
+Underfull \hbox (badness 3439) in paragraph at lines 252--253
 \OT1/ptm/m/n/10 ($\OML/cmm/m/it/10 A[]$\OT1/ptm/m/n/10 ) gains $\OT1/cmr/m/n/10 +0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 11%$ $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 (+0.06 ms), BiFormer
  []
 
 
-Underfull \hbox (badness 2600) in paragraph at lines 255--256
+Underfull \hbox (badness 2600) in paragraph at lines 252--253
 \OT1/ptm/m/n/10 ($\OML/cmm/m/it/10 A[]$\OT1/ptm/m/n/10 ) routes focus (+0.24 ms TRT FP16), and offline
  []
 
 
-Underfull \hbox (badness 5260) in paragraph at lines 255--256
+Underfull \hbox (badness 5260) in paragraph at lines 252--253
 \OT1/ptm/m/n/10 ambiguous distant person boxes, $\OML/cmm/m/it/10 A[]$ \OT1/ptm/m/n/10 delivers $\OT1/cmr/m/n/10 93\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 91%$
  []
 
 
-Underfull \hbox (badness 1789) in paragraph at lines 289--292
-[]\OT1/ptm/m/n/10 Zero-shot evaluations on external benchmarks without
- []
-
-
-Underfull \hbox (badness 1831) in paragraph at lines 289--292
+Underfull \hbox (badness 1831) in paragraph at lines 286--289
 \OT1/ptm/b/n/10 1) Harmonized Protocol & Annotation Discrepancy:
  []
 
 
-Underfull \hbox (badness 2762) in paragraph at lines 289--292
-\OT1/ptm/b/n/10 Empirical Robustness across External Domains: \OT1/ptm/m/n/10 On
+Underfull \hbox (badness 1629) in paragraph at lines 286--289
+\OT1/ptm/m/n/10 Rep-YOLO11s surpasses baseline YOLO11s across both
  []
 
 
-Underfull \hbox (badness 1810) in paragraph at lines 289--292
-\OT1/ptm/m/n/10 Hard Hat Workers ($\OT1/cmr/m/n/10 7\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 000$ \OT1/ptm/m/n/10 images) [18], Rep-YOLO11s
+Underfull \hbox (badness 1629) in paragraph at lines 286--289
+[]$ \OT1/ptm/m/n/10 vs $\OT1/cmr/m/n/10 94\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 12%$ $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 (+2.91%) and $[]$ vs
+ []
+
+
+Underfull \hbox (badness 2343) in paragraph at lines 286--289
+\OT1/ptm/m/n/10 it achieves $[]$ vs $\OT1/cmr/m/n/10 71\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 85%$ $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 (+2.55%) and
+ []
+
+
+Underfull \hbox (badness 7133) in paragraph at lines 286--289
+\OT1/ptm/m/n/10 priors, ensuring robust zero-shot transferability across
  []
 
 
@@ -583,56 +595,59 @@ Underfull \hbox (badness 1810) in paragraph at lines 289--292
 <figures/shwd_gradcam_comparison.pdf, id=37, 827.25058pt x 598.87741pt>
 File: figures/shwd_gradcam_comparison.pdf Graphic file (type pdf)
 <use figures/shwd_gradcam_comparison.pdf>
-Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 296.
+Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 293.
 (pdftex.def)             Requested size: 131.04108pt x 94.86284pt.
 
-Underfull \hbox (badness 7030) in paragraph at lines 297--297
+Underfull \hbox (badness 7030) in paragraph at lines 294--294
 \OT1/ptm/m/n/8 Row 3 (Structural Occlusion). (a) Input, (b) Baseline YOLO11s,
  []
 
 
-Underfull \hbox (badness 3989) in paragraph at lines 301--302
+Underfull \hbox (badness 3989) in paragraph at lines 298--299
 \OT1/ptm/m/n/10 whereas Rep-YOLO11s sharply isolates helmet crowns
  []
 
 
-Underfull \hbox (badness 3471) in paragraph at lines 308--309
+Underfull \hbox (badness 3471) in paragraph at lines 305--306
 \OT1/ptm/m/n/10 and YOLOv10s (14.78ms). TensorRT FP16 accelerates
  []
 
 
-Underfull \hbox (badness 1852) in paragraph at lines 308--309
+Underfull \hbox (badness 1852) in paragraph at lines 305--306
 \OT1/ptm/m/n/10 (500 frames), T4 inference reaches 1.10ms (909.1FPS,
  []
 
 
+Underfull \vbox (badness 1308) has occurred while \output is active []
+
+
 
 [5 <./figures/shwd_gradcam_comparison.pdf>]
-Underfull \hbox (badness 6542) in paragraph at lines 311--312
+Underfull \hbox (badness 6542) in paragraph at lines 308--309
 []\OT1/ptm/m/n/10 The operational surveillance pipeline integrates five
  []
 
 
-Underfull \hbox (badness 2080) in paragraph at lines 311--312
+Underfull \hbox (badness 2080) in paragraph at lines 308--309
 \OT1/ptm/m/n/10 false alarms and handle crouching [], a bipartite
  []
 
 
-Underfull \hbox (badness 5711) in paragraph at lines 315--316
+Underfull \hbox (badness 5711) in paragraph at lines 312--313
 \OT1/ptm/m/n/10 Assignment. On SHWD, it achieves $\OT1/cmr/m/n/10 94\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 83%$ $\OML/cmm/m/it/10 mAP[]$
  []
 
 
-Underfull \hbox (badness 2961) in paragraph at lines 315--316
-\OT1/ptm/m/n/10 on GDUT-HWD and Hard Hat Workers verify robust
+Underfull \hbox (badness 2285) in paragraph at lines 312--313
+\OT1/ptm/m/n/10 FP16 (65--95FPS live RTSP). Zero-shot evaluations on
  []
 
 (./Rep-YOLO11s_AAIML2027.bbl
+
+
 Underfull \hbox (badness 1881) in paragraph at lines 30--31
 []\OT1/ptm/m/n/8 G. Jocher and J. Qiu, ``Ultralytics YOLO11 documentation and
  []
-
-
 
 
 Underfull \hbox (badness 1509) in paragraph at lines 51--52
@@ -647,21 +662,6 @@ Underfull \hbox (badness 2126) in paragraph at lines 54--55
 
 Underfull \hbox (badness 3769) in paragraph at lines 57--58
 []\OT1/ptm/m/n/8 J.-W. Hsieh, M.-Y. Kao, G. W. Kurniawan, and K.-C. Peng,
- []
-
-
-Underfull \hbox (badness 3323) in paragraph at lines 63--64
-[]\OT1/ptm/m/n/8 X. Ding, X. Zhang, N. Ma, J. Han, G. Ding, and J. Sun,
- []
-
-
-Underfull \hbox (badness 1466) in paragraph at lines 78--79
-\OT1/ptm/m/n/8 Vision transformer with bi-level routing attention,'' in \OT1/ptm/m/it/8 IEEE/CVF
- []
-
-
-Underfull \hbox (badness 3780) in paragraph at lines 81--82
-[]\OT1/ptm/m/n/8 T.-Y. Lin, P. Doll[]ar, R. Girshick, K. He, B. Hariharan, and
  []
 
 )
@@ -685,15 +685,15 @@ L3 programming layer <2025-05-26>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4040 strings out of 469867
- 65603 string characters out of 5482749
- 489095 words of memory out of 5000000
- 32294 multiletter control sequences out of 15000+600000
+ 4039 strings out of 469867
+ 65588 string characters out of 5482749
+ 488848 words of memory out of 5000000
+ 32293 multiletter control sequences out of 15000+600000
  670317 words of font info for 121 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  57i,14n,65p,1814b,331s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Rep-YOLO11s_AAIML2027.pdf (6 pages, 7042982 bytes).
+Output written on Rep-YOLO11s_AAIML2027.pdf (6 pages, 7043071 bytes).
 PDF statistics:
  127 PDF objects out of 1000 (max. 8388607)
  73 compressed objects within 1 object stream
