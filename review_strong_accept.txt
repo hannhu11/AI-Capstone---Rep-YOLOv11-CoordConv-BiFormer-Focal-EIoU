@@ -1,0 +1,374 @@
+--- PAGE 1 ---
+View Your Review
+Get detailed AI feedback on your research paper (free!)
+View Your Review
+Structural Re-Parameterization, Spatial
+Coordinate Encoding, and Cross-Domain
+Robustness for Real-Time Safety Helmet
+Detection in Construction Surveillance
+2027 2nd International Conference on Advances in Artificial Intelligence and Machine
+Learning (AAIML 2027) - Applied AI and Computer Vision Track
+Submitted: October 10, 2026
+Summary
+The paper proposes Rep-YOLO11s, an edge-focused detector for safety-helmet
+monitoring that combines three known ideas in a deployment-aware way: (i)
+structural re-parameterization in the neck to reduce memory access costs at
+inference, (ii) a CoordConv stem to inject elevation priors that help suppress floor-
+level distractors, and (iii) bi-level routing attention (BiFormer) in high-level neck
+stages to focus computation on small helmets. A decoupled training scheme uses
+Focal-EIoU with Task-Aligned Assignment to mitigate class imbalance. Empirically,
+the method attains real-time throughput on commodity GPUs, shows competitive
+10/10/26, 9:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=9JHCHOj9KsaTrlNJiNQM1-zNil_LuC3V0L127jdj8K0
+1/9
+
+--- PAGE 2 ---
+accuracy on SHWD, and reports stronger zero-shot transfer on the Hard Hat
+Workers (HHW) dataset, with extensive latency profiling and an ablation study.
+Strengths
+Technical novelty and innovation
+Experimental rigor and validation
+Clarity of presentation
+Significance of contributions
+The paper thoughtfully integrates structural re-parameterization only
+where it is most beneficial (neck aggregation) rather than uniformly
+across all stages, which is a credible hardware-aware design choice.
+•
+The use of a CoordConv stem to encode elevation priors for helmet-vs-
+floor disambiguation is a simple, targeted design that aligns with the
+task’s spatial structure.
+•
+Integrating BiFormer (bi-level routing attention) into the neck while
+preserving ONNX/TensorRT friendliness is a pragmatic contribution for
+applied deployment.
+•
+The authors present multi-platform latency profiling (PyTorch, ONNX
+Runtime, TensorRT; T4/RTX 3050/MX230/CPU), with Nsight-based
+reasoning about MAC/DRAM behavior and kernel launch counts.
+•
+They include zero-shot transfer to an external dataset (HHW) and a 5-
+fold, scene-stratified CV on SHWD to address data leakage concerns.
+•
+The ablation study examines component-wise contributions and reports
+multi-seed variance.
+•
+Structural re-parameterization mechanics are clearly explained with
+equations and a clean training-to-deploy narrative; CoordConv and
+BiFormer roles are well-motivated for this domain.
+•
+The system-level pipeline and deployment stack are described in
+sufficient implementation detail to be informative for practitioners.
+•
+The problem (real-time, reliable PPE monitoring) is practically important;
+the presented pipeline and cross-domain evaluation make this a
+•
+10/10/26, 9:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=9JHCHOj9KsaTrlNJiNQM1-zNil_LuC3V0L127jdj8K0
+2/9
+
+--- PAGE 3 ---
+Weaknesses
+Technical limitations or concerns
+Experimental gaps or methodological issues
+Clarity or presentation issues
+potentially useful engineering reference for the applied AI community.
+Methodological novelty is primarily in combining known components
+(RepConv, CoordConv, BiFormer, Focal-EIoU, TAL) rather than introducing
+a fundamentally new algorithmic idea.
+•
+The approach remains NMS-based with DFL; it does not explore more
+recent NMS-free, quantization-friendly heads (e.g., YOLO26/RT-DETR
+variants) that could be competitive in both latency and tiny-object recall.
+•
+In Table II (multi-seed, standardized SGD), the full system (A6)
+underperforms the baseline (A0) by ~1.2 mAP50 and ~1.24 mAP50-95 on
+average, contradicting the single-run AdamW “benchmark” improvement
+and raising concerns about robustness of the claimed accuracy gains.
+•
+Cross-paper accuracy and FPS comparisons mix different training recipes,
+hardware, and precision modes; several baselines are taken from
+literature rather than re-trained under a matched protocol and runtime.
+•
+The claimed per-class gains (notably for “hat”) are not consistently
+reconciled with joint mAP drops for “person,” and the paper does not
+report confidence intervals or statistical tests for these per-class
+outcomes.
+•
+No Jetson or embedded NPU results are reported (despite “embedded
+devices” claims); MX230/CPU are helpful but not representative of typical
+modern edge AI accelerators used on sites.
+•
+The optimizer switch (AdamW for “benchmark” vs SGD for multi-seed)
+confounds interpretation; the paired t-test p-value is reported without
+stating the direction of effect, which, judging by the means, appears
+negative for A6 vs A0.
+•
+S
+paperreview.ai
+By Stanford ML Group
+Upload Paper
+View Review
+Tech Overview
+10/10/26, 9:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=9JHCHOj9KsaTrlNJiNQM1-zNil_LuC3V0L127jdj8K0
+3/9
+
+--- PAGE 4 ---
+Missing related work or comparisons
+Detailed Comments
+Technical soundness evaluation
+Experimental evaluation assessment
+The role/status of the “P2 Micro-Head” is unclear in the final
+configuration; it appears in ablations but not in the final fusion
+description.
+•
+Limited discussion/empirical comparison to modern NMS-free detectors
+and assignment/loss schemes such as YOLO26 (ProgLoss/STAL, DFL-free
+head) and RT-DETR variants that often excel at small objects on edge
+stacks.
+•
+Related 
+helmet-compliance 
+literature 
+on 
+explicit 
+person–helmet
+association and recent VLM-based zero-shot methods (e.g., OWLv2
+pipelines) is briefly tangential in this paper; a more direct contrast on
+association 
+or 
+attribute-level 
+evaluation 
+would 
+strengthen 
+the
+positioning.
+•
+The structural re-parameterization derivation and folding of Conv+BN
+branches are standard and correctly specified. The reported reduction in
+memory traffic and kernel launches is plausible and consistent with prior
+RepVGG/Rep-based work.
+•
+The CoordConv stem design is technically straightforward and well-
+justified for this task; the reported overhead (+0.06 ms) is negligible.
+•
+The BiFormer integration and claims of ONNX/TensorRT compatibility via
+stock Ops (TopK, Gather, Gemm) are credible and practically relevant;
+however, details about memory fragmentation and batch-1 dynamic
+shape handling in TensorRT would be useful for replication.
+•
+The Focal-EIoU + TAL combination is reasonable. The decoupling
+rationale for class imbalance is sound and aligns with established
+literature on assignment and loss balancing for small/rare classes (see
+Oksuz et al., 1909.00169).
+•
+10/10/26, 9:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=9JHCHOj9KsaTrlNJiNQM1-zNil_LuC3V0L127jdj8K0
+4/9
+
+--- PAGE 5 ---
+Comparison with related work (using the summaries provided)
+Discussion of broader impact and significance
+The cross-domain HHW zero-shot gains over the YOLO11s baseline are
+encouraging and align with the intuition that CoordConv (elevation
+priors) and token routing suppress cross-domain clutter.
+•
+The 5-fold CV procedure is commendable for leakage control. However,
+the discrepancy between the single-run AdamW benchmark (showing
+small gains) and the standardized multi-seed SGD results (A6 < A0)
+should be resolved; as written, the evidence for a consistent accuracy
+improvement on SHWD is mixed.
+•
+The ablations quantify latency impacts well (e.g., RepConv fusion −0.50
+ms; BiFormer +0.24 ms), but the accuracy changes per component are
+very small and within tight SDs; more runs or CIs and per-class deltas
+would help interpret practical significance.
+•
+Energy efficiency results are informative, but the absence of Jetson-class
+measurements is notable given the stated target of edge deployment.
+•
+Relative to BiFormer (2303.08810), the paper appropriately leverages
+routing attention for dense prediction efficiency and highlights
+deployment compatibility. A direct accuracy/latency contrast with a pure
+ViT/RT-DETR (e.g., 2604.23442) or TinyFormer (2605.25046) under
+matched conditions would contextualize performance on tiny objects.
+•
+The choice to retain NMS and DFL contrasts with YOLO26’s NMS-free and
+DFL-free 
+design 
+(2510.09653), 
+which 
+reportedly 
+improves
+conversion/quantization stability and latency variance—highly relevant to
+edge stacks. A head-to-head with YOLO26 on SHWD/HHW would
+strengthen claims of deployment advantage.
+•
+The 
+structural 
+re-parameterization 
+positioning 
+is 
+coherent 
+with
+RepCNN/RepNAS/RepGhost 
+trends 
+(2406.02652, 
+2109.03508,
+2211.06088), but the paper would benefit from a short quantitative
+comparison or discussion of RepGhost/ODBB-like choices vs the current
+RepConv usage in the neck.
+•
+From the hardhat detection angle, recent zero-shot VLM approaches
+(2410.12225) prioritize association and open-vocabulary flexibility; while
+the present work is supervised and single-task, a brief discussion of
+association (beyond the bipartite 0.25 IoU heuristic) and of deployment
+trade-offs vs VLM cascades would position the contribution more clearly.
+•
+10/10/26, 9:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=9JHCHOj9KsaTrlNJiNQM1-zNil_LuC3V0L127jdj8K0
+5/9
+
+--- PAGE 6 ---
+Questions for Authors
+1. The multi-seed standardized SGD results (A6) underperform the baseline (A0),
+yet the single-run AdamW “benchmark” shows a small gain. Can you reconcile
+these outcomes? Which optimizer/protocol should be considered primary
+evidence, and what is the direction of the paired t-test effect?
+2. Please report per-class AP/AR and 95% CIs for SHWD across A0–A6, and clarify
+whether the person-class degradation is the main reason the joint mAP50-95
+barely changes (or drops) despite helmet gains.
+3. What is the final configuration regarding the P2 Micro-Head? It appears in
+ablations but not in the “full fusion” description. If excluded from the final
+model, why?
+4. Can 
+you 
+provide 
+matched, 
+re-trained 
+baselines 
+(same 
+data
+splits/augmentations/optimizer/hardware) 
+for 
+EC-YOLOv8/MAF-
+YOLO/TinyFormer or, alternatively, include YOLO26 and RT-DETR variants
+under an identical training and TensorRT FP16 export path?
+5. Have 
+you 
+evaluated 
+INT8 
+post-training 
+quantization 
+or 
+QAT 
+on
+TensorRT/CoreML/NCNN? If not, do your ONNX graphs (with BRA) convert
+cleanly to INT8 with calibration? Any observed accuracy/latency trade-offs?
+Practically, the work addresses an important safety application and
+demonstrates a credible route to real-time multi-stream monitoring on
+commodity 
+GPUs 
+with 
+a 
+clear 
+systems 
+perspective
+(decode→preprocess→infer→NMS→render).
+•
+The privacy-preserving on-premise deployment and simple post-hoc
+safeguards (helmet–person overlap filter) are appreciated. However, the
+association heuristic should be evaluated quantitatively, given its
+potential to reduce false positives at the cost of recall (e.g., helmets
+momentarily outside person boxes).
+•
+The reported cross-domain robustness is valuable for real deployments,
+though broader validation (additional sites/datasets, seasonal shifts,
+camera angles) would better establish generalization.
+•
+10/10/26, 9:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=9JHCHOj9KsaTrlNJiNQM1-zNil_LuC3V0L127jdj8K0
+6/9
+
+--- PAGE 7 ---
+6. Please provide a quantitative assessment of the person–helmet association
+heuristic 
+(e.g., 
+precision/recall 
+changes 
+vs 
+no 
+association 
+and 
+vs
+nested/cascaded baselines), ideally on a subset with reliable association labels.
+7. How sensitive is BRA to S and top-k (S=8, k=4)? Can you share a small sweep
+(accuracy/latency) and whether routing instability appears on small batch or
+dynamic-resolution streams?
+8. Could you share memory-bandwidth measurements beyond a single neck
+block (e.g., layer-wise Nsight CUPTI data), and clarify whether memory savings
+persist at higher resolutions (e.g., 1280^2)?
+Overall Assessment
+This is a well-executed applied paper with a clear deployment focus, sensible
+architectural choices, and extensive latency profiling. The integration of RepConv
+(neck-only), CoordConv stem, and BiFormer for small-object focus is coherent and
+well-motivated for helmet detection. The cross-domain HHW zero-shot
+improvements over a YOLO11s baseline are promising, and the systems-level
+details (ONNX/TensorRT compatibility, pipeline timing) make the work practically
+useful.
+However, the central accuracy claims on SHWD are insufficiently substantiated:
+under standardized multi-seed SGD, the full system underperforms the baseline,
+while the single-run AdamW benchmark shows a slight improvement. This
+inconsistency, the reliance on mixed, non-matched baselines from the literature,
+and the absence of comparisons to modern NMS-free detectors (YOLO26/RT-
+DETR) weaken the evidence that the proposed combination offers a consistent
+accuracy–latency advance over strong contemporary alternatives. Methodological
+novelty is modest, as the paper primarily composes existing techniques.
+For the AAIML Applied AI and Computer Vision Track, this submission is close: it
+offers solid engineering value and deployment insights but needs stronger,
+cleaner accuracy evidence under matched protocols and broader, fair
+comparisons. I recommend rejection in its current form, with a clear path to
+strengthening: unify training/evaluation protocols, resolve the A6 vs A0
+10/10/26, 9:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=9JHCHOj9KsaTrlNJiNQM1-zNil_LuC3V0L127jdj8K0
+7/9
+
+--- PAGE 8 ---
+inconsistency, add matched baselines (including YOLO26/RT-DETR), quantify the
+association heuristic, and consider embedded (Jetson) evaluation and INT8 results.
+We Value Your Feedback
+How helpful is the review?
+Not helpful
+Helpful
+Very helpful
+Is there any critical error (excluding minor inconsistency) in the
+review?
+Yes
+No
+Does the review provide actionable suggestions for improvement?
+Yes
+No
+Additional comments (optional)
+10/10/26, 9:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=9JHCHOj9KsaTrlNJiNQM1-zNil_LuC3V0L127jdj8K0
+8/9
+
+--- PAGE 9 ---
+Share any other thoughts or feedback...
+0 / 500 characters
+Your feedback is anonymous and helps us improve our service
+Note: Reviews are AI generated and may contain errors. Please use them as guidance and apply your own judgment.
+Questions or feedback? Contact us at aireviewer@cs.stanford.edu
+Submit Feedback
+10/10/26, 9:06 PM
+Stanford Agentic Reviewer - View Review
+https://paperreview.ai/review?token=9JHCHOj9KsaTrlNJiNQM1-zNil_LuC3V0L127jdj8K0
+9/9
