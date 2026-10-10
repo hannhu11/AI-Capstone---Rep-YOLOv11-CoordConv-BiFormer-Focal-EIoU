@@ -81,30 +81,22 @@ Dẫn chứng từ 4 file CSV gốc lưu trữ trong repo:
 | **GeForce MX230 (2GB)** | PyTorch Native FP32 | $640^2$ | 36.00 | 27.8 | 18.5 | 1.50 | **Thực nghiệm 100%** (`hardware_benchmark_report_fps.md`, laptop Core i5-10210U MX230) |
 | **Edge CPU (4 Cores)** | ONNX Runtime | $960^2$ | 303.0 | 3.3 | 28.0 | 0.12 | **Thực nghiệm 100%** (`Tuấn Dũng/README.md`, dòng 75: $1000 / 3.3 = 303.0\text{ ms}$) |
 | **RTX 3050 RTSP Pipe** | Full E2E Video Stream | $640^2$ | 11.20 | 89.3 | 28.4 | 3.14 | **Thực nghiệm 100%** (`LOCAL_BENCHMARK_EVIDENCE.md`, chuỗi 5 bước trên file video thực tế) |
-| **Jetson Orin Nano (15W)** | TensorRT FP16 (15W) | $640^2$ | 11.80 | 84.7 | 14.8 | 5.72 | **Mô phỏng kiến trúc Ampere (Analytically Emulated via RTX 3050 15W)** |
 
 ---
 
-## 3. GIẢI QUYẾT TRIỆT ĐỂ 2 ĐIỂM NÓNG VỀ LIÊM CHÍNH PHẦN CỨNG
+## 3. QUYẾT ĐỊNH LIÊM CHÍNH KHOA HỌC: XÓA BỎ 100% SỐ LIỆU MÔ PHỎNG / NGOẠI SUY
 
-### 🔴 3.1. Sự thật về "Jetson Orin Nano (11.80 ms / 84.7 FPS / 14.8 W / 5.72 FPS/J)"
-- **Thực tế**: Nhóm tác giả **không sở hữu bo mạch Jetson Orin Nano vật lý**.
-- **Nguồn gốc số liệu**: Con số $11.80\text{ ms}$ ($84.7\text{ FPS}$) là kết quả **mô phỏng phân tích (analytical hardware scaling)**:
-  * Nhóm đã khóa công suất card đồ họa RTX 3050 Laptop xuống đúng **15W** bằng lệnh `nvidia-smi -pl 15` để mô phỏng hồ sơ năng lượng biên của Jetson Orin Nano 15W.
-  * Khi khóa 15W, RTX 3050 đạt **5.48 ms (182.4 FPS)**.
-  * Nhân với hệ số tỷ lệ kiến trúc Ampere giữa RTX 3050 Laptop (2048 CUDA Cores, 192 GB/s băng thông) và Jetson Orin Nano (1024 CUDA Cores, 68 GB/s băng thông):  
-    $$\text{Latency}_{\text{Orin Nano}} \approx 5.48\text{ ms} \times 2.15 \approx \mathbf{11.80\text{ ms}} \implies \mathbf{84.7\text{ FPS}}$$
-- **Giải pháp bảo đảm liêm chính 100%**:
-  * Đã sửa trực tiếp trong bài báo: Bảng III ghi rõ `Jetson Orin Nano (Emulated)`.
-  * Xóa bỏ hoàn toàn cụm từ gây hiểu nhầm *"Jetson jtop telemetry"* trong footnote và thay bằng:  
-    `Profiled via NVML on RTX 3050; Jetson Orin Nano profile analytically emulated via 15W Ampere power clamping scaled by SM and memory bandwidth ratios.`
-  * Trong Mục IV-B ghi rõ: `(4) analytically emulated Jetson Orin Nano 15W edge profile`.
+Theo yêu cầu chuẩn mực đạo đức nghiên cứu quốc tế và chỉ đạo dứt khoát của tác giả, **tất cả các dòng không đo đạc trực tiếp trên phần cứng vật lý đã được LOẠI BỎ TRIỆT ĐỂ khỏi bài báo (Bảng III, Mục IV-B, Mục V-A)**:
 
-### 🔴 3.2. Sự thật về "Tesla T4 INT8 PTQ (1.10 ms / 909.1 FPS)"
-- **Thực tế**: Được tính toán theo mô hình ngoại suy hiệu năng Tensor Core INT8 trên kiến trúc Turing (hệ số gia tốc lý thuyết $\times 0.52$ so với FP16).
-- **Giải pháp bảo đảm liêm chính 100%**:
-  * Đã sửa tiêu đề trong Bảng III thành: `Tesla T4 (INT8 Projected)`.
-  * Trong Mục V-A ghi rõ: `Under theoretical INT8 Tensor Core projection modeling...`.
+### 🔴 3.1. Đã xóa: "Jetson Orin Nano (11.80 ms / 84.7 FPS / 14.8 W / 5.72 FPS/J)"
+- **Lý do xóa**: Con số này bắt nguồn từ mô hình ngoại suy lý thuyết (analytical scaling dựa trên công suất 15W của RTX 3050 nhân tỷ lệ SM kiến trúc Ampere). Vì nhóm không có bo mạch Jetson Orin Nano vật lý tại phòng thí nghiệm, việc đưa vào bảng so sánh phần cứng dễ gây hiểu lầm cho hội đồng phản biện.
+- **Hành động**: **ĐÃ XÓA HOÀN TOÀN** khỏi Bảng III, Mục IV-B và Mục V-A. Bài báo chỉ báo cáo hồ sơ công suất thực tế được đo bằng NVML trên RTX 3050 (hồ sơ giới hạn công suất 15W đo thật đạt 5.48 ms / 182.4 FPS / 12.16 FPS/J).
+
+### 🔴 3.2. Đã xóa: "Tesla T4 INT8 PTQ (1.10 ms / 909.1 FPS)"
+- **Lý do xóa**: Con số 1.10 ms là kết quả ngoại suy từ script mô phỏng `kaggle_stage3_experiments.py` (nhân hệ số lý thuyết Tensor Core $\times 0.52$ so với FP16), chưa chạy qua hiệu chuẩn EntropyCalibrator2 trên 500 ảnh thực tế trên máy chủ.
+- **Hành động**: **ĐÃ XÓA HOÀN TOÀN** khỏi Bảng III và Mục V-A. Bài báo chỉ giữ lại số liệu TensorRT FP16 đo đạc thực tế 100% trên GPU Tesla T4 (2.92 ms / 342.5 FPS).
+
+👉 **KẾT QUẢ SAU KHI SỬA**: Toàn bộ 11 hàng trong Bảng III hiện tại là **100% ĐO ĐẠC VẬT LÝ THỰC TẾ TRÊN PHẦN CỨNG THẬT** (Tesla T4, RTX 3050 Laptop GPU, GeForce MX230, Quad-core Edge CPU, và RTSP live video pipeline). Không còn bất kỳ một con số ngoại suy hay mô phỏng nào tồn tại trong bài báo!
 
 ---
 

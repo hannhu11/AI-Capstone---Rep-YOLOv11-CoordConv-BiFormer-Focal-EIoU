@@ -250,7 +250,7 @@ We evaluate on the Safety Helmet Wearing Dataset (SHWD)~\cite{shwd_dataset} (und
 
 \subsection{Hardware and Implementation Details}
 \label{subsec:hardware}
-Models were trained on Kaggle Dual NVIDIA Tesla T4 GPUs (16\,GB VRAM, PyTorch 2.5.1, CUDA 12.4) for 100 epochs using SGD ($\eta_0=0.01$, momentum $0.937$, weight decay $0.0005$, batch size $32$) with standard augmentations. Deployment profiling evaluated five tiers: (1)~server Tesla T4; (2)~RTX 3050 Laptop GPU (60\,W/15\,W); (3)~GeForce MX230 (2\,GB); (4)~analytically emulated Jetson Orin Nano (15\,W); and (5)~quad-core edge CPU. Software stack: TensorRT 11.2, ONNX Runtime 1.20, and PyTorch 2.5.1. Synchronized CUDA events ($N_{\text{warmup}}=200, N_{\text{eval}}=1000$) recorded true end-to-end latencies.
+Models were trained on Kaggle Dual NVIDIA Tesla T4 GPUs (16\,GB VRAM, PyTorch 2.5.1, CUDA 12.4) for 100 epochs using SGD ($\eta_0=0.01$, momentum $0.937$, weight decay $0.0005$, batch size $32$) with standard augmentations. Deployment profiling evaluated four physical hardware tiers: (1)~server Tesla T4 (16\,GB); (2)~RTX 3050 Laptop GPU (60\,W / 15\,W power clamp); (3)~GeForce MX230 (2\,GB); and (4)~quad-core edge CPU. Software stack: TensorRT 11.2, ONNX Runtime 1.20, and PyTorch 2.5.1. Synchronized CUDA events ($N_{\text{warmup}}=200, N_{\text{eval}}=1000$) recorded true end-to-end latencies.
 
 \subsection{Comparison with State-of-the-Art (SOTA)}
 \label{subsec:sota}
@@ -280,15 +280,12 @@ Rep-YOLO11s (Ours) & PyT FP32 / FP16 & $640^2$ & 10.91 / 8.34 & 91.7 / 119.8 & 7
 Rep-YOLO11s (Ours) & TensorRT 11.2 FP16 & $640^2$ & \textbf{4.37} & \textbf{228.6} & \textbf{28.4} & \textbf{8.05} \\
 \midrule
 NVIDIA Tesla T4 & TensorRT 11.2 FP16 & $640^2$ & 2.92 & 342.5 & 41.2 & 8.31 \\
-Tesla T4 (INT8 Projected) & TensorRT 11.2 INT8 & $640^2$ & \textbf{1.10} & \textbf{909.1} & \textbf{36.8} & \textbf{24.70} \\
 NVIDIA Tesla T4 & PyTorch Native FP16 & $960^2$ & 20.49 & 48.8 & 52.1 & 0.94 \\
 RTX 3050 (15W Cap) & Clamped Profile & $640^2$ & 5.48 & 182.4 & 15.0 & 12.16 \\
-Jetson Orin Nano$^\S$ (Emul.) & TensorRT FP16 (15W) & $640^2$ & 11.80 & 84.7 & 14.8 & 5.72 \\
 GeForce MX230 & PyTorch Native FP32 & $640^2$ & 36.00 & 27.8 & 18.5 & 1.50 \\
 Edge CPU (4 Cores) & ONNX Runtime & $960^2$ & 303.0 & 3.3 & 28.0 & 0.12 \\
 RTX 3050 RTSP Pipe & Full E2E Video Stream & $640^2$ & 11.20 & 89.3 & 28.4 & 3.14 \\
 \bottomrule
-\multicolumn{7}{l}{\footnotesize $^\S$ Profiled via NVML on RTX 3050; Jetson Orin Nano profile emulated via 15W power clamping scaled by SM ratios.} \\
 \end{tabular}%
 }
 \end{table}
@@ -316,7 +313,7 @@ Empirical Grad-CAM saliency maps (see Fig.~\ref{fig:gradcam_comparison}, layer $
 
 \subsection{Edge Hardware Profiling and Energy Efficiency}
 \label{subsec:profiling}
-Table~\ref{tab:deployment} profiles edge throughput. On RTX 3050 in native PyTorch FP16, Rep-YOLO11s (8.34\,ms, 119.8\,FPS) matches baseline YOLO11s (8.25\,ms), outpacing YOLOv8s (8.78\,ms) and YOLOv10s (14.78\,ms). TensorRT FP16 accelerates inference to 4.37\,ms (228.6\,FPS, 28.4\,W) on RTX 3050 and 2.92\,ms (342.5\,FPS) on Tesla T4. Under INT8 projection modeling, T4 isolated inference projects to 1.10\,ms (909.1\,FPS, 24.70\,FPS/W) with 48.3\% compression ($20.1 \to 10.4$\,MB) and minimal loss ($-0.28\%~mAP_{50}$). Under 15\,W power caps, RTX 3050 achieves 182.4\,FPS (12.16\,FPS/W) and emulated Jetson Orin Nano reaches 84.7\,FPS (5.72\,FPS/J), satisfying real-time constraints on edge devices.
+Table~\ref{tab:deployment} profiles edge throughput. On RTX 3050 in native PyTorch FP16, Rep-YOLO11s (8.34\,ms, 119.8\,FPS) matches baseline YOLO11s (8.25\,ms), outpacing YOLOv8s (8.78\,ms) and YOLOv10s (14.78\,ms). TensorRT FP16 accelerates inference to 4.37\,ms (228.6\,FPS, 28.4\,W) on RTX 3050 and 2.92\,ms (342.5\,FPS) on Tesla T4. Under hardware power clamping (15\,W profile via NVML), the RTX 3050 sustains 182.4\,FPS (5.48\,ms) at 12.16\,FPS/J energy efficiency. On entry-level legacy hardware (GeForce MX230, 2\,GB VRAM), PyTorch FP32 achieves 27.8\,FPS (36.00\,ms at 18.5\,W), while a quad-core edge CPU reaches 3.3\,FPS (303.0\,ms) via ONNX Runtime at high resolution ($960^2$), satisfying edge surveillance constraints across diverse compute budgets.
 
 \subsection{Surveillance Pipeline, False-Alarm Safeguards, and Ethics}
 \label{subsec:pipeline}
