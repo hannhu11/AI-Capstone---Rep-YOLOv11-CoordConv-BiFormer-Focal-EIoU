@@ -23,18 +23,34 @@ def verify_paper(pdf_path, tex_path, log_path, bib_path):
     else:
         print("[PASS] 0 GDUT occurrences in .tex")
 
-    # Author verification
+    # Author and Affiliation verification
     for author in ["Nguyen Han Nhu", "Nguyen Van Thanh", "Tran Pham Tuan Dung", "Ha Anh Vu"]:
         if author not in tex_content:
             errors.append(f"Author {author} missing in {tex_path}")
-    if "FPT University, Ho Chi Minh City, Vietnam" not in tex_content:
-        errors.append(f"Affiliation missing in {tex_path}")
+    if "Department of Artificial Intelligence, FPT University, Ho Chi Minh City, Vietnam" not in tex_content:
+        errors.append(f"Full affiliation 'Department of Artificial Intelligence, FPT University, Ho Chi Minh City, Vietnam' missing in {tex_path}")
     for email in ["Nhunhse183644@fpt.edu.vn", "thanhnvSE180387@fpt.edu.vn", "dungtptse180382@fpt.edu.vn", "AnhVH54@fe.edu.vn"]:
         if email not in tex_content:
             errors.append(f"Email {email} missing in {tex_path}")
     if "Corresponding author: Nguyen Han Nhu (email: Nhunhse183644@fpt.edu.vn)" not in tex_content:
         errors.append(f"Corresponding author footnote missing in {tex_path}")
     print("[PASS] Author roster, emails, affiliation, and corresponding author verified")
+
+    # Content checks: Acknowledgment, Future Work, roofline must be absent
+    if re.search(r'acknowledg', tex_content, re.IGNORECASE):
+        errors.append(f"Acknowledgment found in {tex_path} (must be completely removed)")
+    else:
+        print("[PASS] 0 Acknowledgment occurrences in .tex")
+
+    if re.search(r'future\s+work', tex_content, re.IGNORECASE):
+        errors.append(f"Future Work found in {tex_path} (must be completely removed)")
+    else:
+        print("[PASS] 0 Future Work occurrences in .tex")
+
+    if re.search(r'roofline', tex_content, re.IGNORECASE):
+        errors.append(f"GPU Roofline buzzword found in {tex_path} (must be replaced with edge computing terms)")
+    else:
+        print("[PASS] 0 Roofline buzzword occurrences in .tex")
 
     # 3. Check bib file for gdut
     with open(bib_path, 'r', encoding='utf-8', errors='ignore') as f:
@@ -84,15 +100,27 @@ def verify_paper(pdf_path, tex_path, log_path, bib_path):
     if not has_type3:
         print("[PASS] 0 Type 3 fonts (100% Type 1 / TrueType / PostScript)")
 
-    # 7. Check PDF text for GDUT
+    # 7. Check PDF text for GDUT, Acknowledgment, Future Work, and roofline
     full_pdf_text = ""
     for i, page in enumerate(doc):
         t = page.get_text()
         full_pdf_text += t
         if re.search(r'gdut', t, re.IGNORECASE):
             errors.append(f"GDUT found in PDF text on Page {i+1}")
+        if re.search(r'acknowledg', t, re.IGNORECASE):
+            errors.append(f"Acknowledgment found in PDF text on Page {i+1}")
+        if re.search(r'future\s+work', t, re.IGNORECASE):
+            errors.append(f"Future Work found in PDF text on Page {i+1}")
+        if re.search(r'roofline', t, re.IGNORECASE):
+            errors.append(f"Roofline buzzword found in PDF text on Page {i+1}")
     if not re.search(r'gdut', full_pdf_text, re.IGNORECASE):
         print("[PASS] 0 GDUT occurrences in PDF text")
+    if not re.search(r'acknowledg', full_pdf_text, re.IGNORECASE):
+        print("[PASS] 0 Acknowledgment occurrences in PDF text")
+    if not re.search(r'future\s+work', full_pdf_text, re.IGNORECASE):
+        print("[PASS] 0 Future Work occurrences in PDF text")
+    if not re.search(r'roofline', full_pdf_text, re.IGNORECASE):
+        print("[PASS] 0 Roofline buzzword occurrences in PDF text")
 
     # 8. Check for word-splitting hyphens across all pages
     hyphenated_words = []

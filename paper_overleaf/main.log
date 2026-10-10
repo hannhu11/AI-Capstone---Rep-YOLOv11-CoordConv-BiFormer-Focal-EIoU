@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 09:41
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 11:17
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -287,6 +287,16 @@ Underfull \hbox (badness 3657) in paragraph at lines 55--55
  []
 
 
+Underfull \hbox (badness 1622) in paragraph at lines 57--59
+\OT1/ptm/b/n/9 sites. However, edge-based surveillance pipelines encounter
+ []
+
+
+Underfull \hbox (badness 4084) in paragraph at lines 57--59
+\OT1/ptm/b/n/9 co-design for memory-constrained edge deployment. Our
+ []
+
+
 Underfull \hbox (badness 1735) in paragraph at lines 57--59
 \OT1/ptm/b/n/9 filter background tokens and concentrate computation on
  []
@@ -319,13 +329,8 @@ Underfull \hbox (badness 4792) in paragraph at lines 66--67
 
 
 
-Underfull \hbox (badness 6094) in paragraph at lines 68--69
-\OT1/ptm/m/n/10 our framework directly targets the memory-bandwidth
- []
-
-
-Underfull \hbox (badness 1845) in paragraph at lines 68--69
-\OT1/ptm/m/n/10 ceiling encountered during single-stream edge inference.
+Underfull \hbox (badness 3792) in paragraph at lines 68--69
+\OT1/ptm/m/n/10 regions and preserve fine-grained spatial features; and
  []
 
 
@@ -519,38 +524,33 @@ Underfull \hbox (badness 1484) in paragraph at lines 249--250
  []
 
 
-Underfull \hbox (badness 4713) in paragraph at lines 249--250
-\OT1/ptm/m/n/10 (31.4GFLOPs, 124FPS) or TinyFormer [12] (78FPS),
+Underfull \hbox (badness 1762) in paragraph at lines 249--250
+\OT1/ptm/m/n/10 22.4 vs 21.5 GFLOPs), confirming MAC reduction. In
  []
 
 
-Underfull \hbox (badness 5607) in paragraph at lines 249--250
-\OT1/ptm/m/n/10 Rep-YOLO11s folds all branches into single $\OT1/cmr/m/n/10 3 \OMS/cmsy/m/n/10 ^^B \OT1/cmr/m/n/10 3$
+Underfull \hbox (badness 1675) in paragraph at lines 249--250
+\OT1/ptm/m/n/10 Against EC-YOLOv8 [7] ($\OT1/cmr/m/n/10 74\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 60%$ \OT1/ptm/m/n/10 hat-only $\OML/cmm/m/it/10 mAP[]$\OT1/ptm/m/n/10 ),
  []
 
 
-Underfull \hbox (badness 3954) in paragraph at lines 252--253
-[]\OT1/ptm/m/n/10 Component contributions on SHWD are detailed in
+Underfull \hbox (badness 2229) in paragraph at lines 249--250
+\OT1/ptm/m/n/10 Rep-YOLO11s reaches $[]$ at 640px and $[]$
  []
 
 
-Underfull \hbox (badness 3312) in paragraph at lines 252--253
-\OT1/ptm/m/n/10 Table II[]. In canonical benchmarks, adding CoordConv
+Underfull \hbox (badness 4569) in paragraph at lines 249--250
+\OT1/ptm/m/n/10 Rep-YOLO11s confines RepConv to neck aggregation,
  []
 
 
-Underfull \hbox (badness 3439) in paragraph at lines 252--253
-\OT1/ptm/m/n/10 ($\OML/cmm/m/it/10 A[]$\OT1/ptm/m/n/10 ) gains $\OT1/cmr/m/n/10 +0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 11%$ $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 (+0.06 ms), BiFormer
+Underfull \hbox (badness 2384) in paragraph at lines 252--253
+\OT1/cmr/m/n/10 +0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 11%$ $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 (+0.06 ms), BiFormer ($\OML/cmm/m/it/10 A[]$\OT1/ptm/m/n/10 ) routes
  []
 
 
-Underfull \hbox (badness 2600) in paragraph at lines 252--253
-\OT1/ptm/m/n/10 ($\OML/cmm/m/it/10 A[]$\OT1/ptm/m/n/10 ) routes focus (+0.24 ms TRT FP16), and offline
- []
-
-
-Underfull \hbox (badness 5260) in paragraph at lines 252--253
-\OT1/ptm/m/n/10 ambiguous distant person boxes, $\OML/cmm/m/it/10 A[]$ \OT1/ptm/m/n/10 delivers $\OT1/cmr/m/n/10 93\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 91%$
+Underfull \hbox (badness 3884) in paragraph at lines 252--253
+\OT1/cmr/m/n/10 62\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 94 \OMS/cmsy/m/n/10 ^^F \OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 10%$ \OT1/ptm/m/n/10 vs. $\OT1/cmr/m/n/10 61\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 70 \OMS/cmsy/m/n/10 ^^F \OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 05%$ $\OML/cmm/m/it/10 mAP[]$\OT1/ptm/m/n/10 ). This
  []
 
 
@@ -606,6 +606,8 @@ Underfull \hbox (badness 3989) in paragraph at lines 298--299
  []
 
 
+
+[5 <./figures/shwd_gradcam_comparison.pdf>]
 Underfull \hbox (badness 3471) in paragraph at lines 305--306
 \OT1/ptm/m/n/10 and YOLOv10s (14.78ms). TensorRT FP16 accelerates
  []
@@ -616,11 +618,6 @@ Underfull \hbox (badness 1852) in paragraph at lines 305--306
  []
 
 
-Underfull \vbox (badness 1308) has occurred while \output is active []
-
-
-
-[5 <./figures/shwd_gradcam_comparison.pdf>]
 Underfull \hbox (badness 6542) in paragraph at lines 308--309
 []\OT1/ptm/m/n/10 The operational surveillance pipeline integrates five
  []
@@ -636,8 +633,13 @@ Underfull \hbox (badness 5711) in paragraph at lines 312--313
  []
 
 
-Underfull \hbox (badness 2285) in paragraph at lines 312--313
-\OT1/ptm/m/n/10 FP16 (65--95FPS live RTSP). Zero-shot evaluations on
+Underfull \hbox (badness 3482) in paragraph at lines 312--313
+\OT1/ptm/m/n/10 on Tesla T4 and $\OT1/cmr/m/n/10 4\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 37$\OT1/ptm/m/n/10 ms ($\OT1/cmr/m/n/10 228\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 6$\OT1/ptm/m/n/10 FPS) on RTX 3050
+ []
+
+
+Underfull \hbox (badness 1661) in paragraph at lines 312--313
+\OT1/ptm/m/n/10 video). Zero-shot evaluations on the external Hard Hat
  []
 
 (./main.bbl
@@ -685,13 +687,13 @@ L3 programming layer <2025-05-26>
 Here is how much of TeX's memory you used:
  4018 strings out of 469867
  64894 string characters out of 5482749
- 488801 words of memory out of 5000000
+ 488985 words of memory out of 5000000
  32275 multiletter control sequences out of 15000+600000
  670317 words of font info for 121 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 57i,14n,65p,1806b,331s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,14n,65p,1789b,331s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (6 pages, 7043010 bytes).
+Output written on main.pdf (6 pages, 7043308 bytes).
 PDF statistics:
  127 PDF objects out of 1000 (max. 8388607)
  73 compressed objects within 1 object stream
