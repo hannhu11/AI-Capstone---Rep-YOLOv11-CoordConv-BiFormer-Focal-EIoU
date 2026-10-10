@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 15:56
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.6.11)  10 OCT 2026 16:17
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -317,34 +317,34 @@ Underfull \hbox (badness 1496) in paragraph at lines 57--59
  []
 
 
-Underfull \hbox (badness 2368) in paragraph at lines 66--67
+Underfull \hbox (badness 2368) in paragraph at lines 67--68
 \OT1/ptm/m/n/10 across industrial construction sites to prevent traumatic
  []
 
 
-Underfull \hbox (badness 4792) in paragraph at lines 66--67
+Underfull \hbox (badness 4792) in paragraph at lines 67--68
 \OT1/ptm/m/n/10 surveillance infrastructure remains challenging. Existing
  []
 
 
 
 
-Underfull \hbox (badness 3792) in paragraph at lines 68--69
+Underfull \hbox (badness 3792) in paragraph at lines 69--70
 \OT1/ptm/m/n/10 regions and preserve fine-grained spatial features; and
  []
 
 
-Underfull \hbox (badness 1490) in paragraph at lines 70--71
+Underfull \hbox (badness 1490) in paragraph at lines 71--72
 \OT1/ptm/m/n/10 physical edge latency. Experimental results confirm that
  []
 
 
-Underfull \hbox (badness 2027) in paragraph at lines 70--71
+Underfull \hbox (badness 2027) in paragraph at lines 71--72
 \OT1/ptm/m/n/10 structural re-parameterization eliminates runtime memory
  []
 
 
-Underfull \hbox (badness 1406) in paragraph at lines 70--71
+Underfull \hbox (badness 1406) in paragraph at lines 71--72
 \OT1/ptm/m/n/10 of lightweight architectures while achieving substantially
  []
 
@@ -354,92 +354,92 @@ Underfull \hbox (badness 1406) in paragraph at lines 70--71
 
 
 ]
-Underfull \hbox (badness 1424) in paragraph at lines 72--73
-\OT1/ptm/m/n/10 (1) Section II reviews related work in real-time object
+Underfull \hbox (badness 1424) in paragraph at lines 73--74
+\OT1/ptm/m/n/10 (1) Section II[] reviews related work in real-time object
  []
 
 
-Underfull \hbox (badness 6808) in paragraph at lines 72--73
+Underfull \hbox (badness 6808) in paragraph at lines 73--74
 \OT1/ptm/m/n/10 details the architectural formulation and mathematical
  []
 
 
-Underfull \hbox (badness 1817) in paragraph at lines 77--78
+Underfull \hbox (badness 1817) in paragraph at lines 78--79
 \OT1/ptm/m/n/10 through progressive architectural innovations, progressing
  []
 
 
-Underfull \hbox (badness 2744) in paragraph at lines 77--78
+Underfull \hbox (badness 2744) in paragraph at lines 78--79
 \OT1/ptm/m/n/10 neck structures to decouple multi-branch training from
  []
 
 
-Underfull \hbox (badness 2547) in paragraph at lines 77--78
+Underfull \hbox (badness 2547) in paragraph at lines 78--79
 \OT1/ptm/m/n/10 plain inference. Other contemporary approaches include
  []
 
 
-Underfull \hbox (badness 1412) in paragraph at lines 77--78
+Underfull \hbox (badness 1412) in paragraph at lines 78--79
 \OT1/ptm/m/n/10 locality. Rep-YOLO11s preserves two-dimensional spatial
  []
 
 
-Underfull \hbox (badness 6876) in paragraph at lines 79--80
+Underfull \hbox (badness 6876) in paragraph at lines 80--81
 []\OT1/ptm/m/n/10 Within industrial safety vision, multiple specialized
  []
 
 
-Underfull \hbox (badness 6608) in paragraph at lines 79--80
+Underfull \hbox (badness 6608) in paragraph at lines 80--81
 \OT1/ptm/m/n/10 operational conditions. Representative detectors include
  []
 
 
-Underfull \hbox (badness 2865) in paragraph at lines 79--80
+Underfull \hbox (badness 2865) in paragraph at lines 80--81
 \OT1/ptm/m/n/10 reassembly at the cost of increased inference latency;
  []
 
 
-Underfull \hbox (badness 1946) in paragraph at lines 79--80
+Underfull \hbox (badness 1946) in paragraph at lines 80--81
 \OT1/ptm/m/n/10 that increase memory access overhead. Similarly, while
  []
 
 
-Underfull \hbox (badness 1533) in paragraph at lines 81--82
+Underfull \hbox (badness 1533) in paragraph at lines 82--83
 \OT1/ptm/m/n/10 shows that training-time multi-branch topologies can be
  []
 
 
-Underfull \hbox (badness 1983) in paragraph at lines 81--82
+Underfull \hbox (badness 1983) in paragraph at lines 82--83
 \OT1/ptm/m/n/10 layers without proportional gains in detection accuracy.
  []
 
 
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 121.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 122.
 (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 121.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 122.
  (c:/Users/ADMIN/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 <figures/rep_yolo11s_overall_ieee.png, id=9, 511.9125pt x 640.3925pt>
 File: figures/rep_yolo11s_overall_ieee.png Graphic file (type png)
 <use figures/rep_yolo11s_overall_ieee.png>
-Package pdftex.def Info: figures/rep_yolo11s_overall_ieee.png  used on input line 128.
+Package pdftex.def Info: figures/rep_yolo11s_overall_ieee.png  used on input line 129.
 (pdftex.def)             Requested size: 252.0pt x 315.24126pt.
 <figures/repconv_detail_ieee.png, id=10, 511.9125pt x 146.5475pt>
 File: figures/repconv_detail_ieee.png Graphic file (type png)
 <use figures/repconv_detail_ieee.png>
-Package pdftex.def Info: figures/repconv_detail_ieee.png  used on input line 137.
+Package pdftex.def Info: figures/repconv_detail_ieee.png  used on input line 138.
 (pdftex.def)             Requested size: 250.26031pt x 71.64342pt.
 <figures/biformer_detail_ieee.png, id=11, 511.9125pt x 163.61125pt>
 File: figures/biformer_detail_ieee.png Graphic file (type png)
 <use figures/biformer_detail_ieee.png>
-Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 143.
+Package pdftex.def Info: figures/biformer_detail_ieee.png  used on input line 144.
 (pdftex.def)             Requested size: 250.26031pt x 79.98546pt.
 
-Underfull \hbox (badness 3271) in paragraph at lines 150--151
+Underfull \hbox (badness 3271) in paragraph at lines 151--152
 \OT1/ptm/m/n/10 a Structural Re-parameterized Backbone enhanced with
  []
 
@@ -448,163 +448,163 @@ Underfull \hbox (badness 3271) in paragraph at lines 150--151
 [2 <./figures/rep_yolo11s_overall_ieee.png (PNG copy)>]
 
 
-Underfull \hbox (badness 3260) in paragraph at lines 171--173
+Underfull \hbox (badness 3260) in paragraph at lines 172--174
 \OT1/ptm/m/n/10 This algebraic transformation converts the multi-branch
  []
 
 
-Underfull \hbox (badness 1789) in paragraph at lines 177--178
+Underfull \hbox (badness 1789) in paragraph at lines 178--179
 \OT1/ptm/m/n/10 raw RGB input $\OML/cmm/m/it/10 X$ \OT1/ptm/m/n/10 with normalized spatial coordinates
  []
 
 
-Underfull \hbox (badness 1424) in paragraph at lines 177--178
+Underfull \hbox (badness 1424) in paragraph at lines 178--179
 \OML/cmm/m/it/10 c[][]\OT1/cmr/m/n/10 64$\OT1/ptm/m/n/10 , $\OML/cmm/m/it/10 k[]\OT1/cmr/m/n/10 3$\OT1/ptm/m/n/10 , $\OML/cmm/m/it/10 s[]\OT1/cmr/m/n/10 2$\OT1/ptm/m/n/10 ). All subsequent backbone and neck
  []
 
 
-Underfull \hbox (badness 1546) in paragraph at lines 177--178
+Underfull \hbox (badness 1546) in paragraph at lines 178--179
 \OT1/ptm/m/n/10 preserving global coordinate priors at negligible latency
  []
 
 
 
 [3 <./figures/repconv_detail_ieee.png (PNG copy)> <./figures/biformer_detail_ieee.png (PNG copy)>]
-Underfull \hbox (badness 6173) in paragraph at lines 196--198
+Underfull \hbox (badness 6173) in paragraph at lines 197--199
 \OT1/ptm/m/n/10 Non-zero gradients [] persist
  []
 
 
-Underfull \hbox (badness 5939) in paragraph at lines 199--200
+Underfull \hbox (badness 5939) in paragraph at lines 200--201
 [] []\OT1/ptm/m/n/10 , dynamically selecting
  []
 
 
 
 
-Underfull \hbox (badness 2512) in paragraph at lines 240--243
+Underfull \hbox (badness 2512) in paragraph at lines 241--244
 []\OT1/ptm/m/n/10 We evaluate on the Safety Helmet Wearing Dataset
  []
 
 
-Underfull \hbox (badness 2735) in paragraph at lines 240--243
+Underfull \hbox (badness 2735) in paragraph at lines 241--244
 \OT1/ptm/m/n/10 annotations while retaining all 7,581 authentic images.
  []
 
 
-Underfull \hbox (badness 1803) in paragraph at lines 240--243
+Underfull \hbox (badness 1803) in paragraph at lines 241--244
 \OT1/ptm/m/n/10 grouping over all $\OT1/cmr/m/n/10 7\OML/cmm/m/it/10 ; \OT1/cmr/m/n/10 581$ \OT1/ptm/m/n/10 images, ensuring frames from
  []
 
 
-Underfull \hbox (badness 1939) in paragraph at lines 240--243
+Underfull \hbox (badness 1939) in paragraph at lines 241--244
 \OT1/ptm/m/n/10 harsh occlusions ($\OT1/cmr/m/n/10 94\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 83%$ $\OML/cmm/m/it/10 mAP[]$\OT1/ptm/m/n/10 , $\OT1/cmr/m/n/10 62\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 54%$ $\OML/cmm/m/it/10 mAP[]$\OT1/ptm/m/n/10 ),
  []
 
 
-Underfull \hbox (badness 1424) in paragraph at lines 245--246
+Underfull \hbox (badness 1424) in paragraph at lines 246--247
 []\OT1/ptm/m/n/10 Models were trained on Kaggle Dual NVIDIA Tesla
  []
 
 
-Underfull \hbox (badness 1552) in paragraph at lines 245--246
+Underfull \hbox (badness 1552) in paragraph at lines 246--247
 \OT1/ptm/m/n/10 T4 GPUs (16GB VRAM, PyTorch 2.5.1, CUDA 12.4)
  []
 
 
-Underfull \hbox (badness 2564) in paragraph at lines 245--246
+Underfull \hbox (badness 2564) in paragraph at lines 246--247
 \OT1/ptm/m/n/10 for 100 epochs using SGD ($\OML/cmm/m/it/10 ^^Q[] \OT1/cmr/m/n/10 = 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 01$\OT1/ptm/m/n/10 , momentum
  []
 
 
-Underfull \hbox (badness 3557) in paragraph at lines 248--249
+Underfull \hbox (badness 3557) in paragraph at lines 249--250
 \OT1/ptm/m/n/10 on 1,517 test images explains the modest joint gain
  []
 
 
-Underfull \hbox (badness 2469) in paragraph at lines 248--249
+Underfull \hbox (badness 2469) in paragraph at lines 249--250
 \OT1/ptm/m/n/10 ($\OT1/cmr/m/n/10 0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 9396$ \OT1/ptm/m/n/10 on CV). At $\OT1/cmr/m/n/10 960[]$ \OT1/ptm/m/n/10 where tiny helmet features
  []
 
 
-Underfull \hbox (badness 4084) in paragraph at lines 248--249
+Underfull \hbox (badness 4084) in paragraph at lines 249--250
 [] \OT1/ptm/m/n/10 resolve, Hat-Only $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 surges to
  []
 
 
 
 [4]
-Underfull \hbox (badness 1484) in paragraph at lines 250--251
+Underfull \hbox (badness 1484) in paragraph at lines 251--252
 \OT1/ptm/m/n/10 outperforming baseline YOLO11s (6.52 ms, 153.3 FPS;
  []
 
 
-Underfull \hbox (badness 1762) in paragraph at lines 250--251
+Underfull \hbox (badness 1762) in paragraph at lines 251--252
 \OT1/ptm/m/n/10 22.4 vs 21.5 GFLOPs), confirming MAC reduction. In
  []
 
 
-Underfull \hbox (badness 1675) in paragraph at lines 250--251
+Underfull \hbox (badness 1675) in paragraph at lines 251--252
 \OT1/ptm/m/n/10 Against EC-YOLOv8 [7] ($\OT1/cmr/m/n/10 74\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 60%$ \OT1/ptm/m/n/10 hat-only $\OML/cmm/m/it/10 mAP[]$\OT1/ptm/m/n/10 ),
  []
 
 
-Underfull \hbox (badness 2229) in paragraph at lines 250--251
+Underfull \hbox (badness 2229) in paragraph at lines 251--252
 \OT1/ptm/m/n/10 Rep-YOLO11s reaches $[]$ at 640px and $[]$
  []
 
 
-Underfull \hbox (badness 4569) in paragraph at lines 250--251
+Underfull \hbox (badness 4569) in paragraph at lines 251--252
 \OT1/ptm/m/n/10 Rep-YOLO11s confines RepConv to neck aggregation,
  []
 
 
-Underfull \hbox (badness 5622) in paragraph at lines 253--254
+Underfull \hbox (badness 5622) in paragraph at lines 254--255
 \OT1/ptm/m/n/10 MAC reduction). BiFormer ($\OML/cmm/m/it/10 A[]$\OT1/ptm/m/n/10 ) introduces $\OT1/cmr/m/n/10 +0\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 24[]$
  []
 
 
-Underfull \hbox (badness 1424) in paragraph at lines 253--254
+Underfull \hbox (badness 1424) in paragraph at lines 254--255
 \OT1/ptm/m/n/10 without RepConv fusion, BiFormer on baseline requires
  []
 
 
-Underfull \hbox (badness 2027) in paragraph at lines 253--254
+Underfull \hbox (badness 2027) in paragraph at lines 254--255
 \OT1/ptm/m/n/10 gain from fusion. Multi-seed validation across 3 seeds
  []
 
 
-Underfull \hbox (badness 1831) in paragraph at lines 287--290
+Underfull \hbox (badness 1831) in paragraph at lines 288--291
 \OT1/ptm/b/n/10 1) Harmonized Protocol & Annotation Discrepancy:
  []
 
 
-Underfull \hbox (badness 1509) in paragraph at lines 287--290
+Underfull \hbox (badness 1509) in paragraph at lines 288--291
 \OT1/ptm/m/n/10 human bodies, whereas Hard Hat Workers [17] defines
  []
 
 
-Underfull \hbox (badness 5548) in paragraph at lines 287--290
+Underfull \hbox (badness 5548) in paragraph at lines 288--291
 \OT1/ptm/m/n/10 standard protocol, Rep-YOLO11s achieves $[]$ at
  []
 
 
-Underfull \hbox (badness 1629) in paragraph at lines 287--290
+Underfull \hbox (badness 1629) in paragraph at lines 288--291
 \OT1/ptm/m/n/10 Rep-YOLO11s surpasses baseline YOLO11s across both
  []
 
 
-Underfull \hbox (badness 1629) in paragraph at lines 287--290
+Underfull \hbox (badness 1629) in paragraph at lines 288--291
 []$ \OT1/ptm/m/n/10 vs $\OT1/cmr/m/n/10 94\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 12%$ $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 (+2.91%) and $[]$ vs
  []
 
 
-Underfull \hbox (badness 2343) in paragraph at lines 287--290
+Underfull \hbox (badness 2343) in paragraph at lines 288--291
 \OT1/ptm/m/n/10 it achieves $[]$ vs $\OT1/cmr/m/n/10 71\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 85%$ $\OML/cmm/m/it/10 mAP[]$ \OT1/ptm/m/n/10 (+2.55%) and
  []
 
 
-Underfull \hbox (badness 7133) in paragraph at lines 287--290
+Underfull \hbox (badness 7133) in paragraph at lines 288--291
 \OT1/ptm/m/n/10 priors, ensuring robust zero-shot transferability across
  []
 
@@ -613,47 +613,47 @@ Underfull \hbox (badness 7133) in paragraph at lines 287--290
 <figures/shwd_gradcam_comparison.pdf, id=37, 827.25058pt x 598.87741pt>
 File: figures/shwd_gradcam_comparison.pdf Graphic file (type pdf)
 <use figures/shwd_gradcam_comparison.pdf>
-Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 294.
+Package pdftex.def Info: figures/shwd_gradcam_comparison.pdf  used on input line 295.
 (pdftex.def)             Requested size: 131.04108pt x 94.86284pt.
 
-Underfull \hbox (badness 7030) in paragraph at lines 295--295
+Underfull \hbox (badness 7030) in paragraph at lines 296--296
 \OT1/ptm/m/n/8 Row 3 (Structural Occlusion). (a) Input, (b) Baseline YOLO11s,
  []
 
 
-Underfull \hbox (badness 3989) in paragraph at lines 299--300
+Underfull \hbox (badness 3989) in paragraph at lines 300--301
 \OT1/ptm/m/n/10 whereas Rep-YOLO11s sharply isolates helmet crowns
  []
 
 
-Underfull \hbox (badness 6944) in paragraph at lines 306--307
+Underfull \hbox (badness 6944) in paragraph at lines 307--308
 \OT1/ptm/m/n/10 (8.78ms) and YOLOv10s (14.78ms). TensorRT FP16
  []
 
 
-Underfull \hbox (badness 1603) in paragraph at lines 306--307
+Underfull \hbox (badness 1603) in paragraph at lines 307--308
 \OT1/ptm/m/n/10 accelerates inference to 4.37ms (228.6FPS, 28.4W) on
  []
 
 
 
 [5 <./figures/shwd_gradcam_comparison.pdf>]
-Underfull \hbox (badness 6542) in paragraph at lines 309--310
+Underfull \hbox (badness 6542) in paragraph at lines 310--311
 []\OT1/ptm/m/n/10 The operational surveillance pipeline integrates five
  []
 
 
-Underfull \hbox (badness 5711) in paragraph at lines 313--314
+Underfull \hbox (badness 5711) in paragraph at lines 314--315
 \OT1/ptm/m/n/10 Assignment. On SHWD, it achieves $\OT1/cmr/m/n/10 94\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 83%$ $\OML/cmm/m/it/10 mAP[]$
  []
 
 
-Underfull \hbox (badness 3482) in paragraph at lines 313--314
+Underfull \hbox (badness 3482) in paragraph at lines 314--315
 \OT1/ptm/m/n/10 on Tesla T4 and $\OT1/cmr/m/n/10 4\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 37$\OT1/ptm/m/n/10 ms ($\OT1/cmr/m/n/10 228\OML/cmm/m/it/10 :\OT1/cmr/m/n/10 6$\OT1/ptm/m/n/10 FPS) on RTX 3050
  []
 
 
-Underfull \hbox (badness 1661) in paragraph at lines 313--314
+Underfull \hbox (badness 1661) in paragraph at lines 314--315
 \OT1/ptm/m/n/10 video). Zero-shot evaluations on the external Hard Hat
  []
 
@@ -700,10 +700,10 @@ L3 programming layer <2025-05-26>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4018 strings out of 469867
- 64894 string characters out of 5482749
- 489070 words of memory out of 5000000
- 32275 multiletter control sequences out of 15000+600000
+ 4019 strings out of 469867
+ 64905 string characters out of 5482749
+ 489093 words of memory out of 5000000
+ 32276 multiletter control sequences out of 15000+600000
  670317 words of font info for 121 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  57i,14n,65p,1782b,331s stack positions out of 10000i,1000n,20000p,200000b,200000s
