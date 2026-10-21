@@ -108,3 +108,27 @@ Toàn bộ thông tin đối chiếu 12 bài báo / tập dữ liệu đã đư�
 - `references/PPE_HELMET_VEST_COMPREHENSIVE_REFERENCES.xlsx` (Định dạng Excel kẻ bảng chuẩn thẩm mỹ)
 - `references/PPE_HELMET_VEST_COMPREHENSIVE_REFERENCES.md`
 - `references/Capstone_AI_Papers.bib` (Đã cập nhật mã trích dẫn BibTeX chuẩn xác)
+
+
+---
+
+## 6. HOÀN THÀNH QUY TRÌNH HỢP NHẤT DỮ LIỆU BỘ 4 CHUẨN MỰC (UNIFIED PPE MASTER HARMONIZED)
+
+Đã hoàn thành phân tích và giải quyết triệt để vấn đề 770 ảnh giao thoa giữa GDUT-HWD và CHV bằng cơ chế **Annotation Fusion & Harmonization** (Script: `scripts/harmonize_unified_ppe_master.py`):
+1. **Phân lập và ghép nhãn chính xác**:
+   - 770 ảnh giao thoa GDUT $\cap$ CHV được ghép nhãn vi phạm `none` và mũ của GDUT với nhãn áo phản quang `vest` của CHV.
+   - Giữ nguyên 2,390 ảnh thuần GDUT.
+   - Giữ nguyên 560 ảnh thuần CHV (ảnh mới của Cranfield University).
+   - Tích hợp 1,664 ảnh thuần IITU Flycam (độc quyền mũ xanh lá và góc nhìn dốc cao).
+2. **Quy mô tập dữ liệu Bộ 4 Harmonized (`Dataset/UNIFIED_PPE_MASTER_HARMONIZED`)**:
+   - **Tổng số ảnh độc lập**: **5,359 ảnh** (Train: 4,287, Val: 535, Test: 537 - Tỷ lệ 80/10/10).
+   - **Tỷ lệ trùng lặp**: **0.00%** (Loại bỏ hoàn toàn nguy cơ rò rỉ dữ liệu chéo Train-Test Data Leakage).
+   - **Tổng số Bounding Box**: **28,203 hộp bao** chất lượng cao:
+     * `white_helmet`: 5,666 boxes
+     * `yellow_helmet`: 5,635 boxes
+     * `red_helmet`: 5,543 boxes
+     * `no_helmet` (vi phạm): 4,368 boxes
+     * `blue_helmet`: 4,074 boxes
+     * `safety_vest`: 1,784 boxes
+     * `green_helmet`: 1,133 boxes
+   - Đã sinh sẵn tệp `data.yaml` chuẩn YOLO 7 lớp, sẵn sàng huấn luyện và đánh giá trên Kaggle/Colab.
