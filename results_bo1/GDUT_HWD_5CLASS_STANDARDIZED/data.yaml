@@ -1,0 +1,8 @@
+# GDUT-HWD 5-Class Dataset Configuration
+path: /kaggle/working/GDUT_HWD_5CLASS_STANDARDIZED
+train: images/train
+val: images/val
+test: images/test
+
+nc: 5
+names: ['no_helmet', 'red_helmet', 'yellow_helmet', 'white_helmet', 'blue_helmet']

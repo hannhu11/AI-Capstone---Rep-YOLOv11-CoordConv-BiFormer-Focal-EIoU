@@ -1,0 +1,8 @@
+# IITU Safety-Helmet 5-Class Dataset Configuration
+path: /kaggle/working/IITU_5CLASS_STANDARDIZED
+train: images/train
+val: images/val
+test: images/test
+
+nc: 5
+names: ['blue_helmet', 'green_helmet', 'red_helmet', 'white_helmet', 'yellow_helmet']
