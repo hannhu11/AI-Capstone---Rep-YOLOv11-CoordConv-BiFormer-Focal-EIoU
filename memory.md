@@ -57,3 +57,54 @@
 ## 4. KHẲNG ĐỊNH TÍNH BẢO TOÀN CỦA 5 MODULE KIẾN TRÚC REP-YOLO11s
 - **Tuyệt đối không chắp vá thêm module ngoài (Lego-style)**.
 - 5 module: Stem CoordConv (độ cao $y$), Neck RepConv (>200 FPS), BiFormer Attention (lọc 80% nền), Focal EIoU Loss (cân bằng hình học mũ-áo), Task-Aligned Assigner (đồng bộ phân loại & định vị) đã chứng minh độ bền vững tuyệt đối qua thực nghiệm 7 lớp.
+
+
+---
+
+## 3. BÁO CÁO KIỂM TOÁN NGUỒN GỐC DỮ LIỆU ÁO PHẢN QUANG & STANDARDIZED (100% LIÊM CHÍNH KHOA HỌC)
+
+### 3.1. Nguồn gốc của thư mục `Dataset\STANDARDIZED`:
+- Thư mục `C:\Users\ADMIN\Downloads\capstone AI\Dataset\STANDARDIZED` được tạo ra vào ngày 26/08/2026 bởi script `scripts/standardize_and_benchmark_cross_datasets.py` nhằm phục vụ thử nghiệm đánh giá Zero-Shot Cross-Domain Transfer.
+- Thư mục này chỉ gồm 2 thư mục con:
+  1. `GDUT_HWD`: Chuẩn hóa về 2 lớp `hat` và `person`.
+  2. `SHEL5K`: Chuẩn hóa về 2 lớp `hat` và `person`.
+- **Kết luận liêm chính**: Trong `Dataset\STANDARDIZED` **hoàn toàn KHÔNG CÓ nhãn áo phản quang (`vest`) hay áo bảo hộ**.
+
+### 3.2. Nguồn gốc thực sự của nhãn áo phản quang (`vest`) trong dự án:
+- Dữ liệu áo phản quang cục bộ nằm tại `C:\Users\ADMIN\Downloads\capstone AI\ppe_extension_experiment\dataset\CHV.zip` (439 MB, giải nén thành `STANDARDIZED_CHV`).
+- Đây là tập dữ liệu **CHV (Color Hardhat and Vest Dataset)** có nguồn gốc từ bài báo khoa học uy tín:
+  - **Bài báo**: *Zijian Wang, Yijie Wu, Lu Yang, Aiming Hao, "Fast Personal Protective Equipment Detection for Real Construction Sites Using Deep Learning Approaches", Sensors 2021, 21(10), 3478. DOI: 10.3390/s21103478.*
+  - **Cấu trúc**: 1,330 ảnh, 6 classes: `[person, vest, blue_helmet, red_helmet, white_helmet, yellow_helmet]`. Có 1,784 bounding box `vest`.
+
+### 3.3. Giải trình trung thực về lần chạy test Bộ 4 trên Kaggle vừa qua:
+- Lần chạy trên tài khoản `hannhu40022` sử dụng script sinh tự động nạp 2 nguồn Kaggle input do người dùng cung cấp: `tundng111/gdut-hwd` và `dngtrnphmtunse183674/iitu-safety-helmet`.
+- Taxonomy khai báo 7 lớp (dự trù sẵn class 6: `safety_vest`), tuy nhiên do chưa đính kèm tập CHV hoặc tập Vest lên Kaggle trong lần chạy đó, class `safety_vest` có 0 mẫu và chỉ đóng vai trò pipeline test sanity check (5 epochs, backbone tiêu chuẩn) để xác nhận hệ thống có thể học hợp nhất giữa GDUT và IITU mượt mà, **chưa áp dụng 5 module kiến trúc sâu A1-A6** và **chưa có số liệu thực của áo phản quang**.
+
+---
+
+## 4. CHUẨN HÓA THUẬT NGỮ KHOA HỌC: "ÁO PHẢN QUANG" VS "ÁO BẢO HỘ"
+
+1. **Về mặt kỹ thuật thị giác máy tính (Computer Vision Target)**:
+   - Thuật ngữ chính xác tuyệt đối là **"Áo phản quang" (High-Visibility Safety Vest / Reflective Vest)**.
+   - Lý do: Đặc trưng thị giác mà mạng nơ-ron nhận diện là màu huỳnh quang (fluorescent yellow-green / fluorescent orange-red) và các dải phản quang kim loại (retroreflective stripes) phản xạ ánh sáng mạnh theo tiêu chuẩn **OSHA 29 CFR 1926.201 / ANSI/ISEA 107 / EN ISO 20471**.
+   - Nếu gọi là "Áo bảo hộ" (*Protective Clothing*), khái niệm này quá rộng (bao gồm quần áo bảo hộ chống hóa chất, áo khoác ấm, áo bảo hộ thợ hàn, quần áo chống tĩnh điện), khiến bộ nhận diện dễ bị gán sai nhãn (false positive).
+2. **Khuyến nghị sử dụng trong Báo cáo / Đồ án / Bài báo IEEE**:
+   - **Tên đề tài & bối cảnh**: Sử dụng cụm từ rộng **Personal Protective Equipment (PPE) Compliance Monitoring** (*Hệ thống giám sát tuân thủ trang thiết bị bảo hộ lao động cá nhân*).
+   - **Nhãn phân loại (Object Class)**: Sử dụng chính xác `safety_vest` (tiếng Việt: *Áo phản quang bảo hộ*).
+   - Như vậy, hoàn toàn có thể dùng cả hai: Đề tài là **Bảo hộ lao động (PPE)**, còn nhiệm vụ nhận diện cụ thể là **Mũ bảo hộ (Safety Helmet)** và **Áo phản quang bảo hộ (Safety Vest)**.
+
+---
+
+## 5. KẾT QUẢ KHẢO CỨU DEEP RESEARCH & TẢI XUỐNG CÁC TẬP DỮ LIỆU MỚI (< 5GB)
+
+Đã tải thành công và kiểm định toàn vẹn 3 tập dữ liệu ứng viên mới vào `Dataset/DOWNLOADED_CANDIDATES`:
+1. **Personal-Protective-Equipment (PPE) Dataset (ndomalau)**: 249 MB, 4,060 ảnh chuẩn YOLO, 5 lớp: `helmet, no_helmet, no_vest, person, vest`. (Cân bằng xuất sắc, có cả vi phạm không mặc áo).
+2. **Safety Vests Detection Dataset (Adil Shamim)**: 406 MB, 3,897 ảnh, 2 lớp: `Safety Vest` (6,448 nhãn) và `NO-Safety Vest` (2,024 nhãn). (Chuyên biệt sâu về áo phản quang).
+3. **Safety Helmet & Vest (Maryam Borzoo)**: 116 MB, 1,754 ảnh, 2 lớp: `helmet` và `vest`.
+4. **CHV Dataset (Sensors 2021)**: Có sẵn 439 MB tại `ppe_extension_experiment/dataset/CHV.zip` (1,330 ảnh, 6 lớp).
+
+Toàn bộ thông tin đối chiếu 12 bài báo / tập dữ liệu đã được xuất ra 3 định dạng tại:
+- `references/PPE_HELMET_VEST_COMPREHENSIVE_REFERENCES.csv`
+- `references/PPE_HELMET_VEST_COMPREHENSIVE_REFERENCES.xlsx` (Định dạng Excel kẻ bảng chuẩn thẩm mỹ)
+- `references/PPE_HELMET_VEST_COMPREHENSIVE_REFERENCES.md`
+- `references/Capstone_AI_Papers.bib` (Đã cập nhật mã trích dẫn BibTeX chuẩn xác)
