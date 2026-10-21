@@ -253,7 +253,7 @@ for split_name, samples in splits.items():
         dst_lbl = TARGET_DIR / 'labels' / split_name / f"{Path(img_p).stem}.txt"
         shutil.copy2(img_p, dst_img)
         with open(dst_lbl, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(bboxes) + '\n')
+            f.write('\\n'.join(bboxes) + '\\n')
 
 # Tạo file data.yaml
 yaml_content = f\"\"\"# GDUT-HWD 5-Class Dataset Configuration
@@ -526,7 +526,7 @@ for split_name, samples in splits.items():
         dst_lbl = TARGET_DIR / 'labels' / split_name / f"{Path(img_p).stem}.txt"
         shutil.copy2(img_p, dst_img)
         with open(dst_lbl, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(lines) + '\n')
+            f.write('\\n'.join(lines) + '\\n')
 
 yaml_content = f\"\"\"# IITU Safety-Helmet 5-Class Dataset Configuration
 path: {TARGET_DIR.as_posix()}
@@ -863,7 +863,7 @@ for split_name, samples in splits.items():
         dst_lbl = TARGET_DIR / 'labels' / split_name / f"{uid}.txt"
         shutil.copy2(img_p, dst_img)
         with open(dst_lbl, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(bboxes) + '\n')
+            f.write('\\n'.join(bboxes) + '\\n')
 
 yaml_content = f\"\"\"# UNIFIED PPE 7-CLASS MASTER CONFIGURATION
 path: {TARGET_DIR.as_posix()}
