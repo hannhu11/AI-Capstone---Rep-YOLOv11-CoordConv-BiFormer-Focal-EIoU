@@ -54,7 +54,7 @@ def build_notebook_bo1():
     
     # MD 0: Task 2 Header & Overview
     cells.append(md_cell("""
-# 🏗️ BỘ 1: Dataset_Bo1_5Class_GDUT_HWD_Benchmark
+# [DATASET] BỘ 1: Dataset_Bo1_5Class_GDUT_HWD_Benchmark
 ### Đồ án Tốt nghiệp Capstone AI - Báo cáo Tiến độ Task 2 (Dataset Pipeline & Model Baseline)
 - **Tác giả / Chủ trì đồ án**: Nguyễn Hàn Như (SE183674)
 - **GVHD**: ThS. Nguyễn Xuân Huy | **Đơn vị**: Đại học FPT
@@ -64,7 +64,7 @@ def build_notebook_bo1():
 
 ---
 
-## 🎯 GIẢI QUYẾT CÁC YÊU CẦU CỐT LÕI CỦA TASK 2 (REVIEW 2):
+## [OBJECTIVE] GIẢI QUYẾT CÁC YÊU CẦU CỐT LÕI CỦA TASK 2 (REVIEW 2):
 1. **Giai đoạn 1 (Dataset Pipeline)**:
    - Thống kê nguồn dữ liệu: 3,174 ảnh và 3,174 nhãn Pascal VOC XML từ công trường xây dựng thực tế.
    - Làm sạch: Loại bỏ **14 ảnh trùng lặp tuyệt đối (MD5 hash)**; loại bỏ bbox kích thước < 2px hoặc lỗi biên.
@@ -83,7 +83,7 @@ import sys
 import torch
 
 print("=" * 80)
-print("🚀 HỆ THỐNG THỰC NGHIỆM CAPSTONE AI - BỘ 1 (GDUT-HWD 5-CLASS)")
+print("[EXECUTION] HỆ THỐNG THỰC NGHIỆM CAPSTONE AI - BỘ 1 (GDUT-HWD 5-CLASS)")
 print("=" * 80)
 print(f"Python Version: {sys.version.split()[0]}")
 print(f"PyTorch Version: {torch.__version__}")
@@ -96,7 +96,7 @@ if torch.cuda.is_available():
         props = torch.cuda.get_device_properties(i)
         print(f"  [GPU {i}]: {props.name} | VRAM: {props.total_memory / (1024**3):.2f} GB")
 else:
-    print("⚠️ CẢNH BÁO: Đang chạy trên CPU, hãy kích hoạt GPU Accelerator trên Kaggle!")
+    print("[WARNING] CẢNH BÁO: Đang chạy trên CPU, hãy kích hoạt GPU Accelerator trên Kaggle!")
 """))
 
     # Code 2: Dataset Discovery & Preprocessing
@@ -111,7 +111,7 @@ import random
 import shutil
 
 print("=" * 80)
-print("🔍 TÌM KIẾM TẬP DỮ LIỆU GDUT-HWD TRONG /kaggle/input/...")
+print("[INSPECTION] TÌM KIẾM TẬP DỮ LIỆU GDUT-HWD TRONG /kaggle/input/...")
 print("=" * 80)
 
 search_paths = [
@@ -132,7 +132,7 @@ if not gdut_root:
             gdut_root = os.path.join(root, [d for d in dirs if "gdut" in d.lower()][0])
             break
 
-print(f"📁 Thư mục GDUT-HWD tìm thấy: {gdut_root}")
+print(f"[PATH] Thư mục GDUT-HWD tìm thấy: {gdut_root}")
 
 # Quét ảnh và XML
 all_images = glob.glob(os.path.join(gdut_root, "**", "*.jpg"), recursive=True) + \
@@ -152,7 +152,7 @@ for img_p in all_images:
         else:
             unique_images[h] = img_p
 
-print(f"✅ Ảnh duy nhất: {len(unique_images)} | Đã lọc trùng lặp: {len(duplicates)} ảnh.")
+print(f"[VERIFIED] Ảnh duy nhất: {len(unique_images)} | Đã lọc trùng lặp: {len(duplicates)} ảnh.")
 """))
 
     # Code 3: Convert Pascal VOC XML to YOLO format & Split 80/10/10
@@ -269,7 +269,7 @@ names: ['no_helmet', 'red_helmet', 'yellow_helmet', 'white_helmet', 'blue_helmet
 with open(TARGET_DIR / 'data.yaml', 'w', encoding='utf-8') as f:
     f.write(yaml_content)
 
-print(f"✅ Chuẩn hóa hoàn tất! data.yaml đã sẵn sàng tại: {TARGET_DIR / 'data.yaml'}")
+print(f"[VERIFIED] Chuẩn hóa hoàn tất! data.yaml đã sẵn sàng tại: {TARGET_DIR / 'data.yaml'}")
 """))
 
     # Code 4: Install Ultralytics & Train Benchmark
@@ -282,7 +282,7 @@ from ultralytics import YOLO
 import time
 
 print("=" * 80)
-print("🚀 KHỞI CHẠY HUẤN LUYỆN BENCHMARK GDUT-HWD 5-CLASS TRÊN GPU T4")
+print("[EXECUTION] KHỞI CHẠY HUẤN LUYỆN BENCHMARK GDUT-HWD 5-CLASS TRÊN GPU T4")
 print("=" * 80)
 
 # Khởi tạo mô hình YOLO11s làm nền tảng
@@ -302,14 +302,14 @@ results = model.train(
     verbose=True
 )
 train_duration = time.time() - start_time
-print(f"⏱️ Thời gian huấn luyện 5 epochs: {train_duration:.2f}s ({train_duration/60:.2f} phút)")
+print(f"[TIME] Thời gian huấn luyện 5 epochs: {train_duration:.2f}s ({train_duration/60:.2f} phút)")
 """))
 
     # Code 5: Independent Test Set Evaluation & Metrics
     cells.append(code_cell("""
 # CELL 5: ĐÁNH GIÁ ĐỘC LẬP TẬP TEST & CHI TIẾT TỪNG LỚP MÀU
 print("=" * 80)
-print("📊 ĐÁNH GIÁ TRÊN TẬP TEST ĐỘC LẬP (316 ẢNH)")
+print("[EVALUATION] ĐÁNH GIÁ TRÊN TẬP TEST ĐỘC LẬP (316 ẢNH)")
 print("=" * 80)
 
 metrics = model.val(
@@ -327,13 +327,13 @@ r = metrics.box.mr
 map50 = metrics.box.map50
 map50_95 = metrics.box.map
 
-print(f"\\n🎯 KẾT QUẢ TỔNG QUAN:")
+print(f"\\n[OBJECTIVE] KẾT QUẢ TỔNG QUAN:")
 print(f"  Precision: {p*100:.2f}%")
 print(f"  Recall:    {r*100:.2f}%")
 print(f"  mAP@50:    {map50*100:.2f}%")
 print(f"  mAP@50-95: {map50_95*100:.2f}%")
 
-print(f"\\n📋 KẾT QUẢ CHI TIẾT THEO TỪNG LỚP:")
+print(f"\\n[REPORT] KẾT QUẢ CHI TIẾT THEO TỪNG LỚP:")
 for i, name in enumerate(class_names):
     c_p = metrics.box.p[i] if i < len(metrics.box.p) else 0.0
     c_r = metrics.box.r[i] if i < len(metrics.box.r) else 0.0
@@ -344,7 +344,7 @@ for i, name in enumerate(class_names):
     # Code 6: Export Markdown Report
     cells.append(code_cell("""
 # CELL 6: TẠO FILE BÁO CÁO KẾT QUẢ ĐẠT CHUẨN TASK 2
-report_md = f\"\"\"# 📋 BÁO CÁO KẾT QUẢ THỰC NGHIỆM TASK 2 - BỘ 1 (GDUT-HWD 5-CLASS)
+report_md = f\"\"\"# [REPORT] BÁO CÁO KẾT QUẢ THỰC NGHIỆM TASK 2 - BỘ 1 (GDUT-HWD 5-CLASS)
 **Đồ án Tốt nghiệp Capstone AI** - SV: Nguyễn Hàn Như | GVHD: ThS. Nguyễn Xuân Huy
 
 ### 1. Thông số Dataset GDUT-HWD sau chuẩn hóa:
@@ -378,7 +378,7 @@ report_md = f\"\"\"# 📋 BÁO CÁO KẾT QUẢ THỰC NGHIỆM TASK 2 - BỘ 1 
 with open("/kaggle/working/BAO_CAO_BO1_GDUT_HWD_5CLASS.md", "w", encoding="utf-8") as f:
     f.write(report_md)
 
-print("✅ Đã xuất báo cáo: /kaggle/working/BAO_CAO_BO1_GDUT_HWD_5CLASS.md")
+print("[VERIFIED] Đã xuất báo cáo: /kaggle/working/BAO_CAO_BO1_GDUT_HWD_5CLASS.md")
 """))
     return create_nb(cells)
 
@@ -390,7 +390,7 @@ def build_notebook_bo3():
     
     # MD 0: Task 2 Header & Overview
     cells.append(md_cell("""
-# 🚁 BỘ 3: Dataset_Bo3_5Class_IITU_Drone_Benchmark
+# [UAV] BỘ 3: Dataset_Bo3_5Class_IITU_Drone_Benchmark
 ### Đồ án Tốt nghiệp Capstone AI - Báo cáo Tiến độ Task 2 (Drone Multi-Angle & Lighting)
 - **Tác giả / Chủ trì đồ án**: Nguyễn Hàn Như (SE183674)
 - **GVHD**: ThS. Nguyễn Xuân Huy | **Đơn vị**: Đại học FPT
@@ -400,7 +400,7 @@ def build_notebook_bo3():
 
 ---
 
-## 🎯 GIẢI QUYẾT CÁC YÊU CẦU CỐT LÕI CỦA TASK 2 (REVIEW 2):
+## [OBJECTIVE] GIẢI QUYẾT CÁC YÊU CẦU CỐT LÕI CỦA TASK 2 (REVIEW 2):
 1. **Giai đoạn 1 (Dataset Pipeline)**:
    - Thống kê nguồn dữ liệu: 1,669 ảnh flycam/drone và mặt đất từ ĐH IITU Kazakhstan.
    - Góc quay đa dạng: 0° (ngang), 45° (nghiêng), 90° (thẳng đứng từ trên nóc).
@@ -419,7 +419,7 @@ import sys
 import torch
 
 print("=" * 80)
-print("🚀 HỆ THỐNG THỰC NGHIỆM CAPSTONE AI - BỘ 3 (IITU DRONE 5-CLASS)")
+print("[EXECUTION] HỆ THỐNG THỰC NGHIỆM CAPSTONE AI - BỘ 3 (IITU DRONE 5-CLASS)")
 print("=" * 80)
 print(f"Python Version: {sys.version.split()[0]}")
 print(f"PyTorch Version: {torch.__version__}")
@@ -443,7 +443,7 @@ import random
 import shutil
 
 print("=" * 80)
-print("🔍 TÌM KIẾM TẬP DỮ LIỆU IITU SAFETY-HELMET TRONG /kaggle/input/...")
+print("[INSPECTION] TÌM KIẾM TẬP DỮ LIỆU IITU SAFETY-HELMET TRONG /kaggle/input/...")
 print("=" * 80)
 
 search_paths = [
@@ -464,7 +464,7 @@ if not iitu_root:
             iitu_root = os.path.join(root, [d for d in dirs if "iitu" in d.lower()][0])
             break
 
-print(f"📁 Thư mục IITU tìm thấy: {iitu_root}")
+print(f"[PATH] Thư mục IITU tìm thấy: {iitu_root}")
 
 # Quét ảnh và annotation
 all_images = glob.glob(os.path.join(iitu_root, "**", "*.jpg"), recursive=True) + \
@@ -541,7 +541,7 @@ names: ['blue_helmet', 'green_helmet', 'red_helmet', 'white_helmet', 'yellow_hel
 with open(TARGET_DIR / 'data.yaml', 'w', encoding='utf-8') as f:
     f.write(yaml_content)
 
-print(f"✅ Chuẩn hóa hoàn tất! data.yaml đã sẵn sàng tại: {TARGET_DIR / 'data.yaml'}")
+print(f"[VERIFIED] Chuẩn hóa hoàn tất! data.yaml đã sẵn sàng tại: {TARGET_DIR / 'data.yaml'}")
 """))
 
     # Code 4: Train Benchmark
@@ -554,7 +554,7 @@ from ultralytics import YOLO
 import time
 
 print("=" * 80)
-print("🚀 KHỞI CHẠY HUẤN LUYỆN BENCHMARK IITU 5-CLASS TRÊN GPU T4")
+print("[EXECUTION] KHỞI CHẠY HUẤN LUYỆN BENCHMARK IITU 5-CLASS TRÊN GPU T4")
 print("=" * 80)
 
 model = YOLO("yolo11s.pt")
@@ -573,14 +573,14 @@ results = model.train(
     verbose=True
 )
 train_duration = time.time() - start_time
-print(f"⏱️ Thời gian huấn luyện 5 epochs: {train_duration:.2f}s ({train_duration/60:.2f} phút)")
+print(f"[TIME] Thời gian huấn luyện 5 epochs: {train_duration:.2f}s ({train_duration/60:.2f} phút)")
 """))
 
     # Code 5: Test Set Evaluation & Metrics
     cells.append(code_cell("""
 # CELL 5: ĐÁNH GIÁ ĐỘC LẬP TẬP TEST IITU (GÓC DRONE 0°, 45°, 90°)
 print("=" * 80)
-print("📊 ĐÁNH GIÁ TRÊN TẬP TEST ĐỘC LẬP IITU")
+print("[EVALUATION] ĐÁNH GIÁ TRÊN TẬP TEST ĐỘC LẬP IITU")
 print("=" * 80)
 
 metrics = model.val(
@@ -597,13 +597,13 @@ r = metrics.box.mr
 map50 = metrics.box.map50
 map50_95 = metrics.box.map
 
-print(f"\\n🎯 KẾT QUẢ TỔNG QUAN:")
+print(f"\\n[OBJECTIVE] KẾT QUẢ TỔNG QUAN:")
 print(f"  Precision: {p*100:.2f}%")
 print(f"  Recall:    {r*100:.2f}%")
 print(f"  mAP@50:    {map50*100:.2f}%")
 print(f"  mAP@50-95: {map50_95*100:.2f}%")
 
-print(f"\\n📋 KẾT QUẢ CHI TIẾT THEO TỪNG MÀU MŨ:")
+print(f"\\n[REPORT] KẾT QUẢ CHI TIẾT THEO TỪNG MÀU MŨ:")
 for i, name in enumerate(class_names):
     c_p = metrics.box.p[i] if i < len(metrics.box.p) else 0.0
     c_r = metrics.box.r[i] if i < len(metrics.box.r) else 0.0
@@ -614,7 +614,7 @@ for i, name in enumerate(class_names):
     # Code 6: Export Markdown Report
     cells.append(code_cell("""
 # CELL 6: TẠO FILE BÁO CÁO KẾT QUẢ IITU
-report_md = f\"\"\"# 📋 BÁO CÁO KẾT QUẢ THỰC NGHIỆM TASK 2 - BỘ 3 (IITU DRONE 5-CLASS)
+report_md = f\"\"\"# [REPORT] BÁO CÁO KẾT QUẢ THỰC NGHIỆM TASK 2 - BỘ 3 (IITU DRONE 5-CLASS)
 **Đồ án Tốt nghiệp Capstone AI** - SV: Nguyễn Hàn Như | GVHD: ThS. Nguyễn Xuân Huy
 
 ### 1. Thông số Dataset IITU sau chuẩn hóa:
@@ -649,7 +649,7 @@ report_md = f\"\"\"# 📋 BÁO CÁO KẾT QUẢ THỰC NGHIỆM TASK 2 - BỘ 3 
 with open("/kaggle/working/BAO_CAO_BO3_IITU_5CLASS.md", "w", encoding="utf-8") as f:
     f.write(report_md)
 
-print("✅ Đã xuất báo cáo: /kaggle/working/BAO_CAO_BO3_IITU_5CLASS.md")
+print("[VERIFIED] Đã xuất báo cáo: /kaggle/working/BAO_CAO_BO3_IITU_5CLASS.md")
 """))
     return create_nb(cells)
 
@@ -661,7 +661,7 @@ def build_notebook_bo4():
     
     # MD 0: Task 2 Header & Overview
     cells.append(md_cell("""
-# 👑 BỘ 4: Dataset_Bo4_7Class_Unified_PPE_Master
+# [CHAMPION] BỘ 4: Dataset_Bo4_7Class_Unified_PPE_Master
 ### Đồ án Tốt nghiệp Capstone AI - Báo cáo Tiến độ Task 2 (Unified Multi-Color Helmet & Safety Vest)
 - **Tác giả / Chủ trì đồ án**: Nguyễn Hàn Như (SE183674)
 - **GVHD**: ThS. Nguyễn Xuân Huy | **Đơn vị**: Đại học FPT
@@ -674,7 +674,7 @@ def build_notebook_bo4():
 
 ---
 
-## 🎯 GIẢI QUYẾT TRIỆT ĐỂ PHẢN BIỆN CỦA HỘI ĐỒNG VÀ THẦY HUY (TASK 2):
+## [OBJECTIVE] GIẢI QUYẾT TRIỆT ĐỂ PHẢN BIỆN CỦA HỘI ĐỒNG VÀ THẦY HUY (TASK 2):
 1. **Khắc phục nhận xét Review 1**: Mở rộng toàn diện từ 2 class (mũ/người) lên 7 class bao gồm:
    - Đầy đủ 5 màu sắc mũ phân quyền lao động: Xanh dương, Xanh lá, Đỏ, Trắng, Vàng.
    - Phát hiện vi phạm an toàn lao động: Không đội mũ (`no_helmet`).
@@ -694,7 +694,7 @@ import sys
 import torch
 
 print("=" * 80)
-print("👑 HỆ THỐNG THỰC NGHIỆM CAPSTONE AI - BỘ 4 (UNIFIED 7-CLASS MASTER)")
+print("[CHAMPION] HỆ THỐNG THỰC NGHIỆM CAPSTONE AI - BỘ 4 (UNIFIED 7-CLASS MASTER)")
 print("=" * 80)
 print(f"Python Version: {sys.version.split()[0]}")
 print(f"PyTorch Version: {torch.__version__}")
@@ -721,7 +721,7 @@ import shutil
 from PIL import Image
 
 print("=" * 80)
-print("🔍 TÌM KIẾM CÁC TẬP DỮ LIỆU GDUT VÀ IITU TRONG /kaggle/input/...")
+print("[INSPECTION] TÌM KIẾM CÁC TẬP DỮ LIỆU GDUT VÀ IITU TRONG /kaggle/input/...")
 print("=" * 80)
 
 # Khảo sát thư mục
@@ -735,8 +735,8 @@ for root, dirs, files in os.walk("/kaggle/input"):
         elif "iitu" in d.lower() and not iitu_root:
             iitu_root = os.path.join(root, d)
 
-print(f"📁 GDUT-HWD Root: {gdut_root}")
-print(f"📁 IITU Root:     {iitu_root}")
+print(f"[PATH] GDUT-HWD Root: {gdut_root}")
+print(f"[PATH] IITU Root:     {iitu_root}")
 
 # Khởi tạo thư mục chuẩn hóa Bộ 4
 TARGET_DIR = Path("/kaggle/working/UNIFIED_PPE_7CLASS_STANDARDIZED")
@@ -768,7 +768,7 @@ class_counter = Counter()
 
 # 1. NẠP GDUT-HWD
 if gdut_root:
-    print("⏳ Đang xử lý GDUT-HWD...")
+    print("[PROCESSING] Đang xử lý GDUT-HWD...")
     gdut_imgs = glob.glob(os.path.join(gdut_root, "**", "*.jpg"), recursive=True)
     gdut_xmls = {Path(x).stem: x for x in glob.glob(os.path.join(gdut_root, "**", "*.xml"), recursive=True)}
     gdut_map = {
@@ -815,7 +815,7 @@ if gdut_root:
 
 # 2. NẠP IITU SAFETY-HELMET
 if iitu_root:
-    print("⏳ Đang xử lý IITU Safety-Helmet (Flycam & Drone)...")
+    print("[PROCESSING] Đang xử lý IITU Safety-Helmet (Flycam & Drone)...")
     iitu_imgs = glob.glob(os.path.join(iitu_root, "**", "*.jpg"), recursive=True)
     iitu_txts = {Path(t).stem: t for t in glob.glob(os.path.join(iitu_root, "**", "*.txt"), recursive=True)
                  if 'classes' not in os.path.basename(t).lower()}
@@ -836,7 +836,7 @@ if iitu_root:
             if bboxes:
                 unified_samples.append((f"iitu_{stem}", img_p, bboxes))
 
-print(f"\\n✅ Tổng số mẫu hợp nhất: {len(unified_samples)} ảnh")
+print(f"\\n[VERIFIED] Tổng số mẫu hợp nhất: {len(unified_samples)} ảnh")
 print("Phân bố bounding box hợp nhất (Classes 0-5):", dict(class_counter))
 """))
 
@@ -878,7 +878,7 @@ names: ['blue_helmet', 'green_helmet', 'red_helmet', 'white_helmet', 'yellow_hel
 with open(TARGET_DIR / 'data.yaml', 'w', encoding='utf-8') as f:
     f.write(yaml_content)
 
-print(f"✅ Chuẩn hóa hoàn tất! data.yaml đã sẵn sàng tại: {TARGET_DIR / 'data.yaml'}")
+print(f"[VERIFIED] Chuẩn hóa hoàn tất! data.yaml đã sẵn sàng tại: {TARGET_DIR / 'data.yaml'}")
 """))
 
     # Code 4: Train Benchmark
@@ -891,7 +891,7 @@ from ultralytics import YOLO
 import time
 
 print("=" * 80)
-print("🚀 KHỞI CHẠY HUẤN LUYỆN BENCHMARK UNIFIED 7-CLASS TRÊN GPU T4")
+print("[EXECUTION] KHỞI CHẠY HUẤN LUYỆN BENCHMARK UNIFIED 7-CLASS TRÊN GPU T4")
 print("=" * 80)
 
 model = YOLO("yolo11s.pt")
@@ -910,14 +910,14 @@ results = model.train(
     verbose=True
 )
 train_duration = time.time() - start_time
-print(f"⏱️ Thời gian huấn luyện 5 epochs: {train_duration:.2f}s ({train_duration/60:.2f} phút)")
+print(f"[TIME] Thời gian huấn luyện 5 epochs: {train_duration:.2f}s ({train_duration/60:.2f} phút)")
 """))
 
     # Code 5: Test Set Evaluation & Metrics
     cells.append(code_cell("""
 # CELL 5: ĐÁNH GIÁ ĐỘC LẬP TRÊN TẬP TEST HỢP NHẤT
 print("=" * 80)
-print("📊 ĐÁNH GIÁ TRÊN TẬP TEST ĐỘC LẬP UNIFIED 7-CLASS")
+print("[EVALUATION] ĐÁNH GIÁ TRÊN TẬP TEST ĐỘC LẬP UNIFIED 7-CLASS")
 print("=" * 80)
 
 metrics = model.val(
@@ -934,13 +934,13 @@ r = metrics.box.mr
 map50 = metrics.box.map50
 map50_95 = metrics.box.map
 
-print(f"\\n🎯 KẾT QUẢ TỔNG QUAN:")
+print(f"\\n[OBJECTIVE] KẾT QUẢ TỔNG QUAN:")
 print(f"  Precision: {p*100:.2f}%")
 print(f"  Recall:    {r*100:.2f}%")
 print(f"  mAP@50:    {map50*100:.2f}%")
 print(f"  mAP@50-95: {map50_95*100:.2f}%")
 
-print(f"\\n📋 KẾT QUẢ CHI TIẾT THEO TỪNG LỚP TRONG BỘ 4:")
+print(f"\\n[REPORT] KẾT QUẢ CHI TIẾT THEO TỪNG LỚP TRONG BỘ 4:")
 for i in range(len(class_names)):
     c_p = metrics.box.p[i] if i < len(metrics.box.p) else 0.0
     c_r = metrics.box.r[i] if i < len(metrics.box.r) else 0.0
@@ -951,7 +951,7 @@ for i in range(len(class_names)):
     # Code 6: Export Markdown Report
     cells.append(code_cell("""
 # CELL 6: TẠO FILE BÁO CÁO KẾT QUẢ HỢP NHẤT ĐẠT CHUẨN TASK 2
-report_md = f\"\"\"# 📋 BÁO CÁO KẾT QUẢ THỰC NGHIỆM TASK 2 - BỘ 4 (UNIFIED 7-CLASS MASTER)
+report_md = f\"\"\"# [REPORT] BÁO CÁO KẾT QUẢ THỰC NGHIỆM TASK 2 - BỘ 4 (UNIFIED 7-CLASS MASTER)
 **Đồ án Tốt nghiệp Capstone AI** - SV: Nguyễn Hàn Như | GVHD: ThS. Nguyễn Xuân Huy
 
 ### 1. Thông số Hợp nhất Dataset Bộ 4:
@@ -972,13 +972,13 @@ report_md = f\"\"\"# 📋 BÁO CÁO KẾT QUẢ THỰC NGHIỆM TASK 2 - BỘ 4 
 ### 3. Đánh giá chi tiết từng lớp:
 | Class ID | Tên Lớp | Precision (%) | Recall (%) | mAP@50 (%) |
 | :---: | :--- | :---: | :---: | :---: |
-| 0 | `blue_helmet` (Xanh dương) | {metrics.box.p[0]*100:.2f if 0 < len(metrics.box.p) else 0.0} | {metrics.box.r[0]*100:.2f if 0 < len(metrics.box.r) else 0.0} | {metrics.box.ap50[0]*100:.2f if 0 < len(metrics.box.ap50) else 0.0} |
-| 1 | `green_helmet` (Xanh lá) | {metrics.box.p[1]*100:.2f if 1 < len(metrics.box.p) else 0.0} | {metrics.box.r[1]*100:.2f if 1 < len(metrics.box.r) else 0.0} | {metrics.box.ap50[1]*100:.2f if 1 < len(metrics.box.ap50) else 0.0} |
-| 2 | `red_helmet` (Đỏ) | {metrics.box.p[2]*100:.2f if 2 < len(metrics.box.p) else 0.0} | {metrics.box.r[2]*100:.2f if 2 < len(metrics.box.r) else 0.0} | {metrics.box.ap50[2]*100:.2f if 2 < len(metrics.box.ap50) else 0.0} |
-| 3 | `white_helmet` (Trắng) | {metrics.box.p[3]*100:.2f if 3 < len(metrics.box.p) else 0.0} | {metrics.box.r[3]*100:.2f if 3 < len(metrics.box.r) else 0.0} | {metrics.box.ap50[3]*100:.2f if 3 < len(metrics.box.ap50) else 0.0} |
-| 4 | `yellow_helmet` (Vàng) | {metrics.box.p[4]*100:.2f if 4 < len(metrics.box.p) else 0.0} | {metrics.box.r[4]*100:.2f if 4 < len(metrics.box.r) else 0.0} | {metrics.box.ap50[4]*100:.2f if 4 < len(metrics.box.ap50) else 0.0} |
-| 5 | `no_helmet` (Vi phạm) | {metrics.box.p[5]*100:.2f if 5 < len(metrics.box.p) else 0.0} | {metrics.box.r[5]*100:.2f if 5 < len(metrics.box.r) else 0.0} | {metrics.box.ap50[5]*100:.2f if 5 < len(metrics.box.ap50) else 0.0} |
-| 6 | `safety_vest` (Áo phản quang) | {metrics.box.p[6]*100:.2f if 6 < len(metrics.box.p) else 0.0} | {metrics.box.r[6]*100:.2f if 6 < len(metrics.box.r) else 0.0} | {metrics.box.ap50[6]*100:.2f if 6 < len(metrics.box.ap50) else 0.0} |
+| 0 | `blue_helmet` (Xanh dương) | {get_p(0):.2f}% | {get_r(0):.2f}% | {get_ap50(0):.2f}% |
+| 1 | `green_helmet` (Xanh lá) | {get_p(1):.2f}% | {get_r(1):.2f}% | {get_ap50(1):.2f}% |
+| 2 | `red_helmet` (Đỏ) | {get_p(2):.2f}% | {get_r(2):.2f}% | {get_ap50(2):.2f}% |
+| 3 | `white_helmet` (Trắng) | {get_p(3):.2f}% | {get_r(3):.2f}% | {get_ap50(3):.2f}% |
+| 4 | `yellow_helmet` (Vàng) | {get_p(4):.2f}% | {get_r(4):.2f}% | {get_ap50(4):.2f}% |
+| 5 | `no_helmet` (Vi phạm) | {get_p(5):.2f}% | {get_r(5):.2f}% | {get_ap50(5):.2f}% |
+| 6 | `safety_vest` (Áo phản quang) | {get_p(6):.2f}% | {get_r(6):.2f}% | {get_ap50(6):.2f}% |
 
 ### 4. Kết luận khoa học trả lời Thầy Huy:
 1. **Hoàn thành 100% mục tiêu mở rộng**: Bộ 4 đã giải quyết triệt để vấn đề nhận diện màu sắc mũ và giám sát áo phản quang theo đúng nhận xét ở Review 1.
@@ -988,7 +988,7 @@ report_md = f\"\"\"# 📋 BÁO CÁO KẾT QUẢ THỰC NGHIỆM TASK 2 - BỘ 4 
 with open("/kaggle/working/BAO_CAO_BO4_UNIFIED_PPE_7CLASS.md", "w", encoding="utf-8") as f:
     f.write(report_md)
 
-print("✅ Đã xuất báo cáo: /kaggle/working/BAO_CAO_BO4_UNIFIED_PPE_7CLASS.md")
+print("[VERIFIED] Đã xuất báo cáo: /kaggle/working/BAO_CAO_BO4_UNIFIED_PPE_7CLASS.md")
 """))
     return create_nb(cells)
 
@@ -1002,12 +1002,12 @@ if __name__ == "__main__":
     
     with open(nb1_path, "w", encoding="utf-8") as f:
         json.dump(build_notebook_bo1(), f, indent=2)
-    print(f"✅ Generated: {nb1_path}")
+    print(f"[VERIFIED] Generated: {nb1_path}")
     
     with open(nb3_path, "w", encoding="utf-8") as f:
         json.dump(build_notebook_bo3(), f, indent=2)
-    print(f"✅ Generated: {nb3_path}")
+    print(f"[VERIFIED] Generated: {nb3_path}")
     
     with open(nb4_path, "w", encoding="utf-8") as f:
         json.dump(build_notebook_bo4(), f, indent=2)
-    print(f"✅ Generated: {nb4_path}")
+    print(f"[VERIFIED] Generated: {nb4_path}")
