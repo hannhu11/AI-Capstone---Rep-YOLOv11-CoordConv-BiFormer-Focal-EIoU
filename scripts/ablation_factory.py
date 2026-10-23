@@ -221,8 +221,8 @@ def build_ablation_model(ab_id: str, base_weight: str = "yolo11s.pt", p2_yaml_pa
         coord_conv.i, coord_conv.f, coord_conv.type = 0, -1, "CoordConv"
         m.model[0] = coord_conv
 
-    # A3, A4, A5, A6: Inject RepConv into 3x3 Conv layers with Warm-Start Weight Transfer
-    if ab_id in ["A3", "A4", "A5", "A6"]:
+    # A3 or A6: Inject RepConv into 3x3 Conv layers with Warm-Start Weight Transfer
+    if ab_id in ["A3", "A6"]:
         for idx, layer in enumerate(m.model):
             if idx > 0 and hasattr(layer, "conv") and hasattr(layer.conv, "kernel_size") and layer.conv.kernel_size == (3, 3):
                 c1, c2, s = layer.conv.in_channels, layer.conv.out_channels, layer.conv.stride[0]

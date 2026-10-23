@@ -376,3 +376,21 @@ Nhóm nghiên cứu đã thực hiện giám định nhị phân độc lập tr
 3. **Câu hỏi 3: "Hệ thống làm thế nào để phát hiện vi phạm không đội mũ bảo hộ khi tập dữ liệu không có nhãn `no_helmet`?"**
    - *Trả lời phản biện:* Nghiên cứu áp dụng **Động cơ Quan hệ Không gian (Spatial Relational Logic Rule Engine)** ở tầng suy luận hậu kỳ: $\text{Violation} = \text{BBox}(\text{Person}) \setminus (\text{BBox}(\text{TorsoVest}) \cap \text{BBox}(\text{HeadHelmet}))$. Phương pháp này không làm xáo trộn không gian phân loại của detector, triệt tiêu hoàn toàn nhãn giả heuristic và cho phép phân định màu sắc mũ của từng công nhân phục vụ quản lý phân quyền công trường (Mũ trắng: Kỹ sư; Mũ vàng: Công nhân; Mũ xanh: An toàn viên).
 
+---
+
+### 13.5. Báo cáo Giám định Dataset Forensics & Hoàn thiện Động cơ Cảnh báo Zalo Real-Time:
+1. **Khẳng định tính nguyên bản của `CHV_6CLASS_OFFICIAL_CLEAN`**:
+   - Giám định 1,330/1,330 tệp nhãn (`Dataset/CHV_dataset/annotations/*.txt` vs `Dataset/CHV_6CLASS_OFFICIAL_CLEAN/labels/*/*.txt`) khẳng định **0 tệp sai khác, 0 nhãn bị thay đổi**.
+   - Khớp byte MD5 1,330/1,330 tệp ảnh (100.00%).
+   - Tập dữ liệu đã chứa sẵn đầy đủ 4 màu mũ bảo hộ chính: **508 Mũ xanh (`blue_helmet`), 536 Mũ đỏ (`red_helmet`), 1,195 Mũ trắng (`white_helmet`), 1,299 Mũ vàng (`yellow_helmet`)**, cùng **1,784 Áo phản quang (`safety_vest`)** và **3,887 Đối tượng người (`person`)** trên 1,330 ảnh độ phân giải cao.
+2. **Giải đáp chiến lược dữ liệu ITTU vs CHV**:
+   - *Chạy độc lập ITTU:* Không khả thi cho mục tiêu đồ án vì ITTU chỉ có mũ từ flycam/drone, hoàn toàn không có nhãn người (`person`) và áo phản quang (`safety_vest`), không thể phát hiện vi phạm thiếu áo phản quang hay định danh công nhân.
+   - *Gộp trực tiếp Naive Merged IITU+CHV:* Làm suy giảm mAP@50-95 (-3.75%, từ 52.02% xuống 48.27%), tăng thời gian huấn luyện 2.74 lần do xung đột góc quay (drone top-down vs static CCTV) và nhiễu phạt âm (omission noise).
+   - *Học chuyển tiếp (S4 Transfer Learning):* Tiền huấn luyện trên IITU rồi tinh chỉnh trên Clean CHV đạt **89.31% mAP@50** (+0.19%), là phương án bổ trợ có giá trị học thuật cao.
+   - *Lựa chọn tối ưu làm trụ cột:* **`CHV_6CLASS_OFFICIAL_CLEAN`** là bộ dữ liệu chuẩn mực duy nhất bảo toàn 100% tính liêm chính khoa học và phục vụ trọn vẹn toàn bộ mục tiêu đầu ra.
+3. **Tích hợp Động cơ Cảnh báo Zalo & Video Demo**:
+   - Hoàn thiện module [scripts/zalo_alert_dispatcher.py](file:///c:/Users/ADMIN/Downloads/capstone%20AI/scripts/zalo_alert_dispatcher.py) hỗ trợ cả chế độ giả lập dry-run và chế độ gửi Webhook HTTP POST thời gian thực.
+   - Đồng bộ [scripts/annotate_cctv_video.py](file:///c:/Users/ADMIN/Downloads/capstone%20AI/scripts/annotate_cctv_video.py) tích hợp trực tiếp `evaluate_worker_compliance` để hiển thị trạng thái tuân thủ từng công nhân trên video với hộp xanh (COMPLIANT) / hộp đỏ (VIOLATION) và cập nhật số liệu HUD trực quan.
+   - Tách biệt độc lập module RepConv trong [scripts/ablation_factory.py](file:///c:/Users/ADMIN/Downloads/capstone%20AI/scripts/ablation_factory.py) cho các thí nghiệm A4/A5, đảm bảo từng ablation chỉ kiểm định duy nhất 1 biến số kiến trúc.
+
+
