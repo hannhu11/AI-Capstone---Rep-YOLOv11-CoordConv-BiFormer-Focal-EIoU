@@ -1,0 +1,12 @@
+names:
+- person
+- safety_vest
+- blue_helmet
+- red_helmet
+- white_helmet
+- yellow_helmet
+nc: 6
+path: /kaggle/working/CHV_6CLASS_CLEAN
+test: images/test
+train: images/train
+val: images/val

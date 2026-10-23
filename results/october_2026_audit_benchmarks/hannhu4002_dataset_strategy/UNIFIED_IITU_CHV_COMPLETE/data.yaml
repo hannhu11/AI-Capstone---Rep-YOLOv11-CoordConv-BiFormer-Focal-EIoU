@@ -1,0 +1,13 @@
+path: /kaggle/working/UNIFIED_IITU_CHV_COMPLETE
+train: images/train
+val: images/val
+test: images/test
+nc: 7
+names:
+- person
+- safety_vest
+- blue_helmet
+- green_helmet
+- red_helmet
+- white_helmet
+- yellow_helmet

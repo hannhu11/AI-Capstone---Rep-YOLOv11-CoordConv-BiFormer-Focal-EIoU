@@ -1,608 +1,459 @@
-[
-  {
-    "alert_id": "ZALO-ALERT-ppe_0003-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:44 UTC",
-    "image_file": "ppe_0003.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        202.0,
-        41.7,
-        388.5,
-        270.0
-      ],
-      "confidence": 0.725,
+{
+  "audit_timestamp": "2026-10-23 21:46:06",
+  "total_workers_audited": 350,
+  "compliant_workers": 134,
+  "violation_workers": 216,
+  "compliance_rate_percent": 38.29,
+  "events": [
+    {
+      "image": "ppe_0003.jpg",
+      "worker_id": 1,
       "has_helmet": true,
       "helmet_color": "blue",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0003.jpg\nThoi gian: 2026-10-23 18:51:44 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 72.5%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (blue) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0028-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:44 UTC",
-    "image_file": "ppe_0028.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        288.8,
-        57.9,
-        585.8,
-        525.5
-      ],
-      "confidence": 0.436,
+    {
+      "image": "ppe_0028.jpg",
+      "worker_id": 1,
       "has_helmet": true,
       "helmet_color": "yellow",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0028.jpg\nThoi gian: 2026-10-23 18:51:44 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 43.6%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (yellow) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0028-2",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:44 UTC",
-    "image_file": "ppe_0028.jpg",
-    "worker_data": {
-      "person_id": 2,
-      "person_box": [
-        322.2,
-        32.0,
-        755.9,
-        528.1
-      ],
-      "confidence": 0.431,
+    {
+      "image": "ppe_0028.jpg",
+      "worker_id": 2,
       "has_helmet": true,
       "helmet_color": "yellow",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0028.jpg\nThoi gian: 2026-10-23 18:51:44 UTC\nDoi tuong: Cong nhan #2 (Do tin cay: 43.1%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (yellow) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0037-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:44 UTC",
-    "image_file": "ppe_0037.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        581.3,
-        408.6,
-        621.7,
-        531.2
-      ],
-      "confidence": 0.646,
+    {
+      "image": "ppe_0037.jpg",
+      "worker_id": 1,
+      "has_helmet": false,
+      "helmet_color": "none",
+      "has_vest": true,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0037.jpg",
+      "worker_id": 2,
       "has_helmet": true,
       "helmet_color": "blue",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0037.jpg\nThoi gian: 2026-10-23 18:51:44 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 64.6%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (blue) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0037-2",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:44 UTC",
-    "image_file": "ppe_0037.jpg",
-    "worker_data": {
-      "person_id": 2,
-      "person_box": [
-        186.3,
-        435.0,
-        219.4,
-        538.5
-      ],
-      "confidence": 0.44,
-      "has_helmet": false,
-      "helmet_color": null,
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_HELMET",
-        "MISSING_SAFETY_VEST"
-      ]
-    },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0037.jpg\nThoi gian: 2026-10-23 18:51:44 UTC\nDoi tuong: Cong nhan #2 (Do tin cay: 44.0%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY HELMET, MISSING SAFETY VEST\nKiem tra: Mu bao ho: KHONG CO | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0042-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0042.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        1485.2,
-        617.3,
-        3770.5,
-        4472.0
-      ],
-      "confidence": 0.685,
+    {
+      "image": "ppe_0042.jpg",
+      "worker_id": 1,
       "has_helmet": true,
       "helmet_color": "yellow",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0042.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 68.5%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (yellow) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0048-3",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0048.jpg",
-    "worker_data": {
-      "person_id": 3,
-      "person_box": [
-        647.6,
-        122.7,
-        694.6,
-        260.6
-      ],
-      "confidence": 0.788,
-      "has_helmet": false,
-      "helmet_color": null,
-      "has_safety_vest": true,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_HELMET"
-      ]
+    {
+      "image": "ppe_0048.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0048.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #3 (Do tin cay: 78.8%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY HELMET\nKiem tra: Mu bao ho: KHONG CO | Ao phan quang: CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0048-4",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0048.jpg",
-    "worker_data": {
-      "person_id": 4,
-      "person_box": [
-        349.7,
-        120.7,
-        410.5,
-        286.4
-      ],
-      "confidence": 0.745,
-      "has_helmet": false,
-      "helmet_color": null,
-      "has_safety_vest": true,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_HELMET"
-      ]
+    {
+      "image": "ppe_0048.jpg",
+      "worker_id": 2,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0048.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #4 (Do tin cay: 74.5%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY HELMET\nKiem tra: Mu bao ho: KHONG CO | Ao phan quang: CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0048-6",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0048.jpg",
-    "worker_data": {
-      "person_id": 6,
-      "person_box": [
-        59.4,
-        168.0,
-        218.0,
-        568.6
-      ],
-      "confidence": 0.574,
-      "has_helmet": false,
-      "helmet_color": null,
-      "has_safety_vest": true,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_HELMET"
-      ]
-    },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0048.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #6 (Do tin cay: 57.4%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY HELMET\nKiem tra: Mu bao ho: KHONG CO | Ao phan quang: CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0048-7",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0048.jpg",
-    "worker_data": {
-      "person_id": 7,
-      "person_box": [
-        628.5,
-        124.6,
-        692.6,
-        260.1
-      ],
-      "confidence": 0.398,
-      "has_helmet": false,
-      "helmet_color": null,
-      "has_safety_vest": true,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_HELMET"
-      ]
-    },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0048.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #7 (Do tin cay: 39.8%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY HELMET\nKiem tra: Mu bao ho: KHONG CO | Ao phan quang: CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0059-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0059.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        138.4,
-        79.0,
-        284.9,
-        499.3
-      ],
-      "confidence": 0.78,
+    {
+      "image": "ppe_0048.jpg",
+      "worker_id": 3,
       "has_helmet": true,
       "helmet_color": "blue",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0059.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 78.0%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (blue) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0059-2",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0059.jpg",
-    "worker_data": {
-      "person_id": 2,
-      "person_box": [
-        303.2,
-        101.1,
-        501.2,
-        497.6
-      ],
-      "confidence": 0.697,
+    {
+      "image": "ppe_0048.jpg",
+      "worker_id": 4,
       "has_helmet": true,
       "helmet_color": "white",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0059.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #2 (Do tin cay: 69.7%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (white) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0067-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0067.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        0.0,
-        0.0,
-        299.0,
-        441.0
-      ],
-      "confidence": 0.765,
-      "has_helmet": false,
-      "helmet_color": null,
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_HELMET",
-        "MISSING_SAFETY_VEST"
-      ]
-    },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0067.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 76.5%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY HELMET, MISSING SAFETY VEST\nKiem tra: Mu bao ho: KHONG CO | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0068-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0068.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        368.8,
-        318.0,
-        469.4,
-        739.0
-      ],
-      "confidence": 0.748,
+    {
+      "image": "ppe_0048.jpg",
+      "worker_id": 5,
       "has_helmet": true,
       "helmet_color": "white",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0068.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 74.8%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (white) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0069-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0069.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        197.9,
-        39.3,
-        552.7,
-        400.0
-      ],
-      "confidence": 0.578,
-      "has_helmet": false,
-      "helmet_color": null,
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_HELMET",
-        "MISSING_SAFETY_VEST"
-      ]
-    },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0069.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 57.8%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY HELMET, MISSING SAFETY VEST\nKiem tra: Mu bao ho: KHONG CO | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0079-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0079.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        167.9,
-        315.8,
-        403.0,
-        1081.4
-      ],
-      "confidence": 0.559,
-      "has_helmet": true,
-      "helmet_color": "yellow",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
-    },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0079.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 55.9%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (yellow) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0079-3",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0079.jpg",
-    "worker_data": {
-      "person_id": 3,
-      "person_box": [
-        367.4,
-        15.1,
-        830.8,
-        1284.5
-      ],
-      "confidence": 0.48,
-      "has_helmet": true,
-      "helmet_color": "yellow",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
-    },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0079.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #3 (Do tin cay: 48.0%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (yellow) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0119-2",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0119.jpg",
-    "worker_data": {
-      "person_id": 2,
-      "person_box": [
-        375.4,
-        51.4,
-        678.2,
-        490.0
-      ],
-      "confidence": 0.591,
+    {
+      "image": "ppe_0048.jpg",
+      "worker_id": 6,
       "has_helmet": true,
       "helmet_color": "white",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0119.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #2 (Do tin cay: 59.1%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (white) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0121-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0121.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        668.8,
-        31.6,
-        957.5,
-        597.6
-      ],
-      "confidence": 0.565,
+    {
+      "image": "ppe_0048.jpg",
+      "worker_id": 7,
       "has_helmet": true,
       "helmet_color": "white",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0121.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 56.5%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (white) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0140-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0140.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        318.1,
-        0.0,
-        1301.7,
-        1762.2
-      ],
-      "confidence": 0.706,
-      "has_helmet": true,
-      "helmet_color": "yellow",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
-    },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0140.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 70.6%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (yellow) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0141-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0141.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        31.3,
-        51.0,
-        325.2,
-        517.1
-      ],
-      "confidence": 0.726,
-      "has_helmet": true,
-      "helmet_color": "yellow",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
-    },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0141.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 72.6%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (yellow) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0163-1",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:46 UTC",
-    "image_file": "ppe_0163.jpg",
-    "worker_data": {
-      "person_id": 1,
-      "person_box": [
-        337.8,
-        10.3,
-        768.0,
-        492.0
-      ],
-      "confidence": 0.627,
+    {
+      "image": "ppe_0059.jpg",
+      "worker_id": 1,
       "has_helmet": true,
       "helmet_color": "blue",
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_VEST"
-      ]
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0163.jpg\nThoi gian: 2026-10-23 18:51:46 UTC\nDoi tuong: Cong nhan #1 (Do tin cay: 62.7%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY VEST\nKiem tra: Mu bao ho: CO (blue) | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0176-4",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:47 UTC",
-    "image_file": "ppe_0176.jpg",
-    "worker_data": {
-      "person_id": 4,
-      "person_box": [
-        867.3,
-        501.0,
-        941.1,
-        651.2
-      ],
-      "confidence": 0.532,
+    {
+      "image": "ppe_0059.jpg",
+      "worker_id": 2,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0067.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0068.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0068.jpg",
+      "worker_id": 2,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0068.jpg",
+      "worker_id": 3,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0069.jpg",
+      "worker_id": 1,
       "has_helmet": false,
-      "helmet_color": null,
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_HELMET",
-        "MISSING_SAFETY_VEST"
-      ]
+      "helmet_color": "none",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0176.jpg\nThoi gian: 2026-10-23 18:51:47 UTC\nDoi tuong: Cong nhan #4 (Do tin cay: 53.2%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY HELMET, MISSING SAFETY VEST\nKiem tra: Mu bao ho: KHONG CO | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0193-2",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:47 UTC",
-    "image_file": "ppe_0193.jpg",
-    "worker_data": {
-      "person_id": 2,
-      "person_box": [
-        368.0,
-        165.9,
-        424.4,
-        375.8
-      ],
-      "confidence": 0.723,
+    {
+      "image": "ppe_0079.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0079.jpg",
+      "worker_id": 2,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0079.jpg",
+      "worker_id": 3,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0083.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0116.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0119.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "blue",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0119.jpg",
+      "worker_id": 2,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0121.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0140.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0140.jpg",
+      "worker_id": 2,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0141.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0142.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0142.jpg",
+      "worker_id": 2,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0163.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "blue",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0176.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0176.jpg",
+      "worker_id": 2,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0176.jpg",
+      "worker_id": 3,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0193.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0193.jpg",
+      "worker_id": 2,
       "has_helmet": false,
-      "helmet_color": null,
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_HELMET",
-        "MISSING_SAFETY_VEST"
-      ]
+      "helmet_color": "none",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0193.jpg\nThoi gian: 2026-10-23 18:51:47 UTC\nDoi tuong: Cong nhan #2 (Do tin cay: 72.3%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY HELMET, MISSING SAFETY VEST\nKiem tra: Mu bao ho: KHONG CO | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  },
-  {
-    "alert_id": "ZALO-ALERT-ppe_0193-3",
-    "camera_id": "CAM_CONSTRUCTION_GATE_01",
-    "timestamp": "2026-10-23 18:51:47 UTC",
-    "image_file": "ppe_0193.jpg",
-    "worker_data": {
-      "person_id": 3,
-      "person_box": [
-        533.5,
-        164.0,
-        593.3,
-        346.3
-      ],
-      "confidence": 0.68,
+    {
+      "image": "ppe_0193.jpg",
+      "worker_id": 3,
       "has_helmet": false,
-      "helmet_color": null,
-      "has_safety_vest": false,
-      "status": "NON_COMPLIANT",
-      "violations": [
-        "MISSING_SAFETY_HELMET",
-        "MISSING_SAFETY_VEST"
-      ]
+      "helmet_color": "none",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
     },
-    "zalo_message": "[CANH BAO AN TOAN PPE - ZALO NOTIFICATION]\nCamera: CAM_CONSTRUCTION_GATE_01 | Anh: ppe_0193.jpg\nThoi gian: 2026-10-23 18:51:47 UTC\nDoi tuong: Cong nhan #3 (Do tin cay: 68.0%)\nTrang thai: VI PHAM AN TOAN LAO DONG!\nLoi vi pham: MISSING SAFETY HELMET, MISSING SAFETY VEST\nKiem tra: Mu bao ho: KHONG CO | Ao phan quang: KHONG CO\n-> De nghi An toan vien cong truong lap tuc nhac nho va xu ly!"
-  }
-]
+    {
+      "image": "ppe_0193.jpg",
+      "worker_id": 4,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0193.jpg",
+      "worker_id": 5,
+      "has_helmet": true,
+      "helmet_color": "red",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0193.jpg",
+      "worker_id": 6,
+      "has_helmet": false,
+      "helmet_color": "none",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0214.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0229.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0256.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0256.jpg",
+      "worker_id": 2,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0266.jpg",
+      "worker_id": 1,
+      "has_helmet": false,
+      "helmet_color": "none",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
+    },
+    {
+      "image": "ppe_0270.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "ppe_0270.jpg",
+      "worker_id": 2,
+      "has_helmet": true,
+      "helmet_color": "yellow",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    }
+  ]
+}
