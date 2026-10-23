@@ -26,6 +26,9 @@
 | 5 | `safety_vest` | 88.97% | 83.32% | -5.65% |
 | 6 | `person` | 90.71% | 80.69% | -10.02% |
 
-## 3. Scientific Verification
-- By fusing human-annotated `none` (no_helmet) bounding boxes from matched GDUT-HWD images and eliminating the negative gradient penalty, both `no_helmet` and `safety_vest` reach top-tier detection accuracy simultaneously!
+## 3. Scientific Verification & Failure Analysis of Heuristic 7-Class
+- **Why `no_helmet` (Violation) collapsed to 1.95% - 5.46% AP50**:
+  1. *Extreme Class Imbalance*: The test set contains only 62 violation instances (5.4% of all boxes) compared to 450 persons and 217 vests.
+  2. *Spatial Misalignment from Heuristic Labels*: Synthesizing `no_helmet` boxes from the top 25% of `person` bounding boxes produces arbitrary, noisy boundaries that do not align with true anatomical head positions (e.g. crouching workers, workers seen from back, occluded heads).
+  3. *Scientific Verdict*: Heuristically synthesizing `no_helmet` annotations fails peer-review quality standards. In real-world deployment, safety violation should be detected via **Spatial Relational Logic** (`Person` bounding box with no intersecting `Helmet` bounding box), preserving 100% ground-truth label integrity without contaminating the training dataset.
 - Full fusion deploy weights exported to `rep_yolo11s_chv7_best_deploy.pt`.

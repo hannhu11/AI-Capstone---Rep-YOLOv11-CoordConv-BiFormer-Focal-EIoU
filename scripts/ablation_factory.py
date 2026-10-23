@@ -94,7 +94,7 @@ class AblationBboxLoss(ul_loss.BboxLoss):
 ul_loss.BboxLoss = AblationBboxLoss
 
 def create_p2_yaml(output_path: str, nc: int = 6):
-    """Generates the 4-Head P2 architecture YAML for any number of classes."""
+    """Generates the 4-Head P2 architecture YAML preserving 100% YOLO11s backbone compatibility."""
     content = f"""# Rep-YOLO11s-P2 AFPN (4-Head High-Resolution PPE Detector)
 nc: {nc}
 scales:
@@ -105,39 +105,40 @@ backbone:
   - [-1, 1, Conv, [128, 3, 2]]         # 1-P2/4
   - [-1, 2, C3k2, [256, False, 0.25]]  # 2-P2/4 (Micro-Scale Feature Map)
   - [-1, 1, Conv, [256, 3, 2]]         # 3-P3/8
-  - [-1, 2, C3k2, [256, False, 0.25]]  # 4-P3/8
+  - [-1, 2, C3k2, [512, False, 0.25]]  # 4-P3/8
   - [-1, 1, Conv, [512, 3, 2]]         # 5-P4/16
   - [-1, 2, C3k2, [512, True]]         # 6-P4/16
-  - [-1, 1, Conv, [512, 3, 2]]         # 7-P5/32
-  - [-1, 2, C3k2, [512, True]]         # 8-P5/32
-  - [-1, 1, SPPF, [512, 5]]            # 9-P5/32
+  - [-1, 1, Conv, [1024, 3, 2]]        # 7-P5/32
+  - [-1, 2, C3k2, [1024, True]]        # 8-P5/32
+  - [-1, 1, SPPF, [1024, 5]]           # 9-P5/32
+  - [-1, 2, C2PSA, [1024]]             # 10-P5/32
 
 head:
-  - [-1, 1, nn.Upsample, [None, 2, 'nearest']] # 10
-  - [[-1, 6], 1, Concat, [1]]                  # 11 cat backbone P4
-  - [-1, 2, C3k2, [512, False]]                # 12
+  - [-1, 1, nn.Upsample, [None, 2, 'nearest']] # 11
+  - [[-1, 6], 1, Concat, [1]]                  # 12 cat backbone P4
+  - [-1, 2, C3k2, [512, False]]                # 13
 
-  - [-1, 1, nn.Upsample, [None, 2, 'nearest']] # 13
-  - [[-1, 4], 1, Concat, [1]]                  # 14 cat backbone P3
-  - [-1, 2, C3k2, [256, False]]                # 15
+  - [-1, 1, nn.Upsample, [None, 2, 'nearest']] # 14
+  - [[-1, 4], 1, Concat, [1]]                  # 15 cat backbone P3
+  - [-1, 2, C3k2, [256, False]]                # 16 (P3/8-small)
 
-  - [-1, 1, nn.Upsample, [None, 2, 'nearest']] # 16
-  - [[-1, 2], 1, Concat, [1]]                  # 17 cat backbone P2
-  - [-1, 2, C3k2, [128, False]]                # 18 (P2/4-Head: 160x160)
+  - [-1, 1, nn.Upsample, [None, 2, 'nearest']] # 17
+  - [[-1, 2], 1, Concat, [1]]                  # 18 cat backbone P2
+  - [-1, 2, C3k2, [128, False]]                # 19 (P2/4-micro: 160x160)
 
-  - [-1, 1, Conv, [128, 3, 2]]                 # 19
-  - [[-1, 15], 1, Concat, [1]]                 # 20 cat P3
-  - [-1, 2, C3k2, [256, False]]                # 21 (P3/8-Head: 80x80)
+  - [-1, 1, Conv, [128, 3, 2]]                 # 20
+  - [[-1, 16], 1, Concat, [1]]                 # 21 cat head P3
+  - [-1, 2, C3k2, [256, False]]                # 22
 
-  - [-1, 1, Conv, [256, 3, 2]]                 # 22
-  - [[-1, 12], 1, Concat, [1]]                 # 23 cat P4
-  - [-1, 2, C3k2, [512, False]]                # 24 (P4/16-Head: 40x40)
+  - [-1, 1, Conv, [256, 3, 2]]                 # 23
+  - [[-1, 13], 1, Concat, [1]]                 # 24 cat head P4
+  - [-1, 2, C3k2, [512, False]]                # 25
 
-  - [-1, 1, Conv, [512, 3, 2]]                 # 25
-  - [[-1, 9], 1, Concat, [1]]                  # 26 cat P5
-  - [-1, 2, C3k2, [512, True]]                 # 27 (P5/32-Head: 20x20)
+  - [-1, 1, Conv, [512, 3, 2]]                 # 26
+  - [[-1, 10], 1, Concat, [1]]                 # 27 cat head P5
+  - [-1, 2, C3k2, [1024, True]]                # 28
 
-  - [[18, 21, 24, 27], 1, Detect, [nc]]        # 28 4-Head Detection Layer
+  - [[19, 22, 25, 28], 1, Detect, [nc]]        # 29 4-Head Detection Layer
 """
     Path(output_path).write_text(content.strip(), encoding="utf-8")
     return output_path

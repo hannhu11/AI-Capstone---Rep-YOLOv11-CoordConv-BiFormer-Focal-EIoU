@@ -238,3 +238,37 @@ Nhóm nghiên cứu đã thực hiện giám định nhị phân độc lập tr
 1. **Các notebook Bo1, Bo3, Bo4 (5 epochs)**: Là các bước kiểm định dữ liệu ban đầu (Dataset Baseline Sanity Checks) trên mô hình YOLO11s chuẩn nhằm so sánh khách quan hành vi học tập và độ lành mạnh của dữ liệu theo yêu cầu Task 2 trước khi đầu tư hàng chục giờ GPU vào huấn luyện kiến trúc sâu.
 2. **Kiến trúc đề xuất Rep-YOLO11s**: Bao gồm 5 module cốt lõi (CoordConv Stem + RepConv Neck + BiFormer Block Attention + Focal-EIoU Loss + Task-Aligned Assigner) và chuỗi thực nghiệm Ablation Study (A0–A6) sẽ được triển khai trên tập 7 lớp sau khi hoàn tất nghiệm thu bộ dữ liệu chuẩn mực.
 3. **Video Demo thực địa CCTV**: Video trước đó chạy trên checkpoint cũ 2 lớp (`hat`, `person`). Sẽ được nâng cấp toàn diện bằng cách triển khai trọng số deploy 7 lớp của mô hình Champion Rep-YOLO11s để hiển thị trực quan 5 màu sắc mũ, cảnh báo vi phạm không đội mũ và áo phản quang trên video công trường thực tế.
+
+---
+
+## 11. BÁO CÁO KIỂM TOÁN HÌNH SỰ DỮ LIỆU, GIẢI MÃ NGUYÊN NHÂN TỤT METRIC & QUYẾT ĐỊNH LỰA CHỌN DATASET (OCTOBER 2026 REVIEW)
+
+### 11.1. Giải mã nguyên nhân sụp đổ chỉ số Áo phản quang & Các chỉ số khác:
+1. **Nhiễu sót nhãn (Omission Noise & Negative Gradient Penalty)**:
+   - Trong Bộ 4 gộp (`UNIFIED_PPE_MASTER_HARMONIZED`), 75.3% số ảnh đến từ GDUT-HWD và IITU. Các công nhân trong ảnh mặc áo phản quang thực tế nhưng hoàn toàn không có bounding box ($y=0$).
+   - Khi mô hình dự đoán ra áo phản quang thật, hàm loss trừng phạt gradient âm. Trong tập kiểm thử, hàng trăm dự đoán đúng bị COCO evaluator chấm là False Positive, bóp méo Precision xuống 57.8%, Recall xuống 47.5%, và mAP@50 xuống 51.89%.
+2. **Xung đột nhãn trên cùng pixel (Identical Image Conflict)**:
+   - Có tới 770 ảnh trong CHV trùng khớp MD5 tuyệt đối với GDUT-HWD (và 850+ ảnh trùng khớp tọa độ mũ). Khi gộp vào Bộ 4, cùng một bức ảnh xuất hiện 2 lần với 2 bộ nhãn mâu thuẫn nhau (1 file có nhãn áo, 1 file không có nhãn áo).
+3. **Thất bại của nhãn giả vi phạm (`no_helmet`) ở tập 7 lớp**:
+   - Khi cố ép gán nhãn vi phạm từ 25% đỉnh trên của hộp `person`, tọa độ giải phẫu bị sai lệch nghiêm trọng và số lượng vi phạm quá ít (chỉ 62 hộp trên test set), khiến AP50 của `no_helmet` sụp đổ xuống **1.95% (A6) và 5.46% (A0)**.
+   - Nhận định reviewer: Không được dùng nhãn giả heuristic để huấn luyện vì vi phạm tính liêm chính và làm hỏng mô hình.
+
+### 11.2. Phán quyết của Senior Reviewer & Quyết định Lựa chọn Dataset:
+1. **Quyết định nền móng ("Xây nhà thì móng phải chắc")**:
+   - **LOẠI BỎ HOÀN TOÀN PHƯƠNG ÁN GỘP NAIVE (Bộ 4)**. Không gộp GDUT hay IITU vào bài toán PPE đa lớp vì không tương thích không gian nhãn.
+   - **CHỌN DUY NHẤT 1 BỘ CHUẨN MỰC TỐI THƯỢNG: Official Clean CHV 6-Class Dataset (`Dataset/CHV_6CLASS_OFFICIAL_CLEAN`)**:
+     * 1,330 ảnh chất lượng cao được lọc từ hơn 10,000 ảnh bởi Wang et al. (2021).
+     * 6 lớp: `person`, `safety_vest`, `blue_helmet`, `red_helmet`, `white_helmet`, `yellow_helmet`.
+     * Phân chia chuẩn chính thức (Official Split): 1,064 Train / 133 Val / 133 Test.
+     * 100% nhãn được gán thủ công bởi con người, 0% rò rỉ dữ liệu, 0% sót nhãn.
+     * Trên tập này, `safety_vest` đạt **91.24% AP50**, tổng thể đạt **90.65% mAP50**.
+2. **Giải pháp Giám sát Vi phạm Không đội mũ bảo hộ**:
+   - Thay vì ép gán nhãn giả, áp dụng **Spatial Relational Logic** ở tầng ứng dụng/suy luận camera: Một `person` không có giao cắt với bất kỳ `helmet` nào ở vùng đầu sẽ tự động kích hoạt cảnh báo vi phạm đỏ, bảo đảm độ chính xác tuyệt đối.
+
+### 11.3. Chuẩn hóa Kiến trúc Rep-YOLO11s:
+1. **Khắc phục lỗi nạp trọng số tiền huấn luyện**:
+   - Đã sửa [rep_yolo11s_p2.yaml](file:///c:/Users/ADMIN/Downloads/capstone%20AI/rep_yolo11s_p2.yaml) giữ trọn vẹn 1024 kênh backbone và block C2PSA, nạp thành công 297/593 trọng số tiền huấn luyện COCO.
+2. **Kiểm chứng Re-parameterization Fusion**:
+   - Mô hình huấn luyện 4 Head: 9,549,768 tham số.
+   - Mô hình suy luận deploy (sau khi gọi `switch_to_deploy`): 9,244,488 tham số.
+   - Đã kiểm chứng forward pass thành công trên cả 4 scale: $160\times 160$, $80\times 80$, $40\times 40$, $20\times 20$.

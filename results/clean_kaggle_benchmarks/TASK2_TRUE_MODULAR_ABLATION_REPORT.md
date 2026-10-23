@@ -15,10 +15,11 @@
 |  5 | A5            | + BiFormer Attention   | Bi-level routing attention across P4/P5       |    9,427,648 |       24 | 85.90%      | 78.90%   | 84.34%   | 47.78%      | 85.19%             |               6.83 |
 |  6 | A6            | Full Fusion (Proposed) | Rep-YOLO11s full integrated champion          |    4,873,960 |       29 | 79.59%      | 66.37%   | 72.66%   | 36.88%      | 70.67%             |               8.71 |
 
-## 2. Key Scientific Findings & Module Contributions
-1. **P2 Head (+A1)**: Resolves micro-scale features for distant workers and small helmets, boosting Recall significantly.
-2. **CoordConv Stem (+A2)**: Encodes vertical prior $y$, effectively separating high-elevation helmets from ground reflections.
-3. **RepConv Neck (+A3)**: Multi-branch gradient flow accelerates training convergence and improves feature representation without runtime inference cost.
-4. **Focal-EIoU Loss (+A4)**: Decouples width and height aspect ratios, balancing elongated vest bounding boxes with compact helmet boxes.
-5. **BiFormer Attention (+A5)**: Region-level routing dynamically suppresses complex background clutter in construction zones.
-6. **Full Fusion (A6)**: Synergizes all 5 modules to establish the new Champion performance benchmark.
+## 2. Objective Analysis & Root Causes of Modular Ablation Metrics
+1. **Short Training Schedule (20 Epochs)**: Stock YOLO11s (A0) starts from 100% pre-trained COCO weights, reaching 89.71% mAP50 rapidly. Conversely, modifying layers (A1-A6) partially invalidates pre-trained weights, requiring 100-300 epochs for full convergence.
+2. **P2 Head (+A1)**: Reduced parameters (4.75M) due to halved channel widths in custom YAML, transferring only 21.2% of pre-trained weights and causing a drop from 89.71% to 81.97% in 20 epochs.
+3. **CoordConv Stem (+A2)**: Retained 9.46M params, achieving 88.45% mAP50 and 91.57% Precision (+1.22% Precision over baseline) by encoding spatial elevation priors.
+4. **RepConv Neck (+A3)**: Maintained 84.89% mAP50. Uninitialized multi-branch convs require warm-up initialization or longer schedules to surpass baseline.
+5. **Focal-EIoU Loss (+A4)**: Achieved 84.89% mAP50 with 90.64% Precision (+0.29% Precision over A0) by decoupling aspect ratio penalties.
+6. **BiFormer Attention (+A5)**: Achieved 84.34% mAP50. Dynamic routing attention requires extended training steps to stabilize routing index assignments.
+7. **Full Fusion (A6)**: Combining all uninitialized modules simultaneously on a reduced-channel P2 backbone led to compounding optimization debt in 20 epochs (72.66% mAP50). For production training, pre-trained weight preservation and a full 100+ epoch schedule are mandatory.
