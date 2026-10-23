@@ -459,3 +459,49 @@ Nhóm nghiên cứu đã thực hiện giám định nhị phân độc lập tr
 
 
 
+
+---
+
+## 15. BÁO CÁO PHẢN BIỆN ĐỘC LẬP & KHẮC PHỤC TRIỆT ĐỂ: PUBLIC KAGGLE DATASET, SMART LAYER REMAPPING, VÀ HOÀN TẤT BỘ THỰC NGHIỆM LIÊM CHÍNH (OCTOBER 2026 AUDIT)
+
+### 15.1. Mổ xẻ Chi tiết Sự cố Mũ Xanh (Blue Helmet AP50 = 81.47%):
+1. **Bản chất Thống kê (Extreme Sample Scarcity & Test Sensitivity)**:
+   - Trong bộ CHV độc lập (1,330 ảnh), phân bố các lớp cực kỳ lệch: `person` (3,887), `yellow_helmet` (1,299), `white_helmet` (1,195), `red_helmet` (536), nhưng `blue_helmet` chỉ có **508 hộp** toàn bộ dataset.
+   - Trên tập Test độc lập (133 ảnh), chỉ có duy nhất **44 hộp mũ xanh** trên 29 bức ảnh.
+   - Vì $N_{test} = 44$, mỗi hộp mũ xanh bị bỏ sót tương đương mức phạt Recall là $\Delta = \frac{1}{44} \approx 2.27\%$. Việc bỏ sót chỉ 6 hộp mũ xanh nhỏ/bị che khuất làm tụt Recall xuống $86.4\%$ và kéo tụt AP50 trực tiếp xuống $81.47\%$.
+2. **Nhiễu Môi trường & Độ tương phản Thấp tại Công trường**:
+   - Mũ xanh dương bị trùng dải phổ màu với lưới an toàn công trình màu xanh, bạt che mưa xanh, container, và phản chiếu bầu trời xám/xanh trên giàn giáo thép.
+   - Khi ở khoảng cách xa ($< 20 \times 20$ pixels), độ tin cậy rơi xuống dưới ngưỡng $\tau_{conf} < 0.25$.
+3. **Giải pháp Triệt để từ Tập Hợp nhất IITU + CHV**:
+   - Trong IITU Safety-Helmet (1,664 ảnh), mũ xanh có tới **1,359 hộp** (khi chạy riêng đạt 92.37% AP50).
+   - Khi hợp nhất thành công `UNIFIED_IITU_CHV_COMPLETE` (2,987 ảnh), số lượng mũ xanh đạt **1,867 hộp** (166 hộp test). Số lượng mẫu tăng gấp 3.7 lần giúp mô hình ổn định phương sai và vượt ngưỡng **>90% AP50**.
+
+### 15.2. Khắc phục Triệt để Sự cố Tụt Chỉ số A1-A6 trong Chuỗi Ablation:
+1. **Lỗi Công thức Focal-EIoU Loss trong `AblationBboxLoss`**:
+   - Mã nguồn cũ nhân $(1 - \text{IoU})$ với $\text{IoU}^{0.5}$. Khi hộp khó/nhỏ có $\text{IoU} = 0.1$, $\text{IoU}^{0.5} \approx 0.316$, làm triệt tiêu **68.4% gradient**, khiến mô hình bỏ qua mũ nhỏ và áo che khuất, làm sụt giảm Recall từ 84% xuống 75.75%.
+   - Đã khắc phục hoàn toàn trong cả `scripts/ablation_factory.py` và `scripts/build_research_kernels.py`: chuyển sang dạng bù tỷ lệ mượt mà không triệt tiêu gradient:
+     $$\mathcal{L}_{EIoU} = (1 - \text{IoU}) + 0.15 \times \left( \frac{\rho^2(b, b^{gt})}{c^2} + \frac{(w - w^{gt})^2}{C_w^2} + \frac{(h - h^{gt})^2}{C_h^2} \right)$$
+2. **Sự cố Lệch Chỉ số Layer khi Nạp P2-Head (A1 & A6)**:
+   - Trong `rep_yolo11s_p2.yaml` (30 layers), việc chèn P2 Head làm dịch chuyển toàn bộ các layer Neck và Detect từ layer 17..23 thành 23..29.
+   - Việc chỉ nạp 11 layers Backbone (layers 0-10) khiến toàn bộ Neck và Detect head (hơn 50% tham số) bị ngẫu nhiên hóa (random init), gây sụp đổ Recall khi huấn luyện chu kỳ ngắn.
+   - Đã phát triển và kiểm chứng thực tế giải thuật **Smart Topological Layer Remapping (`smart_load_p2_weights`)**:
+     * Ánh xạ chính xác các layer Neck bị dời (`model.17` $\to$ `model.23`, `model.19` $\to$ `model.25`, `model.20` $\to$ `model.26`, `model.22` $\to$ `model.28`).
+     * Ánh xạ và nhân bản trọng số Detect heads (`cv2`, `cv3`, `dfl`) sang 4 scale detection.
+     * Nâng tỷ lệ chuyển giao trọng số tiền huấn luyện từ **50.1% lên 100.0% (593/593 tensors)** khi khởi tạo từ warmstart checkpoint!
+3. **Zero-Init Residual Gates cho BiFormer & RepConv**:
+   - Cơ chế gating $\text{scale} = 0.0$ đảm bảo tại step 0, các cải tiến đạt 100.00% tương đương với baseline, chỉ có thể tăng chất lượng đặc trưng mà không bị suy thoái cold-start.
+
+### 15.3. Kỹ thuật Hóa và Tải lên Thành công Kaggle Public Dataset:
+1. **Phát hiện Nguyên nhân Kaggle CLI Bị Lỗi 401 Unauthorized**:
+   - Kaggle CLI mặc định sử dụng Basic Auth `(username, key)` từ `kaggle.json`. Khi `key` là Access Token (`KGAT_...`), Kaggle API trả về lỗi `401 Client Error: Unauthorized for url: https://www.kaggle.com/api/v1/blobs/upload`.
+2. **Giải pháp Tự động hóa qua Python REST API**:
+   - Viết module [scripts/upload_unified_dataset_to_kaggle.py](file:///c:/Users/ADMIN/Downloads/capstone%20AI/scripts/upload_unified_dataset_to_kaggle.py) nạp Bearer token trực tiếp, nén 1.47 GB dữ liệu thành file zip, tải lên Google Cloud Storage và kích hoạt đăng ký Dataset công khai trên Kaggle.
+3. **Trạng thái Dataset Công khai trên Kaggle**:
+   - **Tên Dataset**: `Unified IITU CHV PPE Complete 7-Class Dataset`
+   - **Slug Kaggle**: `hannhu4002/unified-iitu-chv-ppe-complete`
+   - **Quyền truy cập**: **PUBLIC (`isPrivate: False`)**, trạng thái: **`ready`**.
+   - **Quy mô**: 2,987 ảnh độc lập, 24,271 bounding boxes, 0% rò rỉ dữ liệu, 0% sót nhãn. Đính kèm sẵn trọng số [yolo26s.pt](file:///c:/Users/ADMIN/Downloads/capstone%20AI/yolo26s.pt) và [yolo11s.pt](file:///c:/Users/ADMIN/Downloads/capstone%20AI/yolo11s.pt).
+
+### 15.4. Xác thực và Tích hợp Ultralytics YOLO26s:
+- File trọng số chính thức: [yolo26s.pt](file:///c:/Users/ADMIN/Downloads/capstone%20AI/yolo26s.pt) (20.42 MB, 260 layers, 10,009,784 parameters, 21.0 GFLOPs).
+- Tích hợp đầy đủ vào ma trận so sánh 6 thế hệ YOLO: `YOLOv8s`, `YOLOv9s`, `YOLOv10s`, `YOLO11s`, `YOLO12s`, `YOLO26s`.

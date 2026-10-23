@@ -1054,16 +1054,51 @@ head:
     Path(output_path).write_text(content.strip(), encoding="utf-8")
     return output_path
 
+def smart_load_p2_weights(p2_model, base_weight_path):
+    source_model = YOLO(base_weight_path)
+    sd_src = source_model.model.state_dict()
+    sd_dst = p2_model.model.state_dict()
+    mapped_dict = {}
+    for k, v in sd_src.items():
+        if k in sd_dst and sd_dst[k].shape == v.shape:
+            mapped_dict[k] = v
+    shift_map = {
+        'model.17.': 'model.23.',
+        'model.19.': 'model.25.',
+        'model.20.': 'model.26.',
+        'model.22.': 'model.28.',
+        'model.23.cv2.0.': 'model.29.cv2.1.',
+        'model.23.cv2.1.': 'model.29.cv2.2.',
+        'model.23.cv2.2.': 'model.29.cv2.3.',
+        'model.23.cv3.0.': 'model.29.cv3.1.',
+        'model.23.cv3.1.': 'model.29.cv3.2.',
+        'model.23.cv3.2.': 'model.29.cv3.3.',
+        'model.23.dfl.': 'model.29.dfl.'
+    }
+    for k, v in sd_src.items():
+        for src_prefix, dst_prefix in shift_map.items():
+            if k.startswith(src_prefix):
+                dst_k = dst_prefix + k[len(src_prefix):]
+                if dst_k in sd_dst and sd_dst[dst_k].shape == v.shape:
+                    mapped_dict[dst_k] = v
+                    if 'cv2.1.' in dst_k:
+                        p2_k = dst_k.replace('cv2.1.', 'cv2.0.')
+                        if p2_k in sd_dst and sd_dst[p2_k].shape == v.shape:
+                            mapped_dict[p2_k] = v
+                    if 'cv3.1.' in dst_k:
+                        p2_k = dst_k.replace('cv3.1.', 'cv3.0.')
+                        if p2_k in sd_dst and sd_dst[p2_k].shape == v.shape:
+                            mapped_dict[p2_k] = v
+    sd_dst.update(mapped_dict)
+    p2_model.model.load_state_dict(sd_dst, strict=False)
+    return p2_model
+
 P2_YAML = create_p2_yaml("/kaggle/working/rep_yolo11s_p2.yaml", nc=6)
 
 def build_ablation_model(ab_id: str, base_weight: str = "yolo11s.pt", nc: int = 6) -> YOLO:
     if ab_id in ["A1", "A6"]:
         base = YOLO(P2_YAML)
-        # Transfer backbone layers directly
-        base_m = YOLO(base_weight).model
-        with torch.no_grad():
-            for idx in range(11): # Layers 0 to 10
-                base.model.model[idx].load_state_dict(base_m.model[idx].state_dict(), strict=False)
+        smart_load_p2_weights(base, base_weight)
     else:
         base = YOLO(base_weight)
 

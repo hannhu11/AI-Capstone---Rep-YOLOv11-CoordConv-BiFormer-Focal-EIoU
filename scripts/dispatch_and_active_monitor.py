@@ -28,7 +28,7 @@ FLEET = [
         "slug": "dataset-strategy-transfer-learning-benchmark",
         "title": "Dataset Strategy & Transfer Learning Benchmark",
         "notebook": "notebooks/Dataset_Strategy_Transfer_Learning_Benchmark.ipynb",
-        "datasets": ["hannhu4002/chv-dataset", "dngtrnphmtunse183674/iitu-safety-helmet"],
+        "datasets": ["hannhu4002/unified-iitu-chv-ppe-complete", "hannhu4002/chv-dataset", "dngtrnphmtunse183674/iitu-safety-helmet"],
         "outdir": Path("Output/kaggle_results/hannhu4002_dataset_strategy")
     },
     {
@@ -36,7 +36,7 @@ FLEET = [
         "slug": "multi-generation-yolo-baseline-selection",
         "title": "Multi Generation YOLO Baseline Selection",
         "notebook": "notebooks/Multi_Generation_YOLO_Baseline_Selection.ipynb",
-        "datasets": ["hannhu4002/chv-dataset"],
+        "datasets": ["hannhu4002/unified-iitu-chv-ppe-complete", "hannhu4002/chv-dataset"],
         "outdir": Path("Output/kaggle_results/mnu303_yolo_multigen")
     },
     {
@@ -44,7 +44,7 @@ FLEET = [
         "slug": "warm-start-rep-yolo11s-ablation-rule-engine",
         "title": "Warm Start Rep YOLO11s Ablation & Rule Engine",
         "notebook": "notebooks/Rep_YOLO11s_WarmStart_Ablations_And_RuleEngine.ipynb",
-        "datasets": ["hannhu4002/chv-dataset"],
+        "datasets": ["hannhu4002/unified-iitu-chv-ppe-complete", "hannhu4002/chv-dataset"],
         "outdir": Path("Output/kaggle_results/hannhu40022_warmstart_ablations")
     }
 ]
