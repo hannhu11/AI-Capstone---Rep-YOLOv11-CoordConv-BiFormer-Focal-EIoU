@@ -17,6 +17,14 @@ import ultralytics.nn.modules as un_mod
 import ultralytics.nn.tasks as un_tasks
 import ultralytics.utils.loss as ul_loss
 
+# Add project root to sys.path for robust cross-directory imports
+root_dir = Path(__file__).resolve().parent.parent
+if str(root_dir) not in sys.path:
+    sys.path.insert(0, str(root_dir))
+scripts_dir = Path(__file__).resolve().parent
+if str(scripts_dir) not in sys.path:
+    sys.path.insert(0, str(scripts_dir))
+
 from custom_ablation_modules import CoordConv, RepConv, BiFormerBlockLite, focal_eiou_loss
 
 class BiFormerSequentialWrapper(nn.Module):
@@ -174,6 +182,15 @@ def build_ablation_model(ab_id: str, base_weight: str = "yolo11s.pt", p2_yaml_pa
     p2_path = Path(p2_yaml_path)
     if not p2_path.exists():
         create_p2_yaml(str(p2_path), nc=nc)
+    else:
+        try:
+            content = p2_path.read_text(encoding="utf-8")
+            import re
+            m_nc = re.search(r"^nc:\s*(\d+)", content, re.MULTILINE)
+            if m_nc and int(m_nc.group(1)) != nc:
+                create_p2_yaml(str(p2_path), nc=nc)
+        except Exception:
+            pass
 
     if ab_id in ["A1", "A6"]:
         # A1 and A6 use the P2 4-Head AFPN architecture
