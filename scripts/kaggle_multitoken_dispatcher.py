@@ -149,7 +149,7 @@ def get_kernel_output(account_name: str, slug: str, download_dir=None):
                 if len(parts) >= 6:
                     base_jwt_url = "/".join(parts[:6])
 
-            if file_url and (file_name.endswith(".md") or file_name.endswith(".png") or file_name.endswith(".yaml") or file_name.endswith(".csv") or file_name.endswith(".pt")):
+            if file_url and (file_name.endswith(".md") or file_name.endswith(".png") or file_name.endswith(".yaml") or file_name.endswith(".csv") or file_name.endswith(".pt") or file_name.endswith(".json")):
                 target = download_path / file_name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 print(f"  ⬇️ Downloading {file_name} -> {target}")
@@ -168,7 +168,18 @@ def get_kernel_output(account_name: str, slug: str, download_dir=None):
                 "TASK2_TRUE_MODULAR_ABLATION_REPORT.md",
                 "conflict_free_7class_comparison.csv",
                 "CONFLICT_FREE_7CLASS_BENCHMARK_REPORT.md",
-                "rep_yolo11s_chv7_best_deploy.pt"
+                "rep_yolo11s_chv7_best_deploy.pt",
+                "dataset_strategy_benchmark_results.csv",
+                "DATASET_STRATEGY_BENCHMARK_REPORT.md",
+                "yolo_multigen_chv_benchmark.csv",
+                "MULTI_GENERATION_YOLO_REPORT.md",
+                "warmstart_modular_ablation_results.csv",
+                "WARMSTART_ABLATION_AND_RULE_ENGINE_REPORT.md",
+                "rep_yolo11s_chv6_warmstart_deploy.pt",
+                "zalo_alert_payloads.json",
+                "dataset_strategy_comparison.png",
+                "yolo_multigen_chv_comparison.png",
+                "warmstart_modular_ablation_comparison.png"
             ]
             for art in probed_artifacts:
                 art_target = download_path / art

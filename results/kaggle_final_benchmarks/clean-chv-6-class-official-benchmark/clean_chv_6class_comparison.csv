@@ -1,0 +1,3 @@
+Model,Parameters,Precision,Recall,mAP@50,mAP@50-95,Safety Vest AP50,Train Time (min)
+Baseline YOLO11s (A0),"9,458,752",90.06%,86.20%,90.56%,52.95%,89.48%,13.58
+Proposed Rep-YOLO11s Full Fusion (A6),"10,624,840",92.66%,83.42%,89.18%,50.13%,86.98%,22.04

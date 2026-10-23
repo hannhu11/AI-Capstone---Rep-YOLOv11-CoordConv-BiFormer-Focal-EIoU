@@ -1,0 +1,7 @@
+path: /kaggle/working/CHV_7CLASS_CONFLICT_FREE
+train: images/train
+val: images/val
+test: images/test
+
+nc: 7
+names: ['blue_helmet', 'red_helmet', 'white_helmet', 'yellow_helmet', 'no_helmet', 'safety_vest', 'person']

@@ -1,0 +1,8 @@
+Ablation ID,Configuration,Description,Parameters,Layers,Precision,Recall,mAP@50,mAP@50-95,Safety Vest AP50,Train Time (min)
+A0,Baseline YOLO11s,Standard stock YOLO11s,"9,458,752",24,89.06%,86.58%,90.88%,52.08%,89.39%,10.11
+A1,+ P2 Small-Object Head,4-head high-resolution AFPN,"9,576,072",30,88.77%,84.74%,90.30%,50.38%,88.63%,13.73
+A2,+ CoordConv Stem,Spatial vertical coordinate priors,"9,459,328",24,92.09%,85.24%,90.84%,53.50%,90.64%,9.40
+A3,+ RepConv Re-Param,Structural re-parameterization branches,"9,758,400",24,89.60%,86.10%,90.32%,52.41%,90.14%,9.74
+A4,+ Focal EIoU Loss,Aspect ratio decoupling and hard sample focus,"9,758,400",24,89.29%,84.72%,89.70%,52.24%,89.77%,9.75
+A5,+ BiFormer Attention,Bi-level routing attention across P4/P5,"10,808,000",24,90.47%,82.86%,89.63%,52.62%,86.72%,10.87
+A6,Full Fusion (Proposed),Rep-YOLO11s full integrated champion,"10,930,120",30,87.18%,84.37%,89.01%,50.54%,88.53%,15.55
