@@ -172,16 +172,15 @@ def get_kernel_output(account_name: str, slug: str, download_dir=None):
             ]
             for art in probed_artifacts:
                 art_target = download_path / art
-                if not art_target.exists():
-                    probe_url = f"{base_jwt_url}/{art}"
-                    try:
-                        r_probe = requests.get(probe_url, timeout=30)
-                        if r_probe.status_code == 200:
-                            with open(art_target, "wb") as out_f:
-                                out_f.write(r_probe.content)
-                            print(f"  🎯 [JWT Direct Download] Recovered capped artifact: {art} ({len(r_probe.content)} bytes)")
-                    except Exception as e:
-                        pass
+                probe_url = f"{base_jwt_url}/{art}"
+                try:
+                    r_probe = requests.get(probe_url, timeout=30)
+                    if r_probe.status_code == 200 and len(r_probe.content) > 0:
+                        with open(art_target, "wb") as out_f:
+                            out_f.write(r_probe.content)
+                        print(f"  🎯 [JWT Direct Download] Refreshed artifact: {art} ({len(r_probe.content)} bytes)")
+                except Exception as e:
+                    pass
     return data
 
 def status_all():

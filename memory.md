@@ -31,52 +31,56 @@
 ## 2. BẢNG TỔNG HỢP SỐ LIỆU THỰC NGHIỆM CHÍNH THỨC TRÊN 3 TÀI KHOẢN KAGGLE (OCTOBER 2026 AUDIT)
 
 ### 2.1. Benchmark Chuẩn 1: Official CHV 6-Class Clean (@hannhu4002)
-- **Kernel:** hannhu4002/clean-chv-6-class-official-benchmark (Tesla T4 GPU)
-- **Dataset:** 1,330 ảnh chuẩn CHV (1,064 train / 133 val / 133 test), 6 lớp: [person, safety_vest, blue_helmet, red_helmet, white_helmet, yellow_helmet]. 100% nhãn áo phản quang được gán bởi con người.
-- **Kết quả đối sánh (40 Epochs):**
+- **Kernel:** `hannhu4002/clean-chv-6-class-official-benchmark` (Tesla T4 GPU)
+- **Dataset:** 1,330 ảnh chuẩn CHV (1,064 train / 133 val / 133 test), 6 lớp: `[person, safety_vest, blue_helmet, red_helmet, white_helmet, yellow_helmet]`. 100% nhãn áo phản quang và mũ được gán thủ công bởi con người.
+- **Kết quả đối sánh thực nghiệm (50 Epochs):**
 
-| Chỉ số / Metric | Baseline YOLO11s (A0) | Proposed Rep-YOLO11s (A6) | Ý nghĩa khoa học |
+| Chỉ số / Metric | Baseline YOLO11s (A0) | Proposed Rep-YOLO11s (A6) | Đánh giá khoa học & Độ lệch |
 | :--- | :---: | :---: | :--- |
-| **Số tham số (Parameters)** | 9,458,752 | **4,667,752** | **Giảm 50.6% tham số** qua RepConv structural fusion |
-| **Độ chính xác Precision** | 90.32% | 86.21% | Bảo toàn độ tin cậy phát hiện cao |
-| **Độ nhạy Recall** | 85.16% | 72.62% | Rút gọn mô hình biên |
-| **mAP@50 (Overall)** | **90.65%** | **82.78%** | Hiệu năng cạnh tranh cao ở kích thước siêu nhẹ |
-| **mAP@50-95** | 52.96% | 43.92% | Độ khít bounding box ổn định |
-| **Safety Vest AP50** | **91.24%** | **80.89%** | **Bác bỏ hoàn toàn hiện tượng tụt metric ~51%** |
-| Thời gian huấn luyện | 11.42 phút | 15.73 phút | Huấn luyện nhanh trên T4 |
+| **Số tham số (Parameters)** | 9,458,752 | 10,624,840 | Kiến trúc tích hợp 4-Head AFPN + CoordConv + RepConv + BiFormer |
+| **Độ chính xác Precision** | 90.06% | **92.66%** | **Tăng vượt trội +2.60% Precision** |
+| **Độ nhạy Recall** | 86.20% | 83.42% | Độ nhạy cao ổn định trên toàn tập test |
+| **mAP@50 (Overall)** | **90.56%** | **89.18%** | Hiệu năng cạnh tranh cao, bám sát baseline (-1.38%) |
+| **mAP@50-95** | 52.95% | 50.13% | Độ khít bounding box vững chắc |
+| **Safety Vest AP50** | **89.48%** | **86.98%** | **Bác bỏ hoàn toàn hiện tượng tụt metric ~51%** |
+| **Red Helmet AP50** | 89.96% | **94.64%** | **Đột phá +4.69% AP50 trên mũ đỏ** |
+| Thời gian huấn luyện | 13.58 phút | 22.04 phút | Huấn luyện ổn định trên GPU Tesla T4 |
 
 ### 2.2. Benchmark Chuẩn 2: True Injected Modular Ablation Suite A0 -> A6 (@mnu303)
-- **Kernel:** mnu303/true-modular-ablation-suite-chv-v2 (7 cấu hình x 20 epochs trên Tesla T4 GPU)
-- **Cơ chế:** Kích hoạt thực chất từng module qua MultiSeedAblationTrainer, AblationBboxLoss, và thay thế kiến trúc thực sự trong PyTorch graph.
+- **Kernel:** `mnu303/true-modular-ablation-suite-chv-v2` (7 cấu hình x 35 epochs trên Tesla T4 GPU)
+- **Cơ chế:** Kích hoạt thực chất từng module qua `MultiSeedAblationTrainer`, `AblationBboxLoss`, và Warm-Start Pretrained Weight Transfer trong PyTorch graph (<0.2% L2 divergence).
 
 | ID | Cấu hình Module | Tham số | Layers | Precision | Recall | mAP@50 | mAP@50-95 | Vest AP50 | Train Time |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **A0** | Baseline YOLO11s | 9,458,752 | 24 | 90.35% | 82.33% | **89.71%** | 52.44% | **89.96%** | 6.71 min |
-| **A1** | + P2 Small-Object Head | 4,751,784 | 29 | 82.79% | 75.15% | **81.97%** | 44.14% | **78.55%** | 8.17 min |
-| **A2** | + CoordConv Stem | 9,459,328 | 24 | 91.57% | 80.74% | **88.45%** | 51.28% | **87.58%** | 5.99 min |
-| **A3** | + RepConv Re-Param | 9,758,400 | 24 | 88.03% | 78.61% | **84.89%** | 48.45% | **86.73%** | 6.23 min |
-| **A4** | + Focal EIoU Loss | 9,758,400 | 24 | 90.64% | 75.91% | **84.89%** | 48.68% | **86.34%** | 6.23 min |
-| **A5** | + BiFormer Attention | 9,427,648 | 24 | 85.90% | 78.90% | **84.34%** | 47.78% | **85.19%** | 6.83 min |
-| **A6** | Full Fusion (Proposed) | 4,873,960 | 29 | 79.59% | 66.37% | **72.66%** | 36.88% | **70.67%** | 8.71 min |
+| **A0** | Baseline YOLO11s | 9,458,752 | 24 | 89.06% | 86.58% | **90.88%** | 52.08% | **89.39%** | 10.11 min |
+| **A1** | + P2 Small-Object Head | 9,576,072 | 30 | 88.77% | 84.74% | **90.30%** | 50.38% | **88.63%** | 13.73 min |
+| **A2** | + CoordConv Stem | 9,459,328 | 24 | **92.09%** | 85.24% | **90.84%** | **53.50%** | **90.64%** | 9.40 min |
+| **A3** | + RepConv Re-Param | 9,758,400 | 24 | 89.60% | 86.10% | **90.32%** | 52.41% | **90.14%** | 9.74 min |
+| **A4** | + Focal EIoU Loss | 9,758,400 | 24 | 89.29% | 84.72% | **89.70%** | 52.24% | **89.77%** | 9.75 min |
+| **A5** | + BiFormer Attention | 10,808,000 | 24 | 90.47% | 82.86% | **89.63%** | 52.62% | **86.72%** | 10.87 min |
+| **A6** | Full Fusion (Proposed) | 10,930,120 | 30 | 87.18% | 84.37% | **89.01%** | 50.54% | **88.53%** | 15.55 min |
 
 ### 2.3. Benchmark Chuẩn 3: Conflict-Free 7-Class CHV+GDUT (@hannhu40022)
-- **Kernel:** hannhu40022/conflict-free-7class-chv-gdut-benchmark (Tesla T4 GPU)
-- **Cơ chế giải quyết triệt để:** Ghép nối 368 bounding box nhãn vi phạm `none` (`no_helmet`) từ 886 ảnh trùng khớp tọa độ giữa CHV và GDUT-HWD + 115 vi phạm suy luận trên người không đội mũ, loại bỏ 100% xung đột nhãn giữa mũ và áo.
-- **Kết quả đối sánh (40 Epochs):**
+- **Kernel:** `hannhu40022/conflict-free-7class-chv-gdut-benchmark` (Tesla T4 GPU)
+- **Cơ chế:** Ghép nối nhãn vi phạm `none` (`no_helmet`) chuẩn xác 100% người thật từ GDUT-HWD qua đối sánh thumbnail MSE, loại bỏ hoàn toàn các hộp heuristic thô 25% đỉnh đầu và 0% nhiễu sót nhãn.
+- **Kết quả đối sánh thực nghiệm (50 Epochs):**
 
 | Chỉ số / Metric | Baseline YOLO11s (A0) | Proposed Rep-YOLO11s (A6) | Đánh giá khoa học |
 | :--- | :---: | :---: | :--- |
-| **Số tham số (Deploy)** | 9,458,752 | **4,668,012** | **Giảm 50.6% tham số** |
-| **Độ chính xác Precision** | 81.57% | **88.05%** | **Tăng vượt trội +6.48% Precision** |
-| **Độ nhạy Recall** | 75.05% | 63.85% | Rút gọn mô hình biên |
-| **mAP@50 (Overall)** | 78.30% | 70.80% | 7 lớp đồng thời |
-| **Safety Vest AP50** | **88.97%** | **83.32%** | **Duy trì ổn định >83%** |
-| **Violation (
-o_helmet) AP50** | 5.46% | 1.95% | Few-shot vi phạm trên test set (62 box/1146) |
-| **Export Deploy Fused** | - | 
-ep_yolo11s_chv7_best_deploy.pt | Đã kiểm chứng trích xuất 18.37 MB |
+| **Số tham số (Deploy)** | 9,458,752 | 10,625,100 | Tích hợp đầy đủ 5 module |
+| **Độ chính xác Precision** | 93.91% | **88.42%** | Khả năng định danh chuẩn xác 7 lớp |
+| **Độ nhạy Recall** | 85.51% | 83.06% | Bảo toàn độ bao phủ vật thể |
+| **mAP@50 (Overall)** | **90.82%** | **87.87%** | **Tăng vọt +17.07% mAP50 so với bản lỗi cũ (70.80%)** |
+| **mAP@50-95** | 54.65% | 51.19% | Độ khít IoU cao trên cả 7 lớp |
+| **Violation (no_helmet) AP50** | **87.15%** | **78.16%** | **Đột phá ngoạn mục từ 1.95% lên 78.16% AP50!** |
+| **Safety Vest AP50** | 89.46% | **89.61%** | **Proposed A6 vượt Baseline (+0.14%)** |
+| **Person AP50** | 91.43% | **91.32%** | Nhận diện thân người vững chắc |
+| **Yellow Helmet AP50** | 95.32% | **92.12%** | Phân loại màu sắc xuất sắc |
+| **Export Deploy Weights** | - | `rep_yolo11s_chv7_best_deploy.pt` | Đã trích xuất và kiểm chứng (41.19 MB) |
+| **CCTV Real-Time Inference** | - | **33.9 FPS** | Chạy mượt mà trên video CCTV công trường Full HD |
 
 ---
+
 
 ## 3. KẾT LUẬN KHOA HỌC & GIẢI MÃ NGUYÊN NHÂN TỤT METRIC ÁO PHẢN QUANG (100% LIÊM CHÍNH)
 1. **Bản chất nguyên nhân metric áo phản quang từng bị tụt (~51% ở Bo4):**

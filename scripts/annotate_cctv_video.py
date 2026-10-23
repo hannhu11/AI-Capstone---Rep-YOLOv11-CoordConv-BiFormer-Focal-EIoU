@@ -14,6 +14,11 @@ import ultralytics.nn.modules as un_mod
 import ultralytics.nn.tasks as un_tasks
 
 # Register custom classes for torch unpickler compatibility
+from scripts.ablation_factory import BiFormerSequentialWrapper
+setattr(sys.modules['__main__'], 'BiFormerSequentialWrapper', BiFormerSequentialWrapper)
+setattr(un_mod, 'BiFormerSequentialWrapper', BiFormerSequentialWrapper)
+setattr(un_tasks, 'BiFormerSequentialWrapper', BiFormerSequentialWrapper)
+
 for name in dir(cam):
     obj = getattr(cam, name)
     if isinstance(obj, type):

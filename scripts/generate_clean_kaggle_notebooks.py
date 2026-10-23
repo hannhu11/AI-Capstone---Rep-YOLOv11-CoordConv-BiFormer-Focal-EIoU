@@ -242,6 +242,29 @@ class BiFormerBlockLite(nn.Module):
     def fuse_convs(self): pass
     def forward_fuse(self, x): return self.forward(x)
 
+class BiFormerSequentialWrapper(nn.Module):
+    def __init__(self, orig_layer, biformer):
+        super().__init__()
+        self.orig_layer = orig_layer
+        self.biformer = biformer
+        self.i = getattr(orig_layer, 'i', 10)
+        self.f = getattr(orig_layer, 'f', -1)
+        self.type = 'BiFormerSequentialWrapper'
+        self.biformer.norm.eps = 0.001
+        with torch.no_grad():
+            self.biformer.norm.weight.fill_(1e-2)
+            self.biformer.norm.bias.zero_()
+            self.biformer.proj.weight.fill_(1e-2)
+            if self.biformer.proj.bias is not None:
+                self.biformer.proj.bias.zero_()
+
+    def forward(self, x):
+        return self.biformer(self.orig_layer(x))
+
+    def fuse(self):
+        if hasattr(self.orig_layer, 'fuse'):
+            self.orig_layer.fuse()
+
 # Register modules into Ultralytics
 import ultralytics.nn.modules as un_mod
 import ultralytics.nn.tasks as un_tasks
@@ -250,9 +273,11 @@ import ultralytics.utils.loss as ul_loss
 un_mod.CoordConv = CoordConv
 un_mod.RepConv = RepConv
 un_mod.BiFormerBlockLite = BiFormerBlockLite
+un_mod.BiFormerSequentialWrapper = BiFormerSequentialWrapper
 setattr(un_tasks, 'CoordConv', CoordConv)
 setattr(un_tasks, 'RepConv', RepConv)
 setattr(un_tasks, 'BiFormerBlockLite', BiFormerBlockLite)
+setattr(un_tasks, 'BiFormerSequentialWrapper', BiFormerSequentialWrapper)
 
 class AblationBboxLoss(ul_loss.BboxLoss):
     def forward(self, pred_dist, pred_bboxes, anchor_points, target_bboxes, target_scores, target_scores_sum, fg_mask, *args, **kwargs):
@@ -381,48 +406,73 @@ class MultiSeedAblationTrainer(DetectionTrainer):
         return model
 
 def build_ablation_model(ab_id: str, base_weight: str = "yolo11s.pt", p2_yaml_path: str = "rep_yolo11s_p2.yaml", nc: int = 6) -> YOLO:
+    """Builds and wires the specified ablation model with warm-start weight preservation."""
     p2_path = Path(p2_yaml_path)
     if not p2_path.exists():
         create_p2_yaml(str(p2_path), nc=nc)
 
-    if ab_id == "A1":
-        base = YOLO(str(p2_path))
-        base.load(base_weight)
-        return base
-
-    if ab_id == "A6":
+    if ab_id in ["A1", "A6"]:
+        # A1 and A6 use the P2 4-Head AFPN architecture
         base = YOLO(str(p2_path))
         base.load(base_weight)
     else:
         base = YOLO(base_weight)
 
     m = base.model
-    if ab_id == "A0":
+    if ab_id in ["A0", "A1"]:
         return base
 
+    # A2 or A6: Inject CoordConv into Stem (layer 0) with Warm-Start Weight Transfer
     if ab_id in ["A2", "A6"]:
-        conv0 = m.model[0].conv
-        coord_conv = CoordConv(c1=conv0.in_channels, c2=conv0.out_channels, k=3, s=2, with_r=False)
+        orig_conv0 = m.model[0]
+        c1, c2 = orig_conv0.conv.in_channels, orig_conv0.conv.out_channels
+        coord_conv = CoordConv(c1=c1, c2=c2, k=3, s=2, with_r=False)
+        coord_conv.conv.bn.eps = orig_conv0.bn.eps
+        with torch.no_grad():
+            coord_conv.conv.conv.weight.zero_()
+            coord_conv.conv.conv.weight[:, :c1, :, :].copy_(orig_conv0.conv.weight)
+            coord_conv.conv.conv.weight[:, c1:, :, :].normal_(0.0, 1e-4)
+            coord_conv.conv.bn.weight.copy_(orig_conv0.bn.weight)
+            coord_conv.conv.bn.bias.copy_(orig_conv0.bn.bias)
+            coord_conv.conv.bn.running_mean.copy_(orig_conv0.bn.running_mean)
+            coord_conv.conv.bn.running_var.copy_(orig_conv0.bn.running_var)
         coord_conv.i, coord_conv.f, coord_conv.type = 0, -1, "CoordConv"
         m.model[0] = coord_conv
 
+    # A3, A4, A5, A6: Inject RepConv into 3x3 Conv layers with Warm-Start Weight Transfer
     if ab_id in ["A3", "A4", "A5", "A6"]:
         for idx, layer in enumerate(m.model):
             if idx > 0 and hasattr(layer, "conv") and hasattr(layer.conv, "kernel_size") and layer.conv.kernel_size == (3, 3):
                 c1, c2, s = layer.conv.in_channels, layer.conv.out_channels, layer.conv.stride[0]
                 rep_conv = RepConv(c1=c1, c2=c2, k=3, s=s, deploy=False)
+                rep_conv.rbr_dense[1].eps = layer.bn.eps
+                rep_conv.rbr_1x1[1].eps = layer.bn.eps
+                with torch.no_grad():
+                    rep_conv.rbr_dense[0].weight.copy_(layer.conv.weight)
+                    rep_conv.rbr_dense[1].weight.copy_(layer.bn.weight)
+                    rep_conv.rbr_dense[1].bias.copy_(layer.bn.bias)
+                    rep_conv.rbr_dense[1].running_mean.copy_(layer.bn.running_mean)
+                    rep_conv.rbr_dense[1].running_var.copy_(layer.bn.running_var)
+                    rep_conv.rbr_1x1[1].weight.fill_(1e-2)
+                    rep_conv.rbr_1x1[1].bias.zero_()
+                    if rep_conv.rbr_identity is not None:
+                        rep_conv.rbr_identity.eps = layer.bn.eps
+                        rep_conv.rbr_identity.weight.fill_(1e-2)
+                        rep_conv.rbr_identity.bias.zero_()
                 rep_conv.i, rep_conv.f, rep_conv.type = getattr(layer, "i", idx), getattr(layer, "f", -1), "RepConv"
                 m.model[idx] = rep_conv
 
+    # A5 or A6: Inject BiFormer attention block with Residual Preservation
     if ab_id in ["A5", "A6"]:
         for idx, layer in enumerate(m.model):
             if layer.__class__.__name__ in ["C2PSA", "C3k2"] and idx >= 8:
                 c_in = 512
                 if hasattr(layer, "cv1") and hasattr(layer.cv1, "conv"):
                     c_in = layer.cv1.conv.in_channels
+                elif hasattr(layer, "c1"):
+                    c_in = layer.c1
                 biformer = BiFormerBlockLite(channels=c_in, num_heads=4, region_size=8, topk=4)
-                biformer.i, biformer.f, biformer.type = getattr(layer, "i", idx), getattr(layer, "f", -1), "BiFormerBlockLite"
-                m.model[idx] = biformer
+                m.model[idx] = BiFormerSequentialWrapper(layer, biformer)
                 break
 
     base.model = m
@@ -563,12 +613,12 @@ for s in ["train", "val", "test"]:
     print(f"  [{s.upper()}] Images: {len(list((OUT_DIR / 'images' / s).glob('*.*')))} | BBoxes: {sum(stats_6[s].values())}")
 '''))
 
-    cells.append(make_cell(r'''# CELL 4: TRAIN BASELINE YOLO11s (A0) - 40 EPOCHS
+    cells.append(make_cell(r'''# CELL 4: TRAIN BASELINE YOLO11s (A0) - 50 EPOCHS
 import time
 from ultralytics import YOLO
 
 print("=" * 80)
-print("[EXECUTION] TRAINING MODEL 1: BASELINE YOLO11s (A0) - 40 EPOCHS")
+print("[EXECUTION] TRAINING MODEL 1: BASELINE YOLO11s (A0) - 50 EPOCHS")
 print("=" * 80)
 
 os.environ["CURRENT_ABLATION_ID"] = "A0"
@@ -577,7 +627,7 @@ model_a0 = YOLO("yolo11s.pt")
 t_start_a0 = time.time()
 results_a0 = model_a0.train(
     data=str(yaml_path),
-    epochs=40,
+    epochs=50,
     imgsz=640,
     batch=BATCH_SIZE,
     device=DEVICE_CFG,
@@ -612,12 +662,12 @@ for i, name in enumerate(classes_6):
     print(f"  -> Class {i} ({name}): AP50 = {ap50_cls*100:.2f}%")
 '''))
 
-    cells.append(make_cell(r'''# CELL 5: TRAIN PROPOSED CHAMPION REP-YOLO11s FULL FUSION (A6) - 40 EPOCHS
+    cells.append(make_cell(r'''# CELL 5: TRAIN PROPOSED CHAMPION REP-YOLO11s FULL FUSION (A6) - 50 EPOCHS
 import time
 from ultralytics import YOLO
 
 print("=" * 80)
-print("[EXECUTION] TRAINING MODEL 2: PROPOSED REP-YOLO11s FULL FUSION (A6) - 40 EPOCHS")
+print("[EXECUTION] TRAINING MODEL 2: PROPOSED REP-YOLO11s FULL FUSION (A6) - 50 EPOCHS")
 print("=" * 80)
 
 os.environ["CURRENT_ABLATION_ID"] = "A6"
@@ -630,7 +680,7 @@ t_start_a6 = time.time()
 results_a6 = model_a6.train(
     trainer=MultiSeedAblationTrainer,
     data=str(yaml_path),
-    epochs=40,
+    epochs=50,
     imgsz=640,
     batch=BATCH_SIZE,
     device=DEVICE_CFG,
@@ -891,7 +941,7 @@ ABLATIONS = [
     {"id": "A6", "name": "Full Fusion (Proposed)", "desc": "Rep-YOLO11s full integrated champion"},
 ]
 
-EPOCHS_PER_ABLATION = 20
+EPOCHS_PER_ABLATION = 35
 RUNS_DIR = Path("/kaggle/working/ablation_runs")
 RUNS_DIR.mkdir(parents=True, exist_ok=True)
 create_p2_yaml("/kaggle/working/rep_yolo11s_p2.yaml", nc=6)
@@ -1148,10 +1198,27 @@ CHV_TO_7_MAP = {
     5: 3  # yellow -> 3
 }
 
-chv_helmet_name = {2: 'blue', 3: 'red', 4: 'white', 5: 'yellow'}
+from PIL import Image
+import numpy as np
+
+print("[INFO] Indexing GDUT visual fingerprints for exact matching...")
+gdut_hashes = {}
+if gdut_root is not None:
+    for gp in (gdut_root / "JPEGImages").glob("*.*"):
+        try:
+            with Image.open(gp) as im:
+                thumb = im.convert('L').resize((16, 16), Image.Resampling.BILINEAR)
+                arr = np.array(thumb, dtype=np.float32)
+                arr = (arr - arr.mean()) / (arr.std() + 1e-5)
+                gdut_hashes[gp.stem] = (im.size, arr)
+        except Exception:
+            pass
+    print(f"[INFO] Indexed {len(gdut_hashes)} GDUT visual fingerprints.")
+
 stats_7 = {"train": Counter(), "val": Counter(), "test": Counter()}
 matched_count = 0
-inferred_count = 0
+gdut_none_count = 0
+excluded_count = 0
 
 for img_path in sorted((chv_root / "images").glob("*.*")):
     stem = img_path.stem
@@ -1164,10 +1231,6 @@ for img_path in sorted((chv_root / "images").glob("*.*")):
     else:
         continue
 
-    dst_img = OUT_DIR / "images" / split / f"{stem}.jpg"
-    if not dst_img.exists():
-        shutil.copy2(img_path, dst_img)
-
     src_ann = chv_root / "annotations" / f"{stem}.txt"
     chv_boxes = []
     if src_ann.exists():
@@ -1176,22 +1239,37 @@ for img_path in sorted((chv_root / "images").glob("*.*")):
             if len(parts) >= 5:
                 chv_boxes.append((int(parts[0]), float(parts[1]), float(parts[2]), float(parts[3]), float(parts[4])))
 
-    # Match to GDUT
-    chv_helmets = [(chv_helmet_name[cid], xc, yc, bw, bh) for cid, xc, yc, bw, bh in chv_boxes if cid in chv_helmet_name]
+    n_person = sum(1 for cid, *_ in chv_boxes if cid == 0)
+    n_helmet = sum(1 for cid, *_ in chv_boxes if cid in [2, 3, 4, 5])
+    is_unhelmeted = n_person > n_helmet
+
+    # Visual thumbnail matching with GDUT
     best_gdut = None
-    for gdut_stem, (gw, gh, gdut_boxes) in gdut_data.items():
-        gdut_colored = [(c, xc, yc, bw, bh) for (c, xc, yc, bw, bh) in gdut_boxes if c in ['blue', 'red', 'white', 'yellow']]
-        if len(gdut_colored) != len(chv_helmets):
-            continue
-        all_matched = True
-        for (cc, c_xc, c_yc, c_bw, c_bh) in chv_helmets:
-            found = any(gc == cc and abs(c_xc - g_xc) < 0.05 and abs(c_yc - g_yc) < 0.05 for (gc, g_xc, g_yc, g_bw, g_bh) in gdut_colored)
-            if not found:
-                all_matched = False
-                break
-        if all_matched:
-            best_gdut = gdut_stem
-            break
+    if gdut_hashes:
+        with Image.open(img_path) as im:
+            sz = im.size
+            thumb = im.convert('L').resize((16, 16), Image.Resampling.BILINEAR)
+            arr = np.array(thumb, dtype=np.float32)
+            arr = (arr - arr.mean()) / (arr.std() + 1e-5)
+
+            best_diff = 1e9
+            for gstem, (gsz, garr) in gdut_hashes.items():
+                if sz == gsz:
+                    mse = np.mean((arr - garr) ** 2)
+                    if mse < best_diff:
+                        best_diff = mse
+                        best_stem = gstem
+            if best_diff < 0.05:
+                best_gdut = best_stem
+
+    # Zero crude heuristics: exclude images with unannotated bare heads
+    if is_unhelmeted and best_gdut is None:
+        excluded_count += 1
+        continue
+
+    dst_img = OUT_DIR / "images" / split / f"{stem}.jpg"
+    if not dst_img.exists():
+        shutil.copy2(img_path, dst_img)
 
     final_boxes_7 = []
     for cid, xc, yc, bw, bh in chv_boxes:
@@ -1199,25 +1277,11 @@ for img_path in sorted((chv_root / "images").glob("*.*")):
 
     if best_gdut is not None:
         matched_count += 1
-        gw, gh, gdut_boxes = gdut_data[best_gdut]
+        gw, gh, gdut_boxes = gdut_data.get(best_gdut, (0, 0, []))
         for cname, xc, yc, bw, bh in gdut_boxes:
             if cname == 'none':
                 final_boxes_7.append((4, xc, yc, bw, bh))
-    else:
-        # Infer unhelmeted head for persons with no helmet box in upper 25% region
-        persons = [(xc, yc, bw, bh) for cid, xc, yc, bw, bh in chv_boxes if cid == 0]
-        helmets = [(xc, yc, bw, bh) for cid, xc, yc, bw, bh in chv_boxes if cid in [2, 3, 4, 5]]
-        for p_xc, p_yc, p_bw, p_bh in persons:
-            head_top = p_yc - p_bh / 2.0
-            head_bottom = head_top + p_bh * 0.25
-            head_yc = (head_top + head_bottom) / 2.0
-            head_bh = p_bh * 0.25
-            head_xc = p_xc
-            head_bw = p_bw * 0.5
-            has_helmet = any(abs(h_xc - head_xc) < (head_bw + h_bw)/2.0 and abs(h_yc - head_yc) < (head_bh + h_bh)/2.0 for h_xc, h_yc, h_bw, h_bh in helmets)
-            if not has_helmet and head_bh > 0.02 and head_bw > 0.02:
-                final_boxes_7.append((4, head_xc, head_yc, head_bw, head_bh))
-                inferred_count += 1
+                gdut_none_count += 1
 
     dst_ann = OUT_DIR / "labels" / split / f"{stem}.txt"
     lines_7 = []
@@ -1236,18 +1300,19 @@ nc: 7
 names: {TARGET_7_NAMES}
 """
 yaml_path.write_text(yaml_content, encoding="utf-8")
-print(f"[SUCCESS] 7-Class Dataset generated at {OUT_DIR}")
-print(f"  Matched to GDUT: {matched_count} images | Inferred violation boxes: {inferred_count}")
+print(f"[SUCCESS] 7-Class Conflict-Free Dataset generated at {OUT_DIR}")
+print(f"  Matched to GDUT: {matched_count} images | Added human 'none' boxes: {gdut_none_count}")
+print(f"  Excluded {excluded_count} unannotated bare head images (Zero crude heuristics!).")
 for s in ["train", "val", "test"]:
     print(f"  [{s.upper()}] Images: {len(list((OUT_DIR / 'images' / s).glob('*.*')))} | BBoxes: {sum(stats_7[s].values())}")
 '''))
 
-    cells.append(make_cell(r'''# CELL 4: TRAIN BASELINE YOLO11s (A0) ON 7-CLASS - 40 EPOCHS
+    cells.append(make_cell(r'''# CELL 4: TRAIN BASELINE YOLO11s (A0) ON 7-CLASS - 50 EPOCHS
 import time
 from ultralytics import YOLO
 
 print("=" * 80)
-print("[EXECUTION] TRAINING BASELINE YOLO11s (A0) ON CONFLICT-FREE 7-CLASS DATASET")
+print("[EXECUTION] TRAINING BASELINE YOLO11s (A0) ON CONFLICT-FREE 7-CLASS DATASET - 50 EPOCHS")
 print("=" * 80)
 
 os.environ["CURRENT_ABLATION_ID"] = "A0"
@@ -1256,7 +1321,7 @@ model_a0 = YOLO("yolo11s.pt")
 t_start_a0 = time.time()
 results_a0 = model_a0.train(
     data=str(yaml_path),
-    epochs=40,
+    epochs=50,
     imgsz=640,
     batch=BATCH_SIZE,
     device=DEVICE_CFG,
@@ -1291,12 +1356,12 @@ for i, name in enumerate(TARGET_7_NAMES):
     print(f"  -> Class {i} ({name}): AP50 = {ap50_cls*100:.2f}%")
 '''))
 
-    cells.append(make_cell(r'''# CELL 5: TRAIN PROPOSED REP-YOLO11s FULL FUSION (A6) ON 7-CLASS - 40 EPOCHS
+    cells.append(make_cell(r'''# CELL 5: TRAIN PROPOSED REP-YOLO11s FULL FUSION (A6) ON 7-CLASS - 50 EPOCHS
 import time
 from ultralytics import YOLO
 
 print("=" * 80)
-print("[EXECUTION] TRAINING PROPOSED REP-YOLO11s FULL FUSION (A6) ON CONFLICT-FREE 7-CLASS DATASET")
+print("[EXECUTION] TRAINING PROPOSED REP-YOLO11s FULL FUSION (A6) ON CONFLICT-FREE 7-CLASS DATASET - 50 EPOCHS")
 print("=" * 80)
 
 os.environ["CURRENT_ABLATION_ID"] = "A6"
@@ -1309,7 +1374,7 @@ t_start_a6 = time.time()
 results_a6 = model_a6.train(
     trainer=MultiSeedAblationTrainer,
     data=str(yaml_path),
-    epochs=40,
+    epochs=50,
     imgsz=640,
     batch=BATCH_SIZE,
     device=DEVICE_CFG,

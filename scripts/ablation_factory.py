@@ -19,13 +19,39 @@ import ultralytics.utils.loss as ul_loss
 
 from custom_ablation_modules import CoordConv, RepConv, BiFormerBlockLite, focal_eiou_loss
 
+class BiFormerSequentialWrapper(nn.Module):
+    """Residual Attention Wrapper preserving 100% of pretrained backbone representations."""
+    def __init__(self, orig_layer, biformer):
+        super().__init__()
+        self.orig_layer = orig_layer
+        self.biformer = biformer
+        self.i = getattr(orig_layer, 'i', 10)
+        self.f = getattr(orig_layer, 'f', -1)
+        self.type = 'BiFormerSequentialWrapper'
+        self.biformer.norm.eps = 0.001
+        with torch.no_grad():
+            self.biformer.norm.weight.fill_(1e-2)
+            self.biformer.norm.bias.zero_()
+            self.biformer.proj.weight.fill_(1e-2)
+            if self.biformer.proj.bias is not None:
+                self.biformer.proj.bias.zero_()
+
+    def forward(self, x):
+        return self.biformer(self.orig_layer(x))
+
+    def fuse(self):
+        if hasattr(self.orig_layer, 'fuse'):
+            self.orig_layer.fuse()
+
 # 1. Register custom modules into Ultralytics namespace
 un_mod.CoordConv = CoordConv
 un_mod.RepConv = RepConv
 un_mod.BiFormerBlockLite = BiFormerBlockLite
+un_mod.BiFormerSequentialWrapper = BiFormerSequentialWrapper
 setattr(un_tasks, 'CoordConv', CoordConv)
 setattr(un_tasks, 'RepConv', RepConv)
 setattr(un_tasks, 'BiFormerBlockLite', BiFormerBlockLite)
+setattr(un_tasks, 'BiFormerSequentialWrapper', BiFormerSequentialWrapper)
 
 # 2. Hook AblationBboxLoss
 class AblationBboxLoss(ul_loss.BboxLoss):
@@ -144,18 +170,13 @@ head:
     return output_path
 
 def build_ablation_model(ab_id: str, base_weight: str = "yolo11s.pt", p2_yaml_path: str = "rep_yolo11s_p2.yaml", nc: int = 6) -> YOLO:
-    """Builds and wires the specified ablation model."""
+    """Builds and wires the specified ablation model with warm-start weight preservation."""
     p2_path = Path(p2_yaml_path)
     if not p2_path.exists():
         create_p2_yaml(str(p2_path), nc=nc)
 
-    if ab_id == "A1":
-        base = YOLO(str(p2_path))
-        base.load(base_weight)
-        return base
-
-    if ab_id == "A6":
-        # A6 uses the P2 4-Head backbone + CoordConv + RepConv + BiFormer + Focal-EIoU
+    if ab_id in ["A1", "A6"]:
+        # A1 and A6 use the P2 4-Head AFPN architecture
         base = YOLO(str(p2_path))
         base.load(base_weight)
     else:
@@ -163,36 +184,60 @@ def build_ablation_model(ab_id: str, base_weight: str = "yolo11s.pt", p2_yaml_pa
 
     m = base.model
 
-    if ab_id == "A0":
+    if ab_id in ["A0", "A1"]:
         return base
 
-    # A2 or A6: Inject CoordConv into Stem (layer 0)
+    # A2 or A6: Inject CoordConv into Stem (layer 0) with Warm-Start Weight Transfer
     if ab_id in ["A2", "A6"]:
-        conv0 = m.model[0].conv
-        coord_conv = CoordConv(c1=conv0.in_channels, c2=conv0.out_channels, k=3, s=2, with_r=False)
+        orig_conv0 = m.model[0]
+        c1, c2 = orig_conv0.conv.in_channels, orig_conv0.conv.out_channels
+        coord_conv = CoordConv(c1=c1, c2=c2, k=3, s=2, with_r=False)
+        coord_conv.conv.bn.eps = orig_conv0.bn.eps
+        with torch.no_grad():
+            coord_conv.conv.conv.weight.zero_()
+            coord_conv.conv.conv.weight[:, :c1, :, :].copy_(orig_conv0.conv.weight)
+            coord_conv.conv.conv.weight[:, c1:, :, :].normal_(0.0, 1e-4)
+            coord_conv.conv.bn.weight.copy_(orig_conv0.bn.weight)
+            coord_conv.conv.bn.bias.copy_(orig_conv0.bn.bias)
+            coord_conv.conv.bn.running_mean.copy_(orig_conv0.bn.running_mean)
+            coord_conv.conv.bn.running_var.copy_(orig_conv0.bn.running_var)
         coord_conv.i, coord_conv.f, coord_conv.type = 0, -1, "CoordConv"
         m.model[0] = coord_conv
 
-    # A3, A4, A5, A6: Inject RepConv into 3x3 Conv layers in the neck
+    # A3, A4, A5, A6: Inject RepConv into 3x3 Conv layers with Warm-Start Weight Transfer
     if ab_id in ["A3", "A4", "A5", "A6"]:
         for idx, layer in enumerate(m.model):
             if idx > 0 and hasattr(layer, "conv") and hasattr(layer.conv, "kernel_size") and layer.conv.kernel_size == (3, 3):
                 c1, c2, s = layer.conv.in_channels, layer.conv.out_channels, layer.conv.stride[0]
                 rep_conv = RepConv(c1=c1, c2=c2, k=3, s=s, deploy=False)
+                rep_conv.rbr_dense[1].eps = layer.bn.eps
+                rep_conv.rbr_1x1[1].eps = layer.bn.eps
+                with torch.no_grad():
+                    rep_conv.rbr_dense[0].weight.copy_(layer.conv.weight)
+                    rep_conv.rbr_dense[1].weight.copy_(layer.bn.weight)
+                    rep_conv.rbr_dense[1].bias.copy_(layer.bn.bias)
+                    rep_conv.rbr_dense[1].running_mean.copy_(layer.bn.running_mean)
+                    rep_conv.rbr_dense[1].running_var.copy_(layer.bn.running_var)
+                    rep_conv.rbr_1x1[1].weight.fill_(1e-2)
+                    rep_conv.rbr_1x1[1].bias.zero_()
+                    if rep_conv.rbr_identity is not None:
+                        rep_conv.rbr_identity.eps = layer.bn.eps
+                        rep_conv.rbr_identity.weight.fill_(1e-2)
+                        rep_conv.rbr_identity.bias.zero_()
                 rep_conv.i, rep_conv.f, rep_conv.type = getattr(layer, "i", idx), getattr(layer, "f", -1), "RepConv"
                 m.model[idx] = rep_conv
 
-    # A5 or A6: Inject BiFormer attention block
+    # A5 or A6: Inject BiFormer attention block with Residual Preservation
     if ab_id in ["A5", "A6"]:
         for idx, layer in enumerate(m.model):
             if layer.__class__.__name__ in ["C2PSA", "C3k2"] and idx >= 8:
-                c_in = getattr(layer, "c1", 512)
-                # Ensure c_in is divisible by num_heads (4)
+                c_in = 512
                 if hasattr(layer, "cv1") and hasattr(layer.cv1, "conv"):
                     c_in = layer.cv1.conv.in_channels
+                elif hasattr(layer, "c1"):
+                    c_in = layer.c1
                 biformer = BiFormerBlockLite(channels=c_in, num_heads=4, region_size=8, topk=4)
-                biformer.i, biformer.f, biformer.type = getattr(layer, "i", idx), getattr(layer, "f", -1), "BiFormerBlockLite"
-                m.model[idx] = biformer
+                m.model[idx] = BiFormerSequentialWrapper(layer, biformer)
                 break
 
     base.model = m

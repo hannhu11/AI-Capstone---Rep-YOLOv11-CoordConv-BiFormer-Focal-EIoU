@@ -1,11 +1,9 @@
 # Rep-YOLO11s-P2 AFPN (4-Head High-Resolution PPE Detector)
-# Preserves 100% Backbone Channel Compatibility with Stock YOLO11s for Full Pretrained Transfer
 nc: 6
 scales:
   s: [0.50, 0.50, 1024]
 
 backbone:
-  # [from, repeats, module, args]
   - [-1, 1, Conv, [64, 3, 2]]          # 0-P1/2
   - [-1, 1, Conv, [128, 3, 2]]         # 1-P2/4
   - [-1, 2, C3k2, [256, False, 0.25]]  # 2-P2/4 (Micro-Scale Feature Map)

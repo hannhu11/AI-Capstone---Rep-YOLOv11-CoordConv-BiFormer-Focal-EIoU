@@ -35,20 +35,7 @@ def main():
     print("🛰️ MULTI-ACCOUNT FLEET MONITORING LOOP INITIATED")
     print("=" * 80)
 
-    completed = {}
-    for k in FLEET:
-        key = f"{k['account']}/{k['slug']}"
-        if k['slug'] == 'clean-chv-6-class-official-benchmark' and (k['outdir'] / 'CLEAN_CHV_6CLASS_BENCHMARK_REPORT.md').exists():
-            completed[key] = True
-            print(f"  [ALREADY DOWNLOADED] @{key}")
-        elif k['slug'] == 'conflict-free-7class-chv-gdut-benchmark' and (k['outdir'] / 'CONFLICT_FREE_7CLASS_BENCHMARK_REPORT.md').exists():
-            completed[key] = True
-            print(f"  [ALREADY DOWNLOADED] @{key}")
-        elif k['slug'] == 'true-modular-ablation-suite-chv-v2' and (k['outdir'] / 'TASK2_TRUE_MODULAR_ABLATION_REPORT.md').exists():
-            completed[key] = True
-            print(f"  [ALREADY DOWNLOADED] @{key}")
-        else:
-            completed[key] = False
+    completed = {f"{k['account']}/{k['slug']}": False for k in FLEET}
 
     start_time = time.time()
 
