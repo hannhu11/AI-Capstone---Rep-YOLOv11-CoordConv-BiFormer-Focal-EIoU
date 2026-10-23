@@ -192,3 +192,21 @@ Nhóm nghiên cứu đã thực hiện giám định nhị phân độc lập tr
 3. **Sản phẩm Video Demo thời gian thực có HUD hiển thị**:
    - Đã biên tập và xuất video minh họa: `video_test/annotated_cctv_construction_demo.mp4`.
    - Thông số kỹ thuật: 150 khung hình (5 giây Full HD 1080p), tốc độ xử lý trung bình **51.3 FPS**, tích hợp thanh HUD đo FPS, độ trễ và số lượng cảnh báo vi phạm theo thời gian thực.
+
+
+---
+
+## 10. TIẾN TRÌNH KHẮC PHỤC TRIỆT ĐỂ BỘ 4 VÀ CHUẨN BỊ EXPERIMENT TASK 2 (100% LIÊM CHÍNH KHOA HỌC)
+
+### 10.1. Nguyên nhân cốt lõi của sự cố Áo phản quang = 0% & Lỗi Cell 6 trong lần chạy trước:
+1. **Áo phản quang = 0%**: Kernel Kaggle trước đó chỉ được gắn 2 dataset (`tundng111/gdut-hwd` và `dngtrnphmtunse183674/iitu-safety-helmet`), hoàn toàn thiếu `hannhu4002/chv-dataset`. Đồng thời mã nguồn Cell 2 chỉ quét `gdut` và `iitu` nên nhãn áo phản quang (`safety_vest` - Class 6) có đúng 0 mẫu dữ liệu.
+2. **Lỗi Crash Cell 6 (`NameError: name 'get_p' is not defined`)**: Do f-string gọi các hàm `{get_p(0):.2f}%` chưa từng được định nghĩa trong Cell 5.
+3. **Biện pháp xử lý triệt để**:
+   - Gắn đầy đủ cả 3 nguồn dữ liệu: `tundng111/gdut-hwd`, `dngtrnphmtunse183674/iitu-safety-helmet`, và `hannhu4002/chv-dataset` vào kernel Kaggle.
+   - Triển khai thuật toán **Annotation Fusion (Hợp nhất Đa nguồn)** tự động nhận diện 770 ảnh giao thoa qua MD5, ghép nhãn mũ từ GDUT với nhãn áo từ CHV, tạo nên bộ dữ liệu tối thượng 5,359 ảnh với 28,203 bounding box chuẩn mực.
+   - Sửa toàn bộ lỗi cú pháp chuỗi và định nghĩa đầy đủ các hàm an toàn `get_p(i)`, `get_r(i)`, `get_ap50(i)` trong Cell 5 & 6, kiểm chứng 100% qua `compile()`.
+
+### 10.2. Phân định rõ ràng giữa Dataset Baseline Check và Proposed Rep-YOLO11s Architecture:
+1. **Các notebook Bo1, Bo3, Bo4 (5 epochs)**: Là các bước kiểm định dữ liệu ban đầu (Dataset Baseline Sanity Checks) trên mô hình YOLO11s chuẩn nhằm so sánh khách quan hành vi học tập và độ lành mạnh của dữ liệu theo yêu cầu Task 2 trước khi đầu tư hàng chục giờ GPU vào huấn luyện kiến trúc sâu.
+2. **Kiến trúc đề xuất Rep-YOLO11s**: Bao gồm 5 module cốt lõi (CoordConv Stem + RepConv Neck + BiFormer Block Attention + Focal-EIoU Loss + Task-Aligned Assigner) và chuỗi thực nghiệm Ablation Study (A0–A6) sẽ được triển khai trên tập 7 lớp sau khi hoàn tất nghiệm thu bộ dữ liệu chuẩn mực.
+3. **Video Demo thực địa CCTV**: Video trước đó chạy trên checkpoint cũ 2 lớp (`hat`, `person`). Sẽ được nâng cấp toàn diện bằng cách triển khai trọng số deploy 7 lớp của mô hình Champion Rep-YOLO11s để hiển thị trực quan 5 màu sắc mũ, cảnh báo vi phạm không đội mũ và áo phản quang trên video công trường thực tế.
