@@ -276,3 +276,26 @@ Nhóm nghiên cứu đã thực hiện giám định nhị phân độc lập tr
    - Mô hình huấn luyện 4 Head: 9,549,768 tham số.
    - Mô hình suy luận deploy (sau khi gọi `switch_to_deploy`): 9,244,488 tham số.
    - Đã kiểm chứng forward pass thành công trên cả 4 scale: $160\times 160$, $80\times 80$, $40\times 40$, $20\times 20$.
+
+
+---
+
+## 12. BÁO CÁO PHẢN BIỆN ĐỘC LẬP & KIỂM TOÁN CHUYÊN SÂU ĐỢT 2 (OCTOBER 2026 AUDIT)
+
+### 12.1. Phát hiện Rò rỉ Dữ liệu Khung hình Video (Temporal Data Leakage) trong CHV Dataset gốc:
+1. **Kiểm toán Perceptual Hash (dHash & Thumbnail MSE)**:
+   - Khi quét độ tương đồng hình ảnh giữa các tập chia chính thức của CHV:
+     * Cặp ảnh `ppe_0975.jpg` (tập Train) và `ppe_0059.jpg` (tập Test) có $\text{MSE} = 0.0000$ (hai khung hình liên tiếp chụp cùng một nhóm 2 công nhân tại cùng góc máy, chỉ chênh lệch vài pixel nhãn gán).
+     * Cặp ảnh `ppe_0875.jpg` (Train) và `ppe_0899.jpg` (Test) có $\text{MSE} = 0.0372$.
+     * Giữa tập Train và Val tồn tại **24 cặp khung hình video liên tiếp** ($\text{MSE} < 0.05$, ví dụ cụm `ppe_1208.jpg`, `ppe_1218.jpg`, `ppe_1285.jpg`, `ppe_1294.jpg`).
+   - **Đánh giá của Reviewer**: Đây là hiện tượng rò rỉ mẫu thời gian (Temporal Video-Frame Leakage) cố hữu trong các bộ dữ liệu trích xuất từ video công trường khi các tác giả gốc (Wang et al., 2021) chia ngẫu nhiên từng ảnh thay vì chia theo từng đoạn video (scene/clip-level split). Cần lưu ý rõ ràng trong phần Thảo luận Giới hạn (Limitation & Threats to Validity) của bài báo AAIML 2027.
+
+### 12.2. Giới hạn Thống kê của Lớp Vi phạm 7 Lớp (`no_helmet`, N=15):
+- Trong tập `Dataset/CHV_7CLASS_CONFLICT_FREE`, việc ghép nối với GDUT-HWD thu hồi được 168 hộp `no_helmet` người thật.
+- Tuy nhiên, trên tập Test độc lập (120 ảnh), chỉ có **15 đối tượng vi phạm không đội mũ (`no_helmet`)**.
+- Với cỡ mẫu $N=15$, chỉ cần bỏ sót hoặc nhận diện sai 1 đối tượng, AP sẽ dao động $\approx 6.7\%$. Do đó, việc duy trì bộ 6 lớp sạch (`CHV_6CLASS_OFFICIAL_CLEAN`) kết hợp Spatial Relational Logic trên luồng camera thời gian thực là hướng tiếp cận có độ tin cậy và tính ổn định cao nhất cho triển khai thực tế.
+
+### 12.3. Hoàn tất Vá Lỗi Cấu hình & Robustness:
+- Đồng bộ hóa [rep_yolo11s_p2_7class.yaml](file:///c:/Users/ADMIN/Downloads/capstone%20AI/rep_yolo11s_p2_7class.yaml) bảo toàn 100% kênh 1024 và block C2PSA (khắc phục triệt để lỗi cắt giảm kênh cũ).
+- Cập nhật cơ chế nạp động `sys.path` trong [scripts/ablation_factory.py](file:///c:/Users/ADMIN/Downloads/capstone%20AI/scripts/ablation_factory.py) cho phép thực thi an toàn từ mọi thư mục làm việc.
+- Thêm kiểm tra tự động giá trị `nc` trong file YAML kiến trúc khi gọi `build_ablation_model`.
