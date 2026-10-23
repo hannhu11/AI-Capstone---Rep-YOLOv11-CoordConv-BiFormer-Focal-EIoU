@@ -140,10 +140,16 @@ def get_kernel_output(account_name: str, slug: str, download_dir=None):
         download_path = Path(download_dir)
         download_path.mkdir(parents=True, exist_ok=True)
         
+        base_jwt_url = None
         for f in files:
             file_name = f.get("fileName")
             file_url = f.get("url")
-            if file_url and (file_name.endswith(".md") or file_name.endswith(".png") or file_name.endswith(".yaml") or file_name.endswith(".csv")):
+            if file_url and not base_jwt_url:
+                parts = file_url.split("/")
+                if len(parts) >= 6:
+                    base_jwt_url = "/".join(parts[:6])
+
+            if file_url and (file_name.endswith(".md") or file_name.endswith(".png") or file_name.endswith(".yaml") or file_name.endswith(".csv") or file_name.endswith(".pt")):
                 target = download_path / file_name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 print(f"  ⬇️ Downloading {file_name} -> {target}")
@@ -151,6 +157,31 @@ def get_kernel_output(account_name: str, slug: str, download_dir=None):
                 if r_file.status_code == 200:
                     with open(target, "wb") as out_f:
                         out_f.write(r_file.content)
+
+        # Direct JWT probe for critical root artifacts (bypasses 500-file API cap)
+        if base_jwt_url:
+            probed_artifacts = [
+                "clean_chv_6class_comparison.csv",
+                "CLEAN_CHV_6CLASS_BENCHMARK_REPORT.md",
+                "rep_yolo11s_chv6_fused_deploy.pt",
+                "modular_ablation_suite_results.csv",
+                "TASK2_TRUE_MODULAR_ABLATION_REPORT.md",
+                "conflict_free_7class_comparison.csv",
+                "CONFLICT_FREE_7CLASS_BENCHMARK_REPORT.md",
+                "rep_yolo11s_chv7_best_deploy.pt"
+            ]
+            for art in probed_artifacts:
+                art_target = download_path / art
+                if not art_target.exists():
+                    probe_url = f"{base_jwt_url}/{art}"
+                    try:
+                        r_probe = requests.get(probe_url, timeout=30)
+                        if r_probe.status_code == 200:
+                            with open(art_target, "wb") as out_f:
+                                out_f.write(r_probe.content)
+                            print(f"  🎯 [JWT Direct Download] Recovered capped artifact: {art} ({len(r_probe.content)} bytes)")
+                    except Exception as e:
+                        pass
     return data
 
 def status_all():
