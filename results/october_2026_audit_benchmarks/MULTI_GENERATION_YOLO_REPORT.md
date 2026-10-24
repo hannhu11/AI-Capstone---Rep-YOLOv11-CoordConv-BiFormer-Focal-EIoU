@@ -7,7 +7,7 @@
 ## 1. Executive Summary
 - Rigorously compared 6 modern YOLO generations (`YOLOv8s`, `YOLOv9s`, `YOLOv10s`, `YOLO11s`, `YOLO12s`, `YOLO26s`) on the Harmonized 7-Class Dataset.
 - Every single architecture achieves **Precision >= 90%, Recall >= 90%, mAP@50 >= 94%, mAP@50-95 >= 60%, and all 7 per-class AP50 >= 90%**.
-- **YOLO11s** achieves the highest overall accuracy (`98.80% mAP@50`, `85.17% mAP@50-95`) while maintaining low parameter count (`9.43M`) and fast inference, justifying its selection as the base architecture for **Rep-YOLO11s**.
+- **YOLO11s** achieves the highest overall accuracy (`98.80% mAP@50`, `84.74% mAP@50-95`) while maintaining low parameter count (`9.43M`) and fast inference, justifying its selection as the base architecture for **Rep-YOLO11s**.
 
 ## 2. Quantitative Results
 | Model    | Weights              |   Parameters_M |   Precision |   Recall |   mAP50 |   mAP50_95 |   Person_AP50 |   Safety_Vest_AP50 |   Blue_AP50 |   Green_AP50 |   Red_AP50 |   White_AP50 |   Yellow_AP50 |   Train_Time_Min |   Latency_ms |   FPS |

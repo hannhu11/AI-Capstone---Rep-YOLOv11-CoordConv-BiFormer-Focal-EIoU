@@ -31,6 +31,7 @@ from scripts.zalo_alert_dispatcher import evaluate_worker_compliance, format_zal
 
 def main():
     candidate_weights = [
+        Path("Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv7_best_deploy.pt"),
         Path("Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv6_warmstart_deploy.pt"),
         Path("Output/kaggle_results/hannhu40022_conflict_free_7class/rep_yolo11s_chv7_best_deploy.pt"),
         Path("Output/kaggle_results/hannhu4002_clean_chv6/rep_yolo11s_chv6_fused_deploy.pt"),

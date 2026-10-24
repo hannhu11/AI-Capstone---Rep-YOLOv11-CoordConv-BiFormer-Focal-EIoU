@@ -66,10 +66,10 @@ for i, l in enumerate(m5.model.model):
 print(f"m5 BiFormer wrapper is at index {biformer_idx}")
 if biformer_idx is not None:
     wrapper = m5.model.model[biformer_idx]
-    # Test wrapper input vs output of orig_layer
+    # Test wrapper output vs output of orig_layer
     dummy_feat = torch.randn(1, wrapper.biformer.channels, 20, 20)
     with torch.no_grad():
         orig_out = wrapper.orig_layer(dummy_feat) if hasattr(wrapper.orig_layer, '__call__') else dummy_feat
-        wrap_out = wrapper.biformer(orig_out)
+        wrap_out = wrapper(dummy_feat)
         b_diff = (wrap_out - orig_out).norm() / orig_out.norm()
         print(f"BiFormer wrapper step-0 feature diff: {b_diff.item() * 100:.4f}%")

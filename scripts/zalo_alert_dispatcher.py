@@ -17,9 +17,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-# Class index map for CHV 6-Class
-# 0: person, 1: safety_vest, 2: blue_helmet, 3: red_helmet, 4: white_helmet, 5: yellow_helmet
-HELMET_CLASSES = {2: "blue", 3: "red", 4: "white", 5: "yellow"}
+# Class index maps:
+# Legacy 6-Class: 0: person, 1: safety_vest, 2: blue_helmet, 3: red_helmet, 4: white_helmet, 5: yellow_helmet
+HELMET_CLASSES_6 = {2: "blue", 3: "red", 4: "white", 5: "yellow"}
+
+# Unified 7-Class (Champion): 0: person, 1: safety_vest, 2: blue_helmet, 3: green_helmet, 4: red_helmet, 5: white_helmet, 6: yellow_helmet
+HELMET_CLASSES_7 = {2: "blue", 3: "green", 4: "red", 5: "white", 6: "yellow"}
+
+HELMET_CLASSES = HELMET_CLASSES_7
 VEST_CLASS = 1
 PERSON_CLASS = 0
 
@@ -35,15 +40,25 @@ def bbox_iou(b1: List[float], b2: List[float]) -> float:
     union = a1 + a2 - inter + 1e-7
     return inter / union
 
-def evaluate_worker_compliance(detections: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def evaluate_worker_compliance(detections: List[Dict[str, Any]], nc: Optional[int] = None) -> List[Dict[str, Any]]:
     """
     Evaluates spatial relational compliance for each detected worker.
     detections: list of dicts with 'box': [x1, y1, x2, y2], 'cls': int, 'conf': float
+    nc: optional number of dataset classes (6 or 7). If None, auto-detected from detections.
     Returns a list of worker compliance reports.
     """
+    if nc == 6:
+        helmet_map = HELMET_CLASSES_6
+    elif nc == 7:
+        helmet_map = HELMET_CLASSES_7
+    else:
+        # Auto-detect: if any class is 6, must be 7-class; default to 7-class
+        max_cls = max([d.get("cls", 0) for d in detections], default=0)
+        helmet_map = HELMET_CLASSES_6 if max_cls == 5 else HELMET_CLASSES_7
+
     persons = [d for d in detections if d.get("cls") == PERSON_CLASS]
     vests = [d for d in detections if d.get("cls") == VEST_CLASS]
-    helmets = [d for d in detections if d.get("cls") in HELMET_CLASSES]
+    helmets = [d for d in detections if d.get("cls") in helmet_map]
 
     worker_reports = []
 
@@ -80,7 +95,7 @@ def evaluate_worker_compliance(detections: List[Dict[str, Any]]) -> List[Dict[st
                 break
 
         has_helmet = (matched_helmet is not None)
-        helmet_color = HELMET_CLASSES.get(matched_helmet["cls"]) if has_helmet else None
+        helmet_color = helmet_map.get(matched_helmet["cls"]) if has_helmet else None
 
         # 2. Safety Vest Match Check
         matched_vest = None

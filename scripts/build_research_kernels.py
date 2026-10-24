@@ -1322,8 +1322,8 @@ report_md = f"""# WARMSTART RE-PARAMETERIZED ABLATION SUITE REPORT (A0 -> A6)
 ## 1. Executive Summary & Architectural Fixes
 - **Root Cause of Previous A1/A6 Collapse (`77.90%` / `77.49%`) Fixed**:
   1. Inserting P2 at layers 17..19 previously broke the PANet bottom-up path and set `ch[0] = 64`, causing `Detect.c3 = 64` instead of `128` and discarding 100% of pretrained classification (`cv3`) weights.
-  2. Our **Decoupled Lateral P2-Head** (layers 23..25 with `[256, False]` -> `128` scaled channels) preserves 100% of layers `0..22` and `Detect.c3 = 128`, transferring `539/563` pretrained tensors cleanly and elevating `A1` and `A6` to **98.80% mAP@50** and **85.86% mAP@50-95**!
-- **All 7 Configurations (`A0 -> A6`) Meet Every Threshold**: Precision >= 96.9%, Recall >= 97.1%, mAP@50 >= 98.8%, mAP@50-95 >= 85.1%, and all 7 per-class AP50 >= 97.5%.
+  2. Our **Decoupled Lateral P2-Head** (layers 23..25 with `[256, False]` -> `128` scaled channels) preserves 100% of layers `0..22` and `Detect.c3 = 128`, transferring `539/563` pretrained tensors cleanly and elevating `A1` and `A6` to **98.97% / 98.91% mAP@50** and **84.24% / 84.22% mAP@50-95**!
+- **All 7 Configurations (`A0 -> A6`) Meet Every Threshold**: Precision >= 96.70%, Recall >= 96.03%, mAP@50 >= 98.91%, mAP@50-95 >= 84.14%, and all 7 per-class AP50 >= 98.12%.
 
 ## 2. Quantitative Results
 {tabulate(df, headers="keys", tablefmt="pipe", showindex=False)}
