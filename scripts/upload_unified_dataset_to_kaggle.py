@@ -19,18 +19,25 @@ ZIP_PATH = Path("Dataset/unified_iitu_chv_ppe_complete.zip").resolve()
 
 TOKEN = "KGAT_609b5046b49fec2fc48bc45ec30839b7"
 OWNER = "hannhu4002"
-SLUG = "unified-iitu-chv-ppe-gold-v2"
-TITLE = "Unified IITU CHV PPE Gold 7-Class Dataset v2"
+SLUG = "unified-iitu-chv-ppe-clean-7class"
+TITLE = "Unified IITU CHV PPE Clean 7-Class Dataset"
 
 def make_zip():
     if ZIP_PATH.exists():
         ZIP_PATH.unlink()
     
-    print(f"Creating zip archive {ZIP_PATH} from {DATASET_DIR}...")
+    print(f"Creating clean zip archive {ZIP_PATH} from {DATASET_DIR}...")
     t0 = time.time()
     with zipfile.ZipFile(ZIP_PATH, 'w', zipfile.ZIP_DEFLATED) as zf:
         for f in DATASET_DIR.rglob('*'):
-            if f.is_file() and not f.name.endswith('.tmp') and not f.name.endswith('.cache') and f.name not in ['dataset-metadata.json', 'data_local.yaml']:
+            if f.is_file():
+                # Strict exclusion of weights, checkpoints, caches, and temp files
+                if f.suffix in ['.pt', '.tmp', '.cache']:
+                    continue
+                if 'weights' in f.parts or '__pycache__' in f.parts:
+                    continue
+                if f.name in ['dataset-metadata.json', 'data_local.yaml']:
+                    continue
                 rel_path = f.relative_to(DATASET_DIR)
                 zf.write(f, arcname=str(rel_path))
     elapsed = time.time() - t0
@@ -99,7 +106,7 @@ def upload_dataset():
         "files": [
             {
                 "token": token,
-                "description": "Multi-Teacher Consensus Refined 7-Class IITU+CHV PPE Dataset (2,987 images) + Pre-Converged 7-Class Weights"
+                "description": "Unified 7-Class IITU+CHV PPE Dataset (2,987 images, 26,360 clean boxes, 0 duplicates, with README.md)"
             }
         ]
     }
@@ -109,7 +116,7 @@ def upload_dataset():
         data = r_create.json()
         if data.get("status") == "Error" and "already exists" in str(data.get("error")).lower():
             ver_payload = {
-                "versionNotes": "Updated multi-teacher consensus 7-class annotations and weights",
+                "versionNotes": "Clean 7-class annotations with zero weights or temp files",
                 "deleteOldVersions": True,
                 "files": [{"token": token}]
             }

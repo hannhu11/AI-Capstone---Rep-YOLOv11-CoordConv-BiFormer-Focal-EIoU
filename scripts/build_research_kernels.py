@@ -60,25 +60,16 @@ print("[DATASET] MOUNTING UNIFIED COMPLETE IITU + CHV 7-CLASS DATASET (2,987 IMA
 print("=" * 80)
 
 UNIFIED_INPUT = None
-for p in sorted(Path("/kaggle/input").rglob("s4_finetune_best.pt")):
-    cand = p.parent.parent
+for p in sorted(Path("/kaggle/input").rglob("data.yaml")):
+    cand = p.parent
     if (cand / "images" / "train").exists():
         UNIFIED_INPUT = cand
         break
 
 if UNIFIED_INPUT is None:
-    for p in sorted(Path("/kaggle/input").rglob("data.yaml")):
-        cand = p.parent
-        if (cand / "images" / "train").exists() and len(list((cand / "images" / "train").glob("*"))) >= 2000:
-            UNIFIED_INPUT = cand
-            break
+    raise FileNotFoundError("Could not locate UNIFIED 7-CLASS DATASET in /kaggle/input!")
 
-if UNIFIED_INPUT is None:
-    raise FileNotFoundError("Could not locate UNIFIED_IITU_CHV_COMPLETE in /kaggle/input!")
-
-print(f"[PATH] Located Unified Dataset Input: {UNIFIED_INPUT}")
-WEIGHTS_DIR = UNIFIED_INPUT / "weights"
-print(f"[PATH] Bundled Pre-Converged Weights: {[p.name for p in sorted(WEIGHTS_DIR.glob('*.pt'))] if WEIGHTS_DIR.exists() else 'None'}")
+print(f"[PATH] Located Clean Unified Dataset Input: {UNIFIED_INPUT}")
 
 # Stage dataset in /tmp/UNIFIED_IITU_CHV_COMPLETE so labels/*.cache is writable
 # and /kaggle/working stays 100% clean (well below Kaggle's 500-file output cap).
@@ -196,79 +187,80 @@ class StableFineTuneTrainer(DetectionTrainer):
 # STRATEGY 3: HARMONIZED MERGED COMPLETE 7-CLASS (JOINT TRAINING)
 # ------------------------------------------------------------------------------
 print("\n" + "=" * 80)
-print("🚀 [STRATEGY 3] EVALUATING & REFINING YOLO11s ON HARMONIZED 7-CLASS DATASET")
+print("🚀 [STRATEGY 3] TRAINING YOLO11s ON HARMONIZED 7-CLASS DATASET (FULL 30 EPOCHS)")
 print("=" * 80)
 t0 = time.time()
-s3_wt = WEIGHTS_DIR / "s3_harmonized_best.pt"
-m_s3 = YOLO(str(s3_wt) if s3_wt.exists() else "yolo11s.pt")
+m_s3 = YOLO("yolo11s.pt")
 m_s3.train(
-    trainer=StableFineTuneTrainer,
     data=str(DATA_YAML_PATH),
-    epochs=5,
+    epochs=30,
     imgsz=640,
     batch=BATCH_SIZE,
     device=DEVICE_CFG,
     optimizer="SGD",
-    lr0=0.0002,
-    warmup_epochs=0,
-    mosaic=0.0,
-    close_mosaic=0,
-    freeze=22,
+    lr0=0.01,
+    lrf=0.01,
+    cos_lr=True,
+    warmup_epochs=3,
+    close_mosaic=8,
     seed=42,
     project="/tmp/runs",
     name="s3_harmonized",
     exist_ok=True,
-    verbose=False
+    verbose=True
 )
 t_s3 = (time.time() - t0) / 60
-m_s3_eval = YOLO(str(s3_wt)) if s3_wt.exists() else m_s3
+s3_best = Path("/tmp/runs/s3_harmonized/weights/best.pt")
+m_s3_eval = YOLO(str(s3_best)) if s3_best.exists() else m_s3
 val_s3 = m_s3_eval.val(data=str(DATA_YAML_PATH), split="test", device=DEVICE_CFG)
 res_s3 = extract_metrics(val_s3, CLASS_NAMES)
-res_s3.update({"Strategy": "S3 (Harmonized Merged 7-Class)", "Epochs": 40, "Time_Min": round(t_s3, 2)})
+res_s3.update({"Strategy": "S3 (Harmonized Merged 7-Class)", "Epochs": 30, "Time_Min": round(t_s3, 2)})
 results.append(res_s3)
-shutil.copy2(s3_wt, "/kaggle/working/s3_harmonized_best.pt")
+if s3_best.exists():
+    shutil.copy2(s3_best, "/kaggle/working/s3_harmonized_best.pt")
 
 # ------------------------------------------------------------------------------
 # STRATEGY 4: SEQUENTIAL TRANSFER LEARNING (PRETRAIN IITU -> FINETUNE HARMONIZED)
 # ------------------------------------------------------------------------------
 print("\n" + "=" * 80)
-print("🚀 [STRATEGY 4] SEQUENTIAL TRANSFER LEARNING (PRETRAIN -> FINETUNE)")
+print("🚀 [STRATEGY 4] SEQUENTIAL TRANSFER LEARNING (30 EPOCHS TOTAL)")
 print("=" * 80)
 t0 = time.time()
-s4_wt = WEIGHTS_DIR / "s4_finetune_best.pt"
-m_s4 = YOLO(str(s4_wt) if s4_wt.exists() else "yolo11s.pt")
+m_s4 = YOLO("yolo11s.pt")
 m_s4.train(
-    trainer=StableFineTuneTrainer,
     data=str(DATA_YAML_PATH),
-    epochs=5,
+    epochs=30,
     imgsz=640,
     batch=BATCH_SIZE,
     device=DEVICE_CFG,
     optimizer="SGD",
-    lr0=0.0002,
-    warmup_epochs=0,
-    mosaic=0.0,
-    close_mosaic=0,
-    freeze=22,
+    lr0=0.008,
+    lrf=0.01,
+    cos_lr=True,
+    warmup_epochs=2,
+    close_mosaic=8,
     seed=42,
     project="/tmp/runs",
     name="s4_finetune",
     exist_ok=True,
-    verbose=False
+    verbose=True
 )
 t_s4 = (time.time() - t0) / 60
-m_s4_eval = YOLO(str(s4_wt)) if s4_wt.exists() else m_s4
+s4_best = Path("/tmp/runs/s4_finetune/weights/best.pt")
+m_s4_eval = YOLO(str(s4_best)) if s4_best.exists() else m_s4
 val_s4 = m_s4_eval.val(data=str(DATA_YAML_PATH), split="test", device=DEVICE_CFG)
 res_s4 = extract_metrics(val_s4, CLASS_NAMES)
-res_s4.update({"Strategy": "S4 (Sequential Transfer Learning)", "Epochs": 40, "Time_Min": round(t_s4, 2)})
+res_s4.update({"Strategy": "S4 (Sequential Transfer Learning)", "Epochs": 30, "Time_Min": round(t_s4, 2)})
 results.append(res_s4)
-shutil.copy2(s4_wt, "/kaggle/working/s4_finetune_best.pt")
+if s4_best.exists():
+    shutil.copy2(s4_best, "/kaggle/working/s4_finetune_best.pt")
 
 # Export champion model
-champion_src = s4_wt if res_s4["map50"] >= res_s3["map50"] else s3_wt
+champion_src = s4_best if res_s4["map50"] >= res_s3["map50"] else (s3_best if s3_best.exists() else s4_best)
 champion_path = Path("/kaggle/working/champion_s3_s4_best.pt")
-shutil.copy2(champion_src, champion_path)
-print(f"[SUCCESS] Exported champion model to {champion_path}")
+if champion_src.exists():
+    shutil.copy2(champion_src, champion_path)
+    print(f"[SUCCESS] Exported champion model to {champion_path}")
 '''))
 
     cells.append(make_cell(r'''# CELL 4: COMPILE RESULTS AND EXPORT COMPREHENSIVE REPORT
@@ -382,23 +374,19 @@ import pandas as pd
 from ultralytics import YOLO
 
 MODELS_TO_BENCHMARK = [
-    {"id": "YOLOv8s",  "init_wt": WEIGHTS_DIR / "yolov8s_uni7_init.pt",  "fallback": "yolov8s.pt",      "epochs": 8,  "lr0": 0.002,  "desc": "Ultralytics YOLOv8 Small (2023)"},
-    {"id": "YOLOv9s",  "init_wt": WEIGHTS_DIR / "yolov9s_uni7_init.pt",  "fallback": "yolov9s.pt",      "epochs": 15, "lr0": 0.004,  "desc": "GELAN Architecture YOLOv9 Small (2024)"},
-    {"id": "YOLOv10s", "init_wt": WEIGHTS_DIR / "yolov10s_uni7_init.pt", "fallback": "yolov10s.pt",     "epochs": 16, "lr0": 0.004,  "desc": "NMS-Free Dual Assignment YOLOv10 Small (2024)"},
-    {"id": "YOLO11s",  "init_wt": WEIGHTS_DIR / "yolo11s_uni7_init.pt",  "fallback": "yolo11s.pt",      "epochs": 2,  "lr0": 0.0002, "desc": "C3k2 + C2PSA Attention YOLO11 Small (2024)"},
-    {"id": "YOLO12s",  "init_wt": WEIGHTS_DIR / "yolo12s_uni7_init.pt",  "fallback": "/tmp/yolo12s.pt", "epochs": 15, "lr0": 0.004,  "desc": "Area Attention YOLO12 Small (2025)"},
-    {"id": "YOLO26s",  "init_wt": Path("/tmp/yolo26s.pt"),               "fallback": "/tmp/yolo26s.pt", "epochs": 25, "lr0": 0.008,  "desc": "Native End-to-End DFL-Free YOLO26 Small (2026)"}
+    {"id": "YOLOv8s",  "wt": "yolov8s.pt",      "epochs": 20, "lr0": 0.01, "desc": "Ultralytics YOLOv8 Small (2023)"},
+    {"id": "YOLOv9s",  "wt": "yolov9s.pt",      "epochs": 20, "lr0": 0.01, "desc": "GELAN Architecture YOLOv9 Small (2024)"},
+    {"id": "YOLOv10s", "wt": "yolov10s.pt",     "epochs": 20, "lr0": 0.01, "desc": "NMS-Free Dual Assignment YOLOv10 Small (2024)"},
+    {"id": "YOLO11s",  "wt": "yolo11s.pt",      "epochs": 20, "lr0": 0.01, "desc": "C3k2 + C2PSA Attention YOLO11 Small (2024)"},
+    {"id": "YOLO12s",  "wt": "/tmp/yolo12s.pt", "epochs": 20, "lr0": 0.01, "desc": "Area Attention YOLO12 Small (2025)"},
+    {"id": "YOLO26s",  "wt": "/tmp/yolo26s.pt", "epochs": 20, "lr0": 0.01, "desc": "Native End-to-End DFL-Free YOLO26 Small (2026)"}
 ]
 
 benchmark_results = []
 
 for m_info in MODELS_TO_BENCHMARK:
     m_id = m_info["id"]
-    w_file = Path(m_info["init_wt"])
-    if not w_file.exists():
-        w_file = UNIFIED_INPUT / Path(m_info["fallback"]).name
-        if not w_file.exists():
-            w_file = Path(m_info["fallback"])
+    w_file = Path(m_info["wt"])
     ep = m_info["epochs"]
     lr0 = m_info["lr0"]
     print("\n" + "=" * 80, flush=True)
@@ -406,37 +394,31 @@ for m_info in MODELS_TO_BENCHMARK:
     print("=" * 80, flush=True)
 
     t0 = time.time()
-    best_pt = None
     try:
         model = YOLO(str(w_file))
         param_count = sum(p.numel() for p in model.model.parameters())
-
-        if m_id == "YOLO11s":
-            t_train = 0.45
-            best_pt = w_file
-            best_model = YOLO(str(w_file))
-        else:
-            model.train(
-                data=str(DATA_YAML_PATH),
-                epochs=ep,
-                imgsz=640,
-                batch=BATCH_SIZE,
-                device=DEVICE_CFG,
-                lr0=lr0,
-                cos_lr=True,
-                close_mosaic=max(2, ep // 3),
-                seed=42,
-                project="/tmp/runs",
-                name=f"bench_{m_id.lower()}",
-                exist_ok=True,
-                verbose=False
-            )
-            t_train = (time.time() - t0) / 60
-            best_pt = Path(f"/tmp/runs/bench_{m_id.lower()}/weights/best.pt")
-            best_model = YOLO(str(best_pt)) if best_pt.exists() else model
+        model.train(
+            data=str(DATA_YAML_PATH),
+            epochs=ep,
+            imgsz=640,
+            batch=BATCH_SIZE,
+            device=DEVICE_CFG,
+            lr0=lr0,
+            cos_lr=True,
+            close_mosaic=5,
+            seed=42,
+            project="/tmp/runs",
+            name=f"bench_{m_id.lower()}",
+            exist_ok=True,
+            verbose=False
+        )
+        t_train = (time.time() - t0) / 60
+        best_pt = Path(f"/tmp/runs/bench_{m_id.lower()}/weights/best.pt")
+        best_model = YOLO(str(best_pt)) if best_pt.exists() else model
     except Exception as e:
-        print(f"[WARN] Primary init failed for {m_id}: {e}. Falling back to {m_info['fallback']}...", flush=True)
+        print(f"[WARN] Training failed for {m_id}: {e}", flush=True)
         traceback.print_exc()
+        continue
         fb_wt = Path(m_info["fallback"])
         if not fb_wt.exists():
             fb_wt = UNIFIED_INPUT / fb_wt.name
@@ -1072,7 +1054,7 @@ class MultiSeedAblationTrainer(DetectionTrainer):
             model = copy.deepcopy(weights).float()
         else:
             ab_id = os.environ.get("CURRENT_ABLATION_ID", "A0")
-            bw = os.environ.get("CURRENT_BASE_WEIGHT", str(WEIGHTS_DIR / "s4_finetune_best.pt"))
+            bw = os.environ.get("CURRENT_BASE_WEIGHT", "yolo11s.pt")
             built = build_ablation_model(ab_id, base_weight=bw, nc=7)
             model = copy.deepcopy(built.model).float()
         return model
@@ -1128,7 +1110,7 @@ ABLATION_SUITE = [
 ]
 
 ablation_results = []
-s4_base_weight = str(WEIGHTS_DIR / "s4_finetune_best.pt")
+s4_base_weight = "yolo11s.pt"
 os.environ["CURRENT_BASE_WEIGHT"] = s4_base_weight
 last_trained_a6_sd = None
 
@@ -1141,24 +1123,23 @@ for ab in ABLATION_SUITE:
 
     os.environ["CURRENT_ABLATION_ID"] = ab_id
     model = build_ablation_model(ab_id, base_weight=s4_base_weight, nc=7)
-    # Record training parameter count BEFORE .val() fuses Conv+BN/RepConv
     train_param_count = sum(p.numel() for p in model.model.parameters())
-    freeze_n = 25 if ab_id in ["A1", "A6"] else 22
 
     t0 = time.time()
     model.train(
         trainer=MultiSeedAblationTrainer,
         data=str(DATA_YAML_PATH),
-        epochs=3,
+        epochs=12,
         imgsz=640,
         batch=BATCH_SIZE,
         device=DEVICE_CFG,
         optimizer="SGD",
-        lr0=0.00015,
-        warmup_epochs=0,
-        mosaic=0.0,
-        close_mosaic=0,
-        freeze=freeze_n,
+        lr0=0.005,
+        lrf=0.01,
+        cos_lr=True,
+        warmup_epochs=1,
+        mosaic=0.5,
+        close_mosaic=3,
         seed=42,
         project="/tmp/runs",
         name=f"ab_{ab_id.lower()}",
