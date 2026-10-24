@@ -100,7 +100,7 @@ def monitor_loop():
                 print(f"  🔴 [ERROR DETECTED] @{key} status={status}! Failure message: {fail_msg}", flush=True)
                 # Pull whatever logs or outputs exist
                 out = get_kernel_output(item["account"], item["slug"], download_dir=str(item["outdir"]))
-                time.sleep(5)
+                completed[key] = True
 
             elif status in ["running", "queued"]:
                 symbol = "🟡" if status == "running" else "⏳"

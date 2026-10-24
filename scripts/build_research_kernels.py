@@ -986,7 +986,27 @@ def smart_load_p2_weights(p2_model, base_weight_path):
 
 P2_YAML = create_p2_yaml("/tmp/rep_yolo11s_p2.yaml", nc=7)
 
-def build_ablation_model(ab_id: str, base_weight: str, nc: int = 7) -> YOLO:
+def prepare_7class_base_weights(base_weight_path="yolo11s.pt", out_path="/tmp/yolo11s_7class_base.pt", nc=7):
+    from ultralytics.nn.tasks import DetectionModel
+    m = YOLO(base_weight_path)
+    cfg = dict(m.model.yaml)
+    cfg["nc"] = nc
+    m7 = DetectionModel(cfg, nc=nc)
+    sd_src = m.model.state_dict()
+    sd_dst = m7.state_dict()
+    transferred = 0
+    for k, v in sd_src.items():
+        if k in sd_dst and sd_dst[k].shape == v.shape:
+            sd_dst[k] = v
+            transferred += 1
+    m7.load_state_dict(sd_dst, strict=False)
+    torch.save({"model": m7.float()}, out_path)
+    print(f"[SUCCESS] Prepared unified 7-class base checkpoint: {out_path} ({transferred}/{len(sd_dst)} weights, Head nc={m7.model[-1].nc})")
+    return out_path
+
+BASE_7CLASS_PT = prepare_7class_base_weights("yolo11s.pt", "/tmp/yolo11s_7class_base.pt", nc=7)
+
+def build_ablation_model(ab_id: str, base_weight: str = BASE_7CLASS_PT, nc: int = 7) -> YOLO:
     if ab_id in ["A1", "A6"]:
         base = YOLO(P2_YAML)
         smart_load_p2_weights(base, base_weight)
@@ -1054,16 +1074,13 @@ class MultiSeedAblationTrainer(DetectionTrainer):
             model = copy.deepcopy(weights).float()
         else:
             ab_id = os.environ.get("CURRENT_ABLATION_ID", "A0")
-            bw = os.environ.get("CURRENT_BASE_WEIGHT", "yolo11s.pt")
+            bw = os.environ.get("CURRENT_BASE_WEIGHT", BASE_7CLASS_PT)
             built = build_ablation_model(ab_id, base_weight=bw, nc=7)
             model = copy.deepcopy(built.model).float()
         return model
 
     def _setup_train(self, *args, **kwargs):
         super()._setup_train(*args, **kwargs)
-        for m in self.model.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                m.track_running_stats = False
         cur_ab = os.environ.get("CURRENT_ABLATION_ID", "A0")
         if cur_ab in ["A2", "A6"]:
             for p in self.model.model[0].parameters():
@@ -1110,7 +1127,7 @@ ABLATION_SUITE = [
 ]
 
 ablation_results = []
-s4_base_weight = "yolo11s.pt"
+s4_base_weight = BASE_7CLASS_PT
 os.environ["CURRENT_BASE_WEIGHT"] = s4_base_weight
 last_trained_a6_sd = None
 
@@ -1129,12 +1146,12 @@ for ab in ABLATION_SUITE:
     model.train(
         trainer=MultiSeedAblationTrainer,
         data=str(DATA_YAML_PATH),
-        epochs=12,
+        epochs=10,
         imgsz=640,
         batch=BATCH_SIZE,
         device=DEVICE_CFG,
         optimizer="SGD",
-        lr0=0.005,
+        lr0=0.008,
         lrf=0.01,
         cos_lr=True,
         warmup_epochs=1,
@@ -1151,8 +1168,12 @@ for ab in ABLATION_SUITE:
     best_pt = Path(f"/tmp/runs/ab_{ab_id.lower()}/weights/best.pt")
     if not best_pt.exists():
         best_pt = Path(f"/tmp/runs/ab_{ab_id.lower()}/weights/last.pt")
-    eval_model = YOLO(str(best_pt))
-    val_res = eval_model.val(data=str(DATA_YAML_PATH), split="test", device=DEVICE_CFG)
+    try:
+        eval_model = YOLO(str(best_pt))
+        val_res = eval_model.val(data=str(DATA_YAML_PATH), split="test", device=DEVICE_CFG)
+    except Exception as val_e:
+        print(f"[WARN] Direct load failed ({val_e}), validating via in-memory model...", flush=True)
+        val_res = model.val(data=str(DATA_YAML_PATH), split="test", device=DEVICE_CFG)
 
     prec = float(val_res.box.mp) * 100
     rec = float(val_res.box.mr) * 100

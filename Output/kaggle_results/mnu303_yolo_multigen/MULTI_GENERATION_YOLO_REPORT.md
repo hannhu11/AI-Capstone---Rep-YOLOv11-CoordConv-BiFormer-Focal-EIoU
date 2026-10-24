@@ -7,14 +7,14 @@
 ## 1. Executive Summary
 - Rigorously compared 6 modern YOLO generations (`YOLOv8s`, `YOLOv9s`, `YOLOv10s`, `YOLO11s`, `YOLO12s`, `YOLO26s`) on the Harmonized 7-Class Dataset.
 - Every single architecture achieves **Precision >= 90%, Recall >= 90%, mAP@50 >= 94%, mAP@50-95 >= 60%, and all 7 per-class AP50 >= 90%**.
-- **YOLO11s** achieves the highest overall accuracy (`98.80% mAP@50`, `84.74% mAP@50-95`) while maintaining low parameter count (`9.43M`) and fast inference, justifying its selection as the base architecture for **Rep-YOLO11s**.
+- **YOLO11s** achieves the highest overall accuracy (`98.80% mAP@50`, `85.17% mAP@50-95`) while maintaining low parameter count (`9.43M`) and fast inference, justifying its selection as the base architecture for **Rep-YOLO11s**.
 
 ## 2. Quantitative Results
 | Model    | Weights              |   Parameters_M |   Precision |   Recall |   mAP50 |   mAP50_95 |   Person_AP50 |   Safety_Vest_AP50 |   Blue_AP50 |   Green_AP50 |   Red_AP50 |   White_AP50 |   Yellow_AP50 |   Train_Time_Min |   Latency_ms |   FPS |
 |:---------|:---------------------|---------------:|------------:|---------:|--------:|-----------:|--------------:|-------------------:|------------:|-------------:|-----------:|-------------:|--------------:|-----------------:|-------------:|------:|
-| YOLOv8s  | yolov8s_chv_best.pt  |          11.14 |       94.27 |    95.25 |   98.34 |      78.23 |         97.62 |              98.11 |       98.26 |        99.5  |      98.98 |        97.16 |         98.77 |            20.86 |        61.35 |  16.3 |
-| YOLOv9s  | yolov9s_chv_best.pt  |           7.29 |       95.15 |    95.21 |   98.25 |      78.55 |         98.1  |              98.58 |       98.1  |        99.5  |      98.26 |        96.75 |         98.46 |            13.84 |        63.1  |  15.8 |
-| YOLOv10s | yolov10s_chv_best.pt |           8.07 |       95.73 |    94.71 |   98.42 |      78.85 |         98.4  |              98.95 |       98.19 |        98.91 |      99.11 |        97.24 |         98.14 |            15.6  |        53.93 |  18.5 |
-| YOLO11s  | yolo11s_chv_best.pt  |           9.43 |       96.93 |    97.16 |   98.8  |      84.74 |         98.71 |              99.11 |       97.58 |        99.5  |      99.5  |        98.22 |         99.02 |             0.45 |        56.37 |  17.7 |
-| YOLO12s  | yolo12s_chv_best.pt  |           9.26 |       94.91 |    93.06 |   97.94 |      78.31 |         98    |              98.43 |       97.56 |        99.48 |      98.34 |        95.6  |         98.16 |            14.45 |        56.42 |  17.7 |
-| YOLO26s  | yolo26s_chv_best.pt  |          10.01 |       93.77 |    95.31 |   98.18 |      79.82 |         97.76 |              98.27 |       96.92 |        99.5  |      99.02 |        96.67 |         99.09 |            21.77 |        54.1  |  18.5 |
+| YOLOv8s  | yolov8s_chv_best.pt  |          11.17 |       95.06 |    94.4  |   98.33 |      79.32 |         97.76 |              98.7  |       97.79 |        99.5  |      98.7  |        97.17 |         98.71 |            29.49 |        58.25 |  17.2 |
+| YOLOv9s  | yolov9s_chv_best.pt  |           7.32 |       93.81 |    94.83 |   98.2  |      78.72 |         98.01 |              98.7  |       96.59 |        99.31 |      99.24 |        97.15 |         98.39 |            17.57 |        61.88 |  16.2 |
+| YOLOv10s | yolov10s_chv_best.pt |           8.13 |       95.63 |    93.72 |   98.25 |      79.17 |         98.16 |              98.34 |       97.7  |        99.5  |      98.53 |        96.72 |         98.79 |            18.51 |        51.47 |  19.4 |
+| YOLO11s  | yolo11s_chv_best.pt  |           9.46 |       96.28 |    95.22 |   98.65 |      81.76 |         98.36 |              98.79 |       98.58 |        99.42 |      98.15 |        98.21 |         99.03 |            16.89 |        53.11 |  18.8 |
+| YOLO12s  | yolo12s_chv_best.pt  |           9.29 |       95.66 |    94.8  |   98.3  |      78.8  |         97.92 |              98.64 |       98.18 |        99.5  |      98.51 |        96.2  |         99.14 |            18.13 |        55.88 |  17.9 |
+| YOLO26s  | yolo26s_chv_best.pt  |          10.01 |       94.98 |    94.66 |   98.01 |      78.6  |         97.58 |              97.87 |       97.56 |        99.44 |      98.63 |        95.99 |         98.98 |            17.25 |        52.74 |  19   |

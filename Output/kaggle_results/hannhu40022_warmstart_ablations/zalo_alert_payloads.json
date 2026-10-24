@@ -1,9 +1,9 @@
 {
-  "audit_timestamp": "2026-10-23 23:52:43",
-  "total_workers_audited": 1069,
-  "compliant_workers": 704,
-  "violation_workers": 365,
-  "compliance_rate_percent": 65.86,
+  "audit_timestamp": "2026-10-24 11:53:29",
+  "total_workers_audited": 1032,
+  "compliant_workers": 691,
+  "violation_workers": 341,
+  "compliance_rate_percent": 66.96,
   "events": [
     {
       "image": "chv_ppe_0003.jpg",
@@ -44,11 +44,11 @@
     {
       "image": "chv_ppe_0037.jpg",
       "worker_id": 2,
-      "has_helmet": false,
-      "helmet_color": "none",
+      "has_helmet": true,
+      "helmet_color": "green",
       "has_vest": true,
-      "compliant": false,
-      "status": "VIOLATION"
+      "compliant": true,
+      "status": "COMPLIANT"
     },
     {
       "image": "chv_ppe_0042.jpg",
@@ -108,7 +108,7 @@
       "image": "chv_ppe_0048.jpg",
       "worker_id": 6,
       "has_helmet": true,
-      "helmet_color": "blue",
+      "helmet_color": "white",
       "has_vest": true,
       "compliant": true,
       "status": "COMPLIANT"
@@ -226,9 +226,9 @@
       "worker_id": 2,
       "has_helmet": true,
       "helmet_color": "yellow",
-      "has_vest": false,
-      "compliant": false,
-      "status": "VIOLATION"
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
     },
     {
       "image": "chv_ppe_0079.jpg",
@@ -270,7 +270,7 @@
       "image": "chv_ppe_0119.jpg",
       "worker_id": 1,
       "has_helmet": true,
-      "helmet_color": "white",
+      "helmet_color": "blue",
       "has_vest": true,
       "compliant": true,
       "status": "COMPLIANT"
@@ -279,7 +279,7 @@
       "image": "chv_ppe_0119.jpg",
       "worker_id": 2,
       "has_helmet": true,
-      "helmet_color": "blue",
+      "helmet_color": "white",
       "has_vest": true,
       "compliant": true,
       "status": "COMPLIANT"
@@ -377,53 +377,53 @@
     {
       "image": "chv_ppe_0176.jpg",
       "worker_id": 5,
-      "has_helmet": false,
-      "helmet_color": "none",
-      "has_vest": true,
-      "compliant": false,
-      "status": "VIOLATION"
-    },
-    {
-      "image": "chv_ppe_0193.jpg",
-      "worker_id": 1,
-      "has_helmet": false,
-      "helmet_color": "none",
-      "has_vest": false,
-      "compliant": false,
-      "status": "VIOLATION"
-    },
-    {
-      "image": "chv_ppe_0193.jpg",
-      "worker_id": 2,
       "has_helmet": true,
       "helmet_color": "white",
       "has_vest": true,
       "compliant": true,
       "status": "COMPLIANT"
+    },
+    {
+      "image": "chv_ppe_0193.jpg",
+      "worker_id": 1,
+      "has_helmet": true,
+      "helmet_color": "white",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "chv_ppe_0193.jpg",
+      "worker_id": 2,
+      "has_helmet": false,
+      "helmet_color": "none",
+      "has_vest": false,
+      "compliant": false,
+      "status": "VIOLATION"
     },
     {
       "image": "chv_ppe_0193.jpg",
       "worker_id": 3,
       "has_helmet": true,
       "helmet_color": "red",
-      "has_vest": true,
-      "compliant": true,
-      "status": "COMPLIANT"
-    },
-    {
-      "image": "chv_ppe_0193.jpg",
-      "worker_id": 4,
-      "has_helmet": true,
-      "helmet_color": "white",
       "has_vest": false,
       "compliant": false,
       "status": "VIOLATION"
     },
     {
       "image": "chv_ppe_0193.jpg",
-      "worker_id": 5,
+      "worker_id": 4,
       "has_helmet": true,
       "helmet_color": "red",
+      "has_vest": true,
+      "compliant": true,
+      "status": "COMPLIANT"
+    },
+    {
+      "image": "chv_ppe_0193.jpg",
+      "worker_id": 5,
+      "has_helmet": false,
+      "helmet_color": "none",
       "has_vest": false,
       "compliant": false,
       "status": "VIOLATION"
@@ -431,8 +431,8 @@
     {
       "image": "chv_ppe_0193.jpg",
       "worker_id": 6,
-      "has_helmet": false,
-      "helmet_color": "none",
+      "has_helmet": true,
+      "helmet_color": "white",
       "has_vest": false,
       "compliant": false,
       "status": "VIOLATION"
@@ -440,8 +440,8 @@
     {
       "image": "chv_ppe_0193.jpg",
       "worker_id": 7,
-      "has_helmet": false,
-      "helmet_color": "none",
+      "has_helmet": true,
+      "helmet_color": "red",
       "has_vest": false,
       "compliant": false,
       "status": "VIOLATION"

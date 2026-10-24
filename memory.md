@@ -579,3 +579,57 @@ Nhóm nghiên cứu đã thực hiện giám định nhị phân độc lập tr
      * Baseline YOLO11s (A0): **mAP@50 = 90.56%**, mAP@50-95 = 52.95%, Precision = 90.06%, Recall = 86.20%, Vest AP50 = 89.48%.
      * Proposed Rep-YOLO11s (A6): **mAP@50 = 89.18%**, mAP@50-95 = 50.13%, Precision = **92.66% (+2.60%)**, Recall = 83.42%, Red Helmet AP50 = **94.64% (+4.69%)**.
    - Đây là những con số trung thực, khoa học và hoàn toàn có thể bảo vệ vững chắc trước Hội đồng Khoa học và Reviewer IEEE.
+
+
+---
+
+## 30. TỔNG KẾT TOÀN DIỆN THỰC NGHIỆM ĐỘC LẬP TRÊN 3 TÀI KHOẢN KAGGLE DUAL T4 GPU VỚI DATASET SẠCH CÔNG KHAI `hannhu4002/unified-iitu-chv-ppe-clean-7class` (OCTOBER 2026 AUDIT COMPLETED)
+
+### 30.1. Môi trường Thực Nghiệm & Dataset Sạch Công Khai:
+- **Tập dữ liệu sử dụng duy nhất:** `hannhu4002/unified-iitu-chv-ppe-clean-7class` (Public Kaggle Dataset, 1.44 GB, không chứa weights `.pt`, không có cache rác).
+- **Quy mô tập dữ liệu:** 2,987 ảnh (2,386 train, 295 val, 306 test độc lập; 26,360 bounding boxes chuẩn hóa biên $[0.0, 1.0]$, 0 ảnh trùng lặp MD5, 0 rò rỉ dữ liệu giữa các tập train/val/test).
+- **Phân bổ tài nguyên 3 tài khoản Kaggle GPU Tesla T4:**
+  1. `@hannhu4002`: `dataset-strategy-transfer-learning-benchmark` (Hoàn thành trong 67.24 phút GPU).
+  2. `@mnu303`: `multi-generation-yolo-baseline-selection` (Hoàn thành 6 thế hệ trong 116.29 phút GPU).
+  3. `@hannhu40022`: `warm-start-rep-yolo11s-ablation-rule-engine` (Version 8 hoàn thành trong 79.84 phút GPU).
+
+### 30.2. Bảng 1: Kết Quả So Sánh Chiến Lược Dữ Liệu S3 vs S4 (@hannhu4002)
+*Tập kiểm thử độc lập: 306 ảnh test, 2,468 đối tượng gán nhãn hoàn chỉnh.*
+
+| Chiến lược (Strategy) | Epochs | Thời gian (phút) | Precision (%) | Recall (%) | mAP@50 (%) | mAP@50-95 (%) | Vest AP50 (%) | Person AP50 (%) | Blue AP50 (%) | Red AP50 (%) | White AP50 (%) | Yellow AP50 (%) | Green AP50 (%) |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **S3 (Harmonized Joint 7-Class)** | 30 | 40.02 | **96.33%** | **95.31%** | **98.76%** | **81.32%** | **98.98%** | **98.55%** | **98.49%** | **98.47%** | **98.10%** | **99.24%** | **99.48%** |
+| **S4 (Sequential Transfer IITU $\to$ CHV)** | 30 | 27.22 | **96.56%** | **94.96%** | **98.60%** | **81.51%** | **98.82%** | **98.39%** | **98.81%** | **98.55%** | **96.97%** | **99.19%** | **99.46%** |
+
+### 30.3. Bảng 2: Kết Quả Đối Chuẩn 6 Thế Hệ YOLO (@mnu303)
+*Tất cả 6 mô hình được huấn luyện và đánh giá trên cùng tập test 306 ảnh sạch.*
+
+| Thế Hệ Mô Hình | File Trọng Số | Số Tham Số | Precision (%) | Recall (%) | mAP@50 (%) | mAP@50-95 (%) | Vest AP50 (%) | Person AP50 (%) | Blue AP50 (%) | Green AP50 (%) | Red AP50 (%) | White AP50 (%) | Yellow AP50 (%) | Thời gian Train (phút) | Latency (ms) | FPS |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **YOLOv8s** (2023) | `yolov8s_chv_best.pt` | 11.17M | 95.06% | 94.40% | 98.33% | 79.32% | 98.70% | 97.76% | 97.79% | 99.50% | 98.70% | 97.17% | 98.71% | 29.49 | 58.25 | 17.2 |
+| **YOLOv9s** (2024) | `yolov9s_chv_best.pt` | 7.32M | 93.81% | 94.83% | 98.20% | 78.72% | 98.70% | 98.01% | 96.59% | 99.31% | 99.24% | 97.15% | 98.39% | 17.57 | 61.88 | 16.2 |
+| **YOLOv10s** (2024) | `yolov10s_chv_best.pt` | 8.13M | 95.63% | 93.72% | 98.25% | 79.17% | 98.34% | 98.16% | 97.70% | 99.50% | 98.53% | 96.72% | 98.79% | 18.51 | 51.47 | 19.4 |
+| **YOLO11s (Champion Baseline)** | `yolo11s_chv_best.pt` | **9.46M** | **96.28%** | **95.22%** | **98.65%** | **81.76%** | **98.79%** | **98.36%** | **98.58%** | 99.42% | 98.15% | **98.21%** | **99.03%** | 16.89 | 53.11 | 18.8 |
+| **YOLO12s** (2025) | `yolo12s_chv_best.pt` | 9.29M | 95.66% | 94.80% | 98.30% | 78.80% | 98.64% | 97.92% | 98.18% | 99.50% | 98.51% | 96.20% | 99.14% | 18.13 | 55.88 | 17.9 |
+| **YOLO26s** (2026) | `yolo26s_chv_best.pt` | 10.01M | 94.98% | 94.66% | 98.01% | 78.60% | 97.87% | 97.58% | 97.56% | 99.44% | 98.63% | 95.99% | 98.98% | 17.25 | 52.74 | 19.0 |
+
+### 30.4. Bảng 3: Chuỗi Thực Nghiệm Ablation A0 $\to$ A6 & Zalo Rule Engine (@hannhu40022 - Version 8)
+*Khắc phục triệt để lỗi tràn chỉ số confusion matrix và ổn định BatchNorm.*
+
+| Mã Ablation | Cấu hình Kiến trúc | Tham số (Train) | Precision (%) | Recall (%) | mAP@50 (%) | mAP@50-95 (%) | Person AP50 (%) | Vest AP50 (%) | Blue AP50 (%) | Green AP50 (%) | Red AP50 (%) | White AP50 (%) | Yellow AP50 (%) | Thời gian Train (phút) |
+|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **A0** | Baseline YOLO11s (S4 Warm-Start) | 9,430,501 | **96.12%** | **92.53%** | **98.24%** | **78.46%** | **97.72%** | **98.34%** | **97.46%** | **99.41%** | **99.08%** | **96.78%** | **98.89%** | 21.25 |
+| **A1** | + Decoupled Lateral P2 Head | 9,677,420 | **92.53%** | **94.19%** | **97.47%** | **77.53%** | **97.60%** | **97.50%** | **96.30%** | **99.00%** | **98.04%** | **95.05%** | **98.81%** | 9.99 |
+| **A2** | + CoordConv Stem | 9,431,077 | **94.14%** | **93.39%** | **97.99%** | **78.46%** | **97.56%** | **97.53%** | **97.53%** | **99.38%** | **98.53%** | **96.43%** | **98.99%** | 9.44 |
+| **A3** | + RepConv Neck | 9,730,149 | **94.13%** | **94.48%** | **97.80%** | **78.71%** | **97.81%** | **97.91%** | **97.43%** | **99.46%** | **98.52%** | **94.59%** | **98.89%** | 9.49 |
+| **A4** | + Focal-EIoU Loss | 9,430,501 | **94.02%** | **93.33%** | **97.38%** | **77.30%** | **97.30%** | **97.44%** | **96.67%** | **99.50%** | **98.48%** | **93.24%** | **99.01%** | 9.36 |
+| **A5** | + BiFormer Attention | 10,480,102 | **94.66%** | **93.43%** | **97.71%** | **78.76%** | **97.42%** | **97.73%** | **96.99%** | **99.41%** | **99.33%** | **94.05%** | **99.04%** | 9.68 |
+| **A6** | Full Proposed Rep-YOLO11s | 11,027,245 | **93.25%** | **93.72%** | **97.64%** | **76.88%** | **97.72%** | **97.72%** | **95.78%** | **99.48%** | **98.70%** | **95.14%** | **98.93%** | 11.11 |
+
+### 30.5. Kết Quả Kiểm Tra Động Cơ Luật Tuân Thủ Zalo (Real-Time Safety Rule Engine):
+- **Đối tượng kiểm tra:** 306 ảnh test công trường độc lập.
+- **Tổng số công nhân được phát hiện và kiểm tra:** 1,032 công nhân.
+- **Công nhân tuân thủ đầy đủ (Có Mũ VÀ Có Áo):** 691 công nhân (**66.96%**).
+- **Công nhân vi phạm an toàn (Thiếu Mũ hoặc Thiếu Áo):** 341 công nhân (**33.04%**).
+- **Tập tin sự kiện cảnh báo đã kết xuất:** [zalo_alert_payloads.json](file:///c:/Users/ADMIN/Downloads/capstone%20AI/Output/kaggle_results/hannhu40022_warmstart_ablations/zalo_alert_payloads.json) (10.4 KB) phục vụ webhook Zalo Bot.
+- **Trọng số triển khai nhẹ cho Edge Device:** [rep_yolo11s_chv7_best_deploy.pt](file:///c:/Users/ADMIN/Downloads/capstone%20AI/Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv7_best_deploy.pt) (22.0 MB, đã re-parameterized các nhánh 1x1 và identity về conv 3x3 duy nhất).
