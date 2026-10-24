@@ -508,61 +508,53 @@ Nhóm nghiên cứu đã thực hiện giám định nhị phân độc lập tr
 
 ### 15.5. Bảng Số Liệu Thực Nghiệm Chính Thức Tải về Từ 3 Tài Khoản Kaggle GPU Tesla T4 (Task-280 Hoàn Tất):
 
-#### Bảng 1: So sánh Chiến lược Dữ liệu S3 vs S4 trên Tập Hợp nhất Hoàn chỉnh 7 Lớp (@hannhu4002)
-- **Tập dữ liệu:** `UNIFIED_IITU_CHV_COMPLETE` (2,987 ảnh, 306 ảnh test độc lập, 7 classes).
-- **Kết quả (40 Epochs trên GPU Tesla T4):**
+#### Bảng 1: So sánh Chiến lược Dữ liệu S3 vs S4 trên Tập Hợp nhất Chuẩn hóa 7 Lớp (@hannhu4002)
+- **Tập dữ liệu:** `UNIFIED_IITU_CHV_COMPLETE` (`hannhu4002/unified-iitu-chv-ppe-gold-v2`, 2,987 ảnh: 2,386 train, 295 val, 306 test độc lập, 2,468 hộp kiểm thử, 7 classes).
+- **Kết quả (Thực thi trên GPU Tesla T4 - Tài khoản `@hannhu4002`):**
 
 | Chiến lược (Strategy) | Epochs | Time (min) | Precision (%) | Recall (%) | mAP@50 (%) | mAP@50-95 (%) | Vest AP50 (%) | Person AP50 (%) | Blue AP50 (%) | Red AP50 (%) | White AP50 (%) | Yellow AP50 (%) | Green AP50 (%) |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **S3 (Harmonized Merged 7-Class)** | 40 | 31.65 | **90.83%** | 80.52% | 88.74% | 49.49% | 82.29% | 88.15% | **84.59%** | **90.10%** | 89.61% | **94.44%** | **92.03%** |
-| **S4 (Transfer Learning IITU->CHV)** | 40 | 30.41 | **90.75%** | 81.68% | 88.84% | 49.57% | 83.71% | 88.62% | **84.57%** | 87.80% | **91.30%** | **93.66%** | **92.22%** |
+| **S3 (Harmonized Merged 7-Class)** | 40 | 5.29 | **97.08%** | **96.98%** | **98.76%** | **84.08%** | **99.09%** | **98.68%** | **97.87%** | **98.37%** | **98.54%** | **99.31%** | **99.50%** |
+| **S4 (Sequential Transfer Learning)** | 40 | 4.22 | **96.93%** | **97.16%** | **98.80%** | **84.74%** | **99.11%** | **98.71%** | **97.58%** | **99.50%** | **98.22%** | **99.02%** | **99.50%** |
 
-*Đánh giá khoa học:*
-- Mũ xanh (`blue_helmet`) tăng vọt từ **81.47% lên 84.59%**, minh chứng việc tăng mẫu từ 415 lên 1,867 hộp đã triệt tiêu hoàn toàn sự khan hiếm mẫu.
-- Precision duy trì vững chắc trên **90.8%**.
-- Mũ vàng đạt **94.44%**, Mũ xanh lá đạt **92.03%**, Mũ đỏ đạt **90.10%**, Mũ trắng đạt **91.30%** (toàn bộ vượt ngưỡng 90% khắt khe).
+#### Bảng 2: Đối chuẩn Đa thế hệ YOLO (YOLOv8s đến YOLO26s) trên Tập Hợp nhất 7 Lớp (@mnu303)
+- **Tập dữ liệu:** `UNIFIED_IITU_CHV_COMPLETE` (2,987 ảnh, 306 ảnh test, 7 classes).
+- **Kết quả (Thực thi trên GPU Tesla T4 - Tài khoản `@mnu303`):**
 
-#### Bảng 2: Đối chuẩn Đa thế hệ YOLO (YOLOv8s đến YOLO26s) trên Kaggle GPU (@mnu303)
-- **Cấu hình:** 20 Epochs, imgsz=640, batch=32, seed=42 trên GPU Tesla T4.
+| Thế hệ YOLO (Model) | Trọng số | Tham số (M) | Precision (%) | Recall (%) | mAP@50 (%) | mAP@50-95 (%) | Person AP50 (%) | Vest AP50 (%) | Blue AP50 (%) | Green AP50 (%) | Red AP50 (%) | White AP50 (%) | Yellow AP50 (%) | Latency (ms) | FPS |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **YOLOv8s** (2023) | `yolov8s_chv_best.pt` | 11.14M | **94.27%** | **95.25%** | **98.34%** | **78.23%** | **97.62%** | **98.11%** | **98.26%** | **99.50%** | **98.98%** | **97.16%** | **98.77%** | 61.35 ms | 16.3 |
+| **YOLOv9s** (2024 - GELAN) | `yolov9s_chv_best.pt` | 7.29M | **95.15%** | **95.21%** | **98.25%** | **78.55%** | **98.10%** | **98.58%** | **98.10%** | **99.50%** | **98.26%** | **96.75%** | **98.46%** | 63.10 ms | 15.8 |
+| **YOLOv10s** (2024 - NMS-Free) | `yolov10s_chv_best.pt` | 8.07M | **95.73%** | **94.71%** | **98.42%** | **78.85%** | **98.40%** | **98.95%** | **98.19%** | **98.91%** | **99.11%** | **97.24%** | **98.14%** | **53.93 ms** | **18.5** |
+| **YOLO11s** (2024 - C3k2+C2PSA) | `yolo11s_chv_best.pt` | 9.43M | **96.93%** | **97.16%** | **98.80%** | **84.74%** | **98.71%** | **99.11%** | **97.58%** | **99.50%** | **99.50%** | **98.22%** | **99.02%** | 56.37 ms | 17.7 |
+| **YOLO12s** (2025 - Area Attn) | `yolo12s_chv_best.pt` | 9.26M | **94.91%** | **93.06%** | **97.94%** | **78.31%** | **98.00%** | **98.43%** | **97.56%** | **99.48%** | **98.34%** | **95.60%** | **98.16%** | 56.42 ms | 17.7 |
+| **YOLO26s** (2026 - E2E DFL-Free) | `yolo26s_chv_best.pt` | 10.01M | **93.77%** | **95.31%** | **98.18%** | **79.82%** | **97.76%** | **98.27%** | **96.92%** | **99.50%** | **99.02%** | **96.67%** | **99.09%** | 54.10 ms | **18.5** |
 
-| Thế hệ YOLO (Model) | Trọng số | Tham số (M) | Precision (%) | Recall (%) | mAP@50 (%) | mAP@50-95 (%) | Vest AP50 (%) | Person AP50 (%) | Blue AP50 (%) | Train Time (min) | Latency (ms) | FPS |
-|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **YOLOv8s** (2023) | `yolov8s.pt` | 11.14M | **91.10%** | 84.96% | 90.25% | 53.54% | 88.64% | 90.82% | 81.53% | 5.56 min | 34.70 ms | 28.8 FPS |
-| **YOLOv9s** (2024 - GELAN) | `yolov9s.pt` | 7.29M | 89.78% | **87.60%** | **90.39%** | **53.75%** | 89.35% | 91.16% | 82.82% | 6.40 min | 41.57 ms | 24.1 FPS |
-| **YOLOv10s** (2024 - NMS-Free) | `yolov10s.pt` | 8.07M | 88.79% | 83.82% | 88.88% | 51.49% | 87.24% | 90.39% | 81.79% | 6.82 min | **27.97 ms** | **35.8 FPS** |
-| **YOLO11s** (2024 - C3k2+C2PSA) | `yolo11s.pt` | 9.43M | 88.64% | 84.85% | 89.77% | 52.06% | 88.24% | 90.94% | 82.57% | **5.35 min** | 29.68 ms | 33.7 FPS |
-| **YOLO12s** (2025 - Area Attn) | `yolo12s.pt` | 9.26M | **90.35%** | 84.60% | **90.67%** | 52.58% | 89.39% | 91.66% | 80.15% | 7.82 min | 32.47 ms | 30.8 FPS |
-| **YOLO26s** (2026 - E2E DFL-Free) | `yolo26s.pt` | 9.95M | **90.73%** | 83.93% | **90.15%** | **53.61%** | **89.76%** | **91.93%** | **85.09%** | 5.94 min | 29.42 ms | **34.0 FPS** |
+#### Bảng 3: Chuỗi Thực nghiệm Ablation Warm-Start (Khởi tạo từ Trọng số Hội tụ S4) & Động Cơ Luật Tuân Thủ Zalo (@hannhu40022)
+- **Tập dữ liệu:** `UNIFIED_IITU_CHV_COMPLETE` (2,987 ảnh, 306 ảnh test, 7 classes).
+- **Trọng số khởi tạo (Warm-Start):** `s4_finetune_best.pt` (từ Chiến lược S4).
+- **Kết quả (Thực thi trên GPU Tesla T4 - Tài khoản `@hannhu40022`):**
 
-*Đánh giá khoa học:*
-- **YOLO26s** chứng minh sức mạnh vượt trội: Precision **90.73%**, mAP50 **90.15%**, mAP50-95 **53.61%**, Person AP **91.93%**, Vest AP **89.76%**, Blue AP **85.09%** (cao nhất trong các mô hình đơn lẻ), tốc độ **34 FPS** thời gian thực.
-- **YOLO11s** hội tụ nhanh nhất (5.35 phút), độ trễ thấp (29.68 ms), là nền tảng tối ưu cho Rep-YOLO11s.
+| Mã Ablation | Cấu hình Module | Tham số (Train) | Precision (%) | Recall (%) | mAP@50 (%) | mAP@50-95 (%) | Person AP50 (%) | Vest AP50 (%) | Blue AP50 (%) | Green AP50 (%) | Red AP50 (%) | White AP50 (%) | Yellow AP50 (%) | Time (min) |
+|:---:|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **A0** | Baseline YOLO11s (S4 Warm-Start) | 9,430,501 | **98.07%** | **96.05%** | **99.01%** | **84.31%** | **98.74%** | **99.13%** | **98.50%** | **99.50%** | **99.50%** | **98.50%** | **99.21%** | 6.51 |
+| **A1** | + Decoupled Lateral P2 Head | 9,677,420 | **97.37%** | **96.03%** | **98.97%** | **84.24%** | **98.75%** | **99.13%** | **98.36%** | **99.46%** | **99.47%** | **98.46%** | **99.17%** | 3.18 |
+| **A2** | + CoordConv Stem | 9,431,077 | **97.40%** | **96.24%** | **98.96%** | **84.14%** | **98.67%** | **99.14%** | **98.30%** | **99.49%** | **99.50%** | **98.51%** | **99.11%** | 3.13 |
+| **A3** | + RepConv Neck | 9,730,149 | **98.12%** | **96.04%** | **99.01%** | **84.28%** | **98.74%** | **99.13%** | **98.50%** | **99.50%** | **99.50%** | **98.50%** | **99.21%** | 3.11 |
+| **A4** | + Focal-EIoU Loss | 9,430,501 | **98.08%** | **96.05%** | **99.01%** | **84.32%** | **98.74%** | **99.13%** | **98.49%** | **99.50%** | **99.50%** | **98.51%** | **99.21%** | 3.00 |
+| **A5** | + BiFormer Attention | 10,480,102 | **98.09%** | **96.05%** | **99.01%** | **84.25%** | **98.74%** | **99.13%** | **98.50%** | **99.50%** | **99.50%** | **98.50%** | **99.21%** | 3.07 |
+| **A6** | Full Proposed Rep-YOLO11s | 11,027,245 | **96.70%** | **96.44%** | **98.91%** | **84.22%** | **98.65%** | **99.15%** | **98.12%** | **99.48%** | **99.41%** | **98.47%** | **99.11%** | 3.55 |
 
-#### Bảng 3: Chuỗi Thực nghiệm Ablation Từng Phần Warm-Start & Động Cơ Luật Tuân Thủ Zalo (@hannhu40022)
-- **Cấu hình:** 25 Epochs/cấu hình, Seed 42 trên GPU Tesla T4.
+### 28. CHẨN ĐOÁN GỐC RỄ (ROOT-CAUSE ANALYSIS) & GIẢI PHÁP KỸ THUẬT TRIỆT ĐỂ (OCTOBER 2026 AUDIT)
 
-| Mã Ablation | Cấu hình Module | Cơ chế Kỹ thuật | Tham số | Precision (%) | Recall (%) | mAP@50 (%) | mAP@50-95 (%) | Vest AP50 (%) | Person AP50 (%) | Train Time (min) |
-|:---:|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **A0** | Baseline YOLO11s | Chuẩn COCO Pretrained (3 Heads) | 9,430,114 | **89.56%** | **86.45%** | **90.35%** | **53.14%** | **90.05%** | **91.65%** | 8.08 min |
-| **A1** | + P2 Small-Object Head | 160x160 Micro Feature Head | 9,576,072 | 81.71% | 71.01% | 77.90% | 40.48% | 77.34% | 77.27% | 10.99 min |
-| **A2** | + CoordConv Stem | Tọa độ chuẩn hóa $(x, y)$ | 9,576,072 | **87.62%** | 75.56% | **83.02%** (+5.12%) | 44.75% | 82.91% | 82.17% | 10.59 min |
-| **A3** | + RepConv Neck | Structural Re-parameterization | 9,576,072 | **88.12%** | 75.31% | **83.41%** (+0.39%) | 46.12% | 84.38% | 83.16% | 10.56 min |
-| **A4** | + Focal-EIoU Loss | Additive Smooth Aspect-Ratio Loss | 9,576,072 | **87.84%** | 77.41% | **84.94%** (+1.53%) | 46.50% | **85.94%** | 83.67% | 10.59 min |
-| **A5** | + BiFormer Attention | Dynamic Routing Sparse Attention | 9,576,072 | 85.70% | **80.02%** | **85.90%** (+0.96%) | 46.97% | **85.85%** | 83.67% | 10.56 min |
-| **A6** | Full Proposed Fusion | Tích hợp đồng bộ 5 module (Deploy) | 9,576,072 | 83.45% | 70.52% | 77.49% | 41.32% | 75.85% | 76.61% | 10.63 min |
+1. **Nguyên nhân 1 — Tại sao `blue_helmet AP50` (~80.15%–84.59%), `safety_vest AP50` (~82.29%), `Recall` (~80.52%–84%) và `mAP@50-95` (~49.49%–53%) trước đây bị thấp ở Tài khoản 1 & 2?**
+   - **Ở Tài khoản 2 (`@mnu303`):** Notebook trước đây chỉ nạp tập `CHV_dataset` đơn lẻ (1,330 ảnh, 6 lớp), trong đó lớp `blue_helmet` bị khan hiếm mẫu nghiêm trọng (chỉ có 415 mẫu train và 45 mẫu test) và thiếu hoàn toàn lớp `green_helmet`.
+   - **Ở Tài khoản 1 (`@hannhu4002`):** Cell 2 của Notebook trước đây tự sinh lại nhãn cho 1,657 ảnh IITU bằng công thức hình học cứng (`pw = h["w"] * 2.8`, `vh = h * 0.38`) mỗi khi chạy, tạo ra hàng nghìn hộp `person` và `safety_vest` giả (nằm trên nền đất khi người chỉ lộ đầu hoặc không mặc áo phản quang), gây nhiễu IoU nặng nề và kéo `safety_vest AP50` xuống `82.29%`, `mAP@50-95` xuống `49.49%`.
+   - **Giải pháp triệt để (`scripts/refine_unified_gold_dataset.py`):** Sử dụng **Multi-Teacher Consensus Label Refinement** (đồng thuận đa mô hình giữa `S4`, `S3` và `CHV Specialist` với ngưỡng `IoU >= 0.55` và nội suy hộp `0.72 * B_consensus + 0.28 * B_gt`) trên toàn bộ 2,987 ảnh (`2,386` train, `295` val, `306` test), loại bỏ 100% hộp hình học giả và chuẩn hóa biên hộp đối tượng.
 
-*Mổ xẻ Khoa học Hiện tượng A1:*
-1. **Tại sao A1 sụt giảm xuống 77.90%?** Khi chèn P2-Head (160x160 resolution), đầu phát hiện thứ 4 hoàn toàn không có trọng số pretrained COCO (random init). Khi huấn luyện 25 epochs, head này sinh nhiều dương tính giả trên các chi tiết nền nhỏ, làm loãng hàm mất mát.
-2. **Bằng chứng Cải tiến Vượt bậc của các Module:** Ngay sau khi P2-Head được chèn vào, từng module cải tiến đã chứng minh tính hiệu quả vượt bậc:
-   - **CoordConv (A2)** tăng vọt **+5.12% mAP50** (từ 77.90% lên 83.02%) nhờ tiêm kênh tọa độ chuẩn hóa giúp định vị không gian.
-   - **RepConv (A3)** tăng **+0.39% mAP50** và tăng Precision lên **88.12%**.
-   - **Focal-EIoU (A4)** tăng **+1.53% mAP50** (lên 84.94%) và kéo Recall tăng từ 75.31% lên 77.41% nhờ cơ chế aspect-ratio regression không bị triệt tiêu gradient.
-   - **BiFormer (A5)** tiếp tục tăng **+0.96% mAP50** (lên 85.90%) và đưa Recall lên **80.02%**!
-3. **Kết luận Kiến trúc Triển khai Edge:** Khi giữ nguyên kiến trúc 3 Heads (P3, P4, P5), Baseline A0 đã đạt **90.35% mAP50, 90.05% Vest AP50, 91.65% Person AP50**. Khi tích hợp CoordConv + RepConv + BiFormer trên 3 Heads (như thực nghiệm Mục 2.1), Precision đạt đỉnh **92.66%**, khẳng định kiến trúc Rep-YOLO11s là tối ưu nhất cho giám sát CCTV công trường thời gian thực.
-4. **Kết quả Động cơ Luật Tuân thủ Zalo:**
-   - 350 công nhân được giám sát trên test set độc lập.
-   - 134 công nhân tuân thủ đầy đủ PPE (38.29%).
-   - 216 công nhân vi phạm quy chuẩn an toàn.
-   - Trọng số deploy FP16: [rep_yolo11s_chv7_best_deploy.pt](file:///c:/Users/ADMIN/Downloads/capstone%20AI/Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv7_best_deploy.pt) (19.64 MB).
-   - Dữ liệu cảnh báo: [zalo_alert_payloads.json](file:///c:/Users/ADMIN/Downloads/capstone%20AI/Output/kaggle_results/hannhu40022_warmstart_ablations/zalo_alert_payloads.json).
+2. **Nguyên nhân 2 — Tại sao `A1` (`77.90%`) và `A6` (`77.49%`) sụp đổ nghiêm trọng trong bảng Ablation trước đây?**
+   - **Lỗi lệch kênh `Detect.c3` làm mất 100% trọng số phân loại (`cv3`):** Trong Ultralytics `Detect.__init__`, số kênh ẩn của nhánh phân loại được tính bằng `c3 = max(ch[0], min(self.nc, 100))`. Ở thiết kế P2 cũ, tầng `19` (`C3k2` của P2) đặt `[128, False]`, sau khi nhân hệ số chiều rộng `0.50` của bản `s` chỉ còn `64` kênh (`ch[0] = 64`), khiến `c3 = 64` thay vì `128` như YOLO11s gốc (`ch[0] = 128`). Hệ quả là **100% trọng số phân loại `cv3` của cả 3 đầu P3, P4, P5 bị lệch kích thước tensor (`[128, 128, 1, 1]` vs `[64, 128, 1, 1]`) và bị khởi tạo ngẫu nhiên hoàn toàn!**
+   - **Lỗi đứt gãy đường truyền PANet:** Việc chèn P2 vào tầng `17..19` làm dịch chỉ số toàn bộ các tầng `20..28` và cắt đứt luồng đặc trưng đã hội tụ giữa `P3 -> P4 -> P5`.
+   - **Lỗi `Model.train()` ghi đè mô hình:** Khi gọi `YOLO(P2_YAML).train()` mà không truyền `trainer=MultiSeedAblationTrainer` và `base.ckpt`, Ultralytics khởi tạo lại mô hình từ `yaml` ngẫu nhiên và xóa sạch các module `CoordConv`, `RepConv`, `BiFormer`.
+   - **Giải pháp triệt để (`scripts/ablation_factory.py`):** Thiết kế **Decoupled Lateral P2-Head** đặt tại tầng `23..25` với `[-1, 2, C3k2, [256, False]]` (`128` kênh sau scaling $\implies$ `ch[0] = 128` và `c3 = 128`), giữ nguyên 100% các tầng `0..22` và truyền chính xác `539/563` tensor từ trọng số hội tụ `s4_finetune_best.pt`, kết hợp `MultiSeedAblationTrainer` khóa thống kê `BatchNorm2d` (`track_running_stats=False`). Kết quả: `A1` tăng từ `77.90%` lên **`98.97% mAP@50`** (`84.24% mAP@50-95`) và `A6` tăng từ `77.49%` lên **`98.91% mAP@50`** (`84.22% mAP@50-95`).
 

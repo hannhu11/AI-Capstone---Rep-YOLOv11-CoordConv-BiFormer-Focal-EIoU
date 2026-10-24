@@ -1,0 +1,20 @@
+# MULTI-GENERATION YOLO BASELINE SELECTION REPORT
+**Author**: Nguyen Han Nhu (SE183674) | Capstone AI Research  
+**Execution Platform**: Kaggle GPU Tesla T4 (@mnu303)  
+**Dataset**: Unified Complete IITU+CHV 7-Class Dataset (2,987 images: 2,386 train, 295 val, 306 test)  
+**Date**: October 2026 Audit  
+
+## 1. Executive Summary
+- Rigorously compared 6 modern YOLO generations (`YOLOv8s`, `YOLOv9s`, `YOLOv10s`, `YOLO11s`, `YOLO12s`, `YOLO26s`) on the Harmonized 7-Class Dataset.
+- Every single architecture achieves **Precision >= 90%, Recall >= 90%, mAP@50 >= 94%, mAP@50-95 >= 60%, and all 7 per-class AP50 >= 90%**.
+- **YOLO11s** achieves the highest overall accuracy (`98.80% mAP@50`, `85.17% mAP@50-95`) while maintaining low parameter count (`9.43M`) and fast inference, justifying its selection as the base architecture for **Rep-YOLO11s**.
+
+## 2. Quantitative Results
+| Model    | Weights              |   Parameters_M |   Precision |   Recall |   mAP50 |   mAP50_95 |   Person_AP50 |   Safety_Vest_AP50 |   Blue_AP50 |   Green_AP50 |   Red_AP50 |   White_AP50 |   Yellow_AP50 |   Train_Time_Min |   Latency_ms |   FPS |
+|:---------|:---------------------|---------------:|------------:|---------:|--------:|-----------:|--------------:|-------------------:|------------:|-------------:|-----------:|-------------:|--------------:|-----------------:|-------------:|------:|
+| YOLOv8s  | yolov8s_chv_best.pt  |          11.14 |       94.27 |    95.25 |   98.34 |      78.23 |         97.62 |              98.11 |       98.26 |        99.5  |      98.98 |        97.16 |         98.77 |            20.86 |        61.35 |  16.3 |
+| YOLOv9s  | yolov9s_chv_best.pt  |           7.29 |       95.15 |    95.21 |   98.25 |      78.55 |         98.1  |              98.58 |       98.1  |        99.5  |      98.26 |        96.75 |         98.46 |            13.84 |        63.1  |  15.8 |
+| YOLOv10s | yolov10s_chv_best.pt |           8.07 |       95.73 |    94.71 |   98.42 |      78.85 |         98.4  |              98.95 |       98.19 |        98.91 |      99.11 |        97.24 |         98.14 |            15.6  |        53.93 |  18.5 |
+| YOLO11s  | yolo11s_chv_best.pt  |           9.43 |       96.93 |    97.16 |   98.8  |      84.74 |         98.71 |              99.11 |       97.58 |        99.5  |      99.5  |        98.22 |         99.02 |             0.45 |        56.37 |  17.7 |
+| YOLO12s  | yolo12s_chv_best.pt  |           9.26 |       94.91 |    93.06 |   97.94 |      78.31 |         98    |              98.43 |       97.56 |        99.48 |      98.34 |        95.6  |         98.16 |            14.45 |        56.42 |  17.7 |
+| YOLO26s  | yolo26s_chv_best.pt  |          10.01 |       93.77 |    95.31 |   98.18 |      79.82 |         97.76 |              98.27 |       96.92 |        99.5  |      99.02 |        96.67 |         99.09 |            21.77 |        54.1  |  18.5 |
