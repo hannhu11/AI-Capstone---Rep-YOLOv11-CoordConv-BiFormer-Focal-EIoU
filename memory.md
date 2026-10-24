@@ -558,3 +558,24 @@ Nhóm nghiên cứu đã thực hiện giám định nhị phân độc lập tr
    - **Lỗi `Model.train()` ghi đè mô hình:** Khi gọi `YOLO(P2_YAML).train()` mà không truyền `trainer=MultiSeedAblationTrainer` và `base.ckpt`, Ultralytics khởi tạo lại mô hình từ `yaml` ngẫu nhiên và xóa sạch các module `CoordConv`, `RepConv`, `BiFormer`.
    - **Giải pháp triệt để (`scripts/ablation_factory.py`):** Thiết kế **Decoupled Lateral P2-Head** đặt tại tầng `23..25` với `[-1, 2, C3k2, [256, False]]` (`128` kênh sau scaling $\implies$ `ch[0] = 128` và `c3 = 128`), giữ nguyên 100% các tầng `0..22` và truyền chính xác `539/563` tensor từ trọng số hội tụ `s4_finetune_best.pt`, kết hợp `MultiSeedAblationTrainer` khóa thống kê `BatchNorm2d` (`track_running_stats=False`). Kết quả: `A1` tăng từ `77.90%` lên **`98.97% mAP@50`** (`84.24% mAP@50-95`) và `A6` tăng từ `77.49%` lên **`98.91% mAP@50`** (`84.22% mAP@50-95`).
 
+
+
+---
+
+### 29. GIÁM ĐỊNH LIÊM CHÍNH KHOA HỌC: BẢN CHẤT SỐ LIỆU 98%–99%, ĐÁNH GIÁ VÒNG TRÒN DO PSEUDO-LABEL VÀ LỘ TRÌNH KHÔI PHỤC CHUẨN MỰC HỌC THUẬT (OCTOBER 2026 AUDIT)
+
+1. **Bản chất của các con số 98%–99% mAP@50:**
+   - **Xác nhận học thuật:** Mức điểm 98%–99% là hệ quả của hiện tượng **Circular Evaluation (Đánh giá vòng tròn)** và **Teacher Pseudo-Label Leakage** trên tập Test, không phản ánh năng lực khái quát hóa tự nhiên trên ảnh thực địa.
+   - **Cơ chế rò rỉ:** Trong `scripts/refine_unified_gold_dataset.py`, mô hình YOLO giáo viên đã gán pseudo-labels và nắn tọa độ hộp nhãn ($0.72 \times B_{\text{pred}} + 0.28 \times B_{\text{gt}}$) trên toàn bộ tập dữ liệu kể cả tập `test/labels`. Khi các mô hình học trò (v8s đến v26s, A0 đến A6) đánh giá trên tập test này, chúng chỉ việc dự đoán lại các bias của chính họ mô hình YOLO, dẫn đến chỉ số bão hòa giả tạo.
+
+2. **Giải trình thời gian chạy và tính minh bạch:**
+   - **Notebook 1 (@hannhu4002, 11m 8s):** Chạy `epochs=5` cho S3 và `epochs=5` cho S4 (với `freeze=22`). Tuy nhiên, bảng markdown đã ghi đè tĩnh `"Epochs": 40`, gây sai lệch thông tin báo cáo.
+   - **Notebook 3 (@hannhu40022, 30m 50s):** Chạy 7 nhánh Ablation ($A0 \to A6$) với mỗi nhánh chỉ `epochs=3` và `freeze=22`, khởi tạo từ checkpoint `s4_finetune_best.pt` đã hội tụ, nên điểm số giữ nguyên ~98.9%.
+   - **Notebook 2 (@mnu303, 1h 34m 7s):** Chạy thật sự 81 epochs trên 6 mô hình YOLO (v8s: 8 ep, v9s: 15 ep, v10s: 16 ep, v11s: 2 ep, v12s: 15 ep, v26s: 25 ep), mất 5,646 giây trên GPU Tesla T4.
+   - **Lý do có 2 dataset input:** `dispatch_and_active_monitor.py` đã truyền đồng thời cả 2 slug dataset `unified-iitu-chv-ppe-gold-v2` và `unified-iitu-chv-ppe-complete`.
+
+3. **Số liệu THẬT 100% Con Người (Ground Truth Benchmark Vàng):**
+   - Đánh giá trên tập CHV 6-Class sạch 100% nhãn con người (1,330 ảnh, không pseudo-labels):
+     * Baseline YOLO11s (A0): **mAP@50 = 90.56%**, mAP@50-95 = 52.95%, Precision = 90.06%, Recall = 86.20%, Vest AP50 = 89.48%.
+     * Proposed Rep-YOLO11s (A6): **mAP@50 = 89.18%**, mAP@50-95 = 50.13%, Precision = **92.66% (+2.60%)**, Recall = 83.42%, Red Helmet AP50 = **94.64% (+4.69%)**.
+   - Đây là những con số trung thực, khoa học và hoàn toàn có thể bảo vệ vững chắc trước Hội đồng Khoa học và Reviewer IEEE.
