@@ -1148,12 +1148,10 @@ for ab in ABLATION_SUITE:
     )
     t_train = (time.time() - t0) / 60
 
-    eval_model = build_ablation_model(ab_id, base_weight=s4_base_weight, nc=7)
-    if hasattr(model, "trainer") and hasattr(model.trainer, "ema") and hasattr(model.trainer.ema, "ema"):
-        trained_sd = model.trainer.ema.ema.state_dict()
-        eval_model.model.load_state_dict(trained_sd, strict=False)
-        if ab_id == "A6":
-            last_trained_a6_sd = {k: v.cpu() for k, v in trained_sd.items()}
+    best_pt = Path(f"/tmp/runs/ab_{ab_id.lower()}/weights/best.pt")
+    if not best_pt.exists():
+        best_pt = Path(f"/tmp/runs/ab_{ab_id.lower()}/weights/last.pt")
+    eval_model = YOLO(str(best_pt))
     val_res = eval_model.val(data=str(DATA_YAML_PATH), split="test", device=DEVICE_CFG)
 
     prec = float(val_res.box.mp) * 100
@@ -1183,9 +1181,10 @@ for ab in ABLATION_SUITE:
     print(f"[RESULT] {ab_id} ({train_param_count:,} params): P={row['Precision']}% | R={row['Recall']}% | mAP50={row['mAP50']}% | mAP50-95={row['mAP50_95']}% | Blue={row['Blue_AP50']}% | Vest={row['Safety_Vest_AP50']}%")
 
 # Export A6 deploy model
-a6_model = build_ablation_model("A6", base_weight=s4_base_weight, nc=7)
-if last_trained_a6_sd is not None:
-    a6_model.model.load_state_dict(last_trained_a6_sd, strict=False)
+a6_best_pt = Path("/tmp/runs/ab_a6/weights/best.pt")
+if not a6_best_pt.exists():
+    a6_best_pt = Path("/tmp/runs/ab_a6/weights/last.pt")
+a6_model = YOLO(str(a6_best_pt))
 model_deploy = switch_model_to_deploy(a6_model)
 deploy_param_count = sum(p.numel() for p in model_deploy.model.parameters())
 deploy_path = Path("/kaggle/working/rep_yolo11s_chv7_best_deploy.pt")
@@ -1203,7 +1202,7 @@ print("=" * 80)
 print("🛡️ RUNNING REAL-TIME ZALO COMPLIANCE AUDITING ENGINE (7-CLASS SPATIAL RELATIONAL LOGIC)")
 print("=" * 80)
 
-deploy_model = YOLO(s4_base_weight)
+deploy_model = YOLO(str(deploy_path)) if deploy_path.exists() else YOLO(str(a6_best_pt))
 test_imgs = sorted(list((UNIFIED_DIR / "images" / "test").glob("*.*")))
 compliance_events = []
 total_workers = 0
