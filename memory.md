@@ -637,25 +637,38 @@ Nhóm nghiên cứu đã thực hiện giám định nhị phân độc lập tr
 
 ## 31. Báo Cáo Giám Định Pháp Y Liêm Chính Khoa Học Về Chỉ Số 96% - 98% và Phân Hoạch Dữ Liệu Test vs Train
 
-### 31.1. Kết Quả Giám Định Độc Lập về Tập Đánh Giá (Train vs Test)
-- **Nghi vấn đặt ra**: Có phải mô hình đã vô tình lấy tập train gốc để đánh giá dẫn đến kết quả cao bất thường không?
-- **Chứng cứ pháp y từ mã nguồn và nhật ký thực thi**:
-  1. Trong cả 3 notebook benchmark (`Dataset_Strategy_Transfer_Learning_Benchmark.ipynb`, `Multi_Generation_YOLO_Baseline_Selection.ipynb`, `Rep_YOLO11s_WarmStart_Ablations_And_RuleEngine.ipynb`), hàm đánh giá được gọi tường minh:
-     `val_res = best_model.val(data=str(DATA_YAML_PATH), split="test", device=DEVICE_CFG)`
-  2. Phân hoạch trong `data.yaml`:
-     - `train`: `images/train` (2,386 ảnh, 15,102 instances).
-     - `val`: `images/val` (295 ảnh, 1,840 instances).
-     - `test`: `images/test` (**306 ảnh**, **2,468 instances** gồm 910 person, 630 safety_vest, 140 blue, 99 green, 120 red, 294 white, 275 yellow).
-  3. Log quét dữ liệu của Ultralytics hiển thị rõ ràng: `Scanning /kaggle/working/data/test/labels... 306 images, 1032 workers / 2468 instances`.
-- **Kết luận 1**: Mô hình **KHÔNG HỀ** đánh giá trên tập `train`. Quá trình kiểm thử diễn ra 100% trên tập `test` độc lập 306 ảnh.
+### 31.1. Phát Hiện Cốt Lõi Về Nghi Vấn "Lấy Tập Train Gốc Để Đánh Giá"
+- **Nghi vấn của Tác giả**: *"Có phải dùng tập dataset (gốc) để chạy đánh giá khiến cho kết quả cao vậy đúng không?"*
+- **Sự thật pháp y được giải mã qua 2 giai đoạn nghiên cứu**:
+  1. **GIAI ĐOẠN 1 (ĐỢT REVIEW 1 TRÊN BỘ SHWD 5-FOLD): NGHI VẤN CỦA TÁC GIẢ ĐÚNG 100%!**
+     - Tại `kaggle_upload_shwd_benchmark_code_v2/kaggle_stage3_experiments.py` (dòng 293-308) và `CAPSTONE_MASTER_CONTRIBUTIONS_AND_STAGES_AUTOPSY.md` (dòng 102-109):
+       Hàm `run_stage2_kfold()` đã nạp trọng số `yolo11s_best.pt` (vốn đã học trên 80% tập gốc SHWD) rồi cho chạy kiểm thử `val` trên 5 fold của chính tập dữ liệu đó.
+     - Trong mỗi fold (1,516 ảnh), có tới 80% số ảnh là ảnh mô hình **ĐÃ HỌC TRONG TẬP TRAIN ($P(\text{seen}) = 0.80$)**.
+     - Công thức kỳ vọng toán học: $\mathbb{E}[\text{mAP}_{50}] = (0.80 \times 97.10\%_{\text{train}}) + (0.20 \times 94.83\%_{\text{test}}) = \mathbf{96.65\%}$, khớp chính xác với con số thực nghiệm báo cáo ở Review 1 là **96.64% ± 0.32%** (và Peak Fold 3 đạt **97.11%**)!
+     - Đây chính là nguồn cơn sâu xa khiến tác giả cảm nhận số liệu bị "ảo" và nghi ngờ mô hình test trên tập gốc!
+  2. **GIAI ĐOẠN 2 (ĐỢT CHẠY THÁNG 10/2026 TRÊN FLEET KAGGLE DUAL T4 - TẬP HỢP NHẤT 7 LỚP)**:
+     - Trong cả 3 notebook benchmark (`Dataset_Strategy_Transfer_Learning_Benchmark.ipynb`, `Multi_Generation_YOLO_Baseline_Selection.ipynb`, `Rep_YOLO11s_WarmStart_Ablations_And_RuleEngine.ipynb`), hàm đánh giá được gọi tường minh:
+       `val_res = best_model.val(data=str(DATA_YAML_PATH), split="test", device=DEVICE_CFG)`
+     - Phân hoạch kiểm tra trực tiếp từ nhãn nhị phân của hệ thống:
+       * `train`: **2,386 ảnh**, **21,633 bounding boxes**.
+       * `val`: **295 ảnh**, **2,259 bounding boxes**.
+       * `test`: **306 ảnh**, **2,468 bounding boxes** (910 person, 630 safety_vest, 140 blue, 99 green, 120 red, 294 white, 275 yellow).
+       * Tổng cộng: **2,987 ảnh**, **26,360 bounding boxes**.
+     - Log quét của Ultralytics hiển thị rõ ràng: `Scanning /kaggle/working/data/test/labels... 306 images, 1032 workers / 2468 instances`.
+     - $\implies$ Ở đợt chạy tháng 10/2026, mô hình **KHÔNG HỀ** đánh giá trên tập `train` (2,386 ảnh). Quá trình kiểm thử diễn ra 100% trên tập `test` độc lập 306 ảnh.
 
-### 31.2. Mổ Xẻ Khoa Học: Tại Sao Chỉ Số Lại Đạt Rất Cao (96% - 98.65% mAP@50)?
+### 31.2. Mổ Xẻ Khoa Học: Tại Sao Chỉ Số Tháng 10/2026 Vẫn Đạt Rất Cao (97% - 98.65% mAP@50)?
+Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khách quan**:
 1. **Tương quan thời gian giữa các frame video drone (Temporal Video Correlation)**:
    - Dữ liệu `IITU Safety-Helmet` (1,664 ảnh) được quay bằng drone/flycam theo từng chuyến bay tại công trường.
-   - Khi chia ngẫu nhiên hay chia đoạn (chunk-split) theo danh sách file trong từng thư mục chuyến bay, các frame ảnh ở tập `test` có cùng góc camera, ánh sáng, bối cảnh và cùng một nhóm công nhân đang làm việc với các frame ở tập `train` (chỉ cách nhau vài giây). Do đó mạng nơ-ron nhận diện đối tượng ở góc nhìn này cực kỳ dễ dàng (AP50 của green/red helmet đạt 99%).
-2. **Căn chỉnh nhãn tự động bởi Teacher Model (Pseudo-Label Smoothing)**:
-   - Do IITU ban đầu không có nhãn áo phản quang và người, script tiền xử lý sử dụng mô hình giáo viên (Teacher YOLO11s) để sinh nhãn.
-   - Nhãn ground-truth ở tập test trên phần ảnh drone mang cùng một "thiên vị quy nạp" (inductive bias) của kiến trúc YOLO, giúp các mô hình học sinh phát hiện khớp với tọa độ nhãn sinh ra với độ tin cậy rất cao.
+   - Khi chia theo từng thư mục chuyến bay (80% train, 10% val, 10% test), các frame ảnh ở tập `test` có cùng góc camera, độ cao, ánh sáng, bối cảnh và cùng một nhóm công nhân đang làm việc với các frame ở tập `train` (chỉ cách nhau vài chục giây). Do đó mạng nơ-ron nhận diện đối tượng ở góc nhìn này cực kỳ dễ dàng (AP50 của green/red helmet đạt 99.4% - 99.5%).
+2. **Căn chỉnh nhãn tự động bởi Teacher Model (Circular Evaluation / Pseudo-Label Smoothing)**:
+   - Trong `scripts/refine_unified_gold_dataset.py`, tọa độ hộp được nắn theo dự đoán của mô hình YOLO giáo viên ($0.72 \times B_{\text{pred}} + 0.28 \times B_{\text{gt}}$), và các hộp `person`, `safety_vest` còn thiếu được gán bởi chính YOLO Teacher ghi thẳng vào `test/labels/`.
+   - Khi các mô hình học sinh (YOLOv8s $\to$ YOLO26s, A0 $\to$ A6) đánh giá trên tập test, chúng dự đoán lại đúng thiên vị quy nạp (inductive bias) của giáo viên, đẩy AP50 của Person và Vest lên 97.7% - 98.7%.
+3. **Thiên lệch khởi tạo Warm-Start (Notebook 3)**:
+   - Toàn bộ các cấu hình Ablation A0 $\to$ A6 được nạp sẵn trọng số `s4_finetune_best.pt` (vốn đã đạt 98.60% mAP50 ở Notebook 1) và fine-tune 10 epochs. Vì xuất phát điểm đã ở mức 98.6%, các cấu hình dao động trong khoảng hẹp **97.38% – 98.24%**.
+4. **Hiện tượng 6 thế hệ YOLO đều đạt ~98% (Dataset Ceiling)**:
+   - Cả 6 dòng YOLOv8s $\to$ YOLO26s đều nằm trong biên độ cực hẹp **98.01% – 98.65%**, là bằng chứng không thể chối cãi của sự bão hòa tập dữ liệu chứ không phải do mô hình ảo thuật.
 
 ### 31.3. Bằng Chứng Đối Chứng Liêm Chính: Benchmark Trên Bộ CHV Thuần Con Người (1,330 ảnh)
 - Khi kiểm thử trên tập dữ liệu chuẩn **CHV (100% human-annotated ground truth, không có video sequence trùng lặp, không có pseudo-labels)**:
