@@ -1,14 +1,17 @@
 # Comprehensive Edge Hardware Simulation & Profiling Audit
 
 **Document Standard**: IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI) / AAIML 2027
-**Audit Timestamp**: 2026-10-26 04:40:43 UTC
-**Host GPU Benchmark**: NVIDIA GeForce RTX 3050 Laptop GPU | Measured FP16: 22.74 ms (44.0 FPS)
+**Audit Timestamp**: 2026-10-26 06:35:48 UTC
+**Host GPU Benchmark**: NVIDIA GeForce RTX 3050 Laptop GPU | Measured FP16: 18.16 ms (55.1 FPS)
 
 ---
 
 ## 1. Executive Summary & Edge Simulation Rationale
 
 To satisfy the rigorous scientific reproducibility standards of IEEE TPAMI and address reviewer inquiries regarding edge viability, this report benchmarks the deployment of **Rep-YOLO11s** across 4 canonical edge compute platforms. Measurements combine **empirical host profiling on physical hardware** with **discretized physical scaling models** incorporating memory bandwidth constraints, compute TOPS, tensor core architecture, and thermal dissipation characteristics.
+
+### Mathematical Roofline Scaling Law:
+$$\text{Latency}_{\text{target}} = \text{Latency}_{\text{host, TRT}} \times \left( 0.55 \cdot \frac{\text{BW}_{\text{host}}}{\text{BW}_{\text{target}}} + 0.45 \cdot \frac{\text{TOPS}_{\text{host}}}{\text{TOPS}_{\text{target}}} \right)$$
 
 ---
 
@@ -27,14 +30,14 @@ To satisfy the rigorous scientific reproducibility standards of IEEE TPAMI and a
 
 - **Device**: NVIDIA GeForce RTX 3050 Laptop GPU
 - **Model Weights Checkpoint**: `rep_yolo11s_chv7_best_deploy.pt`
-- **Measured FP32 PyTorch Native Latency**: 26.65 ms
-- **Measured FP16 PyTorch Native Latency**: **22.74 ms** (44.0 FPS)
+- **Measured FP32 PyTorch Native Latency**: 26.17 ms
+- **Measured FP16 PyTorch Native Latency**: **18.16 ms** (55.1 FPS)
 - **Peak CUDA VRAM Allocated**: **260.7 MB**
 
 ### Thread-Constrained CPU Latency Emulation:
-- **CPU Threads = 1**: Latency = **768.0 ms** (1.3 FPS)
-- **CPU Threads = 2**: Latency = **558.3 ms** (1.8 FPS)
-- **CPU Threads = 4**: Latency = **421.7 ms** (2.4 FPS)
+- **CPU Threads = 1**: Latency = **796.4 ms** (1.3 FPS)
+- **CPU Threads = 2**: Latency = **696.8 ms** (1.4 FPS)
+- **CPU Threads = 4**: Latency = **465.6 ms** (2.1 FPS)
 
 ---
 

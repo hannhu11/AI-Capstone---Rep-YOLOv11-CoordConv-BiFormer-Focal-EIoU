@@ -5,21 +5,21 @@ echo ===========================================================================
 echo [DOCKER EDGE SIMULATION] 4-CORE 4GB JETSON/EDGE HARDWARE CONSTRAINT LAUNCHER
 echo ==============================================================================
 
+:: Ensure Docker CLI and credential helpers are in PATH unconditionally
+if exist "%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin" (
+    set "PATH=%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin;%PATH%"
+)
+if exist "C:\Program Files\Docker\Docker\resources\bin" (
+    set "PATH=C:\Program Files\Docker\Docker\resources\bin;%PATH%"
+)
+
 :: Find docker executable
 set DOCKER_EXE=docker
 where docker >nul 2>&1
 if %ERRORLEVEL% neq 0 (
-    if exist "%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin\docker.exe" (
-        set "DOCKER_EXE=%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin\docker.exe"
-        set "PATH=%LOCALAPPDATA%\Programs\DockerDesktop\resources\bin;%PATH%"
-    ) else if exist "C:\Program Files\Docker\Docker\resources\bin\docker.exe" (
-        set "DOCKER_EXE=C:\Program Files\Docker\Docker\resources\bin\docker.exe"
-        set "PATH=C:\Program Files\Docker\Docker\resources\bin;%PATH%"
-    ) else (
-        echo [ERROR] Docker executable could not be found! Please make sure Docker Desktop is running.
-        pause
-        exit /b 1
-    )
+    echo [ERROR] Docker executable could not be found! Please make sure Docker Desktop is running.
+    pause
+    exit /b 1
 )
 
 :: Ensure .env file exists

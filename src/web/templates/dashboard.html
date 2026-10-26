@@ -590,9 +590,10 @@
       const placeholder = document.getElementById('noAlertsPlaceholder');
       const countBadge = document.getElementById('alertsCountBadge');
 
-      countBadge.innerText = alerts.length + ' Alerts';
+      countBadge.innerText = (alerts ? alerts.length : 0) + ' Alerts';
 
-      if (alerts.length === 0) {
+      if (!alerts || alerts.length === 0) {
+        container.innerHTML = '';
         if (placeholder) placeholder.style.display = 'flex';
         return;
       }
@@ -668,13 +669,20 @@
 
     async function applyVideoSource() {
       const sel = document.getElementById('videoSourceSelect').value;
+      // Immediate clean-slate reset in UI
+      const container = document.getElementById('alertsContainer');
+      if (container) container.innerHTML = '';
+      const countBadge = document.getElementById('alertsCountBadge');
+      if (countBadge) countBadge.innerText = '0 Alerts';
+      const placeholder = document.getElementById('noAlertsPlaceholder');
+      if (placeholder) placeholder.style.display = 'flex';
+
       const res = await fetch('/api/switch_source', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ video_source: sel })
       });
       if (res.ok) {
-        alert('Switched video source to: ' + sel);
         reloadStream();
       }
     }
@@ -815,6 +823,8 @@
       await fetch('/api/alerts/clear', { method: 'POST' });
       document.getElementById('alertsContainer').innerHTML = '';
       document.getElementById('alertsCountBadge').innerText = '0 Alerts';
+      const placeholder = document.getElementById('noAlertsPlaceholder');
+      if (placeholder) placeholder.style.display = 'flex';
     }
   </script>
 </body>

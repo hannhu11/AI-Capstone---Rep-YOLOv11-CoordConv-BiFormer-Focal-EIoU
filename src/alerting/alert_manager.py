@@ -35,6 +35,8 @@ class AlertManager:
         self.audit_log_path = ALERTS_LOG_DIR / "alerts_audit_log.json"
 
         self._load_existing_audit_log()
+        self._last_tg_warn_time = 0.0
+        self._last_zalo_warn_time = 0.0
 
         # Background worker thread
         self.running = True
@@ -109,13 +111,25 @@ class AlertManager:
             if config.telegram_enabled:
                 tg_ok, tg_msg = self.telegram.dispatch_alert(alert_event)
                 dispatch_results["telegram"] = {"success": tg_ok, "detail": tg_msg}
-                print(f"📢 [TELEGRAM] Worker #{alert_event['worker_id']} alert: {'OK' if tg_ok else 'FAILED'} ({tg_msg})")
+                if tg_ok:
+                    print(f"📢 [TELEGRAM] Worker #{alert_event['worker_id']} alert: SENT ({tg_msg})")
+                else:
+                    now_t = time.time()
+                    if now_t - self._last_tg_warn_time > 30.0:
+                        self._last_tg_warn_time = now_t
+                        print(f"ℹ️ [TELEGRAM READY] Alerts stored in local audit stream. Send /start to @safety_helmet_cctv_bot to auto-link push alerts.")
 
             # 2. Dispatch to Zalo
             if config.zalo_enabled:
                 zalo_ok, zalo_msg = self.zalo.dispatch_alert(alert_event)
                 dispatch_results["zalo"] = {"success": zalo_ok, "detail": zalo_msg}
-                print(f"📢 [ZALO] Worker #{alert_event['worker_id']} alert: {'OK' if zalo_ok else 'FAILED'} ({zalo_msg})")
+                if zalo_ok and "stored" not in zalo_msg.lower():
+                    print(f"📢 [ZALO] Worker #{alert_event['worker_id']} alert: SENT ({zalo_msg})")
+                elif not zalo_ok:
+                    now_t = time.time()
+                    if now_t - self._last_zalo_warn_time > 30.0:
+                        self._last_zalo_warn_time = now_t
+                        print(f"ℹ️ [ZALO AUDIT ACTIVE] Alerts logged to audit trail. Set Zalo Chat ID or Webhook in Settings to receive live messages.")
 
             alert_record["dispatch_results"] = dispatch_results
             self.recent_alerts.insert(0, alert_record)

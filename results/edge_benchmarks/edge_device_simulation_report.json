@@ -1,18 +1,18 @@
 {
-  "timestamp": 1792989643.1756895,
+  "timestamp": 1792996548.8329675,
   "host_cuda_measured": {
     "available": true,
     "device_name": "NVIDIA GeForce RTX 3050 Laptop GPU",
     "model_used": "rep_yolo11s_chv7_best_deploy.pt",
-    "fp32_ms": 26.65,
-    "fp16_ms": 22.74,
-    "fp16_fps": 44.0,
+    "fp32_ms": 26.17,
+    "fp16_ms": 18.16,
+    "fp16_fps": 55.1,
     "peak_vram_mb": 260.7
   },
   "host_cpu_measured": {
-    "1": 768.0,
-    "2": 558.3,
-    "4": 421.7
+    "1": 796.4,
+    "2": 696.8,
+    "4": 465.6
   },
   "edge_matrix": [
     {
@@ -79,7 +79,7 @@
       "fp16_fps": 228.6,
       "int8_latency_ms": 2.14,
       "int8_fps": 467.3,
-      "vram_footprint_mb": 485.0,
+      "vram_footprint_mb": 260.7,
       "efficiency_int8_fps_per_watt": 16.45,
       "thermal_headroom_c": 36.5
     }

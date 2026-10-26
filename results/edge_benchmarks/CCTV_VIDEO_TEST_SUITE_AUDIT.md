@@ -1,23 +1,23 @@
 # Empirical CCTV Video Suite Validation Report
 
 **Standard**: IEEE TPAMI / AAIML 2027 Scientific Reproducibility Audit
-**Audit Timestamp**: 2026-10-26 04:41:31 UTC
+**Audit Timestamp**: 2026-10-26 06:45:08 UTC
 **Model Tested**: `rep_yolo11s_chv7_best_deploy.pt` on `CUDA:0` (FP16=True)
 
 ## 1. Multi-Video Test Execution Results
 
 | Video Name | Resolution | Native FPS | Evaluated Frames | Infer Latency | Measured FPS | Workers | Safe | Violations | Alerts | Ghost Alerts | Helmet Colors | Test Status |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :---: |
-| `10810476-hd_1920_1080_30fps.mp4` | 1920x1080 | 30.0 | 90 | 22.47 ms | 44.5 | 11 | 11 | 6 | 3 | **0** | yellow, white | ✅ PASS |
-| `13921040-uhd_3840_2160_30fps.mp4` | 3840x2160 | 30.0 | 90 | 21.33 ms | 46.9 | 16 | 2 | 16 | 15 | **0** | red, white, yellow, blue | ✅ PASS |
-| `14842935_2160_3840_30fps.mp4` | 2160x3840 | 30.0 | 90 | 26.9 ms | 37.2 | 6 | 3 | 6 | 7 | **0** | red, blue, yellow, white | ✅ PASS |
-| `15100676_2160_3840_30fps.mp4` | 2160x3840 | 30.0 | 90 | 25.89 ms | 38.6 | 4 | 4 | 4 | 4 | **0** | red, green, yellow, white | ✅ PASS |
-| `19832492-hd_1920_1080_25fps.mp4` | 1920x1080 | 25.0 | 90 | 18.18 ms | 55.0 | 2 | 2 | 2 | 4 | **0** | yellow | ✅ PASS |
-| `19832500-hd_1920_1080_25fps.mp4` | 1920x1080 | 25.0 | 90 | 17.81 ms | 56.2 | 3 | 2 | 3 | 3 | **0** | yellow, white | ✅ PASS |
-| `annotated_cctv_construction_demo.mp4` | 1920x1080 | 30.0 | 90 | 17.92 ms | 55.8 | 12 | 6 | 11 | 3 | **0** | blue, yellow, white | ✅ PASS |
-| `brickmasonry 11.mp4` | 568x320 | 30.0 | 90 | 16.72 ms | 59.8 | 3 | 0 | 3 | 3 | **0** | blue | ✅ PASS |
-| `concreting 10.mp4` | 406x720 | 30.0 | 90 | 14.94 ms | 66.9 | 3 | 2 | 3 | 2 | **0** | yellow, blue | ✅ PASS |
-| `construction_site_workers_1080p.mp4` | 1920x1080 | 59.9 | 90 | 15.43 ms | 64.8 | 0 | 0 | 0 | 0 | **0** | None | ✅ PASS |
+| `10810476-hd_1920_1080_30fps.mp4` | 1920x1080 | 30.0 | 90 | 17.43 ms | 57.4 | 12 | 12 | 8 | 1 | **0** | white, yellow | ✅ PASS |
+| `13921040-uhd_3840_2160_30fps.mp4` | 3840x2160 | 30.0 | 90 | 17.67 ms | 56.6 | 19 | 2 | 19 | 16 | **0** | white, yellow, blue, red | ✅ PASS |
+| `14842935_2160_3840_30fps.mp4` | 2160x3840 | 30.0 | 90 | 19.56 ms | 51.1 | 11 | 7 | 8 | 7 | **0** | white, yellow, blue, red | ✅ PASS |
+| `15100676_2160_3840_30fps.mp4` | 2160x3840 | 30.0 | 90 | 23.17 ms | 43.2 | 4 | 4 | 4 | 4 | **0** | white, green, yellow, red | ✅ PASS |
+| `19832492-hd_1920_1080_25fps.mp4` | 1920x1080 | 25.0 | 90 | 16.65 ms | 60.0 | 2 | 2 | 2 | 0 | **0** | yellow | ✅ PASS |
+| `19832500-hd_1920_1080_25fps.mp4` | 1920x1080 | 25.0 | 90 | 16.54 ms | 60.5 | 3 | 2 | 3 | 0 | **0** | yellow | ✅ PASS |
+| `annotated_cctv_construction_demo.mp4` | 1920x1080 | 30.0 | 90 | 16.57 ms | 60.4 | 6 | 6 | 5 | 3 | **0** | white, yellow | ✅ PASS |
+| `brickmasonry 11.mp4` | 568x320 | 30.0 | 90 | 13.78 ms | 72.5 | 4 | 0 | 4 | 0 | **0** | blue | ✅ PASS |
+| `concreting 10.mp4` | 406x720 | 30.0 | 90 | 13.85 ms | 72.2 | 3 | 2 | 3 | 0 | **0** | yellow, blue | ✅ PASS |
+| `construction_site_workers_1080p.mp4` | 1920x1080 | 59.9 | 90 | 14.22 ms | 70.3 | 0 | 0 | 0 | 0 | **0** | None | ✅ PASS |
 
 ## 2. Scientific Verification Takeaways
 

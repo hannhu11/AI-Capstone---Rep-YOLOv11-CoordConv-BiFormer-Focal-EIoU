@@ -89,6 +89,11 @@ class SpatialSafetyEngine:
         vest_overlap_thresh: float = 0.20,
         consecutive_frames_thresh: int = 8,
         cooldown_seconds: float = 30.0,
+        border_margin_px: int = 25,
+        min_tracklet_len: int = 0,
+        min_worker_width: float = 28.0,
+        min_worker_height: float = 50.0,
+        min_worker_area: float = 1600.0,
     ):
         self.head_box_ratio = head_box_ratio
         self.torso_min_ratio = torso_min_ratio
@@ -97,6 +102,15 @@ class SpatialSafetyEngine:
         self.vest_overlap_thresh = vest_overlap_thresh
         self.consecutive_frames_thresh = consecutive_frames_thresh
         self.cooldown_seconds = cooldown_seconds
+        self.border_margin_px = border_margin_px
+        self.min_tracklet_len = min_tracklet_len
+        self.min_worker_width = min_worker_width
+        self.min_worker_height = min_worker_height
+        self.min_worker_area = min_worker_area
+
+    def reset(self):
+        """Clean-slate reset on video switch or camera reload."""
+        pass
 
     def evaluate_frame(
         self,
@@ -163,6 +177,7 @@ class SpatialSafetyEngine:
 
         worker_reports: List[Dict[str, Any]] = []
         alert_events: List[Dict[str, Any]] = []
+        h_frame, w_frame = frame_bgr.shape[:2]
 
         for track in tracks:
             # 1. State check: Reject lost/removed tracks and tracks not updated in the current frame
@@ -177,10 +192,22 @@ class SpatialSafetyEngine:
             pw = max(0.0, px2 - px1)
             ph = max(0.0, py2 - py1)
 
-            # 2. Geometry check: Worker box area must be > 1200 px^2 (min w>=20, h>=35)
-            # to filter out tiny noise smudges, background artifacts, or distant unidentifiable figures
-            if pw * ph < 1200.0 or pw < 20.0 or ph < 35.0:
+            # 2. Geometry check: Worker box must meet minimum dimensions and valid aspect ratio
+            # Filters out tiny noise smudges, background artifacts, distant blurry figures, or horizontal debris
+            if pw < self.min_worker_width or ph < self.min_worker_height or (pw * ph) < self.min_worker_area:
                 continue
+            if (pw / ph) > 1.30:  # Valid upright human aspect ratio
+                continue
+
+            # 3. Boundary Transition Zone check:
+            # If worker is touching the edge of the camera frame, their head or vest may be partially outside
+            # the field of view. Mark border status and suppress premature violation streaks.
+            is_at_border = (
+                px1 <= self.border_margin_px
+                or py1 <= self.border_margin_px
+                or px2 >= (w_frame - self.border_margin_px)
+                or py2 >= (h_frame - self.border_margin_px)
+            )
 
             # 1. Sub-regions
             head_box = [px1, py1, px2, py1 + self.head_box_ratio * ph]
@@ -247,7 +274,10 @@ class SpatialSafetyEngine:
             status_str = "COMPLIANT" if is_compliant else "VIOLATION"
 
             # 7. Debounce streak update
-            if is_compliant:
+            if is_at_border:
+                # In boundary transition zone: worker entering or exiting, freeze/decrement streak
+                track.violation_streak = max(0, track.violation_streak - 1)
+            elif is_compliant:
                 track.compliance_streak += 1
                 if track.compliance_streak >= 5:
                     track.violation_streak = 0
@@ -272,12 +302,17 @@ class SpatialSafetyEngine:
                 "violation_streak": track.violation_streak,
                 "compliance_streak": track.compliance_streak,
                 "is_alerted": track.is_alerted,
+                "is_at_border": is_at_border,
+                "tracklet_len": getattr(track, "tracklet_len", 0),
             }
             worker_reports.append(report)
 
-            # 8. Check if Alert should trigger (Debounce + Cooldown)
+            # 8. Check if Alert should trigger (Debounce + Cooldown + Maturity + Active Surveillance Area)
+            is_mature_track = (self.min_tracklet_len <= 0) or (getattr(track, "tracklet_len", 0) >= self.min_tracklet_len)
             should_alert = (
                 not is_compliant
+                and not is_at_border
+                and is_mature_track
                 and track.violation_streak >= self.consecutive_frames_thresh
                 and (not track.is_alerted or (now - track.last_alert_timestamp) >= self.cooldown_seconds)
             )

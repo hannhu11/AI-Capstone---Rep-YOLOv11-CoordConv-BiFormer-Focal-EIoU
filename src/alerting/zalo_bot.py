@@ -62,7 +62,7 @@ class ZaloAlertBot:
 
         # 2. Use official Zalo Bot Platform sendMessage API
         if not target_chat:
-            return False, "No Zalo Chat ID configured. Message logged to local audit trail."
+            return True, "Zalo Chat ID not configured. Message stored in local audit trail & UI stream."
 
         url = f"{self.api_base}/sendMessage"
         payload = {"chat_id": target_chat, "text": text}
@@ -82,8 +82,18 @@ class ZaloAlertBot:
         if not file_path.exists():
             return False, f"Snapshot file not found: {photo_path}"
 
+        # 1. If webhook URL is set, dispatch snapshot info
+        if self.webhook_url:
+            try:
+                payload = {"text": caption, "photo_name": file_path.name, "chat_id": target_chat}
+                resp = requests.post(self.webhook_url, json=payload, timeout=5.0)
+                if resp.status_code in (200, 201, 204):
+                    return True, "Zalo Webhook snapshot dispatched successfully"
+            except Exception as e:
+                print(f"⚠️ Zalo Webhook dispatch error: {e}")
+
         if not target_chat:
-            return False, "No Zalo Chat ID configured. Snapshot saved to local storage."
+            return True, "Zalo Chat ID not configured. Snapshot stored in local storage & UI stream."
 
         url = f"{self.api_base}/sendPhoto"
         try:

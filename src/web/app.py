@@ -184,7 +184,18 @@ async def update_settings(payload: SettingsPayload):
 @app.post("/api/controls/source")
 async def switch_video_source(payload: SwitchSourcePayload):
     cctv_pipeline.switch_source(payload.video_source)
-    return {"message": f"Switched video source to {payload.video_source}"}
+    alert_manager.clear_alerts()
+    return {"message": f"Switched video source to {payload.video_source}", "alerts_cleared": True}
+
+
+@app.post("/api/webhook/zalo")
+async def zalo_webhook_receiver(request: Request):
+    """Local webhook endpoint to ingest Zalo Bot Platform webhook payloads."""
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+    return {"status": "received", "data": data}
 
 
 @app.post("/api/upload_video")
@@ -197,6 +208,7 @@ async def upload_video(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
 
     cctv_pipeline.switch_source(str(dest_path))
+    alert_manager.clear_alerts()
     return {"message": "Uploaded and loaded video successfully", "filename": file.filename}
 
 

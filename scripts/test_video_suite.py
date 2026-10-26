@@ -21,6 +21,7 @@ from typing import Dict, Any, List
 
 import cv2
 import numpy as np
+import torch
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -32,6 +33,8 @@ from src.engine.spatial_safety import SpatialSafetyEngine
 
 OUTPUT_DIR = PROJECT_ROOT / "Output" / "benchmark"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+RESULTS_DIR = PROJECT_ROOT / "results" / "edge_benchmarks"
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 VIDEO_DIR = PROJECT_ROOT / "video_test"
 
 
@@ -47,6 +50,9 @@ def evaluate_video(
         return {"error": f"Could not open {video_path.name}"}
 
     tracker.reset()
+    safety_engine.reset()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -60,7 +66,7 @@ def evaluate_video(
     helmet_colors_detected = set()
     latency_list = []
 
-    # Frame 0 to 15 check: detect if any ghost alerts triggered when no worker entered
+    # Detect if any ghost alerts triggered when no worker entered, worker is clipped, or prematurely alerted
     ghost_alerts = 0
 
     while frame_count < max_frames:
@@ -68,6 +74,13 @@ def evaluate_video(
         if not ret:
             break
         frame_count += 1
+
+        # Match production pipeline: downscale 4K / UHD frames to max 1920 on longest edge
+        orig_h, orig_w = frame.shape[:2]
+        max_dim = max(orig_h, orig_w)
+        if max_dim > 1920:
+            scale = 1920.0 / max_dim
+            frame = cv2.resize(frame, (int(orig_w * scale), int(orig_h * scale)), interpolation=cv2.INTER_LINEAR)
 
         # 1. Detection
         detections, person_dets, infer_ms = detector.predict(frame)
@@ -93,7 +106,9 @@ def evaluate_video(
 
         for alert in alert_events:
             alerts_triggered.append(alert)
-            if len(person_dets) == 0:
+            # Rigorous ghost alert verification:
+            # Ghost alert if no person was detected, or alert triggered on immature track < 5 frames
+            if len(person_dets) == 0 or alert.get("violation_duration_frames", 0) < 5:
                 ghost_alerts += 1
 
     cap.release()
@@ -147,10 +162,11 @@ def run_video_suite_tests():
         print(f"    -> Test Result: {res.get('status')}")
 
     # Save JSON report
-    json_path = OUTPUT_DIR / "video_suite_audit.json"
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2)
-    print(f"\n[*] Saved JSON report to: {json_path}")
+    for out_d in (OUTPUT_DIR, RESULTS_DIR):
+        json_path = out_d / "video_suite_audit.json"
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2)
+        print(f"[*] Saved JSON report to: {json_path}")
 
     # Generate Markdown summary table
     md = [
@@ -187,9 +203,10 @@ def run_video_suite_tests():
         "*Audited and certified by Capstone AI Scientific Integrity Engine.*",
     ])
 
-    md_path = OUTPUT_DIR / "CCTV_VIDEO_TEST_SUITE_AUDIT.md"
-    md_path.write_text("\n".join(md), encoding="utf-8")
-    print(f"[*] Saved Markdown report to: {md_path}")
+    for out_d in (OUTPUT_DIR, RESULTS_DIR):
+        md_path = out_d / "CCTV_VIDEO_TEST_SUITE_AUDIT.md"
+        md_path.write_text("\n".join(md), encoding="utf-8")
+        print(f"[*] Saved Markdown report to: {md_path}")
     print("\n" + "\n".join(md))
 
 

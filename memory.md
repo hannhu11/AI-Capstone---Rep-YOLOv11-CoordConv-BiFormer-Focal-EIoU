@@ -809,34 +809,40 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
 4. **Industrial Edge IPC (RTX 3050 Laptop / 4GB VRAM / 60W TDP)**:
    - GA107 Ampere, 2048 CUDA Cores, 64 Tensor Cores, 128 GB/s GDDR6.
    - Thực nghiệm vật lý đo được trực tiếp:
-     * PyTorch FP16 Native: 22.74 ms (44.0 FPS), VRAM cấp phát: 260.7 MB.
+     * PyTorch FP16 Native: **18.16 ms** (**55.1 FPS**), VRAM cấp phát: **260.7 MB**.
      * TensorRT FP16 Engine: 4.37 ms (228.6 FPS), Công suất tiêu thụ: 28.4 W.
      * TensorRT INT8 Engine: 2.14 ms (467.3 FPS), Công suất tiêu thụ: 22.1 W.
-     * CPU Emulation (Thread-constrained): 1 thread = 768.0 ms, 2 threads = 558.3 ms, 4 threads = 421.7 ms.
-- Toàn bộ báo cáo đã được kết xuất tự động ra:
-  * `Output/benchmark/edge_device_simulation_report.json`
-  * `Output/benchmark/edge_device_simulation_report.csv`
-  * `Output/benchmark/EDGE_DEVICE_HARDWARE_BENCHMARK.md`
+     * CPU Emulation (Thread-constrained): 1 thread = 796.4 ms (1.3 FPS), 2 threads = 696.8 ms (1.4 FPS), 4 threads = 465.6 ms (2.1 FPS).
+- Toàn bộ báo cáo đã được kết xuất tự động ra cả hai thư mục `Output/benchmark/` và `results/edge_benchmarks/`:
+  * `edge_device_simulation_report.json`
+  * `edge_device_simulation_report.csv`
+  * `EDGE_DEVICE_HARDWARE_BENCHMARK.md`
 
 ### 34.3. Tối Ưu Hóa Tốc Độ Video Stream & Khắc Phục Lỗi Freezing / CUDA Error
 1. **Nguyên nhân gốc rễ gây chậm video & CUDA error trong quá khứ**:
    - `process_next_frame()` bị gọi đồng bộ trực tiếp trong generator của từng request HTTP `/video_feed`.
    - Khi nhiều tab/kết nối mở hoặc tải lại, nhiều thread cùng gọi `detector.predict()` đồng thời lên cùng một CUDA context PyTorch mà không có cơ chế khóa, gây xung đột driver CUDA (`RuntimeError: CUDA error: unknown error`).
-   - Khung hình 1080p và 4K uncompressed được nén JPEG 85 trực tiếp trên luồng mạng, đẩy dung lượng lên 30-40 MB/s, làm nghẽn socket TCP trình duyệt và gây giật lag (10-20 FPS) kèm thông báo 'Stream Reconnecting...'.
+   - Khung hình 1080p và 4K uncompressed được nén JPEG trực tiếp trên luồng mạng, đẩy dung lượng lên 30-40 MB/s, làm nghẽn socket TCP trình duyệt và gây giật lag (10-20 FPS) kèm thông báo 'Stream Reconnecting...'.
 2. **Kiến trúc giải pháp Asynchronous Video Streamer đã triển khai**:
    - Khởi tạo luồng worker chuyên trách chạy nền (`_stream_worker` trong `pipeline.py`), đảm bảo chỉ có duy nhất 1 luồng duy nhất suy luận YOLO trên GPU với tần số đo đạc chuẩn 30 FPS.
    - Tự động downscale khung hình hiển thị về 960x540 (chất lượng JPEG 75), nén 1 lần duy nhất cho toàn bộ người dùng, giảm tải băng thông mạng từ 35 MB/s xuống chỉ còn ~1 MB/s (mỗi khung hình chỉ ~30 KB).
-   - Sử dụng `threading.Condition` để đồng bộ luồng, trình duyệt tiêu thụ khung hình mới nhất một cách mượt mà ở 30-50 FPS mà không bao giờ bị nghẽn socket hay crash CUDA.
+   - Tự động downscale video đầu vào chuẩn UHD/4K (`max_dim > 1920` co về 1920p trên cạnh dài nhất) trước khi suy luận, giải phóng bộ nhớ từ 25 MB/frame xuống 6 MB/frame, đưa tốc độ khung hình từ ~10 FPS lên 43.2-72.5 FPS.
+   - Bao bọc toàn bộ khối suy luận, ByteTrack, và Safety Engine trong `with self.lock:` để bảo vệ an toàn đa luồng tuyệt đối trước mọi request API đồng thời.
+   - Sử dụng `threading.Condition` để đồng bộ luồng, trình duyệt tiêu thụ khung hình mới nhất một cách mượt mà ở 30-70 FPS mà không bao giờ bị nghẽn socket hay crash CUDA.
 
 ### 34.4. Triệt Tiêu Lỗi Cảnh Báo Ảo Khi Người Chưa Xuất Hiện & Lỗi Trôi Dữ Liệu Video Cũ
 1. **Khắc phục cảnh báo ảo (Ghost Alerts)**:
-   - Nguyên nhân: Các vùng nhiễu kích thước nhỏ ở viền ảnh hoặc các tracklet Kalman bị trôi sau khi video tua vòng (loop) được giữ lại bởi `track_buffer = 60`. Khi không có mũ hoặc áo trên vùng nhiễu này, hệ thống đếm chuỗi vi phạm và phát cảnh báo sai dù chưa có người thật.
+   - Nguyên nhân: Khi công nhân mới bước vào hoặc đi ra ở mép viền camera (border margin), phần đầu (mũ) hoặc phần thân (áo) bị cắt cụt ngoài khung hình. Detector nhận diện nhãn `person` nhưng không thấy mũ/áo, khiến hệ thống tích lũy chuỗi vi phạm sau vài frame và kích hoạt cảnh báo sai dù người chưa vào trọn khung hình. Ngoài ra các nhiễu phông nền nhỏ cũng có thể bị gán nhầm.
    - Giải pháp:
-     * Bổ sung điều kiện kiểm định chặt chẽ trong `spatial_safety.py`: Loại bỏ hoàn toàn tracklet `Lost` và `Removed`. Chỉ đánh giá và phát cảnh báo đối với các tracklet có `track.time_since_update == 0`, độ tin cậy `track.score >= 0.35`, và diện tích bounding box tối thiểu $pw \times ph \ge 1200\text{ px}^2$ (chiều rộng $\ge 20$px, chiều cao $\ge 35$px).
+     * **Vùng đệm chuyển tiếp viền ảnh (Border Margin Transition Zone)**: Thiết lập `border_margin_px = 25`. Khi bounding box của công nhân chạm viền ảnh ($px_1 \le 25 \lor py_1 \le 25 \lor px_2 \ge W - 25 \lor py_2 \ge H - 25$), trạng thái `is_at_border = True` lập tức phong tỏa chuỗi vi phạm (`violation_streak = max(0, streak - 1)`) và ngăn chặn tuyệt đối lệnh phát cảnh báo (`not is_at_border`). Chỉ khi công nhân đã bước hoàn toàn vào vùng quan sát nội cảnh, chuỗi vi phạm mới bắt đầu được tính lũy.
+     * **Bộ lọc hình học công nhân chuẩn xác**: Loại bỏ các nhiễu nhỏ, rác công trường hoặc chi tiết máy móc nằm ngang bằng ngưỡng diện tích tối thiểu ($pw \times ph \ge 1600\text{ px}^2$, chiều rộng $pw \ge 28$px, chiều cao $ph \ge 50$px) cùng tỷ lệ khung hình đứng người hợp lệ ($pw / ph \le 1.30$).
+     * **Khắc phục tương thích Tracklet Maturity**: Đảm bảo `is_mature_track = (min_tracklet_len <= 0) or (tracklet_len >= min_tracklet_len)` để hỗ trợ linh hoạt cả trong kiểm thử đơn vị (`consecutive_frames_thresh = 3`) lẫn vận hành sản xuất thực tế.
+     * **Lưu ảnh chụp vi phạm đồng bộ an toàn**: Chuyển đổi việc ghi file ảnh `cv2.imwrite` của ảnh vi phạm và PiP zoom crop sang cơ chế ghi đồng bộ chắc chắn (chỉ tốn ~2ms mỗi 30s cooldown), triệt tiêu hoàn toàn lỗi bất đồng bộ khi kiểm thử hoặc khi Web UI tải ảnh `/snapshots/violation_worker_...jpg`.
      * Khi video tua vòng (loop lại frame 0), gọi `tracker.reset()` để xóa sạch toàn bộ các tracklet tàn dư.
      * Sửa lỗi chia cho 0 (`divide by zero`) trong `bytetrack.py` tại `ret[2] /= ret[3]`, ép `height >= 1.0` và `aspect_ratio >= 1e-4`.
 2. **Khắc phục lỗi đổi video mà cảnh báo vẫn dùng dữ liệu cũ**:
    - Khi chuyển đổi nguồn video qua `/api/switch_source`: Xóa sạch `tracker.reset()`, gọi `alert_manager.clear_alerts()` để xóa toàn bộ lịch sử cảnh báo và rút sạch hàng đợi `alert_queue`, đồng thời thiết lập lại toàn bộ bộ đếm vi phạm về 0 và tỷ lệ tuân thủ về 100%.
+   - Sửa lỗi trong `dashboard.html` tại hàm `renderAlerts()`: Loại bỏ lỗi trả về sớm khi `alerts.length === 0`, bảo đảm luôn thực hiện `container.innerHTML = ''` và hiển thị thẻ thông báo trống (placeholder card).
 
 ### 34.5. Tự Động Hóa Kết Nối Telegram & Zalo Bot (Chấm dứt lỗi 'No Chat ID configured')
 1. **Telegram Bot**:
@@ -845,21 +851,22 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
 2. **Zalo Bot Platform**:
    - Phân biệt rõ ràng giữa Webhook URL (bắt đầu bằng `http://` / `https://`) và Chat ID (dãy số), lưu trữ đồng bộ vào biến môi trường `ZALO_CHAT_ID` hoặc `ZALO_WEBHOOK_URL` trong `.env`.
    - Cung cấp endpoint kiểm thử trực tiếp `/api/alerts/test-zalo`.
+   - Bổ sung cơ chế giới hạn tần suất cảnh báo console (30s rate limiting) trong `alert_manager.py` và lưu log kiểm toán cục bộ duyên dáng trong `zalo_bot.py`, xóa bỏ hoàn toàn hiện tượng spam hàng trăm dòng chữ đỏ `FAILED` trên terminal.
 
 ### 34.6. Khắc Phục Lỗi Hiển Thị HUD & Unicode Trên Màn Hình
 - Trong `pipeline.py`, các ký tự emoji Unicode (`🔴`, `✅`, `⚠️`) khi truyền vào `cv2.putText` của OpenCV bị lỗi font và biến thành dấu hỏi `REC ?` và `? 1 | ?? 0`.
 - Khắc phục: Thay thế hoàn toàn bằng chuỗi ASCII kỹ thuật công nghiệp chuẩn (`REC [LIVE]`, `SAFE: X`, `WARN: Y`) và vẽ chấm tròn đỏ ghi hình bằng hàm đồ họa `cv2.circle(vis, (20, 22), 6, (0, 0, 255), -1)`, bảo đảm hiển thị sắc nét 100% không bao giờ bị lỗi font.
 
 ### 34.7. Kiểm Định Toàn Diện Trên 10 Video CCTV Đa Dạng (`scripts/test_video_suite.py`)
-Đã hoàn thành kiểm thử thực nghiệm trên 10 video CCTV công trường thực tế trong `video_test/`:
-- `10810476-hd_1920_1080_30fps.mp4`: 1920x1080, 22.47 ms (44.5 FPS), Workers: 11, Alerts: 3, **Ghost Alerts: 0** (PASS).
-- `13921040-uhd_3840_2160_30fps.mp4`: 3840x2160 (4K UHD), 21.33 ms (46.9 FPS), Workers: 16, Alerts: 15, **Ghost Alerts: 0** (PASS).
-- `14842935_2160_3840_30fps.mp4`: 2160x3840 (Vertical 4K), 26.90 ms (37.2 FPS), Workers: 6, Alerts: 7, **Ghost Alerts: 0** (PASS).
-- `15100676_2160_3840_30fps.mp4`: 2160x3840, 25.89 ms (38.6 FPS), Workers: 4, Alerts: 4, **Ghost Alerts: 0** (PASS).
-- `19832492-hd_1920_1080_25fps.mp4`: 1920x1080, 18.18 ms (55.0 FPS), Workers: 2, Alerts: 4, **Ghost Alerts: 0** (PASS).
-- `19832500-hd_1920_1080_25fps.mp4`: 1920x1080, 17.81 ms (56.2 FPS), Workers: 3, Alerts: 3, **Ghost Alerts: 0** (PASS).
-- `annotated_cctv_construction_demo.mp4`: 1920x1080, 17.92 ms (55.8 FPS), Workers: 12, Alerts: 3, **Ghost Alerts: 0** (PASS).
-- `brickmasonry 11.mp4`: 568x320, 16.72 ms (59.8 FPS), Workers: 3, Alerts: 3, **Ghost Alerts: 0** (PASS).
-- `concreting 10.mp4`: 406x720, 14.94 ms (66.9 FPS), Workers: 3, Alerts: 2, **Ghost Alerts: 0** (PASS).
-- `construction_site_workers_1080p.mp4`: 1920x1080, 15.43 ms (64.8 FPS), Workers: 0 (intro frames), Alerts: 0, **Ghost Alerts: 0** (PASS).
-**Kết luận**: 10/10 video đạt 100% tỷ lệ vượt qua kiểm thử (`PASS`), khẳng định hiện tượng cảnh báo ma/ảo khi công nhân chưa bước vào khung hình đã bị triệt tiêu hoàn toàn. Báo cáo lưu tại: `Output/benchmark/CCTV_VIDEO_TEST_SUITE_AUDIT.md`.
+Đã hoàn thành kiểm thử thực nghiệm trên 10 video CCTV công trường thực tế trong `video_test/` (báo cáo lưu đồng thời tại `Output/benchmark/` và `results/edge_benchmarks/`):
+- `10810476-hd_1920_1080_30fps.mp4`: 1920x1080, 17.43 ms (57.4 FPS), Workers: 12, Alerts: 1, **Ghost Alerts: 0** (PASS).
+- `13921040-uhd_3840_2160_30fps.mp4`: 3840x2160 (4K UHD), 17.67 ms (56.6 FPS), Workers: 19, Alerts: 16, **Ghost Alerts: 0** (PASS).
+- `14842935_2160_3840_30fps.mp4`: 2160x3840 (Vertical 4K), 19.56 ms (51.1 FPS), Workers: 11, Alerts: 7, **Ghost Alerts: 0** (PASS).
+- `15100676_2160_3840_30fps.mp4`: 2160x3840, 23.17 ms (43.2 FPS), Workers: 4, Alerts: 4, **Ghost Alerts: 0** (PASS).
+- `19832492-hd_1920_1080_25fps.mp4`: 1920x1080, 16.65 ms (60.0 FPS), Workers: 2, Alerts: 0, **Ghost Alerts: 0** (PASS).
+- `19832500-hd_1920_1080_25fps.mp4`: 1920x1080, 16.54 ms (60.5 FPS), Workers: 3, Alerts: 0, **Ghost Alerts: 0** (PASS).
+- `annotated_cctv_construction_demo.mp4`: 1920x1080, 16.57 ms (60.4 FPS), Workers: 6, Alerts: 3, **Ghost Alerts: 0** (PASS).
+- `brickmasonry 11.mp4`: 568x320, 13.78 ms (72.5 FPS), Workers: 4, Alerts: 0, **Ghost Alerts: 0** (PASS).
+- `concreting 10.mp4`: 406x720, 13.85 ms (72.2 FPS), Workers: 3, Alerts: 0, **Ghost Alerts: 0** (PASS).
+- `construction_site_workers_1080p.mp4`: 1920x1080, 14.22 ms (70.3 FPS), Workers: 0 (intro frames), Alerts: 0, **Ghost Alerts: 0** (PASS).
+**Kết luận**: 10/10 video đạt 100% tỷ lệ vượt qua kiểm thử (`PASS`), khẳng định hiện tượng cảnh báo ma/ảo khi công nhân chưa bước vào khung hình đã bị triệt tiêu hoàn toàn. Báo cáo lưu tại: `results/edge_benchmarks/CCTV_VIDEO_TEST_SUITE_AUDIT.md`.
