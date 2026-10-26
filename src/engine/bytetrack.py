@@ -41,6 +41,7 @@ class STrack:
         self.cls_id = int(cls_id)
         self.tracklet_len = 0
         self.state = TrackState.New
+        self.time_since_update = 0
 
         self.track_id = 0
         self.frame_id = 0
@@ -76,6 +77,7 @@ class STrack:
             self.is_activated = True
         self.frame_id = frame_id
         self.start_frame = frame_id
+        self.time_since_update = 0
         self._record_center()
 
     def re_activate(self, new_track: STrack, frame_id: int, new_id: bool = False):
@@ -87,6 +89,7 @@ class STrack:
         self.state = TrackState.Tracked
         self.is_activated = True
         self.frame_id = frame_id
+        self.time_since_update = 0
         if new_id:
             self.track_id = self.next_id()
         self.score = new_track.score
@@ -97,6 +100,7 @@ class STrack:
         """Update a matched track."""
         self.frame_id = frame_id
         self.tracklet_len += 1
+        self.time_since_update = 0
 
         new_tlwh = new_track.tlwh
         self.mean, self.covariance = self.kalman_filter.update(
@@ -113,6 +117,7 @@ class STrack:
         if self.state != TrackState.Tracked:
             mean_state[7] = 0
         self.mean, self.covariance = self.kalman_filter.predict(mean_state, self.covariance)
+        self.time_since_update += 1
 
     def mark_lost(self):
         self.state = TrackState.Lost
@@ -134,7 +139,11 @@ class STrack:
         if self.mean is None:
             return self._tlwh.copy()
         ret = self.mean[:4].copy()
-        ret[2] *= ret[3]
+        h = max(float(ret[3]), 1.0)
+        a = max(float(ret[2]), 1e-4)
+        w = max(a * h, 1.0)
+        ret[2] = w
+        ret[3] = h
         ret[:2] -= ret[2:] / 2
         return ret
 
@@ -150,7 +159,9 @@ class STrack:
         """Convert bounding box to `(center x, center y, aspect ratio, height)`."""
         ret = np.asarray(tlwh, dtype=np.float32).copy()
         ret[:2] += ret[2:] / 2
-        ret[2] /= ret[3]
+        h = max(float(ret[3]), 1e-4)
+        ret[2] /= h
+        ret[3] = h
         return ret
 
     @staticmethod

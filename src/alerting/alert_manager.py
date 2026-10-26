@@ -41,6 +41,30 @@ class AlertManager:
         self.worker_thread = threading.Thread(target=self._worker_loop, daemon=True)
         self.worker_thread.start()
 
+        # Background Telegram chat auto-discovery loop
+        self.discovery_thread = threading.Thread(target=self._telegram_discovery_loop, daemon=True)
+        self.discovery_thread.start()
+
+    def _telegram_discovery_loop(self):
+        """Polls Telegram getUpdates every 3 seconds if chat_id is not yet bound."""
+        while self.running:
+            try:
+                if not config.telegram_chat_id:
+                    discovered = self.telegram.discover_latest_chat_id()
+                    if discovered:
+                        welcome_msg = (
+                            "🤖 *Rep-YOLO11s CCTV Safety Surveillance Connected!*\n\n"
+                            "Real-time safety violation alerts are now active for this chat.\n"
+                            "• Camera: `CCTV_GATE_A1_1080P`\n"
+                            "• Mode: Live Real-Time Monitoring\n"
+                            "• Monitored Violations: Missing Helmet / Missing Vest\n"
+                            "• Status: ACTIVE ✅"
+                        )
+                        self.telegram.send_message(welcome_msg, chat_id=discovered)
+            except Exception as e:
+                pass
+            time.sleep(3.0)
+
     def _load_existing_audit_log(self):
         if self.audit_log_path.exists():
             try:
@@ -107,6 +131,12 @@ class AlertManager:
 
     def clear_alerts(self):
         self.recent_alerts = []
+        while not self.alert_queue.empty():
+            try:
+                self.alert_queue.get_nowait()
+                self.alert_queue.task_done()
+            except Exception:
+                break
         self._save_audit_log()
 
 

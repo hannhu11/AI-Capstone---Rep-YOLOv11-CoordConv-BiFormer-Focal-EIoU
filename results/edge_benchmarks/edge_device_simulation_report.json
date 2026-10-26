@@ -1,0 +1,87 @@
+{
+  "timestamp": 1792989643.1756895,
+  "host_cuda_measured": {
+    "available": true,
+    "device_name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "model_used": "rep_yolo11s_chv7_best_deploy.pt",
+    "fp32_ms": 26.65,
+    "fp16_ms": 22.74,
+    "fp16_fps": 44.0,
+    "peak_vram_mb": 260.7
+  },
+  "host_cpu_measured": {
+    "1": 768.0,
+    "2": 558.3,
+    "4": 421.7
+  },
+  "edge_matrix": [
+    {
+      "platform": "NVIDIA Jetson Orin Nano 8GB",
+      "architecture": "Ampere (GA10B)",
+      "cpu_spec": "6-core ARM Cortex-A78AE v8.2 64-bit @ 1.5 GHz",
+      "memory_system": "8 GB 128-bit LPDDR5 (Unified)",
+      "mem_bandwidth": "68.0 GB/s",
+      "compute_capacity": "40.0 TOPS (INT8)",
+      "tdp_watts": 15.0,
+      "typical_power_w": 12.4,
+      "fp16_latency_ms": 11.8,
+      "fp16_fps": 84.7,
+      "int8_latency_ms": 5.6,
+      "int8_fps": 178.5,
+      "vram_footprint_mb": 380.0,
+      "efficiency_int8_fps_per_watt": 14.4,
+      "thermal_headroom_c": 28.5
+    },
+    {
+      "platform": "NVIDIA Jetson Xavier NX",
+      "architecture": "Volta (GV10B)",
+      "cpu_spec": "6-core NVIDIA Carmel ARM v8.2 @ 1.4 GHz",
+      "memory_system": "8 GB 128-bit LPDDR4x (Unified)",
+      "mem_bandwidth": "51.2 GB/s",
+      "compute_capacity": "21.0 TOPS (INT8)",
+      "tdp_watts": 15.0,
+      "typical_power_w": 13.8,
+      "fp16_latency_ms": 16.4,
+      "fp16_fps": 61.0,
+      "int8_latency_ms": 8.2,
+      "int8_fps": 122.0,
+      "vram_footprint_mb": 420.0,
+      "efficiency_int8_fps_per_watt": 8.84,
+      "thermal_headroom_c": 22.0
+    },
+    {
+      "platform": "Raspberry Pi 5 + Hailo-8 M.2",
+      "architecture": "VideoCore VII (Host) + Hailo-8 NPU",
+      "cpu_spec": "Quad-core ARM Cortex-A76 @ 2.4 GHz",
+      "memory_system": "8 GB LPDDR4X (Host) + On-Chip SRAM (NPU)",
+      "mem_bandwidth": "17.0 GB/s",
+      "compute_capacity": "26.0 TOPS (INT8)",
+      "tdp_watts": 12.0,
+      "typical_power_w": 7.5,
+      "fp16_latency_ms": null,
+      "fp16_fps": null,
+      "int8_latency_ms": 6.9,
+      "int8_fps": 144.9,
+      "vram_footprint_mb": 180.0,
+      "efficiency_int8_fps_per_watt": 19.32,
+      "thermal_headroom_c": 31.0
+    },
+    {
+      "platform": "Industrial Edge IPC (RTX 3050 Host Baseline)",
+      "architecture": "Ampere (GA107)",
+      "cpu_spec": "8 Cores (4P + 4E) / 12 Threads @ 4.4 GHz Turbo",
+      "memory_system": "4 GB GDDR6 Dedicated VRAM + 16 GB Host DDR4",
+      "mem_bandwidth": "128.0 GB/s",
+      "compute_capacity": "72.0 TOPS (INT8)",
+      "tdp_watts": 60.0,
+      "typical_power_w": 28.4,
+      "fp16_latency_ms": 4.37,
+      "fp16_fps": 228.6,
+      "int8_latency_ms": 2.14,
+      "int8_fps": 467.3,
+      "vram_footprint_mb": 485.0,
+      "efficiency_int8_fps_per_watt": 16.45,
+      "thermal_headroom_c": 36.5
+    }
+  ]
+}

@@ -459,11 +459,12 @@
     const timeLabels = [];
     const complianceData = [];
 
-    // Initialize Charts on Load
+    // Initialize Charts and Load Settings on Load
     window.addEventListener('DOMContentLoaded', () => {
       initCharts();
       startTelemetryPolling();
       startAlertsPolling();
+      loadInitialStatus();
     });
 
     function initCharts() {
@@ -710,37 +711,79 @@
       }
     }
 
+    async function loadInitialStatus() {
+      try {
+        const res = await fetch('/api/status');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.config) {
+          if (data.config.telegram_configured || data.config.telegram_chat_id) {
+            document.getElementById('tgStatusDot').className = 'w-2 h-2 rounded-full bg-emerald-400';
+            if (data.config.telegram_chat_id) {
+              document.getElementById('tgChatIdInput').value = data.config.telegram_chat_id;
+            }
+          } else {
+            document.getElementById('tgStatusDot').className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+          }
+          if (data.config.zalo_configured || data.config.zalo_chat_id || data.config.zalo_webhook_url) {
+            document.getElementById('zaloStatusDot').className = 'w-2 h-2 rounded-full bg-emerald-400';
+            document.getElementById('zaloWebhookInput').value = data.config.zalo_chat_id || data.config.zalo_webhook_url || '';
+          } else {
+            document.getElementById('zaloStatusDot').className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+          }
+          if (data.config.conf_threshold) {
+            document.getElementById('confSlider').value = data.config.conf_threshold;
+            document.getElementById('confVal').innerText = data.config.conf_threshold;
+          }
+          if (data.config.consecutive_violation_frames) {
+            document.getElementById('streakSlider').value = data.config.consecutive_violation_frames;
+            document.getElementById('streakVal').innerText = data.config.consecutive_violation_frames + ' frames';
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load initial status', e);
+      }
+    }
+
     async function autoDetectTelegramChatId() {
       const res = await fetch('/api/telegram/discover_chat_id');
       const data = await res.json();
       if (data.chat_id) {
         document.getElementById('tgChatIdInput').value = data.chat_id;
-        alert('Found Telegram Chat ID: ' + data.chat_id);
+        document.getElementById('tgStatusDot').className = 'w-2 h-2 rounded-full bg-emerald-400';
+        alert('Found & Bound Telegram Chat ID: ' + data.chat_id);
       } else {
-        alert('No new messages found. Please open @safety_helmet_cctv_bot on Telegram, send /start, and try again.');
+        alert('No new messages found from Telegram bot. Please open @safety_helmet_cctv_bot in Telegram, press Start or send /start, then click Auto-Detect again.');
       }
     }
 
     async function sendTestTelegramAlert() {
       const chatId = document.getElementById('tgChatIdInput').value;
-      const res = await fetch('/api/test_alert/telegram', {
+      const res = await fetch('/api/alerts/test-telegram', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chat_id: chatId })
       });
       const data = await res.json();
-      alert(data.message || 'Result: ' + JSON.stringify(data));
+      if (data.chat_id) {
+        document.getElementById('tgChatIdInput').value = data.chat_id;
+        document.getElementById('tgStatusDot').className = 'w-2 h-2 rounded-full bg-emerald-400';
+      }
+      alert(data.message || (data.success ? 'Telegram test message sent successfully! Check your bot.' : 'Telegram test failed.'));
     }
 
     async function sendTestZaloAlert() {
       const webhook = document.getElementById('zaloWebhookInput').value;
-      const res = await fetch('/api/test_alert/zalo', {
+      const res = await fetch('/api/alerts/test-zalo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ webhook_url: webhook })
       });
       const data = await res.json();
-      alert(data.message || 'Result: ' + JSON.stringify(data));
+      if (data.success) {
+        document.getElementById('zaloStatusDot').className = 'w-2 h-2 rounded-full bg-emerald-400';
+      }
+      alert(data.message || (data.success ? 'Zalo test alert dispatched successfully!' : 'Zalo test failed.'));
     }
 
     async function saveAllSettings() {
@@ -749,7 +792,7 @@
       const tgChat = document.getElementById('tgChatIdInput').value;
       const zaloWebhook = document.getElementById('zaloWebhookInput').value;
 
-      await fetch('/api/settings', {
+      const res = await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -759,8 +802,13 @@
           zalo_webhook_url: zaloWebhook
         })
       });
-      alert('Settings saved successfully!');
-      toggleSettingsModal();
+      if (res.ok) {
+        alert('Settings saved and persisted to .env successfully!');
+        loadInitialStatus();
+        toggleSettingsModal();
+      } else {
+        alert('Failed to save settings');
+      }
     }
 
     async function clearAlertHistory() {

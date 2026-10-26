@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 
 from src.config import config, SNAPSHOTS_DIR
-from src.engine.bytetrack import STrack
+from src.engine.bytetrack import STrack, TrackState
 
 # Helmet class mappings
 HELMET_COLOR_MAP = {
@@ -165,11 +165,21 @@ class SpatialSafetyEngine:
         alert_events: List[Dict[str, Any]] = []
 
         for track in tracks:
+            # 1. State check: Reject lost/removed tracks and tracks not updated in the current frame
+            if hasattr(track, "state") and track.state in (TrackState.Lost, TrackState.Removed):
+                continue
+            if getattr(track, "time_since_update", 0) > 0:
+                continue
+            if getattr(track, "score", 1.0) < 0.35:
+                continue
+
             px1, py1, px2, py2 = [float(v) for v in track.tlbr]
             pw = max(0.0, px2 - px1)
             ph = max(0.0, py2 - py1)
 
-            if pw <= 2.0 or ph <= 2.0:
+            # 2. Geometry check: Worker box area must be > 1200 px^2 (min w>=20, h>=35)
+            # to filter out tiny noise smudges, background artifacts, or distant unidentifiable figures
+            if pw * ph < 1200.0 or pw < 20.0 or ph < 35.0:
                 continue
 
             # 1. Sub-regions

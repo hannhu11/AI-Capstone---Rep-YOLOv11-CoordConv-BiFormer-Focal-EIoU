@@ -85,6 +85,13 @@ class CCTVSurveillancePipeline:
         self.lock = threading.Lock()
         self.is_running = True
         self.latest_annotated_frame: Optional[np.ndarray] = None
+        self.latest_encoded_jpeg: Optional[bytes] = None
+        self.frame_idx = 0
+        self.frame_condition = threading.Condition()
+
+        # Start dedicated background streaming worker thread
+        self.worker_thread = threading.Thread(target=self._stream_worker, daemon=True)
+        self.worker_thread.start()
 
     def _init_video_capture(self):
         if self.cap is not None:
@@ -97,13 +104,59 @@ class CCTVSurveillancePipeline:
             print(f"⚠️ Warning: Could not open video source: {src}")
 
     def switch_source(self, new_source: str):
-        """Switches video simulation stream dynamically."""
+        """Switches video simulation stream dynamically with clean slate."""
         with self.lock:
             self.source_path = new_source
             config.video_source = new_source
             self.tracker.reset()
             self._init_video_capture()
-            print(f"📹 Switched Video Source to: {new_source}")
+            self.active_workers_count = 0
+            self.compliant_workers_count = 0
+            self.active_violations_count = 0
+            self.compliance_rate = 100.0
+            self.total_frames_processed = 0
+            alert_manager.clear_alerts()
+            print(f"📹 Switched Video Source to: {new_source} (Clean Slate Active)")
+
+    def _stream_worker(self):
+        """Dedicated background loop that continuously runs inference and encodes frames."""
+        while self.is_running:
+            t0 = time.perf_counter()
+            try:
+                frame = self.process_next_frame()
+                if frame is not None:
+                    # Optimize resolution for web streaming (960px width, preserving aspect ratio)
+                    h, w = frame.shape[:2]
+                    target_w = 960
+                    if w > target_w:
+                        target_h = int(h * (target_w / w))
+                        display_frame = cv2.resize(frame, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
+                    else:
+                        display_frame = frame
+
+                    ret, buffer = cv2.imencode(".jpg", display_frame, [cv2.IMWRITE_JPEG_QUALITY, 75])
+                    if ret:
+                        jpeg_bytes = buffer.tobytes()
+                        with self.frame_condition:
+                            self.latest_encoded_jpeg = jpeg_bytes
+                            self.frame_idx += 1
+                            self.frame_condition.notify_all()
+            except Exception as e:
+                print(f"⚠️ Stream worker exception: {e}")
+                time.sleep(0.05)
+
+            # Pace to ~30 FPS
+            elapsed = time.perf_counter() - t0
+            target_delay = 1.0 / 30.0
+            if elapsed < target_delay:
+                time.sleep(target_delay - elapsed)
+
+    def get_latest_frame(self, last_frame_idx: int = -1, timeout: float = 0.5) -> Tuple[Optional[bytes], int]:
+        """Thread-safe acquisition of newest JPEG frame without re-running inference."""
+        with self.frame_condition:
+            if self.frame_idx == last_frame_idx or self.latest_encoded_jpeg is None:
+                self.frame_condition.wait(timeout=timeout)
+            return self.latest_encoded_jpeg, self.frame_idx
 
     def process_next_frame(self) -> Optional[np.ndarray]:
         """Reads frame, runs detection, tracking, safety logic, draws annotations, and returns frame."""
@@ -122,6 +175,8 @@ class CCTVSurveillancePipeline:
                 if not str(self.source_path).isdigit() and not str(self.source_path).startswith("rtsp://"):
                     self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                     ret, frame = self.cap.read()
+                    # Reset tracker on loop to prevent stale tracks carrying over
+                    self.tracker.reset()
                 if not ret:
                     time.sleep(0.03)
                     return None
@@ -242,12 +297,15 @@ class CCTVSurveillancePipeline:
         cv2.rectangle(vis, (0, 0), (w, hud_h), (18, 22, 28), -1)
         cv2.line(vis, (0, hud_h), (w, hud_h), (0, 220, 255), 1)
 
+        # Draw filled red recording circle (real graphic, eliminates Unicode '?' corruption)
+        cv2.circle(vis, (20, 22), 6, (0, 0, 255), -1)
+
         hud_text = (
-            f"REC 🔴 | {config.camera_id} | FPS: {self.fps_rolling:.1f} | Latency: {self.inference_latency_ms:.1f}ms | "
-            f"Workers: {self.active_workers_count} (✅ {self.compliant_workers_count} | ⚠️ {self.active_violations_count}) | "
+            f"REC [LIVE] | {config.camera_id} | FPS: {self.fps_rolling:.1f} | Latency: {self.inference_latency_ms:.1f}ms | "
+            f"Workers: {self.active_workers_count} (SAFE: {self.compliant_workers_count} | WARN: {self.active_violations_count}) | "
             f"Compliance: {self.compliance_rate:.1f}%"
         )
-        cv2.putText(vis, hud_text, (15, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 230, 255), 2, cv2.LINE_AA)
+        cv2.putText(vis, hud_text, (36, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.58, (0, 230, 255), 2, cv2.LINE_AA)
 
         return vis
 

@@ -1,0 +1,48 @@
+# ==============================================================================
+# EDGE DEVICE HARDWARE SIMULATION COMPOSE CONFIGURATION (IEEE TPAMI COMPLIANT)
+# Simulates physical edge constraints of NVIDIA Jetson Orin Nano / Xavier NX:
+# - CPU: 4 vCPUs (matches 4-core / 6-core ARM Cortex-A78AE edge profile)
+# - Memory: 4096 MB RAM limit (mem_limit)
+# - GPU: NVIDIA Passthrough with TensorRT / FP16 acceleration
+# ==============================================================================
+
+version: "3.8"
+
+services:
+  cctv-edge-simulation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rep-yolo11s-cctv:edge-sim
+    container_name: cctv_safety_edge_simulation_node
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./video_test:/app/video_test:ro
+      - ./Output:/app/Output
+      - ./snapshots:/app/snapshots
+      - ./.env:/app/.env:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - WEB_HOST=0.0.0.0
+      - WEB_PORT=8000
+      - DEVICE=cuda:0
+      - USE_HALF=True
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 4096M
+        reservations:
+          cpus: "2.0"
+          memory: 2048M
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

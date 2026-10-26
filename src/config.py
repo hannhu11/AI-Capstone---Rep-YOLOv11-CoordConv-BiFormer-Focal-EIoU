@@ -100,5 +100,46 @@ class SystemConfig:
         }
 
 
+
+def update_env_file(updates: Dict[str, str]) -> bool:
+    """Updates key-value pairs in the .env file while preserving comments and structure."""
+    env_path = PROJECT_ROOT / ".env"
+    if not env_path.exists():
+        example_path = PROJECT_ROOT / ".env.example"
+        if example_path.exists():
+            import shutil
+            shutil.copy(example_path, env_path)
+        else:
+            env_path.touch()
+
+    try:
+        lines = env_path.read_text(encoding="utf-8").splitlines()
+        keys_found = set()
+        new_lines = []
+
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("#") or "=" not in stripped:
+                new_lines.append(line)
+                continue
+            k, _ = stripped.split("=", 1)
+            k = k.strip()
+            if k in updates:
+                new_lines.append(f"{k}={updates[k]}")
+                keys_found.add(k)
+            else:
+                new_lines.append(line)
+
+        for k, v in updates.items():
+            if k not in keys_found:
+                new_lines.append(f"{k}={v}")
+
+        env_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+        return True
+    except Exception as e:
+        print(f"⚠️ Failed to update .env: {e}")
+        return False
+
+
 # Global singleton configuration
 config = SystemConfig()

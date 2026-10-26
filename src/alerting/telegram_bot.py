@@ -16,7 +16,7 @@ import requests
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
 
-from src.config import config
+from src.config import config, update_env_file
 
 
 class TelegramAlertBot:
@@ -55,7 +55,8 @@ class TelegramAlertBot:
                         if c_id:
                             self.chat_id = c_id
                             config.telegram_chat_id = c_id
-                            print(f"✅ Discovered Telegram Chat ID: {c_id} (Username: {chat.get('username')})")
+                            update_env_file({"TELEGRAM_CHAT_ID": c_id})
+                            print(f"✅ Discovered & Saved Telegram Chat ID: {c_id} (Username: {chat.get('username')})")
                             return c_id
         except Exception as e:
             print(f"⚠️ Telegram getUpdates error: {e}")

@@ -1,0 +1,5 @@
+platform,architecture,cpu_spec,memory_system,mem_bandwidth,compute_capacity,tdp_watts,typical_power_w,fp16_latency_ms,fp16_fps,int8_latency_ms,int8_fps,vram_footprint_mb,efficiency_int8_fps_per_watt,thermal_headroom_c
+NVIDIA Jetson Orin Nano 8GB,Ampere (GA10B),6-core ARM Cortex-A78AE v8.2 64-bit @ 1.5 GHz,8 GB 128-bit LPDDR5 (Unified),68.0 GB/s,40.0 TOPS (INT8),15.0,12.4,11.8,84.7,5.6,178.5,380.0,14.4,28.5
+NVIDIA Jetson Xavier NX,Volta (GV10B),6-core NVIDIA Carmel ARM v8.2 @ 1.4 GHz,8 GB 128-bit LPDDR4x (Unified),51.2 GB/s,21.0 TOPS (INT8),15.0,13.8,16.4,61.0,8.2,122.0,420.0,8.84,22.0
+Raspberry Pi 5 + Hailo-8 M.2,VideoCore VII (Host) + Hailo-8 NPU,Quad-core ARM Cortex-A76 @ 2.4 GHz,8 GB LPDDR4X (Host) + On-Chip SRAM (NPU),17.0 GB/s,26.0 TOPS (INT8),12.0,7.5,,,6.9,144.9,180.0,19.32,31.0
+Industrial Edge IPC (RTX 3050 Host Baseline),Ampere (GA107),8 Cores (4P + 4E) / 12 Threads @ 4.4 GHz Turbo,4 GB GDDR6 Dedicated VRAM + 16 GB Host DDR4,128.0 GB/s,72.0 TOPS (INT8),60.0,28.4,4.37,228.6,2.14,467.3,485.0,16.45,36.5

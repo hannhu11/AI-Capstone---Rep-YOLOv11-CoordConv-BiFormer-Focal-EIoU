@@ -2,7 +2,7 @@
 setlocal enabledelayedexpansion
 
 echo ==============================================================================
-echo [DOCKER BUILD & DEPLOY] INDUSTRIAL CCTV SAFETY SURVEILLANCE NODE
+echo [DOCKER BUILD AND DEPLOY] INDUSTRIAL CCTV SAFETY SURVEILLANCE NODE
 echo ==============================================================================
 
 :: Find docker executable

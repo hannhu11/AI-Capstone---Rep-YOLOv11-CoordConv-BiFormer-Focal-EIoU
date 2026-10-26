@@ -24,7 +24,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from src.config import config, SNAPSHOTS_DIR, PROJECT_ROOT
+from src.config import config, SNAPSHOTS_DIR, PROJECT_ROOT, update_env_file
 from src.engine.pipeline import cctv_pipeline
 from src.alerting.alert_manager import alert_manager
 
@@ -54,6 +54,7 @@ class SettingsPayload(BaseModel):
     conf_threshold: Optional[float] = None
     consecutive_violation_frames: Optional[int] = None
     telegram_chat_id: Optional[str] = None
+    zalo_chat_id: Optional[str] = None
     zalo_webhook_url: Optional[str] = None
 
 
@@ -71,6 +72,7 @@ class TelegramTestPayload(BaseModel):
 
 class ZaloTestPayload(BaseModel):
     webhook_url: Optional[str] = None
+    chat_id: Optional[str] = None
 
 
 # 1. Main Dashboard UI
@@ -83,21 +85,19 @@ async def serve_dashboard():
         return HTMLResponse(content=f.read())
 
 
-# 2. MJPEG Video Stream Generator
+# 2. MJPEG Video Stream Generator (Decoupled, zero duplicate GPU inference)
 def mjpeg_frame_generator():
+    last_idx = -1
     while cctv_pipeline.is_running:
-        frame = cctv_pipeline.process_next_frame()
-        if frame is None:
-            time.sleep(0.02)
+        jpeg_bytes, current_idx = cctv_pipeline.get_latest_frame(last_frame_idx=last_idx, timeout=0.5)
+        if jpeg_bytes is None or current_idx == last_idx:
+            time.sleep(0.01)
             continue
-
-        ret, buffer = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
-        if not ret:
-            continue
+        last_idx = current_idx
 
         yield (
             b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n" + buffer.tobytes() + b"\r\n"
+            b"Content-Type: image/jpeg\r\n\r\n" + jpeg_bytes + b"\r\n"
         )
 
 
@@ -145,23 +145,43 @@ async def clear_alerts():
 # 5. Live Settings Update API
 @app.post("/api/settings")
 async def update_settings(payload: SettingsPayload):
+    env_updates = {}
     if payload.conf_threshold is not None:
         config.conf_threshold = payload.conf_threshold
         cctv_pipeline.detector.conf_thresh = payload.conf_threshold
+        env_updates["CONF_THRESHOLD"] = str(payload.conf_threshold)
     if payload.consecutive_violation_frames is not None:
         config.consecutive_violation_frames = payload.consecutive_violation_frames
         cctv_pipeline.safety_engine.consecutive_frames_thresh = payload.consecutive_violation_frames
+        env_updates["CONSECUTIVE_VIOLATION_FRAMES"] = str(payload.consecutive_violation_frames)
     if payload.telegram_chat_id is not None:
         config.telegram_chat_id = payload.telegram_chat_id
         alert_manager.telegram.chat_id = payload.telegram_chat_id
+        env_updates["TELEGRAM_CHAT_ID"] = payload.telegram_chat_id
+    if payload.zalo_chat_id is not None:
+        config.zalo_chat_id = payload.zalo_chat_id
+        alert_manager.zalo.chat_id = payload.zalo_chat_id
+        env_updates["ZALO_CHAT_ID"] = payload.zalo_chat_id
     if payload.zalo_webhook_url is not None:
-        config.zalo_webhook_url = payload.zalo_webhook_url
-        alert_manager.zalo.webhook_url = payload.zalo_webhook_url
-    return {"message": "Settings updated successfully", "config": config.to_dict()}
+        val = payload.zalo_webhook_url.strip()
+        if val.startswith("http://") or val.startswith("https://"):
+            config.zalo_webhook_url = val
+            alert_manager.zalo.webhook_url = val
+            env_updates["ZALO_WEBHOOK_URL"] = val
+        elif val:
+            config.zalo_chat_id = val
+            alert_manager.zalo.chat_id = val
+            env_updates["ZALO_CHAT_ID"] = val
+
+    if env_updates:
+        update_env_file(env_updates)
+
+    return {"message": "Settings updated and saved to .env successfully", "config": config.to_dict()}
 
 
 # 6. Video Source Controls & Upload
 @app.post("/api/switch_source")
+@app.post("/api/controls/source")
 async def switch_video_source(payload: SwitchSourcePayload):
     cctv_pipeline.switch_source(payload.video_source)
     return {"message": f"Switched video source to {payload.video_source}"}
@@ -198,19 +218,35 @@ async def discover_tg_chat_id():
     return {"chat_id": chat_id, "found": bool(chat_id)}
 
 
+@app.post("/api/alerts/test-telegram")
 @app.post("/api/test_alert/telegram")
-async def test_telegram_alert(payload: TelegramTestPayload):
+async def test_telegram_alert(payload: Optional[TelegramTestPayload] = None):
+    chat_id = payload.chat_id if payload and payload.chat_id else None
+    if not chat_id:
+        chat_id = config.telegram_chat_id or alert_manager.telegram.discover_latest_chat_id()
+
     test_msg = (
         "🔔 *[TEST ALERT] CCTV Safety Surveillance System*\n\n"
         "This is an automated test ping from Rep-YOLO11s CCTV Safety Engine.\n"
         "Connection to Telegram Bot verified successfully! ✅"
     )
-    ok, msg = alert_manager.telegram.send_message(test_msg, chat_id=payload.chat_id)
-    return {"success": ok, "message": msg}
+    ok, msg = alert_manager.telegram.send_message(test_msg, chat_id=chat_id)
+    return {"success": ok, "message": msg, "chat_id": chat_id}
 
 
+@app.post("/api/alerts/test-zalo")
 @app.post("/api/test_alert/zalo")
-async def test_zalo_alert(payload: ZaloTestPayload):
+async def test_zalo_alert(payload: Optional[ZaloTestPayload] = None):
+    if payload:
+        if payload.webhook_url:
+            val = payload.webhook_url.strip()
+            if val.startswith("http://") or val.startswith("https://"):
+                alert_manager.zalo.webhook_url = val
+            else:
+                alert_manager.zalo.chat_id = val
+        if payload.chat_id:
+            alert_manager.zalo.chat_id = payload.chat_id
+
     test_msg = (
         "[TEST ALERT - ZALO BOT PLATFORM]\n"
         "He thong giam sat an toan CCTV Rep-YOLO11s da ket noi thanh cong den Zalo Bot Platform! ✅"
