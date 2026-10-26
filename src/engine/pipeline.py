@@ -9,10 +9,11 @@ Alert Dispatching, and High-Performance Frame Rendering.
 from __future__ import annotations
 import cv2
 import time
+import torch
 import threading
 import numpy as np
 from pathlib import Path
-from typing import Dict, Any, Optional, List, Generator
+from typing import Dict, Any, Optional, List, Generator, Tuple
 
 from src.config import config
 from src.engine.detector import SafetyObjectDetector
@@ -361,6 +362,14 @@ class CCTVSurveillancePipeline:
         cv2.putText(vis, hud_text, (36, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.58, (0, 230, 255), 2, cv2.LINE_AA)
 
         return vis
+
+    def stop(self):
+        """Cleanly halts background streaming worker and releases video capture resources."""
+        self.is_running = False
+        with self.lock:
+            if self.cap is not None:
+                self.cap.release()
+                self.cap = None
 
     def get_telemetry(self) -> Dict[str, Any]:
         """Returns structured metrics for real-time dashboard analytics."""

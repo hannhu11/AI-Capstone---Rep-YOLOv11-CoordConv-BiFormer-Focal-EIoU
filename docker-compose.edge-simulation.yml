@@ -31,6 +31,8 @@ services:
       - WEB_PORT=8000
       - DEVICE=cuda:0
       - USE_HALF=True
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+      - VIDEO_SOURCE=video_test/13921040-uhd_3840_2160_30fps.mp4
     deploy:
       resources:
         limits:
