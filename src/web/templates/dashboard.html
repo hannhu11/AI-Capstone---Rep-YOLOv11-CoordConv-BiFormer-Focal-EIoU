@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IEEE AAIML 2027: Industrial CCTV Safety Surveillance & Alerting System</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef8ff',
+              100: '#d8eeff',
+              400: '#38bdf8',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+            },
+            surface: {
+              dark: '#0f172a',
+              card: '#1e293b',
+              border: '#334155',
+              accent: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.05); }
+    }
+    .pulse-danger {
+      animation: pulse-slow 1.8s infinite ease-in-out;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="bg-[#0b1120] text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-sky-500 selection:text-white">
+
+  <!-- TOP HEADER -->
+  <header class="border-b border-surface-border bg-surface-card/80 backdrop-blur-md sticky top-0 z-40 px-6 py-3.5">
+    <div class="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <!-- Title & Branding -->
+      <div class="flex items-center space-x-3.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-sky-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2.5">
+            <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+              INDUSTRIAL CCTV SURVEILLANCE & PPE ENGINE
+              <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium">Rep-YOLO11s SOTA</span>
+            </h1>
+          </div>
+          <p class="text-xs text-slate-400 flex items-center gap-2">
+            <span>Spatial Relational ByteTrack MOT</span>
+            <span>&bull;</span>
+            <span id="headerCameraBadge">Camera: CCTV_GATE_A1_1080P</span>
+            <span>&bull;</span>
+            <span id="headerDeviceBadge" class="text-cyan-400">GPU: CUDA FP16</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Live Status & Bot Indicators -->
+      <div class="flex items-center space-x-3 text-xs">
+        <!-- Live Indicator -->
+        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-surface-dark/80 border border-surface-border">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+          <span class="text-emerald-400 font-medium tracking-wider">LIVE STREAM</span>
+        </div>
+
+        <!-- Telegram Status Pill -->
+        <div class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-sky-950/60 border border-sky-800/40 text-sky-300">
+          <svg class="w-4 h-4 text-sky-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+          </svg>
+          <span class="font-medium">Telegram Bot</span>
+          <span id="tgStatusDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        </div>
+
+        <!-- Zalo Status Pill -->
+        <div class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-blue-950/60 border border-blue-800/40 text-blue-300">
+          <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+          <span class="font-medium">Zalo Bot</span>
+          <span id="zaloStatusDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        </div>
+
+        <!-- Quick Settings Modal Toggle Button -->
+        <button onclick="toggleSettingsModal()" class="px-3 py-1.5 rounded-lg bg-surface-dark hover:bg-slate-800 border border-surface-border text-slate-300 hover:text-white transition flex items-center space-x-1.5">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <span>Control Panel</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- METRICS TELEMETRY ROW (HONEST DATA) -->
+  <section class="max-w-[1700px] w-full mx-auto px-6 pt-5 pb-2">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+
+      <!-- Metric 1: FPS -->
+      <div class="bg-surface-card/90 border border-surface-border rounded-xl p-3.5 shadow-sm hover:border-slate-600 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs">
+          <span class="uppercase tracking-wider font-semibold">True Measured FPS</span>
+          <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="metricFps" class="text-2xl font-bold tracking-tight text-white">--</span>
+          <span class="text-xs text-emerald-400 font-mono">RTX 3050</span>
+        </div>
+      </div>
+
+      <!-- Metric 2: Inference Latency -->
+      <div class="bg-surface-card/90 border border-surface-border rounded-xl p-3.5 shadow-sm hover:border-slate-600 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs">
+          <span class="uppercase tracking-wider font-semibold">Pure Latency</span>
+          <svg class="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="metricLatency" class="text-2xl font-bold tracking-tight text-cyan-300">--</span>
+          <span class="text-xs text-slate-400 font-mono">FP16 CUDA</span>
+        </div>
+      </div>
+
+      <!-- Metric 3: Active Workers Count -->
+      <div class="bg-surface-card/90 border border-surface-border rounded-xl p-3.5 shadow-sm hover:border-slate-600 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs">
+          <span class="uppercase tracking-wider font-semibold">Tracked Workers</span>
+          <svg class="w-4 h-4 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="metricWorkers" class="text-2xl font-bold tracking-tight text-white">0</span>
+          <span class="text-xs text-sky-400 font-mono">ByteTrack</span>
+        </div>
+      </div>
+
+      <!-- Metric 4: Compliant Workers -->
+      <div class="bg-surface-card/90 border border-surface-border rounded-xl p-3.5 shadow-sm hover:border-slate-600 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs">
+          <span class="uppercase tracking-wider font-semibold">Compliant</span>
+          <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="metricCompliant" class="text-2xl font-bold tracking-tight text-emerald-400">0</span>
+          <span class="text-xs text-slate-400">Helmet + Vest</span>
+        </div>
+      </div>
+
+      <!-- Metric 5: Active Violations -->
+      <div class="bg-surface-card/90 border border-surface-border rounded-xl p-3.5 shadow-sm hover:border-slate-600 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs">
+          <span class="uppercase tracking-wider font-semibold">Active Violations</span>
+          <svg class="w-4 h-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="metricViolations" class="text-2xl font-bold tracking-tight text-rose-400">0</span>
+          <span id="metricViolationIndicator" class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+        </div>
+      </div>
+
+      <!-- Metric 6: Compliance Rate -->
+      <div class="bg-surface-card/90 border border-surface-border rounded-xl p-3.5 shadow-sm hover:border-slate-600 transition">
+        <div class="flex items-center justify-between text-slate-400 text-xs">
+          <span class="uppercase tracking-wider font-semibold">Compliance Rate</span>
+          <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+          </svg>
+        </div>
+        <div class="mt-2 flex items-baseline justify-between">
+          <span id="metricComplianceRate" class="text-2xl font-bold tracking-tight text-amber-300">100%</span>
+          <span class="text-xs text-slate-400">Goal: >90%</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main class="max-w-[1700px] w-full mx-auto px-6 py-4 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- LEFT COLUMN: LIVE VIDEO FEED + CHARTS (8 Cols) -->
+    <div class="lg:col-span-8 flex flex-col space-y-5">
+
+      <!-- Video Feed Container -->
+      <div class="bg-surface-card border border-surface-border rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
+        <!-- Video Header Bar -->
+        <div class="px-4 py-2.5 bg-slate-900/90 border-b border-surface-border flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-2.5">
+            <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+            <span class="font-semibold text-slate-200">LIVE FEED &bull; CCTV SIMULATION</span>
+            <span class="text-slate-400 font-mono text-[11px]" id="videoFilenameBadge">construction_site_workers_1080p.mp4</span>
+          </div>
+          <div class="flex items-center space-x-3 text-slate-400">
+            <span id="videoResolutionBadge">1920x1080 @ 60 FPS</span>
+            <button onclick="toggleVideoFullscreen()" class="hover:text-white transition p-1" title="Fullscreen">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- MJPEG Video Stream Element -->
+        <div class="relative w-full bg-black flex items-center justify-center overflow-hidden aspect-video" id="videoWrapper">
+          <img
+            id="cctvStreamImg"
+            src="/video_feed"
+            alt="CCTV Video Feed"
+            class="w-full h-full object-contain select-none"
+            onerror="handleVideoError(this)"
+          />
+          <div id="videoErrorOverlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex-col items-center justify-center text-center p-6">
+            <svg class="w-12 h-12 text-rose-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <h3 class="text-base font-semibold text-white">Stream Reconnecting...</h3>
+            <p class="text-xs text-slate-400 mt-1">Initializing model weights or video file source.</p>
+            <button onclick="reloadStream()" class="mt-4 px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white transition">Retry Stream</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Analytics Charts Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Chart 1: Compliance Rate Trend -->
+        <div class="bg-surface-card border border-surface-border rounded-xl p-4 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+              </svg>
+              Compliance Rate Over Time
+            </h3>
+            <span class="text-[10px] text-slate-400 font-mono">Last 30 Seconds</span>
+          </div>
+          <div class="h-44 w-full">
+            <canvas id="complianceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Helmet Color Distribution -->
+        <div class="bg-surface-card border border-surface-border rounded-xl p-4 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+              </svg>
+              Detected Helmet Color Breakdown
+            </h3>
+            <span class="text-[10px] text-slate-400 font-mono">5 Color Ontologies</span>
+          </div>
+          <div class="h-44 w-full flex items-center justify-center">
+            <canvas id="helmetColorChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: LIVE VIOLATION FEED & ALERTS (4 Cols) -->
+    <div class="lg:col-span-4 flex flex-col space-y-4">
+
+      <!-- Alert Feed Header Card -->
+      <div class="bg-surface-card border border-surface-border rounded-xl p-4 shadow-sm flex flex-col h-full min-h-[580px]">
+        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+          <div class="flex items-center space-x-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></div>
+            <h2 class="text-sm font-bold tracking-tight text-white uppercase">Live Violation Stream</h2>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span id="alertsCountBadge" class="px-2 py-0.5 rounded-full bg-rose-950/80 border border-rose-800/60 text-rose-300 text-[11px] font-semibold">0 Alerts</span>
+            <button onclick="clearAlertHistory()" class="text-[11px] text-slate-400 hover:text-slate-200 transition" title="Clear list">Clear</button>
+          </div>
+        </div>
+
+        <!-- Scrollable Alerts Container -->
+        <div id="alertsContainer" class="flex-1 overflow-y-auto space-y-3 pt-3 pr-1">
+          <!-- Empty State placeholder -->
+          <div id="noAlertsPlaceholder" class="flex flex-col items-center justify-center h-64 text-center text-slate-500">
+            <svg class="w-10 h-10 mb-2 opacity-50 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-xs font-medium">All active workers compliant.</p>
+            <p class="text-[11px] text-slate-600 mt-0.5">Safety violations will trigger alerts here.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- CONTROL PANEL MODAL (DRAWER) -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface-card border border-surface-border rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-4 border-b border-surface-border">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+          </svg>
+          System Controls & Bot Integration
+        </h3>
+        <button onclick="toggleSettingsModal()" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="mt-5 space-y-6 text-sm">
+
+        <!-- Section 1: Video Simulation Source -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Video Simulation Source</label>
+          <div class="flex gap-2">
+            <select id="videoSourceSelect" class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-slate-200 text-xs focus:ring-1 focus:ring-sky-500 focus:outline-none">
+              <option value="video_test/construction_site_workers_1080p.mp4">construction_site_workers_1080p.mp4 (Primary Test Video)</option>
+              <option value="video_test/10810476-hd_1920_1080_30fps.mp4">10810476-hd_1920_1080_30fps.mp4</option>
+              <option value="video_test/brickmasonry 11.mp4">brickmasonry 11.mp4</option>
+              <option value="video_test/concreting 10.mp4">concreting 10.mp4</option>
+              <option value="0">Local Webcam / USB Camera (Index 0)</option>
+            </select>
+            <button onclick="applyVideoSource()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold transition">Switch Source</button>
+          </div>
+          <div class="mt-2.5 flex items-center gap-2">
+            <input type="file" id="videoUploadInput" accept="video/mp4,video/avi" class="text-xs text-slate-400 file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:bg-slate-700 file:text-slate-200 hover:file:bg-slate-600 cursor-pointer" />
+            <button onclick="uploadVideoFile()" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-xs font-medium transition">Upload & Play</button>
+          </div>
+        </div>
+
+        <!-- Section 2: Model Weights (Modular Decoupled Switching) -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Model Checkpoint (Decoupled Hot-Swap)</label>
+          <div class="flex gap-2">
+            <select id="modelSelect" class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-slate-200 text-xs focus:ring-1 focus:ring-sky-500 focus:outline-none">
+              <option value="Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv7_best_deploy.pt">rep_yolo11s_chv7_best_deploy.pt (Champion A6 Rep-YOLO11s)</option>
+              <option value="Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv6_warmstart_deploy.pt">rep_yolo11s_chv6_warmstart_deploy.pt (6-Class Baseline)</option>
+              <option value="yolo11s.pt">yolo11s.pt (COCO Pretrained Fallback)</option>
+            </select>
+            <button onclick="applyModelSelection()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition">Swap Weights</button>
+          </div>
+        </div>
+
+        <!-- Section 3: Detection & Debounce Sliders -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300 font-medium">Confidence Threshold</span>
+              <span id="confVal" class="text-sky-400 font-mono">0.25</span>
+            </div>
+            <input type="range" id="confSlider" min="0.10" max="0.80" step="0.05" value="0.25" oninput="document.getElementById('confVal').innerText=this.value" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500">
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-slate-300 font-medium">Consecutive Violation Frames</span>
+              <span id="streakVal" class="text-rose-400 font-mono">8 frames</span>
+            </div>
+            <input type="range" id="streakSlider" min="3" max="30" step="1" value="8" oninput="document.getElementById('streakVal').innerText=this.value + ' frames'" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-rose-500">
+          </div>
+        </div>
+
+        <!-- Section 4: Telegram Bot Integration -->
+        <div class="p-3.5 bg-slate-900/80 border border-slate-700 rounded-xl space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-sky-400 uppercase tracking-wide flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+              Telegram Bot (@safety_helmet_cctv_bot)
+            </span>
+            <span class="text-[11px] text-slate-400 font-mono">Token: 893179...</span>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="tgChatIdInput" placeholder="Enter Telegram Chat ID (or click Auto-Detect)" class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500" />
+            <button onclick="autoDetectTelegramChatId()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-medium transition" title="Queries /getUpdates for latest chat ID">Auto-Detect</button>
+            <button onclick="sendTestTelegramAlert()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-semibold transition">Test Ping</button>
+          </div>
+          <p class="text-[11px] text-slate-400">Tip: Open <a href="https://t.me/safety_helmet_cctv_bot" target="_blank" class="text-sky-400 underline">@safety_helmet_cctv_bot</a> on Telegram, press Start, then click Auto-Detect.</p>
+        </div>
+
+        <!-- Section 5: Zalo Bot Integration -->
+        <div class="p-3.5 bg-slate-900/80 border border-slate-700 rounded-xl space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-blue-400 uppercase tracking-wide flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+              Zalo Bot Platform (Bot safety helmet CCTV)
+            </span>
+            <span class="text-[11px] text-slate-400 font-mono">Token: 426309...</span>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="zaloWebhookInput" placeholder="Zalo Webhook URL or Chat ID" class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            <button onclick="sendTestZaloAlert()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition">Test Ping</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-surface-border flex justify-end gap-3">
+        <button onclick="toggleSettingsModal()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-medium text-slate-200 transition">Close</button>
+        <button onclick="saveAllSettings()" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition">Save & Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SNAPSHOT ENLARGE MODAL -->
+  <div id="snapshotModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" onclick="closeSnapshotModal()">
+    <div class="max-w-4xl w-full bg-surface-card border border-surface-border rounded-2xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+      <div class="p-3 bg-slate-900 border-b border-surface-border flex items-center justify-between">
+        <h4 id="snapshotModalTitle" class="text-xs font-bold text-slate-200 uppercase tracking-wide">VIOLATION SNAPSHOT OVERLAY</h4>
+        <button onclick="closeSnapshotModal()" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="p-2 bg-black flex items-center justify-center">
+        <img id="snapshotModalImg" src="" alt="Violation Snapshot" class="max-h-[75vh] w-auto object-contain rounded" />
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    let complianceChart = null;
+    let helmetColorChart = null;
+    const MAX_CHART_POINTS = 30;
+    const timeLabels = [];
+    const complianceData = [];
+
+    // Initialize Charts on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      initCharts();
+      startTelemetryPolling();
+      startAlertsPolling();
+    });
+
+    function initCharts() {
+      // 1. Compliance Line Chart
+      const ctx1 = document.getElementById('complianceChart').getContext('2d');
+      for (let i = 0; i < MAX_CHART_POINTS; i++) {
+        timeLabels.push('');
+        complianceData.push(100);
+      }
+      complianceChart = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: timeLabels,
+          datasets: [{
+            label: 'Compliance %',
+            data: complianceData,
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.35,
+            borderWidth: 2,
+            pointRadius: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { min: 0, max: 100, grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { size: 10 } } },
+            x: { grid: { display: false }, ticks: { display: false } }
+          }
+        }
+      });
+
+      // 2. Helmet Color Doughnut Chart
+      const ctx2 = document.getElementById('helmetColorChart').getContext('2d');
+      helmetColorChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['Blue', 'Green', 'Red', 'White', 'Yellow'],
+          datasets: [{
+            data: [1, 1, 1, 1, 1],
+            backgroundColor: ['#0284c7', '#10b981', '#ef4444', '#e2e8f0', '#f59e0b'],
+            borderWidth: 2,
+            borderColor: '#1e293b',
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 12 }
+            }
+          },
+          cutout: '65%'
+        }
+      });
+    }
+
+    // Telemetry Polling (every 500ms)
+    function startTelemetryPolling() {
+      setInterval(async () => {
+        try {
+          const resp = await fetch('/api/metrics');
+          if (!resp.ok) return;
+          const data = await resp.json();
+
+          // Update HUD Numbers
+          document.getElementById('metricFps').innerText = data.fps.toFixed(1);
+          document.getElementById('metricLatency').innerText = data.inference_ms.toFixed(1) + 'ms';
+          document.getElementById('metricWorkers').innerText = data.workers_count;
+          document.getElementById('metricCompliant').innerText = data.compliant_count;
+          document.getElementById('metricViolations').innerText = data.violations_count;
+          document.getElementById('metricComplianceRate').innerText = data.compliance_rate.toFixed(1) + '%';
+
+          // Pulse danger indicator if violations > 0
+          const vDot = document.getElementById('metricViolationIndicator');
+          if (data.violations_count > 0) {
+            vDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 pulse-danger';
+          } else {
+            vDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+          }
+
+          // Update Compliance Chart
+          complianceData.shift();
+          complianceData.push(data.compliance_rate);
+          complianceChart.update('none');
+
+          // Update Helmet Colors Chart
+          if (data.helmet_colors) {
+            const h = data.helmet_colors;
+            const vals = [h.blue || 0, h.green || 0, h.red || 0, h.white || 0, h.yellow || 0];
+            const sum = vals.reduce((a, b) => a + b, 0);
+            helmetColorChart.data.datasets[0].data = sum > 0 ? vals : [1, 1, 1, 1, 1];
+            helmetColorChart.update('none');
+          }
+        } catch (e) {
+          // ignore transient poll errors
+        }
+      }, 500);
+    }
+
+    // Alerts Polling (every 1000ms)
+    let seenAlertIds = new Set();
+    function startAlertsPolling() {
+      setInterval(async () => {
+        try {
+          const resp = await fetch('/api/alerts');
+          if (!resp.ok) return;
+          const alerts = await resp.json();
+          renderAlerts(alerts);
+        } catch (e) {
+          // ignore
+        }
+      }, 1000);
+    }
+
+    function renderAlerts(alerts) {
+      const container = document.getElementById('alertsContainer');
+      const placeholder = document.getElementById('noAlertsPlaceholder');
+      const countBadge = document.getElementById('alertsCountBadge');
+
+      countBadge.innerText = alerts.length + ' Alerts';
+
+      if (alerts.length === 0) {
+        if (placeholder) placeholder.style.display = 'flex';
+        return;
+      }
+      if (placeholder) placeholder.style.display = 'none';
+
+      // Clear container and render newest cards
+      container.innerHTML = '';
+      alerts.forEach(item => {
+        const vBadges = item.violations.map(v => 
+          `<span class="px-2 py-0.5 rounded bg-rose-950/80 border border-rose-800 text-rose-300 font-semibold text-[10px]">${v.replace(/_/g, ' ')}</span>`
+        ).join(' ');
+
+        const card = document.createElement('div');
+        card.className = 'bg-surface-dark/90 border border-rose-900/40 rounded-xl p-3 hover:border-rose-700/60 transition shadow-sm flex flex-col space-y-2';
+        card.innerHTML = `
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-rose-400 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+              Worker #${item.worker_id}
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono">${item.timestamp}</span>
+          </div>
+          <div class="flex flex-wrap gap-1">${vBadges}</div>
+          <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
+            <span>Conf: ${(item.confidence * 100).toFixed(1)}% &bull; Dur: ${item.violation_duration_frames}f</span>
+            ${item.snapshot_filename ? `
+              <button onclick="viewSnapshot('${item.snapshot_filename}', ${item.worker_id})" class="text-sky-400 hover:text-sky-300 font-medium underline text-[11px]">
+                View Snapshot
+              </button>
+            ` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Modal & Control Handlers
+    function toggleSettingsModal() {
+      const modal = document.getElementById('settingsModal');
+      modal.classList.toggle('hidden');
+    }
+
+    function viewSnapshot(filename, workerId) {
+      document.getElementById('snapshotModalImg').src = `/snapshots/${filename}`;
+      document.getElementById('snapshotModalTitle').innerText = `CRITICAL VIOLATION SNAPSHOT: WORKER #${workerId}`;
+      document.getElementById('snapshotModal').classList.remove('hidden');
+    }
+
+    function closeSnapshotModal() {
+      document.getElementById('snapshotModal').classList.add('hidden');
+    }
+
+    function handleVideoError(img) {
+      document.getElementById('videoErrorOverlay').classList.remove('hidden');
+    }
+
+    function reloadStream() {
+      document.getElementById('videoErrorOverlay').classList.add('hidden');
+      const img = document.getElementById('cctvStreamImg');
+      img.src = '/video_feed?t=' + new Date().getTime();
+    }
+
+    function toggleVideoFullscreen() {
+      const elem = document.getElementById('videoWrapper');
+      if (!document.fullscreenElement) {
+        elem.requestFullscreen().catch(err => alert(err.message));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    async function applyVideoSource() {
+      const sel = document.getElementById('videoSourceSelect').value;
+      const res = await fetch('/api/switch_source', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video_source: sel })
+      });
+      if (res.ok) {
+        alert('Switched video source to: ' + sel);
+        reloadStream();
+      }
+    }
+
+    async function uploadVideoFile() {
+      const fileInput = document.getElementById('videoUploadInput');
+      if (!fileInput.files.length) {
+        alert('Please choose a video file first');
+        return;
+      }
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      const res = await fetch('/api/upload_video', { method: 'POST', body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        alert('Uploaded and switched to: ' + data.filename);
+        reloadStream();
+      } else {
+        alert('Upload failed');
+      }
+    }
+
+    async function applyModelSelection() {
+      const sel = document.getElementById('modelSelect').value;
+      const res = await fetch('/api/switch_model', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model_path: sel })
+      });
+      if (res.ok) {
+        alert('Model successfully hot-swapped to: ' + sel);
+      } else {
+        alert('Model switch failed');
+      }
+    }
+
+    async function autoDetectTelegramChatId() {
+      const res = await fetch('/api/telegram/discover_chat_id');
+      const data = await res.json();
+      if (data.chat_id) {
+        document.getElementById('tgChatIdInput').value = data.chat_id;
+        alert('Found Telegram Chat ID: ' + data.chat_id);
+      } else {
+        alert('No new messages found. Please open @safety_helmet_cctv_bot on Telegram, send /start, and try again.');
+      }
+    }
+
+    async function sendTestTelegramAlert() {
+      const chatId = document.getElementById('tgChatIdInput').value;
+      const res = await fetch('/api/test_alert/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId })
+      });
+      const data = await res.json();
+      alert(data.message || 'Result: ' + JSON.stringify(data));
+    }
+
+    async function sendTestZaloAlert() {
+      const webhook = document.getElementById('zaloWebhookInput').value;
+      const res = await fetch('/api/test_alert/zalo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ webhook_url: webhook })
+      });
+      const data = await res.json();
+      alert(data.message || 'Result: ' + JSON.stringify(data));
+    }
+
+    async function saveAllSettings() {
+      const conf = parseFloat(document.getElementById('confSlider').value);
+      const streak = parseInt(document.getElementById('streakSlider').value);
+      const tgChat = document.getElementById('tgChatIdInput').value;
+      const zaloWebhook = document.getElementById('zaloWebhookInput').value;
+
+      await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conf_threshold: conf,
+          consecutive_violation_frames: streak,
+          telegram_chat_id: tgChat,
+          zalo_webhook_url: zaloWebhook
+        })
+      });
+      alert('Settings saved successfully!');
+      toggleSettingsModal();
+    }
+
+    async function clearAlertHistory() {
+      await fetch('/api/alerts/clear', { method: 'POST' });
+      document.getElementById('alertsContainer').innerHTML = '';
+      document.getElementById('alertsCountBadge').innerText = '0 Alerts';
+    }
+  </script>
+</body>
+</html>

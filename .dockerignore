@@ -1,0 +1,17 @@
+.git
+.agents
+.pytest_cache
+runs/
+hard-negatives/
+Dataset/
+SHWD_YOLO_KFOLD/
+__pycache__/
+*.ipynb
+*.pdf
+*.docx
+*.xlsx
+Output/kaggle_results/CHV_6CLASS_CLEAN/
+Output/kaggle_results/hannhu4002_clean_chv6/
+Output/kaggle_results/hannhu40022_conflict_free_7class/
+review1_genspark_package/
+test_screenshots/

@@ -1,0 +1,403 @@
+"""
+src/engine/bytetrack.py
+=======================
+High-Performance ByteTrack Multi-Object Tracking (MOT) Engine.
+Tailored for Industrial Construction Worker Tracking (Persistent Person IDs).
+Features:
+- Two-stage association: high-confidence detections first, then low-confidence detections to recover occlusions.
+- Kalman Filter motion prediction (constant velocity model).
+- Scipy linear sum assignment (Hungarian algorithm) for 100% platform portability.
+- Re-ID appearance persistence across temporary occlusions.
+"""
+
+from __future__ import annotations
+import numpy as np
+from scipy.optimize import linear_sum_assignment
+from typing import List, Tuple, Optional, Dict, Any
+
+from src.engine.kalman_tracker import KalmanFilter
+
+
+class TrackState:
+    New = 0
+    Tracked = 1
+    Lost = 2
+    Removed = 3
+
+
+class STrack:
+    """Individual Worker Tracklet with Kalman state and persistent metadata."""
+    _count = 0
+
+    def __init__(self, tlwh: np.ndarray, score: float, cls_id: int = 0):
+        # tlwh: [top, left, width, height]
+        self._tlwh = np.asarray(tlwh, dtype=np.float32)
+        self.kalman_filter: Optional[KalmanFilter] = None
+        self.mean: Optional[np.ndarray] = None
+        self.covariance: Optional[np.ndarray] = None
+        self.is_activated = False
+
+        self.score = float(score)
+        self.cls_id = int(cls_id)
+        self.tracklet_len = 0
+        self.state = TrackState.New
+
+        self.track_id = 0
+        self.frame_id = 0
+        self.start_frame = 0
+
+        # Safety & Violation History
+        self.violation_streak = 0
+        self.compliance_streak = 0
+        self.is_alerted = False
+        self.last_alert_timestamp = 0.0
+        self.last_violation_types: List[str] = []
+        self.last_helmet_color: Optional[str] = None
+        self.history_centers: List[Tuple[float, float]] = []
+
+    @classmethod
+    def next_id(cls) -> int:
+        cls._count += 1
+        return cls._count
+
+    @classmethod
+    def reset_counter(cls):
+        cls._count = 0
+
+    def activate(self, kalman_filter: KalmanFilter, frame_id: int):
+        """Start a new tracklet."""
+        self.kalman_filter = kalman_filter
+        self.track_id = self.next_id()
+        self.mean, self.covariance = self.kalman_filter.initiate(self.tlwh_to_xyah(self._tlwh))
+
+        self.tracklet_len = 0
+        self.state = TrackState.Tracked
+        if frame_id == 1:
+            self.is_activated = True
+        self.frame_id = frame_id
+        self.start_frame = frame_id
+        self._record_center()
+
+    def re_activate(self, new_track: STrack, frame_id: int, new_id: bool = False):
+        """Re-activate a lost tracklet with newly associated detection."""
+        self.mean, self.covariance = self.kalman_filter.update(
+            self.mean, self.covariance, self.tlwh_to_xyah(new_track.tlwh)
+        )
+        self.tracklet_len = 0
+        self.state = TrackState.Tracked
+        self.is_activated = True
+        self.frame_id = frame_id
+        if new_id:
+            self.track_id = self.next_id()
+        self.score = new_track.score
+        self.cls_id = new_track.cls_id
+        self._record_center()
+
+    def update(self, new_track: STrack, frame_id: int):
+        """Update a matched track."""
+        self.frame_id = frame_id
+        self.tracklet_len += 1
+
+        new_tlwh = new_track.tlwh
+        self.mean, self.covariance = self.kalman_filter.update(
+            self.mean, self.covariance, self.tlwh_to_xyah(new_tlwh)
+        )
+        self.state = TrackState.Tracked
+        self.is_activated = True
+        self.score = new_track.score
+        self.cls_id = new_track.cls_id
+        self._record_center()
+
+    def predict(self):
+        mean_state = self.mean.copy()
+        if self.state != TrackState.Tracked:
+            mean_state[7] = 0
+        self.mean, self.covariance = self.kalman_filter.predict(mean_state, self.covariance)
+
+    def mark_lost(self):
+        self.state = TrackState.Lost
+
+    def mark_removed(self):
+        self.state = TrackState.Removed
+
+    def _record_center(self):
+        tlwh = self.tlwh
+        cx = tlwh[0] + tlwh[2] / 2.0
+        cy = tlwh[1] + tlwh[3] / 2.0
+        self.history_centers.append((cx, cy))
+        if len(self.history_centers) > 30:
+            self.history_centers.pop(0)
+
+    @property
+    def tlwh(self) -> np.ndarray:
+        """Get current position in bounding box format `(top left x, top left y, width, height)`."""
+        if self.mean is None:
+            return self._tlwh.copy()
+        ret = self.mean[:4].copy()
+        ret[2] *= ret[3]
+        ret[:2] -= ret[2:] / 2
+        return ret
+
+    @property
+    def tlbr(self) -> np.ndarray:
+        """Convert bounding box to `(min x, min y, max x, max y)`."""
+        ret = self.tlwh.copy()
+        ret[2:] += ret[:2]
+        return ret
+
+    @staticmethod
+    def tlwh_to_xyah(tlwh: np.ndarray) -> np.ndarray:
+        """Convert bounding box to `(center x, center y, aspect ratio, height)`."""
+        ret = np.asarray(tlwh, dtype=np.float32).copy()
+        ret[:2] += ret[2:] / 2
+        ret[2] /= ret[3]
+        return ret
+
+    @staticmethod
+    def tlbr_to_tlwh(tlbr: np.ndarray) -> np.ndarray:
+        ret = np.asarray(tlbr, dtype=np.float32).copy()
+        ret[2:] -= ret[:2]
+        return ret
+
+
+def box_iou_batch(boxes_a: np.ndarray, boxes_b: np.ndarray) -> np.ndarray:
+    """Compute pairwise IoU between two sets of boxes (tlbr format)."""
+    if len(boxes_a) == 0 or len(boxes_b) == 0:
+        return np.zeros((len(boxes_a), len(boxes_b)), dtype=np.float32)
+
+    a_x1, a_y1, a_x2, a_y2 = boxes_a[:, 0], boxes_a[:, 1], boxes_a[:, 2], boxes_a[:, 3]
+    b_x1, b_y1, b_x2, b_y2 = boxes_b[:, 0], boxes_b[:, 1], boxes_b[:, 2], boxes_b[:, 3]
+
+    inter_x1 = np.maximum(a_x1[:, None], b_x1[None, :])
+    inter_y1 = np.maximum(a_y1[:, None], b_y1[None, :])
+    inter_x2 = np.minimum(a_x2[:, None], b_x2[None, :])
+    inter_y2 = np.minimum(a_y2[:, None], b_y2[None, :])
+
+    inter_w = np.maximum(0.0, inter_x2 - inter_x1)
+    inter_h = np.maximum(0.0, inter_y2 - inter_y1)
+    inter_area = inter_w * inter_h
+
+    area_a = np.maximum(0.0, a_x2 - a_x1) * np.maximum(0.0, a_y2 - a_y1)
+    area_b = np.maximum(0.0, b_x2 - b_x1) * np.maximum(0.0, b_y2 - b_y1)
+    union_area = area_a[:, None] + area_b[None, :] - inter_area + 1e-7
+
+    return inter_area / union_area
+
+
+def linear_assignment(cost_matrix: np.ndarray, thresh: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Hungarian matching using scipy.optimize.linear_sum_assignment."""
+    if cost_matrix.size == 0:
+        return (
+            np.empty((0, 2), dtype=int),
+            np.arange(cost_matrix.shape[0], dtype=int),
+            np.arange(cost_matrix.shape[1], dtype=int),
+        )
+
+    row_ind, col_ind = linear_sum_assignment(cost_matrix)
+    matches = []
+    unmatched_a = list(range(cost_matrix.shape[0]))
+    unmatched_b = list(range(cost_matrix.shape[1]))
+
+    for r, c in zip(row_ind, col_ind):
+        if cost_matrix[r, c] <= thresh:
+            matches.append([r, c])
+            if r in unmatched_a:
+                unmatched_a.remove(r)
+            if c in unmatched_b:
+                unmatched_b.remove(c)
+
+    matches = np.asarray(matches, dtype=int) if matches else np.empty((0, 2), dtype=int)
+    return matches, np.asarray(unmatched_a, dtype=int), np.asarray(unmatched_b, dtype=int)
+
+
+class BYTETracker:
+    """
+    SOTA ByteTrack Tracker for CCTV Safety Surveillance.
+    Associates high-confidence detections first, then low-confidence detections to recover occluded workers.
+    """
+
+    def __init__(
+        self,
+        track_thresh: float = 0.45,
+        track_low_thresh: float = 0.15,
+        new_track_thresh: float = 0.50,
+        track_buffer: int = 60,
+        match_thresh: float = 0.70,
+        frame_rate: int = 30,
+    ):
+        self.track_thresh = track_thresh
+        self.track_low_thresh = track_low_thresh
+        self.new_track_thresh = new_track_thresh
+        self.track_buffer = track_buffer
+        self.match_thresh = match_thresh
+        self.frame_rate = frame_rate
+
+        self.kalman_filter = KalmanFilter()
+        self.tracked_stracks: List[STrack] = []
+        self.lost_stracks: List[STrack] = []
+        self.removed_stracks: List[STrack] = []
+
+        self.frame_id = 0
+        self.max_time_lost = int(track_buffer)
+
+    def reset(self):
+        self.tracked_stracks = []
+        self.lost_stracks = []
+        self.removed_stracks = []
+        self.frame_id = 0
+        STrack.reset_counter()
+
+    def update(self, dets: np.ndarray) -> List[STrack]:
+        """
+        dets: array of shape (N, 5 or 6) with format: [x1, y1, x2, y2, score, (cls_id)]
+        Returns: list of currently confirmed, active tracked STrack objects.
+        """
+        self.frame_id += 1
+        activated_stracks = []
+        refind_stracks = []
+        lost_stracks = []
+        removed_stracks = []
+
+        if len(dets) > 0:
+            scores = dets[:, 4]
+            bboxes = dets[:, :4]
+            classes = dets[:, 5] if dets.shape[1] > 5 else np.zeros(len(dets), dtype=int)
+
+            # Split into High-Score and Low-Score detections
+            remain_inds = scores >= self.track_thresh
+            inds_low = (scores >= self.track_low_thresh) & (scores < self.track_thresh)
+
+            dets_first = bboxes[remain_inds]
+            scores_first = scores[remain_inds]
+            classes_first = classes[remain_inds]
+
+            dets_second = bboxes[inds_low]
+            scores_second = scores[inds_low]
+            classes_second = classes[inds_low]
+        else:
+            dets_first = np.empty((0, 4), dtype=np.float32)
+            scores_first = np.empty((0,), dtype=np.float32)
+            classes_first = np.empty((0,), dtype=int)
+            dets_second = np.empty((0, 4), dtype=np.float32)
+            scores_second = np.empty((0,), dtype=np.float32)
+            classes_second = np.empty((0,), dtype=int)
+
+        # 1. Instantiate STrack candidate objects for first association
+        detections = [
+            STrack(STrack.tlbr_to_tlwh(tlbr), s, c)
+            for tlbr, s, c in zip(dets_first, scores_first, classes_first)
+        ]
+
+        # 2. Divide tracks into tracked pool and lost pool
+        unconfirmed = []
+        tracked_stracks = []
+        for track in self.tracked_stracks:
+            if not track.is_activated:
+                unconfirmed.append(track)
+            else:
+                tracked_stracks.append(track)
+
+        # Combine tracked and lost tracks for first association
+        strack_pool = tracked_stracks + self.lost_stracks
+
+        # Predict Kalman states for all active/lost tracks
+        for strack in strack_pool:
+            strack.predict()
+
+        # 3. First Association: High-score detections with strack_pool
+        dists = 1.0 - box_iou_batch(
+            np.array([s.tlbr for s in strack_pool], dtype=np.float32),
+            np.array([d.tlbr for d in detections], dtype=np.float32),
+        )
+        matches, u_track, u_detection = linear_assignment(dists, thresh=self.match_thresh)
+
+        for itracked, idet in matches:
+            track = strack_pool[itracked]
+            det = detections[idet]
+            if track.state == TrackState.Tracked:
+                track.update(det, self.frame_id)
+                activated_stracks.append(track)
+            else:
+                track.re_activate(det, self.frame_id, new_id=False)
+                refind_stracks.append(track)
+
+        # 4. Second Association: Low-score detections with remaining unmatched tracks
+        detections_second = [
+            STrack(STrack.tlbr_to_tlwh(tlbr), s, c)
+            for tlbr, s, c in zip(dets_second, scores_second, classes_second)
+        ]
+        r_tracked_stracks = [strack_pool[i] for i in u_track if strack_pool[i].state in (TrackState.Tracked, TrackState.Lost)]
+
+        dists_second = 1.0 - box_iou_batch(
+            np.array([s.tlbr for s in r_tracked_stracks], dtype=np.float32),
+            np.array([d.tlbr for d in detections_second], dtype=np.float32),
+        )
+        matches_second, u_track_second, _ = linear_assignment(dists_second, thresh=self.match_thresh)
+
+        for itracked, idet in matches_second:
+            track = r_tracked_stracks[itracked]
+            det = detections_second[idet]
+            if track.state == TrackState.Tracked:
+                track.update(det, self.frame_id)
+                activated_stracks.append(track)
+            else:
+                track.re_activate(det, self.frame_id, new_id=False)
+                refind_stracks.append(track)
+
+        # Tracks still unmatched after second association are marked lost
+        for it in u_track_second:
+            track = r_tracked_stracks[it]
+            if track.state != TrackState.Lost:
+                track.mark_lost()
+                lost_stracks.append(track)
+
+        # 5. Deal with unconfirmed tracks (matches with remaining detections)
+        detections_rem = [detections[i] for i in u_detection]
+        dists_unconf = 1.0 - box_iou_batch(
+            np.array([s.tlbr for s in unconfirmed], dtype=np.float32),
+            np.array([d.tlbr for d in detections_rem], dtype=np.float32),
+        )
+        matches_unconf, u_unconfirmed, u_detection_final = linear_assignment(dists_unconf, thresh=0.7)
+
+        for itracked, idet in matches_unconf:
+            unconfirmed[itracked].update(detections_rem[idet], self.frame_id)
+            activated_stracks.append(unconfirmed[itracked])
+
+        for it in u_unconfirmed:
+            track = unconfirmed[it]
+            track.mark_removed()
+            removed_stracks.append(track)
+
+        # 6. Initialize new tracks for unmatched high-confidence detections
+        for inew in u_detection_final:
+            track = detections_rem[inew]
+            if track.score >= self.new_track_thresh:
+                track.activate(self.kalman_filter, self.frame_id)
+                activated_stracks.append(track)
+
+        # 7. Update state lists
+        for track in self.lost_stracks:
+            if self.frame_id - track.frame_id > self.max_time_lost:
+                track.mark_removed()
+                removed_stracks.append(track)
+
+        self.tracked_stracks = [t for t in self.tracked_stracks if t.state == TrackState.Tracked]
+        self.tracked_stracks = self._merge_tracks(self.tracked_stracks, activated_stracks)
+        self.tracked_stracks = self._merge_tracks(self.tracked_stracks, refind_stracks)
+
+        self.lost_stracks = [t for t in self.lost_stracks if t.state == TrackState.Lost]
+        self.lost_stracks = self._merge_tracks(self.lost_stracks, lost_stracks)
+        self.lost_stracks = [t for t in self.lost_stracks if t not in self.tracked_stracks]
+
+        self.removed_stracks.extend(removed_stracks)
+
+        # Return active tracked objects
+        output_stracks = [track for track in self.tracked_stracks if track.is_activated]
+        return output_stracks
+
+    @staticmethod
+    def _merge_tracks(track_list: List[STrack], new_tracks: List[STrack]) -> List[STrack]:
+        track_dict = {t.track_id: t for t in track_list}
+        for t in new_tracks:
+            track_dict[t.track_id] = t
+        return list(track_dict.values())
