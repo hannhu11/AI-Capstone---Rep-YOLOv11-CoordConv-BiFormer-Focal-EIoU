@@ -124,6 +124,9 @@ class ZaloAlertBot:
 
         snapshot_path = alert_event.get("snapshot_path")
         if snapshot_path and Path(snapshot_path).exists() and self.chat_id:
-            return self.send_photo(snapshot_path, message)
+            ok, msg = self.send_photo(snapshot_path, message)
+            if ok:
+                return True, msg
+            return self.send_message(message)
         else:
             return self.send_message(message)

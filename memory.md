@@ -739,3 +739,38 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
    - `docker-compose.yml`: Khai báo dịch vụ `cctv-safety-edge`, cấp quyền GPU (`driver: nvidia`, `capabilities: [gpu]`), mở cổng 8000, gắn các ổ đĩa `video_test/`, `Output/`, `snapshots/`, `.env`.
    - Script tự động: `scripts/build_docker.bat` (Windows, tự động nhận diện đường dẫn Docker Desktop) và `scripts/build_docker.sh` (Linux/WSL).
    - Script chạy cục bộ: `scripts/run_local_dashboard.bat` và `scripts/run_local_dashboard.py`.
+
+7. **Khắc phục lỗi hệ thống đã kiểm toán (Reviewer Audit Fixes)**:
+   - Đã sửa lỗi bẫy nhãn phủ định: Cô lập `no_helmet`, `none`, `no_vest` trong `src/engine/spatial_safety.py` để không bị gán nhầm thành có bảo hộ.
+   - Bổ sung cắt chân dung đối tượng (Person Crop) nhúng Picture-in-Picture (PiP) góc trên phải ảnh snapshot và lưu tệp `snapshots/crop_worker_*.jpg`.
+   - Chuẩn hóa cơ chế nạp biến môi trường Dockerfile và `.bat` / `.sh` tự sinh `.env` từ `.env.example`.
+
+---
+
+## 33. KIỂM TOÁN PHÁP Y DỮ LIỆU TOÀN DIỆN, TRIỆT TIÊU CIRCULAR PSEUDO-LABELING & PHÁN QUYẾT REVIEWER (OCTOBER 2026 AUDIT)
+
+### 33.1. Phán Quyết Của Reviewer Về Đề Nghị Của Thầy Hướng Dẫn
+1. **Bác bỏ hoàn toàn cơ chế lấy Teacher Model sinh nhãn trên tập Test (Circular Pseudo-Labeling)**:
+   - Nhận định của Thầy hướng dẫn là **chính xác 100%** theo tiêu chuẩn bình duyệt quốc tế Q1 (IEEE TPAMI / CVPR / ECCV).
+   - Khi dùng mô hình giáo viên nắn nhãn ($0.72 \times B_{\text{pred}} + 0.28 \times B_{\text{gt}}$) và tự động điền nhãn `person`/`safety_vest` vào `test/labels/`, mô hình học sinh khi đánh giá trên tập test sẽ dự đoán lại đúng thiên vị quy nạp (inductive bias) của giáo viên. Con số 98% mAP@50 là **chỉ số bão hòa ảo (Dataset Ceiling & Label Smoothing Artifact)**.
+   - **Cam kết liêm chính**: Đồ án loại bỏ hoàn toàn các số liệu ảo 98% này khỏi báo cáo chính thức và bài báo khoa học.
+
+### 33.2. Bằng Chứng Pháp Y Về Rò Rỉ Dữ Liệu (Data Leakage Audit)
+Đã chạy kiểm tra mã băm MD5 trên toàn bộ các tệp ảnh (`scripts/audit_dataset_leakage_and_integrity.py`):
+1. **Nội bộ từng bộ dữ liệu**:
+   - `CHV_6CLASS_OFFICIAL_CLEAN` (1064 train / 133 val / 133 test): **0 ảnh trùng lặp (0.00% leakage)**.
+   - `CHV_7CLASS_CONFLICT_FREE` (1017 train / 130 val / 120 test): **0 ảnh trùng lặp (0.00% leakage)**.
+   - `UNIFIED_PPE_MASTER_HARMONIZED` (4287 train / 535 val / 537 test): **0 ảnh trùng lặp (0.00% leakage)**.
+2. **Rò rỉ chéo giữa các bộ dữ liệu gốc (Cross-Dataset Leakage)**:
+   - **770 ảnh giao thoa giữa GDUT-HWD và CHV**: Bộ CHV (Sensors 2021) lấy 770 ảnh từ GDUT-HWD và gán nhãn bổ sung áo phản quang `vest` cùng 4 màu mũ. Trong GDUT-HWD gốc, các ảnh này hoàn toàn không có nhãn áo. Nếu trộn lẫn mà không khử trùng lặp, tập Test sẽ bị rò rỉ tới **57.9%**.
+   - **Tập GDUT-custome.v1i.yolov11**: Chứa 110 ảnh AI sinh từ ChatGPT DALL-E 3, 4,816 ảnh trùng lặp (41%), và `valid/labels` rỗng 0 tệp -> **Bác bỏ vĩnh viễn**.
+
+### 33.3. Ma Trận Lựa Chọn Dữ Liệu Chuẩn Cho Báo Cáo & Triển Khai
+1. **Benchmark Vàng Số 1 (100% Human-Verified Ground Truth)**:
+   - Sử dụng `CHV_6CLASS_OFFICIAL_CLEAN` (1,330 ảnh) hoặc `CHV_7CLASS_CONFLICT_FREE`.
+   - Kết quả đối sánh trung thực: Rep-YOLO11s đạt **Precision 92.66% (+2.60%)**, **Red Helmet AP50 94.64% (+4.69%)**, **Safety Vest AP50 86.98%**. Bác bỏ hoàn toàn hiện tượng tụt metric 51% mà không cần đến pseudo-labeling.
+2. **Triển khai Hệ Thống CCTV Biên & Thiết Bị Cạnh Hiện Tại**:
+   - Nạp checkpoint tốt nhất: `Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv7_best_deploy.pt`.
+   - Độ trễ đo đạc thực tế: **17.7 - 21.7 ms** (~33.8 FPS) trên GPU NVIDIA RTX 3050 Laptop.
+   - Cấu hình phân rã 100% qua `.env`: Khi có mô hình mới huấn luyện xong theo phương pháp luận mới, chỉ cần cập nhật biến `MODEL_PATH` là toàn bộ Web và Docker tự động chuyển sang mô hình mới mà không cần sửa code.
+   - Báo cáo chi tiết đã lưu tại: `BAO_CAO_KIEM_TOAN_DATASET_VA_LIEM_CHINH_KHOA_HOC.md`.

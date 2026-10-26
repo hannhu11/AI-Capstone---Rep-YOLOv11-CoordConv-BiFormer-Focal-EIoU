@@ -22,6 +22,14 @@ if %ERRORLEVEL% neq 0 (
     )
 )
 
+:: Ensure .env file exists
+if not exist "%cd%\.env" (
+    if exist "%cd%\.env.example" (
+        echo [*] Auto-generating .env from .env.example ...
+        copy "%cd%\.env.example" "%cd%\.env" >nul
+    )
+)
+
 echo [*] Using Docker CLI: !DOCKER_EXE!
 echo [*] Building Docker Image: rep-yolo11s-cctv:latest ...
 "!DOCKER_EXE!" build -t rep-yolo11s-cctv:latest -f Dockerfile .

@@ -60,6 +60,23 @@ def bbox_iou(b1: List[float] | np.ndarray, b2: List[float] | np.ndarray) -> floa
     return inter / union
 
 
+# Explicit negative class indicators (must NEVER be treated as valid PPE)
+NEGATIVE_HELMET_CLASSES = {
+    "no_helmet", "none", "no-helmet", "head", "without_helmet", "no_hat", "head_without_helmet", "none_helmet"
+}
+NEGATIVE_VEST_CLASSES = {
+    "no_vest", "none_vest", "no-vest", "without_vest", "no_safety_vest", "none_safety_vest"
+}
+
+def is_negative_helmet(name: str) -> bool:
+    name_l = name.lower()
+    return name_l in NEGATIVE_HELMET_CLASSES or name_l.startswith("no_helmet") or name_l.startswith("no-helmet") or name_l == "none"
+
+def is_negative_vest(name: str) -> bool:
+    name_l = name.lower()
+    return name_l in NEGATIVE_VEST_CLASSES or name_l.startswith("no_vest") or name_l.startswith("no-vest")
+
+
 class SpatialSafetyEngine:
     """Evaluates safety compliance for tracked workers in real time."""
 
@@ -97,19 +114,52 @@ class SpatialSafetyEngine:
         now = time.time()
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Extract detected helmets and vests from raw detections
-        helmets = []
-        vests = []
+        # Partition raw detections into Positive Helmets, Negative Helmets, Positive Vests, Negative Vests
+        positive_helmets = []
+        negative_helmets = []
+        positive_vests = []
+        negative_vests = []
+
         for d in raw_detections:
             cls_id = d.get("cls", -1)
-            name = str(d.get("name", "")).lower()
+            name = str(d.get("name", "")).lower().strip()
             box = d.get("box", [0, 0, 0, 0])
+            conf = d.get("conf", 1.0)
 
-            if cls_id in HELMET_COLOR_MAP or "helmet" in name or name in HELMET_NAME_TO_COLOR:
-                color = HELMET_COLOR_MAP.get(cls_id) or HELMET_NAME_TO_COLOR.get(name, "unknown")
-                helmets.append({"box": box, "cls": cls_id, "name": name, "color": color, "conf": d.get("conf", 1.0)})
-            elif cls_id == 1 or "vest" in name:
-                vests.append({"box": box, "cls": cls_id, "name": name, "conf": d.get("conf", 1.0)})
+            # Check for explicit negative indicators first
+            if is_negative_helmet(name):
+                negative_helmets.append({"box": box, "cls": cls_id, "name": name, "conf": conf})
+                continue
+
+            if is_negative_vest(name):
+                negative_vests.append({"box": box, "cls": cls_id, "name": name, "conf": conf})
+                continue
+
+            # Check positive helmet
+            is_pos_helmet = (
+                cls_id in HELMET_COLOR_MAP
+                or name in HELMET_NAME_TO_COLOR
+                or any(c in name for c in ("blue", "green", "red", "white", "yellow"))
+                or ("helmet" in name and not any(neg in name for neg in ("no_", "no-", "without", "none")))
+            )
+            if is_pos_helmet:
+                color = HELMET_COLOR_MAP.get(cls_id) or HELMET_NAME_TO_COLOR.get(name)
+                if not color:
+                    for c in ("blue", "green", "red", "white", "yellow"):
+                        if c in name:
+                            color = c
+                            break
+                color = color or "unknown"
+                positive_helmets.append({"box": box, "cls": cls_id, "name": name, "color": color, "conf": conf})
+                continue
+
+            # Check positive safety vest
+            is_pos_vest = (
+                cls_id == 1
+                or ("vest" in name and not any(neg in name for neg in ("no_", "no-", "without", "none")))
+            )
+            if is_pos_vest:
+                positive_vests.append({"box": box, "cls": cls_id, "name": name, "conf": conf})
 
         worker_reports: List[Dict[str, Any]] = []
         alert_events: List[Dict[str, Any]] = []
@@ -126,36 +176,57 @@ class SpatialSafetyEngine:
             head_box = [px1, py1, px2, py1 + self.head_box_ratio * ph]
             torso_box = [px1, py1 + self.torso_min_ratio * ph, px2, py1 + self.torso_max_ratio * ph]
 
-            # 2. Helmet Match & Color
+            # 2. Check for explicit Negative Helmet (no_helmet / none) on head
+            has_explicit_no_helmet = False
+            for nh in negative_helmets:
+                hb = nh["box"]
+                hcx = (hb[0] + hb[2]) / 2.0
+                hcy = (hb[1] + hb[3]) / 2.0
+                if (head_box[0] <= hcx <= head_box[2] and head_box[1] <= hcy <= head_box[3]) or bbox_iou(head_box, hb) >= 0.10:
+                    has_explicit_no_helmet = True
+                    break
+
+            # 3. Helmet Match & Color
             matched_helmet = None
-            for h in helmets:
-                hb = h["box"]
-                hx1, hy1, hx2, hy2 = hb[:4]
-                hcx = (hx1 + hx2) / 2.0
-                hcy = (hy1 + hy2) / 2.0
+            if not has_explicit_no_helmet:
+                for h in positive_helmets:
+                    hb = h["box"]
+                    hx1, hy1, hx2, hy2 = hb[:4]
+                    hcx = (hx1 + hx2) / 2.0
+                    hcy = (hy1 + hy2) / 2.0
 
-                # Check containment of center or bbox IoU
-                if (head_box[0] <= hcx <= head_box[2]) and (head_box[1] <= hcy <= head_box[3]):
-                    matched_helmet = h
-                    break
-                elif bbox_iou(head_box, hb) >= self.helmet_overlap_thresh:
-                    matched_helmet = h
-                    break
+                    if (head_box[0] <= hcx <= head_box[2]) and (head_box[1] <= hcy <= head_box[3]):
+                        matched_helmet = h
+                        break
+                    elif bbox_iou(head_box, hb) >= self.helmet_overlap_thresh:
+                        matched_helmet = h
+                        break
 
-            has_helmet = (matched_helmet is not None)
+            has_helmet = (matched_helmet is not None and not has_explicit_no_helmet)
             helmet_color = matched_helmet["color"] if has_helmet else None
 
-            # 3. Safety Vest Match
-            matched_vest = None
-            for v in vests:
-                vb = v["box"]
-                if bbox_iou(torso_box, vb) >= self.vest_overlap_thresh or bbox_iou([px1, py1, px2, py2], vb) >= 0.25:
-                    matched_vest = v
+            # 4. Check for explicit Negative Vest (no_vest) on torso
+            has_explicit_no_vest = False
+            for nv in negative_vests:
+                vb = nv["box"]
+                vcx = (vb[0] + vb[2]) / 2.0
+                vcy = (vb[1] + vb[3]) / 2.0
+                if (torso_box[0] <= vcx <= torso_box[2] and torso_box[1] <= vcy <= torso_box[3]) or bbox_iou(torso_box, vb) >= 0.10:
+                    has_explicit_no_vest = True
                     break
 
-            has_vest = (matched_vest is not None)
+            # 5. Safety Vest Match
+            matched_vest = None
+            if not has_explicit_no_vest:
+                for v in positive_vests:
+                    vb = v["box"]
+                    if bbox_iou(torso_box, vb) >= self.vest_overlap_thresh or bbox_iou([px1, py1, px2, py2], vb) >= 0.25:
+                        matched_vest = v
+                        break
 
-            # 4. Violations classification
+            has_vest = (matched_vest is not None and not has_explicit_no_vest)
+
+            # 6. Violations classification
             violations = []
             if not has_helmet:
                 violations.append("MISSING_SAFETY_HELMET")
@@ -165,7 +236,7 @@ class SpatialSafetyEngine:
             is_compliant = (len(violations) == 0)
             status_str = "COMPLIANT" if is_compliant else "VIOLATION"
 
-            # 5. Debounce streak update
+            # 7. Debounce streak update
             if is_compliant:
                 track.compliance_streak += 1
                 if track.compliance_streak >= 5:
@@ -194,7 +265,7 @@ class SpatialSafetyEngine:
             }
             worker_reports.append(report)
 
-            # 6. Check if Alert should trigger (Debounce + Cooldown)
+            # 8. Check if Alert should trigger (Debounce + Cooldown)
             should_alert = (
                 not is_compliant
                 and track.violation_streak >= self.consecutive_frames_thresh
@@ -205,8 +276,8 @@ class SpatialSafetyEngine:
                 track.is_alerted = True
                 track.last_alert_timestamp = now
 
-                # Generate high-res snapshot
-                snapshot_filename, snapshot_path = self._generate_violation_snapshot(
+                # Generate high-res snapshot with bounding box overlay and person crop
+                snapshot_filename, snapshot_path, crop_filename, crop_path = self._generate_violation_snapshot(
                     frame_bgr, report, camera_id, now_str
                 )
 
@@ -223,6 +294,8 @@ class SpatialSafetyEngine:
                     "violation_duration_frames": track.violation_streak,
                     "snapshot_filename": snapshot_filename,
                     "snapshot_path": str(snapshot_path),
+                    "crop_filename": crop_filename,
+                    "crop_path": str(crop_path),
                     "bbox": report["bbox"],
                 }
                 alert_events.append(alert_event)
@@ -235,15 +308,28 @@ class SpatialSafetyEngine:
         report: Dict[str, Any],
         camera_id: str,
         timestamp_str: str,
-    ) -> Tuple[str, Path]:
-        """Draws visual alert cues and saves snapshot to disk."""
+    ) -> Tuple[str, Path, str, Path]:
+        """Draws visual alert cues, extracts worker crop, embeds PiP inset, and saves snapshot + crop to disk."""
         vis = frame_bgr.copy()
         h, w = vis.shape[:2]
         x1, y1, x2, y2 = [int(v) for v in report["bbox"]]
         x1, y1 = max(0, x1), max(0, y1)
         x2, y2 = min(w - 1, x2), min(h - 1, y2)
 
-        # Draw red warning box around worker
+        # 1. Extract standalone person crop
+        worker_crop = frame_bgr[y1:y2, x1:x2].copy()
+        timestamp_ms = int(time.time() * 1000)
+        crop_filename = f"crop_worker_{report['track_id']}_{timestamp_ms}.jpg"
+        crop_path = SNAPSHOTS_DIR / crop_filename
+
+        if worker_crop.size > 0 and worker_crop.shape[0] > 10 and worker_crop.shape[1] > 10:
+            cv2.imwrite(str(crop_path), worker_crop, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+        else:
+            # Fallback if box coordinates are degenerate
+            worker_crop = vis.copy()
+            cv2.imwrite(str(crop_path), worker_crop, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+
+        # 2. Draw red warning box around worker in main frame
         cv2.rectangle(vis, (x1, y1), (x2, y2), (0, 0, 255), 3)
 
         # Draw Corner accents
@@ -262,7 +348,33 @@ class SpatialSafetyEngine:
         cv2.line(vis, (x2, y2), (x2 - d, y2), c_color, 4)
         cv2.line(vis, (x2, y2), (x2, y2 - d), c_color, 4)
 
-        # Overlay HUD banner at bottom
+        # 3. Embed Picture-in-Picture (PiP) Zoom-In Person Crop in Top-Right
+        if worker_crop.size > 0 and worker_crop.shape[0] > 10 and worker_crop.shape[1] > 10:
+            pip_target_h = min(220, max(120, h // 4))
+            aspect = worker_crop.shape[1] / max(1, worker_crop.shape[0])
+            pip_target_w = int(pip_target_h * aspect)
+            pip_target_w = max(100, min(pip_target_w, w // 4))
+
+            resized_crop = cv2.resize(worker_crop, (pip_target_w, pip_target_h), interpolation=cv2.INTER_LINEAR)
+            
+            # Position at top-right with margin
+            margin = 15
+            pip_x1 = w - pip_target_w - margin
+            pip_y1 = margin + 10
+            pip_x2 = pip_x1 + pip_target_w
+            pip_y2 = pip_y1 + pip_target_h
+
+            if pip_x1 > 0 and pip_y1 > 0 and pip_x2 < w and pip_y2 < h:
+                # Background container and shadow
+                cv2.rectangle(vis, (pip_x1 - 3, pip_y1 - 22), (pip_x2 + 3, pip_y2 + 3), (15, 15, 25), -1)
+                cv2.rectangle(vis, (pip_x1 - 3, pip_y1 - 22), (pip_x2 + 3, pip_y2 + 3), (0, 0, 255), 2)
+                # Inset image
+                vis[pip_y1:pip_y2, pip_x1:pip_x2] = resized_crop
+                # PiP Title Tag
+                pip_tag = f"ZOOM CROP: #{report['track_id']}"
+                cv2.putText(vis, pip_tag, (pip_x1 + 4, pip_y1 - 6), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 220, 255), 1, cv2.LINE_AA)
+
+        # 4. Overlay HUD banner at bottom
         banner_h = 75
         cv2.rectangle(vis, (0, h - banner_h), (w, h), (15, 15, 25), -1)
         cv2.line(vis, (0, h - banner_h), (w, h - banner_h), (0, 0, 255), 2)
@@ -274,9 +386,9 @@ class SpatialSafetyEngine:
         cv2.putText(vis, line1, (20, h - 45), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 220, 255), 2, cv2.LINE_AA)
         cv2.putText(vis, line2, (20, h - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 100, 255), 2, cv2.LINE_AA)
 
-        # Save snapshot file
-        filename = f"violation_worker_{report['track_id']}_{int(time.time()*1000)}.jpg"
+        # 5. Save snapshot file
+        filename = f"violation_worker_{report['track_id']}_{timestamp_ms}.jpg"
         save_path = SNAPSHOTS_DIR / filename
         cv2.imwrite(str(save_path), vis, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
 
-        return filename, save_path
+        return filename, save_path, crop_filename, crop_path

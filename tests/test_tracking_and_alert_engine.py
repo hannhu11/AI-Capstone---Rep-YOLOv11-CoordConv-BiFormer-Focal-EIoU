@@ -125,10 +125,49 @@ def test_spatial_safety_compliance_and_debouncing():
     assert "MISSING_SAFETY_HELMET" in alert["violations"]
     assert "MISSING_SAFETY_VEST" in alert["violations"]
     assert Path(alert["snapshot_path"]).exists()  # Snapshot was generated!
+    assert Path(alert["crop_path"]).exists()      # Person crop was generated!
 
     # Frame 4: Next immediate frame within cooldown -> NO duplicate alert!
     reports_b4, alerts_b4 = engine.evaluate_frame([track], violation_detections, dummy_frame)
     assert len(alerts_b4) == 0  # Suppressed by cooldown!
+
+
+def test_negative_labels_suppression_and_crossing_tracks():
+    # 1. Test negative label suppression
+    engine = SpatialSafetyEngine(consecutive_frames_thresh=1)
+    track = STrack(STrack.tlbr_to_tlwh(np.array([100.0, 100.0, 200.0, 300.0])), score=0.90, cls_id=0)
+    track.track_id = 77
+    dummy_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+
+    # Detections include an explicit 'no_helmet' and 'no_vest'
+    neg_detections = [
+        {"box": [110.0, 105.0, 190.0, 160.0], "cls": 7, "name": "no_helmet", "conf": 0.88},
+        {"box": [110.0, 140.0, 190.0, 240.0], "cls": 8, "name": "no_vest", "conf": 0.85},
+    ]
+    reports, alerts = engine.evaluate_frame([track], neg_detections, dummy_frame)
+    assert len(reports) == 1
+    assert reports[0]["status"] == "VIOLATION"
+    assert reports[0]["has_helmet"] is False
+    assert reports[0]["has_safety_vest"] is False
+    assert "MISSING_SAFETY_HELMET" in reports[0]["violations"]
+    assert "MISSING_SAFETY_VEST" in reports[0]["violations"]
+
+    # 2. Test two workers crossing trajectories with realistic continuous movement
+    tracker = BYTETracker(track_thresh=0.45, track_low_thresh=0.15, track_buffer=30)
+    tracker.reset()
+
+    # Track 1 moves left-to-right (100 -> 160). Track 2 moves right-to-left (160 -> 100)
+    for step in range(11):
+        x1 = 100.0 + step * 6.0
+        x2 = 160.0 - step * 6.0
+        frame_dets = np.array([
+            [x1, 100.0, x1 + 50.0, 250.0, 0.90, 0],
+            [x2, 100.0, x2 + 50.0, 250.0, 0.90, 0],
+        ], dtype=np.float32)
+        active_t = tracker.update(frame_dets)
+        assert len(active_t) == 2
+        ids = {tr.track_id for tr in active_t}
+        assert ids == {1, 2}  # Both worker IDs persisted through the crossing!
 
 
 # ==============================================================================

@@ -37,7 +37,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY src/ /app/src/
 COPY custom_ablation_modules.py /app/custom_ablation_modules.py
 COPY scripts/ /app/scripts/
-COPY .env /app/.env
+# Copy configuration
+COPY .env* /app/
+RUN if [ ! -f /app/.env ] && [ -f /app/.env.example ]; then cp /app/.env.example /app/.env; fi
 
 # Create directories for mounted data
 RUN mkdir -p /app/video_test /app/Output /app/snapshots

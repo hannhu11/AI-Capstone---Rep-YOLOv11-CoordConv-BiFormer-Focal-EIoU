@@ -143,7 +143,9 @@ class SafetyObjectDetector:
                 all_detections.append(det_dict)
 
                 # Collect person detections specifically for tracking
-                if cls_id == 0 or "person" in c_name:
+                has_person_class = any("person" in n.lower() or "worker" in n.lower() or "human" in n.lower() for n in self.class_names.values())
+                is_person = ("person" in c_name or "worker" in c_name or "human" in c_name) if has_person_class else (cls_id == 0)
+                if is_person:
                     person_raw.append([x1, y1, x2, y2, conf_score, cls_id])
 
         person_arr = np.array(person_raw, dtype=np.float32) if person_raw else np.empty((0, 6), dtype=np.float32)

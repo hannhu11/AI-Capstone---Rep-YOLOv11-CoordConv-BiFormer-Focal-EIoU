@@ -5,6 +5,12 @@ echo "==========================================================================
 echo "[DOCKER BUILD & DEPLOY] INDUSTRIAL CCTV SAFETY SURVEILLANCE NODE (LINUX/WSL)"
 echo "=============================================================================="
 
+# Ensure .env file exists
+if [ ! -f .env ] && [ -f .env.example ]; then
+    echo "[*] Auto-generating .env from .env.example ..."
+    cp .env.example .env
+fi
+
 # Build image
 echo "[*] Building Docker Image: rep-yolo11s-cctv:latest ..."
 docker build -t rep-yolo11s-cctv:latest -f Dockerfile .

@@ -139,6 +139,10 @@ class TelegramAlertBot:
 
         snapshot_path = alert_event.get("snapshot_path")
         if snapshot_path and Path(snapshot_path).exists():
-            return self.send_photo(snapshot_path, caption)
+            ok, msg = self.send_photo(snapshot_path, caption)
+            if ok:
+                return True, msg
+            # Fallback to text message if photo send failed
+            return self.send_message(caption)
         else:
             return self.send_message(caption)
