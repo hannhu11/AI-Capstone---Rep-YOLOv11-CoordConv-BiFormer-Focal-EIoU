@@ -12,6 +12,7 @@ Features:
 
 from __future__ import annotations
 import numpy as np
+from collections import Counter, deque
 from scipy.optimize import linear_sum_assignment
 from typing import List, Tuple, Optional, Dict, Any
 
@@ -54,7 +55,22 @@ class STrack:
         self.last_alert_timestamp = 0.0
         self.last_violation_types: List[str] = []
         self.last_helmet_color: Optional[str] = None
+        self.color_history: deque[Optional[str]] = deque(maxlen=15)
+        self.unconfirmed_misses = 0
         self.history_centers: List[Tuple[float, float]] = []
+
+    @property
+    def stable_helmet_color(self) -> Optional[str]:
+        """Temporally smoothed helmet color via majority voting over recent frames."""
+        if not self.color_history:
+            return self.last_helmet_color
+        valid_colors = [c for c in self.color_history if c and c != "unknown"]
+        if valid_colors:
+            return Counter(valid_colors).most_common(1)[0][0]
+        non_none = [c for c in self.color_history if c is not None]
+        if non_none:
+            return Counter(non_none).most_common(1)[0][0]
+        return self.last_helmet_color
 
     @classmethod
     def next_id(cls) -> int:
@@ -65,7 +81,7 @@ class STrack:
     def reset_counter(cls):
         cls._count = 0
 
-    def activate(self, kalman_filter: KalmanFilter, frame_id: int):
+    def activate(self, kalman_filter: KalmanFilter, frame_id: int, track_thresh: float = 0.45):
         """Start a new tracklet."""
         self.kalman_filter = kalman_filter
         self.track_id = self.next_id()
@@ -73,7 +89,7 @@ class STrack:
 
         self.tracklet_len = 0
         self.state = TrackState.Tracked
-        if frame_id == 1:
+        if frame_id == 1 or self.score >= track_thresh:
             self.is_activated = True
         self.frame_id = frame_id
         self.start_frame = frame_id
@@ -308,12 +324,12 @@ class BYTETracker:
             else:
                 tracked_stracks.append(track)
 
-        # Combine tracked and lost tracks for first association
-        strack_pool = tracked_stracks + self.lost_stracks
-
-        # Predict Kalman states for all active/lost tracks
-        for strack in strack_pool:
+        # Predict Kalman states for all tracked (active + unconfirmed) and lost tracks
+        for strack in self.tracked_stracks + self.lost_stracks:
             strack.predict()
+
+        # Combine confirmed tracked and lost tracks for first association pool
+        strack_pool = tracked_stracks + self.lost_stracks
 
         # 3. First Association: High-score detections with strack_pool
         dists = 1.0 - box_iou_batch(
@@ -372,18 +388,24 @@ class BYTETracker:
 
         for itracked, idet in matches_unconf:
             unconfirmed[itracked].update(detections_rem[idet], self.frame_id)
+            unconfirmed[itracked].unconfirmed_misses = 0
             activated_stracks.append(unconfirmed[itracked])
 
         for it in u_unconfirmed:
             track = unconfirmed[it]
-            track.mark_removed()
-            removed_stracks.append(track)
+            track.unconfirmed_misses = getattr(track, "unconfirmed_misses", 0) + 1
+            if track.unconfirmed_misses >= 3:
+                track.mark_removed()
+                removed_stracks.append(track)
+            else:
+                # Grace period for unconfirmed tracklets: keep in pool to prevent ID destruction on 1-frame dip
+                activated_stracks.append(track)
 
         # 6. Initialize new tracks for unmatched high-confidence detections
         for inew in u_detection_final:
             track = detections_rem[inew]
             if track.score >= self.new_track_thresh:
-                track.activate(self.kalman_filter, self.frame_id)
+                track.activate(self.kalman_filter, self.frame_id, self.track_thresh)
                 activated_stracks.append(track)
 
         # 7. Update state lists
@@ -401,6 +423,8 @@ class BYTETracker:
         self.lost_stracks = [t for t in self.lost_stracks if t not in self.tracked_stracks]
 
         self.removed_stracks.extend(removed_stracks)
+        if len(self.removed_stracks) > 50:
+            self.removed_stracks = self.removed_stracks[-50:]
 
         # Return active tracked objects
         output_stracks = [track for track in self.tracked_stracks if track.is_activated]

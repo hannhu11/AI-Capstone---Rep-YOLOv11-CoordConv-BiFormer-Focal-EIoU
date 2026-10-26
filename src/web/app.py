@@ -18,7 +18,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, Any, Optional
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -250,6 +250,12 @@ async def switch_model(payload: SwitchModelPayload):
 @app.get("/api/telegram/discover_chat_id")
 async def discover_tg_chat_id():
     chat_id = alert_manager.telegram.discover_latest_chat_id()
+    return {"chat_id": chat_id, "found": bool(chat_id)}
+
+
+@app.get("/api/zalo/discover_chat_id")
+async def discover_zalo_chat_id():
+    chat_id = alert_manager.zalo.discover_latest_chat_id()
     return {"chat_id": chat_id, "found": bool(chat_id)}
 
 

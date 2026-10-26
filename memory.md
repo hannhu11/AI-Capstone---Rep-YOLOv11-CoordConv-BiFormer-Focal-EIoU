@@ -996,3 +996,41 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
    - Bot Telegram (`@safety_helmet_cctv_bot`) đã tự động nhận diện và ghép nối thành công với tài khoản Telegram của người dùng: `Chat ID: 2005707486 (Username: nunulala)`.
    - Kết quả gửi ảnh vi phạm thời gian thực từ container Docker: `Photo sent successfully` (12/12 ảnh vi phạm được chụp và gửi thành công).
    - Đã vượt qua toàn bộ 62/62 unit tests trong `tests/` và xác minh kiểm định cấu hình bài báo Q1 `scripts/verify_paper_spec.py` đạt 0 lỗi, 0 cảnh báo.
+
+---
+
+## 38. KHẮC PHỤC TRIỆT ĐỂ LỖI TỤT FPS (3.2 FPS), TELEGRAM SPAM VÀ NHẢY TRACK ID / MÀU MŨ (OCTOBER 26, 2026 AUDIT)
+
+### 38.1. Nguyên Nhân Gốc Rễ Tụt FPS (226.1ms / 3.2 FPS)
+1. **Xung đột VRAM kép (Dual-process GPU contention):**
+   - Người dùng đồng thời mở file `run_local_dashboard.bat` ngoài host trong khi container Docker đang chạy bên trong WSL2.
+   - RTX 3050 Laptop (4GB VRAM) không đủ bộ nhớ cho cả 2 context PyTorch CUDA FP16 cùng lúc $\implies$ Container văng lỗi `RuntimeError: CUDA error: unknown error`.
+   - Cơ chế tự phục hồi (self-healing watchdog) đã tự động giáng cấp xuống chạy bằng **CPU** (`self.detector.device = 'cpu'`). Trên CPU, độ trễ tăng vọt từ 20ms lên **282 - 310ms**, kéo FPS tụt xuống **2.7 - 3.2 FPS**.
+2. **Khắc phục:**
+   - Khẳng định 100% với người dùng: **Khi container đang chạy, KHÔNG chạy thêm lệnh cmd / batch nào ngoài host**.
+   - Bổ sung cơ chế thăm dò tự phục hồi GPU định kỳ (`periodic GPU recovery probe` mỗi 150 frames): Nếu đang ở CPU mode và GPU driver đã rảnh, tự động chuyển về lại CUDA FP16.
+   - Đo đạc thực tế sau khi sửa: **32.6 - 38.5 FPS**, độ trễ suy luận **22.5ms** trên CUDA:0.
+
+### 38.2. Giải Quyết Spam Telegram & Hiện Tượng ID Nhảy Lên #200+
+1. **Lỗi reset sớm `is_alerted`:**
+   - Trong `src/engine/spatial_safety.py`, dòng lệnh `track.is_alerted = False` bị kích hoạt ngay khi công nhân có PPE hợp lệ trong 5 frames (0.25s). Khi công nhân quay đầu khiến mũ bị khuất 10 frames, hệ thống lập tức bắn cảnh báo mới, vô hiệu hóa thời gian chờ 30 giây.
+   - Đã xóa bỏ đoạn reset sớm, thực thi nghiêm ngặt `cooldown_seconds = 30.0s`.
+2. **Vỡ Track ID ByteTrack:**
+   - Trước đây `person_dets` đưa mọi box thô vào ByteTrack (kể cả box nhiễu nền 30x30px). Đồng thời vòng lặp Kalman predict bị bỏ sót các tracklet unconfirmed.
+   - Đã bổ sung bộ lọc hình học cơ thể người trước tracker (cao >= 35, rộng >= 15, diện tích >= 600, tỷ lệ ngang/dọc <= 1.35).
+   - Đã bao quát dự đoán Kalman cho toàn bộ tracklet, thêm thời gian ân hạn (grace period) không xóa track unconfirmed ngay ở 1 frame đầu.
+   - Bổ sung bộ lọc không gian (Spatial Centroid Debouncing): Nếu vi phạm xảy ra trong bán kính Euclidean $0.08$ so với cảnh báo gần nhất trong 30s, triệt tiêu cảnh báo trùng lặp.
+
+### 38.3. Ổn Định Màu Mũ Bằng Temporal Majority Voting
+1. **Hiện tượng giật màu mũ:**
+   - Mỗi frame ánh sáng phản quang làm conf `white` và `yellow` dao động nhẹ, việc gán trực tiếp từng frame làm chữ trên đầu và biểu đồ tròn nhấp nháy liên tục.
+2. **Khắc phục:**
+   - Thêm hàng đợi `color_history` (deque 15 frames) trong `STrack`.
+   - Sử dụng thuật toán đếm đa số (Majority Voting) để xác định `stable_helmet_color`.
+   - Khóa chặt logic: Nếu `has_helmet == False`, màu mũ bắt buộc là `None`, không để màu lịch sử làm sai lệch cảnh báo thiếu mũ.
+   - Biểu đồ Doughnut trên Web tính toán trực tiếp từ `worker_reports` thực tế thay vì đếm box thô.
+
+### 38.4. Tích Hợp Zalo Bot Platform (Bot safety helmet CCTV)
+- Token Zalo `4263098262366049360:...` đã được kiểm tra hợp lệ 100% với tài khoản `bot.TqECExkR` (`Bot safety helmet CCTV`).
+- Bổ sung tính năng `discover_latest_chat_id()` qua `getUpdates` và nút **Auto-Detect** Zalo trong bảng cài đặt web.
+- Hướng dẫn người dùng chỉ cần nhắn 1 tin nhắn bất kỳ (ví dụ: `/start`) tới bot **`bot.TqECExkR`** trên ứng dụng Zalo, sau đó vào `http://localhost:8080` bấm "Auto-Detect" là hệ thống tự động lưu và gửi tin nhắn cảnh báo song song Telegram + Zalo.

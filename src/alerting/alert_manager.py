@@ -47,6 +47,10 @@ class AlertManager:
         self.discovery_thread = threading.Thread(target=self._telegram_discovery_loop, daemon=True)
         self.discovery_thread.start()
 
+        # Background Zalo chat auto-discovery loop
+        self.zalo_discovery_thread = threading.Thread(target=self._zalo_discovery_loop, daemon=True)
+        self.zalo_discovery_thread.start()
+
     def _telegram_discovery_loop(self):
         """Polls Telegram getUpdates every 3 seconds if chat_id is not yet bound."""
         while self.running:
@@ -64,6 +68,24 @@ class AlertManager:
                         )
                         self.telegram.send_message(welcome_msg, chat_id=discovered)
             except Exception as e:
+                pass
+            time.sleep(3.0)
+
+    def _zalo_discovery_loop(self):
+        """Polls Zalo getUpdates every 3 seconds if chat_id is not yet bound."""
+        while self.running:
+            try:
+                if not config.zalo_chat_id:
+                    discovered = self.zalo.discover_latest_chat_id()
+                    if discovered:
+                        welcome_msg = (
+                            "[CANH BAO AN TOAN PPE - ZALO BOT PLATFORM]\n"
+                            "He thong giam sat an toan CCTV Rep-YOLO11s da ket noi thanh cong den Zalo Chat!\n"
+                            "• Camera: CCTV_GATE_A1_1080P\n"
+                            "• Trang thai: DANG HOAT DONG ✅"
+                        )
+                        self.zalo.send_message(welcome_msg, chat_id=discovered)
+            except Exception:
                 pass
             time.sleep(3.0)
 

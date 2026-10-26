@@ -17,7 +17,7 @@ import requests
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
 
-from src.config import config
+from src.config import config, update_env_file
 
 
 class ZaloAlertBot:
@@ -46,9 +46,33 @@ class ZaloAlertBot:
         except Exception as e:
             return False, {"error": str(e)}
 
+    def discover_latest_chat_id(self) -> Optional[str]:
+        """Auto-discovers the latest chat_id by querying POST getUpdates from Zalo Bot Platform."""
+        url = f"{self.api_base}/getUpdates"
+        try:
+            r = requests.post(url, timeout=3.0)
+            data = r.json()
+            if data.get("ok") and data.get("result"):
+                for update in reversed(data["result"]):
+                    msg = update.get("message") or update.get("channel_post") or update.get("my_chat_member")
+                    if msg:
+                        chat = msg.get("chat", {})
+                        c_id = str(chat.get("id"))
+                        if c_id:
+                            self.chat_id = c_id
+                            config.zalo_chat_id = c_id
+                            update_env_file({"ZALO_CHAT_ID": c_id})
+                            print(f"✅ Discovered & Saved Zalo Chat ID: {c_id}")
+                            return c_id
+        except Exception as e:
+            pass
+        return None
+
     def send_message(self, text: str, chat_id: Optional[str] = None) -> Tuple[bool, str]:
         """Sends a text alert via Zalo API or Webhook."""
         target_chat = chat_id or self.chat_id
+        if not target_chat:
+            target_chat = self.discover_latest_chat_id()
 
         # 1. If webhook URL is set, dispatch directly to webhook
         if self.webhook_url:
@@ -78,6 +102,8 @@ class ZaloAlertBot:
     def send_photo(self, photo_path: str | Path, caption: str, chat_id: Optional[str] = None) -> Tuple[bool, str]:
         """Uploads a photo snapshot along with caption to Zalo."""
         target_chat = chat_id or self.chat_id
+        if not target_chat:
+            target_chat = self.discover_latest_chat_id()
         file_path = Path(photo_path)
         if not file_path.exists():
             return False, f"Snapshot file not found: {photo_path}"

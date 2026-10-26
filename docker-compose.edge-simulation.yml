@@ -37,7 +37,7 @@ services:
       resources:
         limits:
           cpus: "4.0"
-          memory: 4096M
+          memory: 6144M
         reservations:
           cpus: "2.0"
           memory: 2048M

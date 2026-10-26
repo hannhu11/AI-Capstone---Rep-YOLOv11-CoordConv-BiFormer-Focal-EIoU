@@ -222,3 +222,62 @@ def test_fastapi_web_endpoints():
     r_set = client.post("/api/settings", json={"conf_threshold": 0.30, "consecutive_violation_frames": 10})
     assert r_set.status_code == 200
     assert r_set.json()["config"]["conf_threshold"] == 0.30
+
+    # 6. Zalo Chat Discovery Endpoint
+    r_zalo = client.get("/api/zalo/discover_chat_id")
+    assert r_zalo.status_code == 200
+    assert "found" in r_zalo.json()
+
+
+def test_temporal_majority_voting_and_grace_period():
+    # Test STrack majority voting
+    track = STrack(np.array([100, 100, 50, 100], dtype=np.float32), score=0.90)
+    assert track.stable_helmet_color is None
+
+    # Simulate flickering colors: mostly white with occasional yellow/None noise
+    colors = ["white", "white", "yellow", "white", None, "white", "white"]
+    for c in colors:
+        track.color_history.append(c)
+    assert track.stable_helmet_color == "white"
+
+    # Test unconfirmed track grace period
+    tracker = BYTETracker(track_thresh=0.45, track_low_thresh=0.15, track_buffer=30)
+    tracker.reset()
+
+    # Frame 1: Worker appears
+    det = np.array([[100.0, 100.0, 150.0, 250.0, 0.90, 0]], dtype=np.float32)
+    tracks = tracker.update(det)
+    assert len(tracks) == 1
+    w_id = tracks[0].track_id
+
+    # Frame 2: 1-frame dip (empty detections) - should not destroy unconfirmed track
+    tracker.update(np.empty((0, 6), dtype=np.float32))
+
+    # Frame 3: Worker re-appears at same location
+    det3 = np.array([[101.0, 100.0, 151.0, 250.0, 0.90, 0]], dtype=np.float32)
+    tracks3 = tracker.update(det3)
+    assert len(tracks3) == 1
+    assert tracks3[0].track_id == w_id
+
+
+def test_spatial_centroid_debouncing():
+    engine = SpatialSafetyEngine(consecutive_frames_thresh=1, cooldown_seconds=10.0)
+    engine.reset()
+
+    dummy_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+
+    # Worker A at (100, 100, 200, 300) violates safety
+    track_a = STrack(STrack.tlbr_to_tlwh(np.array([100.0, 100.0, 200.0, 300.0])), score=0.90, cls_id=0)
+    track_a.track_id = 10
+    track_a.is_activated = True
+
+    _, alerts_1 = engine.evaluate_frame([track_a], [], dummy_frame)
+    assert len(alerts_1) == 1  # Alert fired
+
+    # Track A drops, new Track B appears at almost the exact same location (102, 101, 202, 301)
+    track_b = STrack(STrack.tlbr_to_tlwh(np.array([102.0, 101.0, 202.0, 301.0])), score=0.90, cls_id=0)
+    track_b.track_id = 99  # New ID
+    track_b.is_activated = True
+
+    _, alerts_2 = engine.evaluate_frame([track_b], [], dummy_frame)
+    assert len(alerts_2) == 0  # SUPPRESSED by spatial centroid debouncing!

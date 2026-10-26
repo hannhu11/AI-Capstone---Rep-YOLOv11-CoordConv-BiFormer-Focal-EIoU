@@ -178,6 +178,8 @@ class CCTVSurveillancePipeline:
                         print(f"⚠️ [SELF-HEALING] GPU reload failed: {rec_err}. Falling back to CPU mode...")
                         try:
                             with self.lock:
+                                if torch.cuda.is_available():
+                                    torch.cuda.empty_cache()
                                 self.detector.device = "cpu"
                                 self.detector.use_half = False
                                 self.detector.load_model(self.detector.model_path)
@@ -187,6 +189,24 @@ class CCTVSurveillancePipeline:
                             print(f"❌ [SELF-HEALING] CPU fallback failed: {cpu_err}")
 
                 time.sleep(0.1)
+
+            # Periodic GPU Auto-Recovery Probe: restore full CUDA acceleration when GPU context stabilizes
+            if (
+                self.detector.device == "cpu"
+                and torch.cuda.is_available()
+                and config.device.startswith("cuda")
+                and (self.total_frames_processed > 0 and self.total_frames_processed % 150 == 0)
+            ):
+                try:
+                    with self.lock:
+                        torch.cuda.empty_cache()
+                        self.detector.device = config.device
+                        self.detector.use_half = config.use_half
+                        self.detector.load_model(self.detector.model_path)
+                        print("⚡ [SELF-HEALING] Restored full GPU CUDA acceleration!")
+                except Exception:
+                    self.detector.device = "cpu"
+                    self.detector.use_half = False
 
             # Target ~30 FPS smooth pacing
             elapsed = time.perf_counter() - t0
@@ -240,6 +260,14 @@ class CCTVSurveillancePipeline:
             detections, person_dets, infer_ms = self.detector.predict(frame)
             self.inference_latency_ms = infer_ms
 
+            # Filter candidate person detections before tracking to discard background noise smudges
+            if len(person_dets) > 0:
+                valid_mask = [
+                    ((p[3] - p[1]) >= 35 and (p[2] - p[0]) >= 15 and ((p[2] - p[0]) / max(1.0, p[3] - p[1])) <= 1.35)
+                    for p in person_dets
+                ]
+                person_dets = person_dets[np.array(valid_mask, dtype=bool)] if any(valid_mask) else np.empty((0, 6), dtype=np.float32)
+
             # 2. Multi-Object Tracking on Workers
             active_tracks = self.tracker.update(person_dets)
 
@@ -262,13 +290,12 @@ class CCTVSurveillancePipeline:
                 else 100.0
             )
 
-            # Update helmet color distribution
+            # Update helmet color distribution based on active tracked workers' stable colors
             color_counts = {"blue": 0, "green": 0, "red": 0, "white": 0, "yellow": 0}
-            for d in detections:
-                c_name = d["name"]
-                for c in color_counts.keys():
-                    if c in c_name:
-                        color_counts[c] += 1
+            for r in worker_reports:
+                h_col = r.get("helmet_color")
+                if h_col and h_col in color_counts:
+                    color_counts[h_col] += 1
             self.helmet_color_distribution = color_counts
 
             # 6. Render Visual Annotations

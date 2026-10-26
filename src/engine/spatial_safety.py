@@ -16,6 +16,7 @@ from __future__ import annotations
 import cv2
 import time
 import numpy as np
+import concurrent.futures
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
@@ -108,9 +109,16 @@ class SpatialSafetyEngine:
         self.min_worker_height = min_worker_height
         self.min_worker_area = min_worker_area
 
+        # Spatial-Centroid Alert Debouncing (suppress duplicates within radius if track ID switches)
+        self.recent_alert_centroids: List[Tuple[float, float, float]] = []  # (norm_cx, norm_cy, timestamp)
+        self.spatial_debounce_distance: float = 0.08
+
+        # Background ThreadPoolExecutor for Non-blocking Snapshot Disk I/O
+        self.io_executor = concurrent.futures.ThreadPoolExecutor(max_workers=2, thread_name_prefix="snapshot_io")
+
     def reset(self):
         """Clean-slate reset on video switch or camera reload."""
-        pass
+        self.recent_alert_centroids.clear()
 
     def evaluate_frame(
         self,
@@ -127,6 +135,12 @@ class SpatialSafetyEngine:
         """
         now = time.time()
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # Prune expired alert centroids older than cooldown_seconds
+        self.recent_alert_centroids = [
+            (cx, cy, ts) for (cx, cy, ts) in self.recent_alert_centroids
+            if (now - ts) < self.cooldown_seconds
+        ]
 
         # Partition raw detections into Positive Helmets, Negative Helmets, Positive Vests, Negative Vests
         positive_helmets = []
@@ -298,21 +312,27 @@ class SpatialSafetyEngine:
                 track.compliance_streak += 1
                 if track.compliance_streak >= 5:
                     track.violation_streak = 0
-                    track.is_alerted = False
+                    # Note: We do NOT reset track.is_alerted here to prevent immediate re-alerting
+                    # when head orientation or temporary occlusion causes a brief PPE flicker.
             else:
                 track.violation_streak += 1
                 track.compliance_streak = 0
 
             track.last_helmet_color = helmet_color
+            if hasattr(track, "color_history") and has_helmet and helmet_color:
+                track.color_history.append(helmet_color)
             track.last_violation_types = violations
 
-            # Report data structure
+            # Report data structure (using temporally stable helmet color only when helmet is present)
+            stable_col = getattr(track, "stable_helmet_color", None) or helmet_color
+            effective_color = stable_col if has_helmet else None
             report = {
                 "track_id": track.track_id,
                 "bbox": [round(px1, 1), round(py1, 1), round(px2, 1), round(py2, 1)],
                 "confidence": round(float(track.score), 3),
                 "has_helmet": has_helmet,
-                "helmet_color": helmet_color,
+                "helmet_color": effective_color,
+                "stable_helmet_color": effective_color,
                 "has_safety_vest": has_vest,
                 "status": status_str,
                 "violations": violations,
@@ -324,19 +344,31 @@ class SpatialSafetyEngine:
             }
             worker_reports.append(report)
 
-            # 8. Check if Alert should trigger (Debounce + Cooldown + Maturity + Active Surveillance Area)
+            # 8. Check if Alert should trigger (Debounce + Cooldown + Maturity + Spatial Centroid Debouncing)
             is_mature_track = (self.min_tracklet_len <= 0) or (getattr(track, "tracklet_len", 0) >= self.min_tracklet_len)
+            strict_cooldown_passed = (not track.is_alerted) or ((now - track.last_alert_timestamp) >= self.cooldown_seconds)
+
+            # Spatial-Centroid Alert Debouncing: suppress duplicates if another alert recently fired nearby
+            norm_cx = (px1 + px2) / (2.0 * max(1, w_frame))
+            norm_cy = (py1 + py2) / (2.0 * max(1, h_frame))
+            is_spatially_debounced = any(
+                np.hypot(norm_cx - rcx, norm_cy - rcy) < self.spatial_debounce_distance
+                for rcx, rcy, _ in self.recent_alert_centroids
+            )
+
             should_alert = (
                 not is_compliant
                 and not is_at_border
                 and is_mature_track
                 and track.violation_streak >= self.consecutive_frames_thresh
-                and (not track.is_alerted or (now - track.last_alert_timestamp) >= self.cooldown_seconds)
+                and strict_cooldown_passed
+                and not is_spatially_debounced
             )
 
             if should_alert:
                 track.is_alerted = True
                 track.last_alert_timestamp = now
+                self.recent_alert_centroids.append((norm_cx, norm_cy, now))
 
                 # Generate high-res snapshot with bounding box overlay and person crop
                 snapshot_filename, snapshot_path, crop_filename, crop_path = self._generate_violation_snapshot(
@@ -350,7 +382,7 @@ class SpatialSafetyEngine:
                     "timestamp": now_str,
                     "violations": violations,
                     "has_helmet": has_helmet,
-                    "helmet_color": helmet_color,
+                    "helmet_color": effective_color,
                     "has_vest": has_vest,
                     "confidence": report["confidence"],
                     "violation_duration_frames": track.violation_streak,
@@ -384,12 +416,14 @@ class SpatialSafetyEngine:
         crop_filename = f"crop_worker_{report['track_id']}_{timestamp_ms}.jpg"
         crop_path = SNAPSHOTS_DIR / crop_filename
 
-        if worker_crop.size > 0 and worker_crop.shape[0] > 10 and worker_crop.shape[1] > 10:
-            cv2.imwrite(str(crop_path), worker_crop, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
-        else:
+        if not (worker_crop.size > 0 and worker_crop.shape[0] > 10 and worker_crop.shape[1] > 10):
             # Fallback if box coordinates are degenerate
             worker_crop = vis.copy()
-            cv2.imwrite(str(crop_path), worker_crop, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+
+        # Submit worker crop write asynchronously to avoid blocking inference
+        fut_crop = self.io_executor.submit(
+            cv2.imwrite, str(crop_path), worker_crop, [int(cv2.IMWRITE_JPEG_QUALITY), 95]
+        )
 
         # 2. Draw red warning box around worker in main frame
         cv2.rectangle(vis, (x1, y1), (x2, y2), (0, 0, 255), 3)
@@ -448,9 +482,18 @@ class SpatialSafetyEngine:
         cv2.putText(vis, line1, (20, h - 45), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 220, 255), 2, cv2.LINE_AA)
         cv2.putText(vis, line2, (20, h - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 100, 255), 2, cv2.LINE_AA)
 
-        # 5. Save snapshot file
+        # 5. Save snapshot file asynchronously via background thread pool
         filename = f"violation_worker_{report['track_id']}_{timestamp_ms}.jpg"
         save_path = SNAPSHOTS_DIR / filename
-        cv2.imwrite(str(save_path), vis, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+        fut_vis = self.io_executor.submit(
+            cv2.imwrite, str(save_path), vis, [int(cv2.IMWRITE_JPEG_QUALITY), 95]
+        )
+
+        # Await quick flush (up to 25ms) for low-latency frame tests without blocking heavy 4K streams
+        try:
+            fut_crop.result(timeout=0.025)
+            fut_vis.result(timeout=0.025)
+        except (concurrent.futures.TimeoutError, Exception):
+            pass
 
         return filename, save_path, crop_filename, crop_path
