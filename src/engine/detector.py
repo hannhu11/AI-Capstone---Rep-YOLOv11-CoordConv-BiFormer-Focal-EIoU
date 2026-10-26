@@ -10,10 +10,14 @@ Decoupled YOLO / Rep-YOLO11s Inference Engine.
 from __future__ import annotations
 import sys
 import time
+import warnings
 import torch
 import numpy as np
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
+
+# Silence ultralytics FP16 deprecation warning flood
+warnings.filterwarnings("ignore", message=".*'half' is deprecated.*")
 
 # Add project root to sys.path
 root_dir = Path(__file__).resolve().parent.parent.parent
@@ -112,15 +116,16 @@ class SafetyObjectDetector:
         iou_val = iou if iou is not None else self.iou_thresh
 
         t0 = time.perf_counter()
-        results = self.yolo.predict(
-            frame_bgr,
-            conf=conf_val,
-            iou=iou_val,
-            imgsz=imgsz,
-            device=self.device,
-            half=self.use_half,
-            verbose=False,
-        )
+        with torch.inference_mode():
+            results = self.yolo.predict(
+                frame_bgr,
+                conf=conf_val,
+                iou=iou_val,
+                imgsz=imgsz,
+                device=self.device,
+                half=self.use_half,
+                verbose=False,
+            )
         latency_ms = (time.perf_counter() - t0) * 1000.0
 
         all_detections: List[Dict[str, Any]] = []

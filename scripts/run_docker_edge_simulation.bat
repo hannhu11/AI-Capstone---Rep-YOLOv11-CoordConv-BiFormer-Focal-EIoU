@@ -40,8 +40,10 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
+if not defined EDGE_SIM_PORT set EDGE_SIM_PORT=8080
+
 echo ==============================================================================
-echo [*] Edge Simulation Node is running at: http://localhost:8000
+echo [*] Edge Simulation Node is running at: http://localhost:!EDGE_SIM_PORT!
 echo [*] Resource Constraints: 4.0 vCPUs, 4096MB Memory limit (Jetson Profile)
 echo [*] To view live logs: "!DOCKER_EXE!" logs -f cctv_safety_edge_simulation_node
 echo [*] To stop: "!DOCKER_EXE!" compose -f docker-compose.edge-simulation.yml down

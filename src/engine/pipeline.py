@@ -123,12 +123,16 @@ class CCTVSurveillancePipeline:
             print(f"📹 Switched Video Source to: {new_source} (Clean Slate Active)")
 
     def _stream_worker(self):
-        """Dedicated background loop that continuously runs inference and encodes frames."""
+        """Dedicated background loop that continuously runs inference and encodes frames with self-healing recovery."""
+        consecutive_errors = 0
+        last_error_log_time = 0.0
+
         while self.is_running:
             t0 = time.perf_counter()
             try:
                 frame = self.process_next_frame()
                 if frame is not None:
+                    consecutive_errors = 0
                     # Optimize resolution for web streaming (960px width, preserving aspect ratio)
                     h, w = frame.shape[:2]
                     target_w = 960
@@ -146,10 +150,42 @@ class CCTVSurveillancePipeline:
                             self.frame_idx += 1
                             self.frame_condition.notify_all()
             except Exception as e:
-                import traceback
-                print(f"⚠️ Stream worker exception: {e}")
-                traceback.print_exc()
-                time.sleep(0.05)
+                consecutive_errors += 1
+                curr_t = time.time()
+                if curr_t - last_error_log_time >= 3.0:
+                    import traceback
+                    print(f"⚠️ Stream worker exception (streak={consecutive_errors}): {e}")
+                    traceback.print_exc()
+                    last_error_log_time = curr_t
+
+                # Self-healing recovery for CUDA/driver exceptions
+                if torch.cuda.is_available():
+                    try:
+                        torch.cuda.empty_cache()
+                    except Exception:
+                        pass
+
+                if consecutive_errors >= 3:
+                    print(f"🔄 [SELF-HEALING] Attempting pipeline recovery after {consecutive_errors} consecutive failures...")
+                    try:
+                        with self.lock:
+                            self._init_video_capture()
+                            self.detector.load_model(self.detector.model_path)
+                        consecutive_errors = 0
+                        print("✅ [SELF-HEALING] Successfully re-initialized detector and video capture!")
+                    except Exception as rec_err:
+                        print(f"⚠️ [SELF-HEALING] GPU reload failed: {rec_err}. Falling back to CPU mode...")
+                        try:
+                            with self.lock:
+                                self.detector.device = "cpu"
+                                self.detector.use_half = False
+                                self.detector.load_model(self.detector.model_path)
+                            consecutive_errors = 0
+                            print("✅ [SELF-HEALING] Successfully recovered in CPU fallback mode!")
+                        except Exception as cpu_err:
+                            print(f"❌ [SELF-HEALING] CPU fallback failed: {cpu_err}")
+
+                time.sleep(0.1)
 
             # Target ~30 FPS smooth pacing
             elapsed = time.perf_counter() - t0

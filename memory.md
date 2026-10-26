@@ -928,3 +928,31 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
    - Tốc độ suy luận đạt **24.03 - 38.60 ms** (**25.9 - 41.6 FPS**) trên GPU RTX 3050 Laptop (FP16).
    - **Số lượng cảnh báo ma/ảo (Ghost Alerts): 0 tuyệt đối trên toàn bộ 13 video**.
    - Báo cáo cập nhật lưu tại: `results/edge_benchmarks/CCTV_VIDEO_TEST_SUITE_AUDIT.md`.
+
+---
+
+## 36. CẬP NHẬT KIỂM ĐỊNH TOÀN DIỆN THUẬT TOÁN KHÔNG GIAN (SPATIAL SAFETY) & XÁC NHẬN TRIỂN KHAI DOCKER DESKTOP PERSISTENT (OCTOBER 26, 2026 AUDIT)
+
+### 36.1. Khắc Phục Lỗi Lệch Tỷ Lệ Hộp Đầu (Head-Box IoU Flaw) Trong `spatial_safety.py`:
+1. **Phân tích nguyên nhân gốc rễ (Root Cause Analysis)**:
+   - Trong `SpatialSafetyEngine`, hộp vùng đầu (`head_box`) được định nghĩa bằng $35\%$ chiều cao trên của công nhân nhưng mở rộng bằng toàn bộ chiều rộng cơ thể ($w_{\text{worker}}$).
+   - Khi công nhân đứng nghiêng hoặc cúi nhẹ theo góc quay camera CCTV, tâm mũ bảo hộ nằm ở mức $36.8\%$ từ đỉnh người ($y_{\text{rel}} = 0.368 > 0.35$).
+   - Đồng thời, do diện tích $A_{\text{head\_box}}$ gấp 4 lần diện tích mũ $A_{\text{helmet}}$, công thức IoU tiêu chuẩn bị phạt xuống mức $0.09$, nhỏ hơn ngưỡng $0.15$, dẫn đến việc mũ xanh lá (`green_helmet`) không được gán cho công nhân dù mũ nằm trọn trên đầu.
+2. **Giải pháp toán học & hình học máy tính**:
+   - Tích hợp thêm chỉ số **Intersection-over-Component (IoC / Intersection-over-Helmet)**: $\text{IoH} = \frac{\text{Inter}(B_{\text{head}}, B_{\text{helmet}})}{A_{\text{helmet}}} \ge 0.25$.
+   - Mở rộng biên bao góc nghiêng CCTV: $(x_1 \le c_x \le x_2) \wedge (y_1 - 0.10 h \le c_y \le y_1 + 0.42 h)$.
+   - Tương tự cho áo phản quang: bổ sung $\text{IoV} = \frac{\text{Inter}(B_{\text{torso}}, B_{\text{vest}})}{A_{\text{vest}}} \ge 0.35$.
+3. **Kết quả xác minh**:
+   - `cctv_long_hard_hat_color_inspection_1080p.mp4`: Phát hiện chính xác tuyệt đối **100% cả 5 màu mũ** (`blue`, `green`, `red`, `white`, `yellow`).
+   - `cctv_long_construction_zone_multiclass_1080p.mp4`: Phát hiện đồng thời cả **5 màu mũ bảo hộ** (`blue`, `green`, `red`, `white`, `yellow`) cùng người và áo phản quang.
+   - `cctv_long_safety_violations_and_alarms_1080p.mp4`: Kích hoạt đúng 7 sự kiện báo động chuẩn xác qua 4 giai đoạn vi phạm, **0 ghost alerts**.
+
+### 36.2. Xác Nhận Trạng Thái Hoạt Động Của Docker Container:
+- Tên container: `cctv_safety_edge_simulation_node` (Image: `rep-yolo11s-cctv:edge-sim`).
+- Cổng kết nối: `0.0.0.0:8080->8000/tcp` (tránh xung đột cổng 8000 của host).
+- Giới hạn tài nguyên: $4.0\text{ vCPUs}$, $4096\text{ MB RAM}$ (mô phỏng chuẩn Jetson Orin Nano / Xavier NX), GPU NVIDIA Passthrough FP16.
+- Trạng thái kiểm tra: `Up (healthy)`, hiển thị đầy đủ trên giao diện Docker Desktop Containers GUI.
+- API REST đã kiểm thử:
+  * `GET http://localhost:8080/api/status` $\implies$ `status: online`, `cuda_available: true`, `gpu_name: NVIDIA GeForce RTX 3050 Laptop GPU`.
+  * `GET http://localhost:8080/api/metrics` $\implies$ `fps: 42.8`, `inference_ms: 19.4`.
+  * `POST http://localhost:8080/api/switch_source` $\implies$ Chuyển đổi mượt mà giữa cả 3 video dài 1080p.

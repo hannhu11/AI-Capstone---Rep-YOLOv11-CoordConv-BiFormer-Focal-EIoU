@@ -232,10 +232,20 @@ class SpatialSafetyEngine:
                     hcx = (hx1 + hx2) / 2.0
                     hcy = (hy1 + hy2) / 2.0
 
+                    # Compute intersection over helmet area
+                    inter_x = max(0.0, min(head_box[2], hx2) - max(head_box[0], hx1))
+                    inter_y = max(0.0, min(head_box[3], hy2) - max(head_box[1], hy1))
+                    inter_area = inter_x * inter_y
+                    hb_area = max(1.0, (hx2 - hx1) * (hy2 - hy1))
+                    io_helmet = inter_area / hb_area
+
                     if (head_box[0] <= hcx <= head_box[2]) and (head_box[1] <= hcy <= head_box[3]):
                         matched_helmet = h
                         break
-                    elif bbox_iou(head_box, hb) >= self.helmet_overlap_thresh:
+                    elif bbox_iou(head_box, hb) >= self.helmet_overlap_thresh or io_helmet >= 0.25:
+                        matched_helmet = h
+                        break
+                    elif (px1 <= hcx <= px2) and (py1 - 0.10 * ph <= hcy <= py1 + 0.42 * ph):
                         matched_helmet = h
                         break
 
@@ -257,7 +267,14 @@ class SpatialSafetyEngine:
             if not has_explicit_no_vest:
                 for v in positive_vests:
                     vb = v["box"]
-                    if bbox_iou(torso_box, vb) >= self.vest_overlap_thresh or bbox_iou([px1, py1, px2, py2], vb) >= 0.25:
+                    vx1, vy1, vx2, vy2 = vb[:4]
+                    inter_vx = max(0.0, min(torso_box[2], vx2) - max(torso_box[0], vx1))
+                    inter_vy = max(0.0, min(torso_box[3], vy2) - max(torso_box[1], vy1))
+                    inter_varea = inter_vx * inter_vy
+                    vb_area = max(1.0, (vx2 - vx1) * (vy2 - vy1))
+                    io_vest = inter_varea / vb_area
+
+                    if bbox_iou(torso_box, vb) >= self.vest_overlap_thresh or bbox_iou([px1, py1, px2, py2], vb) >= 0.25 or io_vest >= 0.35:
                         matched_vest = v
                         break
 

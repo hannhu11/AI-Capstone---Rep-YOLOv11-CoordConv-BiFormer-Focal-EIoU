@@ -158,6 +158,8 @@ def generate_multiclass_construction_zone():
 # ==============================================================================
 # 2. GENERATE HARD HAT COLOR INSPECTION VIDEO (75s / 2250 FRAMES)
 # ==============================================================================
+# 2. GENERATE HARD HAT COLOR INSPECTION VIDEO (75s / 2250 FRAMES)
+# ==============================================================================
 def generate_hard_hat_color_inspection():
     print("\n[2/3] Generating: cctv_long_hard_hat_color_inspection_1080p.mp4 (75s / 2250 frames)...")
     out_path = VIDEO_TEST_DIR / "cctv_long_hard_hat_color_inspection_1080p.mp4"
@@ -165,10 +167,10 @@ def generate_hard_hat_color_inspection():
     # Source images with verified helmet colors
     color_sources = {
         "yellow": DATASET_IMG_DIR / "chv_ppe_0000.jpg",
-        "white": DATASET_IMG_DIR / "chv_ppe_0001.jpg",
-        "red": DATASET_IMG_DIR / "chv_ppe_0008.jpg",
+        "white": DATASET_IMG_DIR / "chv_ppe_0002.jpg",
         "blue": DATASET_IMG_DIR / "chv_ppe_0009.jpg",
-        "green_multi": DATASET_IMG_DIR / "iitu_dji_fly_20250627_225740_14_1751388233750_video_frame_000000.jpg",
+        "red": DATASET_IMG_DIR / "chv_ppe_0008.jpg",
+        "green": DATASET_IMG_DIR / "iitu_dji_fly_20250627_225740_14_1751388233750_video_frame_000000.jpg",
     }
 
     color_images = {}
@@ -189,7 +191,7 @@ def generate_hard_hat_color_inspection():
         ("white", "CCTV_CAM01_INSPECT_WHITE_HELMET", "ZONE 2: SITE SUPERVISORS & ENGINEERS (WHITE HELMETS)"),
         ("blue", "CCTV_CAM01_INSPECT_BLUE_HELMET", "ZONE 3: ELECTRICAL SPECIALISTS (BLUE HELMETS)"),
         ("red", "CCTV_CAM01_INSPECT_RED_HELMET", "ZONE 4: RIGGING & FIRE SAFETY OFFICERS (RED HELMETS)"),
-        ("green_multi", "CCTV_CAM01_INSPECT_ALL_COLORS", "ZONE 5: ALL-COLOR SAFETY BRIEFING (BLUE, GREEN, RED, WHITE, YELLOW)"),
+        ("green", "CCTV_CAM01_INSPECT_GREEN_HELMET", "ZONE 5: SAFETY OFFICERS & SURVEYORS (GREEN HELMETS)"),
     ]
 
     for seg_idx, (cname, cam_name, zone_label) in enumerate(segments):
@@ -201,24 +203,25 @@ def generate_hard_hat_color_inspection():
             global_f = seg_idx * segment_frames + s_f
             t = s_f / segment_frames  # 0.0 to 1.0
 
-            # Smooth realistic camera motion across the workers
-            # Crop 16:9 viewport
-            target_aspect = 1920.0 / 1080.0
-            if orig_w / orig_h > target_aspect:
-                crop_h = int(orig_h * (0.85 + 0.10 * math.sin(t * math.pi)))
-                crop_w = int(crop_h * target_aspect)
+            if cname == "green":
+                # High-res 4K frame: crop 1920x1080 around confirmed green helmet worker (1380, 1600)
+                cx = 1380 + int(12 * math.sin(t * 2 * math.pi))
+                cy = 1600 + int(8 * math.cos(t * 2 * math.pi))
+                x1 = max(0, min(orig_w - 1920, cx - 960))
+                y1 = max(0, min(orig_h - 1080, cy - 540))
+                frame_1080p = src_img[y1 : y1 + 1080, x1 : x1 + 1920].copy()
             else:
-                crop_w = int(orig_w * (0.85 + 0.10 * math.sin(t * math.pi)))
-                crop_h = int(crop_w / target_aspect)
-
-            max_x = max(0, orig_w - crop_w)
-            max_y = max(0, orig_h - crop_h)
-            curr_x = int(t * max_x)
-            curr_y = int((0.5 + 0.3 * math.sin(t * 2 * math.pi)) * max_y)
-            curr_y = max(0, min(max_y, curr_y))
-
-            cropped = src_img[curr_y : curr_y + crop_h, curr_x : curr_x + crop_w]
-            frame_1080p = cv2.resize(cropped, (1920, 1080), interpolation=cv2.INTER_LINEAR)
+                # Scale cleanly into 1080p matte canvas with subtle CCTV camera sway
+                scale = min(1920.0 / orig_w, 1080.0 / orig_h) * (0.92 + 0.02 * math.sin(t * 2 * math.pi))
+                nw, nh = int(orig_w * scale), int(orig_h * scale)
+                resized = cv2.resize(src_img, (nw, nh), interpolation=cv2.INTER_LINEAR)
+                dx = int(8 * math.sin(t * 4 * math.pi))
+                dy = int(5 * math.cos(t * 2 * math.pi))
+                top = max(0, min(1080 - nh, (1080 - nh) // 2 + dy))
+                left = max(0, min(1920 - nw, (1920 - nw) // 2 + dx))
+                canvas = np.full((1080, 1920, 3), (25, 30, 36), dtype=np.uint8)
+                canvas[top : top + nh, left : left + nw] = resized
+                frame_1080p = canvas
 
             # Overlay zone label banner
             cv2.rectangle(frame_1080p, (30, 48), (750, 80), (15, 23, 42), -1)
@@ -235,6 +238,8 @@ def generate_hard_hat_color_inspection():
 # ==============================================================================
 # 3. GENERATE SAFETY VIOLATIONS & ALARMS TEST VIDEO (75s / 2250 FRAMES)
 # ==============================================================================
+# 3. GENERATE SAFETY VIOLATIONS & ALARMS TEST VIDEO (75s / 2250 FRAMES)
+# ==============================================================================
 def generate_safety_violations_and_alarms():
     print("\n[3/3] Generating: cctv_long_safety_violations_and_alarms_1080p.mp4 (75s / 2250 frames)...")
     out_path = VIDEO_TEST_DIR / "cctv_long_safety_violations_and_alarms_1080p.mp4"
@@ -244,11 +249,11 @@ def generate_safety_violations_and_alarms():
         # 1. Compliant worker (person + safety_vest + yellow_helmet)
         "compliant": DATASET_IMG_DIR / "chv_ppe_0000.jpg",
         # 2. Non-compliant: Missing helmet (person + safety_vest, no helmet)
-        "no_helmet": DATASET_IMG_DIR / "chv_ppe_0098.jpg",
+        "no_helmet": DATASET_IMG_DIR / "chv_ppe_0416.jpg",
         # 3. Non-compliant: Missing vest (person + helmet, no vest)
         "no_vest": DATASET_IMG_DIR / "chv_ppe_0001.jpg",
         # 4. Critical non-compliant: Missing both helmet and vest (person only)
-        "no_both": DATASET_IMG_DIR / "chv_ppe_0014.jpg",
+        "no_both": DATASET_IMG_DIR / "chv_ppe_0133.jpg",
     }
 
     scenario_images = {}
@@ -258,7 +263,7 @@ def generate_safety_violations_and_alarms():
             raise FileNotFoundError(f"Could not load {p}")
         scenario_images[sc_name] = img
 
-    # Target: 75 seconds @ 30 FPS = 2250 frames (4 phases of ~560 frames = ~18.7s each)
+    # Target: 75 seconds @ 30 FPS = 2250 frames (4 phases of ~562 frames = ~18.7s each)
     total_output_frames = 2250
     phase_frames = total_output_frames // 4
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -280,23 +285,17 @@ def generate_safety_violations_and_alarms():
             global_f = p_idx * phase_frames + s_f
             t = s_f / phase_frames
 
-            # Smooth realistic camera panning
-            target_aspect = 1920.0 / 1080.0
-            if orig_w / orig_h > target_aspect:
-                crop_h = int(orig_h * (0.82 + 0.12 * math.sin(t * math.pi)))
-                crop_w = int(crop_h * target_aspect)
-            else:
-                crop_w = int(orig_w * (0.82 + 0.12 * math.sin(t * math.pi)))
-                crop_h = int(crop_w / target_aspect)
-
-            max_x = max(0, orig_w - crop_w)
-            max_y = max(0, orig_h - crop_h)
-            curr_x = int(t * max_x)
-            curr_y = int((0.5 + 0.25 * math.sin(t * 2 * math.pi)) * max_y)
-            curr_y = max(0, min(max_y, curr_y))
-
-            cropped = src_img[curr_y : curr_y + crop_h, curr_x : curr_x + crop_w]
-            frame_1080p = cv2.resize(cropped, (1920, 1080), interpolation=cv2.INTER_LINEAR)
+            # Scale cleanly into 1080p matte canvas with subtle CCTV camera sway
+            scale = min(1920.0 / orig_w, 1080.0 / orig_h) * (0.92 + 0.02 * math.sin(t * 2 * math.pi))
+            nw, nh = int(orig_w * scale), int(orig_h * scale)
+            resized = cv2.resize(src_img, (nw, nh), interpolation=cv2.INTER_LINEAR)
+            dx = int(8 * math.sin(t * 4 * math.pi))
+            dy = int(5 * math.cos(t * 2 * math.pi))
+            top = max(0, min(1080 - nh, (1080 - nh) // 2 + dy))
+            left = max(0, min(1920 - nw, (1920 - nw) // 2 + dx))
+            canvas = np.full((1080, 1920, 3), (25, 30, 36), dtype=np.uint8)
+            canvas[top : top + nh, left : left + nw] = resized
+            frame_1080p = canvas
 
             # Phase header banner
             banner_color = (15, 23, 42)

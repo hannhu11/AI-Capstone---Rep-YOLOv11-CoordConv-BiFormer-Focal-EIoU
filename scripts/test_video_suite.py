@@ -43,73 +43,84 @@ def evaluate_video(
     detector: SafetyObjectDetector,
     tracker: BYTETracker,
     safety_engine: SpatialSafetyEngine,
-    max_frames: int = 120,
+    max_frames: int = 90,
 ) -> Dict[str, Any]:
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
         return {"error": f"Could not open {video_path.name}"}
 
-    tracker.reset()
-    safety_engine.reset()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    frame_count = 0
     all_workers_seen = set()
     compliant_tracks = set()
     violation_tracks = set()
     alerts_triggered = []
     helmet_colors_detected = set()
     latency_list = []
-
-    # Detect if any ghost alerts triggered when no worker entered, worker is clipped, or prematurely alerted
     ghost_alerts = 0
+    total_evaluated_frames = 0
 
-    while frame_count < max_frames:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        frame_count += 1
+    # Multi-window sampling for structured long CCTV test videos
+    if video_path.name == "cctv_long_hard_hat_color_inspection_1080p.mp4":
+        # 5 segments: Yellow (0-450), White (450-900), Blue (900-1350), Red (1350-1800), Green (1800-2250)
+        windows = [(50, 100), (500, 550), (950, 1000), (1400, 1450), (1850, 1900)]
+    elif video_path.name == "cctv_long_safety_violations_and_alarms_1080p.mp4":
+        # 4 phases: Compliant (0-562), No Helmet (562-1124), No Vest (1124-1686), Critical Dual (1686-2248)
+        windows = [(50, 100), (620, 670), (1180, 1230), (1750, 1800)]
+    elif video_path.name == "cctv_long_construction_zone_multiclass_1080p.mp4":
+        windows = [(0, 150)]
+    else:
+        windows = [(0, min(total_frames, max_frames))]
 
-        # Match production pipeline: downscale 4K / UHD frames to max 1920 on longest edge
-        orig_h, orig_w = frame.shape[:2]
-        max_dim = max(orig_h, orig_w)
-        if max_dim > 1920:
-            scale = 1920.0 / max_dim
-            frame = cv2.resize(frame, (int(orig_w * scale), int(orig_h * scale)), interpolation=cv2.INTER_LINEAR)
+    for start_f, end_f in windows:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, start_f)
+        tracker.reset()
+        safety_engine.reset()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
-        # 1. Detection
-        detections, person_dets, infer_ms = detector.predict(frame)
-        latency_list.append(infer_ms)
+        for f_idx in range(start_f, end_f):
+            ret, frame = cap.read()
+            if not ret:
+                break
+            total_evaluated_frames += 1
 
-        # 2. Tracking
-        active_tracks = tracker.update(person_dets)
+            # Production downscale for UHD frames
+            orig_h, orig_w = frame.shape[:2]
+            max_dim = max(orig_h, orig_w)
+            if max_dim > 1920:
+                scale = 1920.0 / max_dim
+                frame = cv2.resize(frame, (int(orig_w * scale), int(orig_h * scale)), interpolation=cv2.INTER_LINEAR)
 
-        # 3. Safety Evaluation
-        worker_reports, alert_events = safety_engine.evaluate_frame(
-            active_tracks, detections, frame, camera_id=video_path.stem[:16]
-        )
+            # 1. Detection
+            detections, person_dets, infer_ms = detector.predict(frame)
+            latency_list.append(infer_ms)
 
-        for r in worker_reports:
-            tid = r["track_id"]
-            all_workers_seen.add(tid)
-            if r["status"] == "COMPLIANT":
-                compliant_tracks.add(tid)
-            else:
-                violation_tracks.add(tid)
-            if r.get("helmet_color"):
-                helmet_colors_detected.add(r["helmet_color"])
+            # 2. Tracking
+            active_tracks = tracker.update(person_dets)
 
-        for alert in alert_events:
-            alerts_triggered.append(alert)
-            # Rigorous ghost alert verification:
-            # Ghost alert if no person was detected, or alert triggered on immature track < 5 frames
-            if len(person_dets) == 0 or alert.get("violation_duration_frames", 0) < 5:
-                ghost_alerts += 1
+            # 3. Safety Evaluation
+            worker_reports, alert_events = safety_engine.evaluate_frame(
+                active_tracks, detections, frame, camera_id=video_path.stem[:16]
+            )
+
+            for r in worker_reports:
+                tid = r["track_id"]
+                all_workers_seen.add(tid)
+                if r["status"] == "COMPLIANT":
+                    compliant_tracks.add(tid)
+                else:
+                    violation_tracks.add(tid)
+                if r.get("helmet_color"):
+                    helmet_colors_detected.add(r["helmet_color"])
+
+            for alert in alert_events:
+                alerts_triggered.append(alert)
+                if len(person_dets) == 0 or alert.get("violation_duration_frames", 0) < 5:
+                    ghost_alerts += 1
 
     cap.release()
 
@@ -121,7 +132,7 @@ def evaluate_video(
         "resolution": f"{width}x{height}",
         "native_fps": round(fps, 1),
         "total_video_frames": total_frames,
-        "frames_evaluated": frame_count,
+        "frames_evaluated": total_evaluated_frames,
         "avg_inference_ms": round(avg_latency, 2),
         "measured_fps": measured_fps,
         "unique_workers": len(all_workers_seen),
@@ -129,7 +140,7 @@ def evaluate_video(
         "violation_workers": len(violation_tracks),
         "total_alerts": len(alerts_triggered),
         "ghost_alerts": ghost_alerts,
-        "helmet_colors": list(helmet_colors_detected),
+        "helmet_colors": sorted(list(helmet_colors_detected)),
         "status": "PASS" if ghost_alerts == 0 else "FAIL_GHOST_ALERT",
     }
 

@@ -59,7 +59,12 @@ class SettingsPayload(BaseModel):
 
 
 class SwitchSourcePayload(BaseModel):
-    video_source: str
+    video_source: Optional[str] = None
+    source: Optional[str] = None
+
+    @property
+    def target_source(self) -> str:
+        return self.video_source or self.source or ""
 
 
 class SwitchModelPayload(BaseModel):
@@ -198,9 +203,12 @@ async def list_available_videos():
 @app.post("/api/switch_source")
 @app.post("/api/controls/source")
 async def switch_video_source(payload: SwitchSourcePayload):
-    cctv_pipeline.switch_source(payload.video_source)
+    target = payload.target_source
+    if not target:
+        raise HTTPException(status_code=400, detail="Missing 'video_source' or 'source' field in request body")
+    cctv_pipeline.switch_source(target)
     alert_manager.clear_alerts()
-    return {"message": f"Switched video source to {payload.video_source}", "alerts_cleared": True}
+    return {"message": f"Switched video source to {target}", "alerts_cleared": True}
 
 
 @app.post("/api/webhook/zalo")

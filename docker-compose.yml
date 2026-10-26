@@ -14,6 +14,8 @@ services:
       - ./Output:/app/Output
       - ./snapshots:/app/snapshots
       - ./src:/app/src
+      - ./scripts:/app/scripts
+      - ./results:/app/results
       - ./.env:/app/.env
     environment:
       - PYTHONUNBUFFERED=1
