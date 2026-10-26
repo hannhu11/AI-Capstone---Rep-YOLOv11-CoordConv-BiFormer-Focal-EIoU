@@ -146,7 +146,9 @@ class CCTVSurveillancePipeline:
                             self.frame_idx += 1
                             self.frame_condition.notify_all()
             except Exception as e:
+                import traceback
                 print(f"⚠️ Stream worker exception: {e}")
+                traceback.print_exc()
                 time.sleep(0.05)
 
             # Target ~30 FPS smooth pacing

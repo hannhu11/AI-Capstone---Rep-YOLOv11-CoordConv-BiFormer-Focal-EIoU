@@ -37,6 +37,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY src/ /app/src/
 COPY custom_ablation_modules.py /app/custom_ablation_modules.py
 COPY scripts/ /app/scripts/
+COPY rep_yolo11s*.yaml /app/
 # Copy configuration
 COPY .env* /app/
 RUN if [ ! -f /app/.env ] && [ -f /app/.env.example ]; then cp /app/.env.example /app/.env; fi

@@ -2,7 +2,7 @@
 ultralytics>=8.3.0
 opencv-python-headless>=4.8.0
 scipy>=1.10.0
-numpy>=1.23.0
+numpy>=1.23.0,<2.0.0
 
 # Web Dashboard & API
 fastapi>=0.110.0

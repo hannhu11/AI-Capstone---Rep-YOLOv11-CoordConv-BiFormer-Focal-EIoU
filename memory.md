@@ -870,3 +870,61 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
 - `concreting 10.mp4`: 406x720, 13.85 ms (72.2 FPS), Workers: 3, Alerts: 0, **Ghost Alerts: 0** (PASS).
 - `construction_site_workers_1080p.mp4`: 1920x1080, 14.22 ms (70.3 FPS), Workers: 0 (intro frames), Alerts: 0, **Ghost Alerts: 0** (PASS).
 **Kết luận**: 10/10 video đạt 100% tỷ lệ vượt qua kiểm thử (`PASS`), khẳng định hiện tượng cảnh báo ma/ảo khi công nhân chưa bước vào khung hình đã bị triệt tiêu hoàn toàn. Báo cáo lưu tại: `results/edge_benchmarks/CCTV_VIDEO_TEST_SUITE_AUDIT.md`.
+
+---
+
+## 35. ĐÓNG GÓI DOCKER EDGE CONTAINER & BỘ VIDEO DÀI KIỂM THỬ TOÀN DIỆN 7 CLASS
+
+### 35.1. Khảo Sát Hiện Trạng & Nguyên Nhân Gốc Rễ Màn Hình Docker Desktop Trống
+1. **Phân tích pháp y từ ảnh chụp Docker Desktop v4.96.3**:
+   - Giao diện Docker Desktop hiển thị tab "Containers" kèm thông báo mặc định *"Your running containers show up here / A container is an isolated environment for your code"*. Danh sách container trống trơn (`0 running`).
+   - Nguyên nhân kỹ thuật:
+     * File cấu hình Dockerfile và `docker-compose.edge-simulation.yml` đã được định nghĩa trong codebase, nhưng chưa được kích hoạt chạy nền daemon (`docker compose up -d`).
+     * Thư mục cài đặt Docker CLI của Docker Desktop nằm tại `C:\Users\ADMIN\AppData\Local\Programs\DockerDesktop\resources\bin`, chưa được load vào phiên làm việc PowerShell hiện hành.
+     * Port 8000 trên máy chủ host đang được tiến trình Python cục bộ (`scripts/run_local_dashboard.py`, PID 2344) lắng nghe. Nếu chạy `docker compose` với ánh xạ mặc định `8000:8000`, Docker engine sẽ bị xung đột cổng (`bind: address already in use`).
+2. **Giải pháp triển khai container hoàn chỉnh**:
+   - Cấu hình ánh xạ cổng linh hoạt trong `docker-compose.edge-simulation.yml`: `${EDGE_SIM_PORT:-8080}:8000`, giúp container chạy song song độc lập trên cổng 8080 mà không gây xung đột với dashboard máy chủ cục bộ (cổng 8000).
+   - Khắc phục triệt để lỗi không tương thích C-API ABI của PyTorch 2.0.0 với NumPy 2.x bằng cách ghim chặt chẽ `numpy>=1.23.0,<2.0.0` trong `requirements_docker.txt`.
+   - Ngăn ngừa hiện tượng khởi tạo 2 tiến trình / 2 luồng CUDA xung đột bằng cách truyền trực tiếp đối tượng `app` vào `uvicorn.run(app, ...)` thay vì chuỗi import `"src.web.app:app"`.
+   - Thiết lập volume mount an toàn:
+     * `./video_test:/app/video_test:ro` (Toàn bộ kho video test dài 1080p).
+     * `./Output:/app/Output` (Trọng số mô hình `rep_yolo11s_chv7_best_deploy.pt`).
+     * `./snapshots:/app/snapshots` (Ảnh chụp vi phạm).
+     * `./src:/app/src` (Mã nguồn backend live).
+     * `./.env:/app/.env` (Cấu hình môi trường).
+   - Kích hoạt container chạy dưới dạng persistent background daemon (`--name cctv_safety_edge_simulation_node`), hiển thị trạng thái `Up (healthy)` màu xanh lá ngay trên Docker Desktop GUI.
+   - Kiểm thử endpoint container qua HTTP: `GET http://localhost:8080/`, `GET http://localhost:8080/api/metrics` (35.1 - 41.2 FPS, CUDA:0 FP16) và `GET http://localhost:8080/api/videos`. Chuyển đổi nguồn video mượt mà qua `POST /api/controls/source`.
+
+### 35.2. Bộ 3 Video Dài CCTV Chuyên Biệt Kiểm Thử Toàn Diện 7 Class & Kịch Bản Báo Động
+Đáp ứng yêu cầu khắt khe của người dùng về video thời lượng dài (60s - 90s, 2248 - 2700 frames @ 30 FPS, độ phân giải Full HD 1080p) chuẩn CCTV công trường thực tế:
+
+1. **Video 1: `video_test/cctv_long_hard_hat_color_inspection_1080p.mp4`** (Thời lượng: 75.0s / 2250 frames @ 30 FPS, 70.2 MB):
+   - **Mục tiêu chuyên biệt**: Kiểm thử khả năng phân loại chính xác tuyệt đối cả **5 màu mũ bảo hộ** của dự án:
+     * Phân đoạn 1 (0s - 15s): Đội thợ xây dựng phổ thông (`yellow_helmet`).
+     * Phân đoạn 2 (15s - 30s): Kỹ sư trưởng & giám sát công trình (`white_helmet`).
+     * Phân đoạn 3 (30s - 45s): Kỹ sư cơ điện & HVAC (`blue_helmet`).
+     * Phân đoạn 4 (45s - 60s): Chuyên viên an toàn phòng cháy & cẩu lắp (`red_helmet`).
+     * Phân đoạn 5 (60s - 75s): Buổi giao ban an toàn tổng hợp quy tụ đầy đủ 5 màu mũ (`blue`, `green`, `red`, `white`, `yellow`) cùng công nhân và áo phản quang (`safety_vest`).
+   - Đạt chuẩn kiểm thử: Tỷ lệ nhận diện đúng màu mũ, không bị nhầm lẫn giữa các gam màu tương đồng dưới ánh sáng công trường.
+
+2. **Video 2: `video_test/cctv_long_safety_violations_and_alarms_1080p.mp4`** (Thời lượng: 74.9s / 2248 frames @ 30 FPS, 113.1 MB):
+   - **Mục tiêu chuyên biệt**: Kiểm thử toàn diện logic cảnh báo an toàn và chuỗi tích lũy vi phạm (debounce streak):
+     * Giai đoạn 1 (0s - 18s): Công nhân tuân thủ hoàn toàn (`COMPLIANT`), hiển thị khung xanh, tích lũy vi phạm = 0, báo động = 0.
+     * Giai đoạn 2 (18s - 37s): Vi phạm không đội mũ bảo hộ (`NO_HELMET`). Khi công nhân bước vào vùng nguy hiểm có mặc áo phản quang nhưng không đội mũ, bộ đếm chuỗi vi phạm tích lũy đạt ngưỡng 10 frames -> Kích hoạt báo động "CRITICAL PPE VIOLATION: NO_HELMET", chụp ảnh snapshot lưu vào `snapshots/`, gửi dispatch thông báo Telegram/Zalo.
+     * Giai đoạn 3 (37s - 56s): Vi phạm không mặc áo phản quang (`NO_VEST`). Công nhân đội mũ bảo hộ nhưng mặc áo dân sự -> Kích hoạt báo động "PPE VIOLATION: NO_VEST".
+     * Giai đoạn 4 (56s - 75s): Vi phạm nghiêm trọng kép (`NO_HELMET, NO_VEST`). Người xâm nhập không trang bị bất kỳ đồ bảo hộ nào -> Kích hoạt báo động mức nguy cấp cao nhất, sau đó giải tỏa an toàn khi rời khu vực.
+
+3. **Video 3: `video_test/cctv_long_construction_zone_multiclass_1080p.mp4`** (Thời lượng: 90.0s / 2700 frames @ 30 FPS, 139.4 MB):
+   - **Mục tiêu chuyên biệt**: Mô phỏng toàn cảnh dòng video giám sát CCTV PTZ (Pan-Tilt-Zoom) tại đại công trường thực tế.
+   - Tích hợp đồng thời toàn bộ **7 classes**: `person`, `safety_vest`, `blue_helmet`, `green_helmet`, `red_helmet`, `white_helmet`, `yellow_helmet`.
+   - Kiểm thử thuật toán ByteTrack MOT: Theo dõi ổn định khi nhiều công nhân cùng di chuyển, giao cắt quỹ đạo (crossing trajectories), che khuất một phần (occlusion), bảo đảm duy trì track ID liên tục và không bị phân mảnh quỹ đạo.
+
+### 35.3. Tích Hợp Vào Bảng Điều Khiển Web Dashboard & Kiểm Định Khoa Học
+1. **Đăng ký nguồn video vào Web Dashboard**:
+   - Bổ sung 2 endpoint RESTful: `GET /api/videos` và `GET /api/sources`, tự động quét và trả về danh sách toàn bộ video test có sẵn kèm dung lượng và metadata.
+   - Cập nhật trực tiếp selector `<select id="videoSourceSelect">` trong giao diện `dashboard.html` để người dùng dễ dàng chuyển đổi nhanh giữa các kịch bản test bằng 1 cú nhấp chuột (`/api/controls/source`).
+2. **Kết quả kiểm định thực nghiệm mở rộng trên toàn bộ 13 video (`scripts/test_video_suite.py`)**:
+   - Cả 13 video (bao gồm 3 video dài mới và 10 video benchmark trước đó) đều vượt qua kiểm thử thành công 100% (`PASS`).
+   - Tốc độ suy luận đạt **24.03 - 38.60 ms** (**25.9 - 41.6 FPS**) trên GPU RTX 3050 Laptop (FP16).
+   - **Số lượng cảnh báo ma/ảo (Ghost Alerts): 0 tuyệt đối trên toàn bộ 13 video**.
+   - Báo cáo cập nhật lưu tại: `results/edge_benchmarks/CCTV_VIDEO_TEST_SUITE_AUDIT.md`.

@@ -30,8 +30,9 @@ def main():
     print(f"💬 Zalo Bot:     {config.zalo_bot_token[:10]}...")
     print("=" * 80)
 
+    from src.web.app import app
     uvicorn.run(
-        "src.web.app:app",
+        app,
         host=config.web_host,
         port=config.web_port,
         reload=False,

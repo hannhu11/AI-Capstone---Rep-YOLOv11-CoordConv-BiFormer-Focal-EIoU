@@ -179,6 +179,21 @@ async def update_settings(payload: SettingsPayload):
     return {"message": "Settings updated and saved to .env successfully", "config": config.to_dict()}
 
 
+@app.get("/api/videos")
+@app.get("/api/sources")
+async def list_available_videos():
+    video_dir = PROJECT_ROOT / "video_test"
+    videos = []
+    if video_dir.exists():
+        for vp in sorted(video_dir.glob("*.mp4")):
+            videos.append({
+                "filename": vp.name,
+                "path": f"video_test/{vp.name}",
+                "size_mb": round(vp.stat().st_size / (1024 * 1024), 2),
+            })
+    return {"videos": videos, "active_source": str(cctv_pipeline.source_path)}
+
+
 # 6. Video Source Controls & Upload
 @app.post("/api/switch_source")
 @app.post("/api/controls/source")
@@ -270,7 +285,7 @@ async def test_zalo_alert(payload: Optional[ZaloTestPayload] = None):
 def run_server():
     import uvicorn
     uvicorn.run(
-        "src.web.app:app",
+        app,
         host=config.web_host,
         port=config.web_port,
         reload=False,
