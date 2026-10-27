@@ -181,3 +181,37 @@ def test_reid_single_frame_color_flicker_retains_worker_id():
     assert flicker_cid == 1, f"Expected Worker #1 retained across color flicker, got #{flicker_cid}"
     assert 1 in registry.raw_to_canonical
     assert registry.raw_to_canonical[1] == 1
+
+
+def test_reid_does_not_jump_to_worker_8_on_raw_track_id_collision():
+    """Verify that when ByteTrack mints a raw track ID that happens to match an existing profile (e.g. #8),
+    it DOES NOT blindly hijack Worker #1 into Worker #8 without spatial & appearance matching."""
+    registry = PersistentTrackRegistry(reid_affinity_thresh=0.40)
+    frame = np.full((720, 1280, 3), 100, dtype=np.uint8)
+    frame[150:350, 120:280] = [30, 200, 220]  # Worker 1 appearance
+    box1 = np.array([100.0, 100.0, 300.0, 500.0], dtype=np.float32)
+
+    # Establish Worker #1 as confirmed
+    for f in range(15):
+        cid = registry.get_or_create_canonical_id(1, box1, frame, "yellow", f)
+        registry.update_frame_end([cid], f)
+
+    assert registry.profiles[1].is_confirmed
+
+    # Mint profiles 2 to 8 in other parts of the screen
+    for i in range(2, 9):
+        other_box = np.array([500.0 + i * 30, 100.0, 650.0 + i * 30, 500.0], dtype=np.float32)
+        registry.get_or_create_canonical_id(i + 10, other_box, frame, "blue", 16)
+    registry.update_frame_end([], 16)
+
+    assert 8 in registry.profiles, "Profile #8 must exist in registry"
+
+    # Worker 1 dips detection for 2 frames, then reappears at box1 with identical clothing and yellow helmet.
+    # ByteTrack assigns raw_track_id = 8.
+    returned_cid = registry.get_or_create_canonical_id(
+        raw_track_id=8, box=box1, frame=frame, helmet_color="yellow", frame_idx=20
+    )
+
+    # MUST MATCH WORKER #1 via spatial + appearance Re-ID, NEVER blindly jump to Worker #8!
+    assert returned_cid == 1, f"CRITICAL: Lock jumped to Worker #{returned_cid} instead of retaining Worker #1!"
+    assert registry.raw_to_canonical[8] == 1

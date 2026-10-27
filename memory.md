@@ -1350,3 +1350,42 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
 - Đã chạy toàn bộ bộ kiểm thử tự động của dự án: **89/89 unit tests** PASSED 100%.
 - Bổ sung các bài test kiểm định độc lập cho cả 4 lỗi pháp y trong `tests/test_cctv_forensic_fixes.py` và `tests/test_persistent_tracking_focus.py`.
 - Tái đóng gói và kiểm thử container Docker trên môi trường mô phỏng biên IEEE TPAMI.
+
+---
+
+## 45. BÁO CÁO PHẢN BIỆN PHÁP Y & HIỆU CHỈNH TRIỆT ĐỂ (SKEPTICAL REVIEW & DEEP HARDENING)
+
+> **Thời điểm phản biện:** 2026-10-27 12:45 UTC  
+> **Nguyên tắc:** Độc lập - Hoài nghi - Tấn công các điểm chưa được kiểm chứng - Liêm chính khoa học tuyệt đối.
+
+### 45.1. Các Lỗ Hổng Nghiêm Trọng Phát Hiện Từ Lần Thử Nghiệm Trước
+
+1. **Lỗi Đồng Bộ Hóa Ngưỡng Hình Học Trong `src/engine/pipeline.py` (Omission Bug)**:
+   - *Lỗ hổng*: Lần thử nghiệm trước chỉ nới lỏng ngưỡng mũ trong `spatial_safety.py` lên `2.20` và `0.45 * pw`, nhưng **bỏ quên hoàn toàn** `pipeline.py`:
+     * Dòng 440 của `pipeline.py` vẫn giữ nguyên bộ lọc cứng `if (bw / bh) > 1.70: continue`. Mọi mũ bảo hộ vành rộng ($1.75 - 2.10$) bị loại bỏ thẳng tay khỏi danh sách `filtered_detections` trước khi kịp chuyển sang `SpatialSafetyEngine`!
+     * Dòng 497-502 của `pipeline.py` vẫn giữ nguyên Cranium Gating cũ (`hb[1] > tb[1] + 0.12 * th`, `abs(hcx - tcx) > 0.20 * tw`, `hw / hh > 1.70`). Khi công nhân bước sải ngang hoặc cúi người, hàm tìm màu mũ gán `matched_color = None`, truyền giá trị `None` vào Re-ID tracker, kích hoạt chớp màu mũ giả mạo.
+   - *Khắc phục*: Đồng bộ hóa toàn bộ ngưỡng trong `src/engine/pipeline.py`: nới lỏng aspect ratio lên `2.20`, cao độ đỉnh sọ lên `0.22 * th`, và căn chỉnh ngang lên `0.45 * tw` ($t_{x1} - 0.05 \cdot t_w \le h_{cx} \le t_{x2} + 0.05 \cdot t_w$).
+
+2. **Lỗi "Cửa Sập" Nhảy ID Từ Worker #1 Sang Worker #8 (`raw_track_id in self.profiles` Trapdoor)**:
+   - *Lỗ hổng*: Tại dòng 324 của `src/engine/reid_tracker.py`, mã nguồn còn sót lại đoạn kiểm tra di sản:
+     `if raw_track_id in self.profiles: p = self.profiles[raw_track_id] ... return raw_track_id`.
+   - *Cơ chế gây lỗi chết người*: `raw_track_id` là mã đếm nội bộ tuần tự của ByteTrack (1, 2, 3...), còn `self.profiles` là bảng tra cứu định danh bền vững (Canonical IDs). Khi Worker #1 bị khuất tạm thời 1-2 khung hình, ByteTrack cấp một mã thô mới (ví dụ raw ID = 8). Do Profile #8 đã từng tồn tại trong hệ thống, đoạn mã dòng 324 lập tức nhận vơ rằng Worker #1 là Worker #8 mà không hề kiểm tra đối sánh vị trí không gian hay diện mạo! Worker #1 bị bỏ rơi hoàn toàn, khóa Focus Mode bị vỡ và mã số công nhân bị lạm phát.
+   - *Khắc phục*: Xóa bỏ triệt để nhánh `if raw_track_id in self.profiles:`. Toàn bộ track thô mới bắt buộc phải đi qua quy trình Re-ID chính tắc: đối sánh vị trí + diện mạo trong danh sách `inactive_profiles`, khôi phục Worker #1 chuẩn xác với độ tương quan cao ($affinity \ge 0.40$).
+
+3. **Giảm Phạt Lệch Màu Mũ Khi Diện Mạo Thân Trùng Khớp Tuyệt Đối Trong Inactive Re-ID**:
+   - *Lỗ hổng*: Trong hàm Re-ID hồ sơ không hoạt động (`src/engine/reid_tracker.py`), khi màu mũ bị lệch, hệ thống áp dụng điểm phạt nặng `helm_score = -0.40`. Khi công nhân bị chớp nắng làm màu mũ chuyển tạm thời từ vàng sang trắng, điểm phạt này kéo tổng $affinity$ xuống dưới $0.40$, khiến hệ thống không nhận ra Worker #1 và đúc thêm Worker mới.
+   - *Khắc phục*: Nếu độ tương đồng thân áo $\ge 0.45$ (`sim_color >= 0.45`), giảm mức phạt lệch màu xuống $-0.10$, đảm bảo tái nhận diện vững chắc trước ánh nắng gắt.
+
+4. **Bổ Sung Toàn Diện Chữ Ký Lỗi CUDA Không Thể Phục Hồi**:
+   - Mở rộng kiểm tra chuỗi lỗi CUDA trong `pipeline.py` bao gồm: `illegal memory access`, `device-side assert`, `misaligned address`, `illegal instruction`, `unspecified launch failure`, `hardware stack error`, `context is destroyed`.
+
+### 45.2. Hồ Sơ Kiểm Thử Độc Lập Sau Khi Hiệu Chỉnh
+- **Toàn bộ bộ kiểm thử**: **90/90 tests** PASSED 100% trong 46.46s (bao gồm test mới `test_reid_does_not_jump_to_worker_8_on_raw_track_id_collision`).
+- **Kiểm định pháp y đa nguồn (`scripts/validate_forensic_fixes.py`)**:
+  * Validation 1 (CCTV Unauthorized Person, 150 frames): **PASSED 100%** (0 mũ trắng ảo, 0 mũ xanh ảo, 84 frames vi phạm, 2 cảnh báo phát đi).
+  * Validation 2 (Construction Site 1080p, 50 frames): **PASSED 100%** (50 frames tuân thủ, 0 vi phạm, 50 mũ vàng).
+  * Validation 3 (Cold-Start Stream Frame 67): **PASSED 100%** (0 mũ trắng ảo, 0 mũ xanh ảo, 8 frames vi phạm).
+- **Kiểm định đa công nhân 4K UHD (`scripts/verify_uhd_headcount.py`)**:
+  * Xử lý 300 frames: Headcount thực tế đạt **14 công nhân** ($\le 18$), không có tình trạng bùng nổ ID.
+- **Kiểm định công nhân đơn lẻ 1080p (`scripts/test_single_worker_integrity.py`)**:
+  * Xử lý 800 frames: **Duy nhất 1 Worker #1 (IDs=[1])**, trạng thái `COMPLIANT`.

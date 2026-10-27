@@ -321,38 +321,6 @@ class PersistentTrackRegistry:
                     p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
                     return cid
 
-        if raw_track_id in self.profiles:
-            p = self.profiles[raw_track_id]
-            if p.is_confirmed and p.total_frames_seen >= 8:
-                app_sim = p.get_max_appearance_sim(hist)
-                color_conflict = (
-                    helmet_color
-                    and p.helmet_color
-                    and helmet_color != "none"
-                    and p.helmet_color != "none"
-                    and helmet_color != p.helmet_color
-                )
-                if color_conflict:
-                    self.raw_to_conflict_streak[raw_track_id] = self.raw_to_conflict_streak.get(raw_track_id, 0) + 1
-                else:
-                    self.raw_to_conflict_streak[raw_track_id] = 0
-
-                persistent_conflict = (self.raw_to_conflict_streak[raw_track_id] >= 3)
-                should_break = False
-                if app_sim < 0.45:
-                    if app_sim < 0.25 and persistent_conflict:
-                        should_break = True
-                    elif app_sim < 0.05 and color_conflict:
-                        should_break = True
-
-                if not should_break:
-                    p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
-                    self.raw_to_canonical[raw_track_id] = raw_track_id
-                    return raw_track_id
-            else:
-                p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
-                self.raw_to_canonical[raw_track_id] = raw_track_id
-                return raw_track_id
 
         # 2. Check Loop Baseline Anchors first if in loop recovery phase
         if self.is_looping_phase and self.baseline_anchors:
@@ -434,7 +402,8 @@ class PersistentTrackRegistry:
                     helm_score = 1.0
                     w_helm = 0.20
                 else:
-                    helm_score = -0.40
+                    # If torso appearance is identical (sim_color >= 0.45), soften helmet mismatch penalty against glare/lighting flicker
+                    helm_score = -0.10 if sim_color >= 0.45 else -0.40
                     w_helm = 0.20
             else:
                 helm_score = 0.0

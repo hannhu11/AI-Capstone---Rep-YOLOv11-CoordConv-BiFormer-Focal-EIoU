@@ -219,7 +219,19 @@ class CCTVSurveillancePipeline:
 
                 err_msg = str(e).lower()
                 # Fast exit on unrecoverable CUDA context poisoning so Docker's restart policy restarts cleanly
-                if "illegal memory access" in err_msg or "device-side assert" in err_msg:
+                unrecoverable_cuda = any(
+                    sig in err_msg
+                    for sig in (
+                        "illegal memory access",
+                        "device-side assert",
+                        "misaligned address",
+                        "illegal instruction",
+                        "unspecified launch failure",
+                        "hardware stack error",
+                        "context is destroyed",
+                    )
+                )
+                if unrecoverable_cuda:
                     print(f"🚨 [CUDA FATAL] Unrecoverable CUDA context poisoning detected: {e}")
                     print("🚨 [CUDA FATAL] Exiting process with code 1 to allow container clean restart...")
                     import os
@@ -242,7 +254,19 @@ class CCTVSurveillancePipeline:
                         print("✅ [SELF-HEALING] Successfully re-initialized detector and video capture!")
                     except Exception as rec_err:
                         print(f"⚠️ [SELF-HEALING] GPU reload failed: {rec_err}. Falling back to CPU mode...")
-                        if "illegal memory access" in str(rec_err).lower():
+                        err_msg_rec = str(rec_err).lower()
+                        if any(
+                            sig in err_msg_rec
+                            for sig in (
+                                "illegal memory access",
+                                "device-side assert",
+                                "misaligned address",
+                                "illegal instruction",
+                                "unspecified launch failure",
+                                "hardware stack error",
+                                "context is destroyed",
+                            )
+                        ):
                             import os
                             os._exit(1)
                         try:
@@ -259,7 +283,19 @@ class CCTVSurveillancePipeline:
                             print("✅ [SELF-HEALING] Successfully recovered in CPU fallback mode!")
                         except Exception as cpu_err:
                             print(f"❌ [SELF-HEALING] CPU fallback failed: {cpu_err}")
-                            if "illegal memory access" in str(cpu_err).lower():
+                            err_msg_cpu = str(cpu_err).lower()
+                            if any(
+                                sig in err_msg_cpu
+                                for sig in (
+                                    "illegal memory access",
+                                    "device-side assert",
+                                    "misaligned address",
+                                    "illegal instruction",
+                                    "unspecified launch failure",
+                                    "hardware stack error",
+                                    "context is destroyed",
+                                )
+                            ):
                                 import os
                                 os._exit(1)
 
@@ -432,12 +468,12 @@ class CCTVSurveillancePipeline:
                             continue
 
                 # Geometric Hardhat Plausibility Filter:
-                # Reject flat furniture / table surfaces (aspect ratio > 1.70) detected as helmets
+                # Reject flat furniture / table surfaces (aspect ratio > 2.20) detected as helmets
                 if "helmet" in d["name"] or d["cls"] in (2, 3, 4, 5, 6):
                     bx1, by1, bx2, by2 = d["box"][:4]
                     bw = max(1.0, bx2 - bx1)
                     bh = max(1.0, by2 - by1)
-                    if (bw / bh) > 1.70:
+                    if (bw / bh) > 2.20:
                         continue
 
                 # Bipartite Spatial Association Filter (Eq. 24):
@@ -493,14 +529,14 @@ class CCTVSurveillancePipeline:
                         hw = max(0.0, hb[2] - hb[0])
                         hh = max(0.0, hb[3] - hb[1])
                         # Cranium Vertex Gating:
-                        # Genuine helmet top edge must be at or above head cranium (hy1 <= py1 + 0.12 * ph)
-                        if hb[1] > (tb[1] + 0.12 * th) or hb[3] < (tb[1] - 0.15 * th):
+                        # Genuine helmet top edge must be at or above head cranium (hy1 <= py1 + 0.22 * ph)
+                        if hb[1] > (tb[1] + 0.22 * th) or hb[3] < (tb[1] - 0.15 * th):
                             continue
-                        if abs(hcx - tcx) > 0.20 * tw:
+                        if not (tb[0] - 0.05 * tw <= hcx <= tb[2] + 0.05 * tw) and abs(hcx - tcx) > 0.45 * tw:
                             continue
-                        if hw > 0.85 * tw or (hw / max(1.0, hh)) > 1.70:
+                        if hw > 1.05 * tw or (hw / max(1.0, hh)) > 2.20:
                             continue
-                        if not (hb[2] < tb[0] or hb[0] > tb[2] or hb[3] < tb[1] or hb[1] > tb[1] + 0.40 * th):
+                        if not (hb[2] < tb[0] or hb[0] > tb[2] or hb[3] < tb[1] or hb[1] > tb[1] + 0.42 * th):
                             matched_color = d.get("color") or d["name"].replace("_helmet", "")
                             break
                 canonical_id = reid_registry.get_or_create_canonical_id(

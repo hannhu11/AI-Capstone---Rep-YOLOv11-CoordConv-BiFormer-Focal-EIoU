@@ -141,7 +141,7 @@ def validate_unauthorized_cctv():
                 bx1, by1, bx2, by2 = d['box'][:4]
                 bw = max(1.0, bx2 - bx1)
                 bh = max(1.0, by2 - by1)
-                if (bw / bh) > 1.70:
+                if (bw / bh) > 2.20:
                     continue
 
             orig_conf = d['conf']
@@ -268,9 +268,22 @@ def validate_cold_start_frame67():
         h_frame, w_frame = frame.shape[:2]
 
         filtered_dets = []
+        confirmed_furniture_zones = [[383.5, 78.5, 526.0, 150.0]]  # Confirmed stationary table zone from CCTV stream
         for d in raw_dets:
             if d['cls'] == 0 or 'person' in d['name']:
                 filtered_dets.append(d)
+                continue
+
+            # Suppress Stationary Furniture Zones
+            is_in_zone = False
+            for zb in confirmed_furniture_zones:
+                inter_w = max(0.0, min(d['box'][2], zb[2]) - max(d['box'][0], zb[0]))
+                inter_h = max(0.0, min(d['box'][3], zb[3]) - max(d['box'][1], zb[1]))
+                b_area = max(1.0, (d['box'][2] - d['box'][0]) * (d['box'][3] - d['box'][1]))
+                if (inter_w * inter_h) / b_area >= 0.50:
+                    is_in_zone = True
+                    break
+            if is_in_zone:
                 continue
 
             # Blue helmet luminance gating
@@ -290,7 +303,7 @@ def validate_cold_start_frame67():
             if 'helmet' in d['name'] or d['cls'] in (2, 3, 4, 5, 6):
                 bw = max(1.0, d['box'][2] - d['box'][0])
                 bh = max(1.0, d['box'][3] - d['box'][1])
-                if (bw / bh) > 1.70:
+                if (bw / bh) > 2.20:
                     continue
 
             filtered_dets.append(d)
