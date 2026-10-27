@@ -147,3 +147,34 @@ class TestCCTVForensicFixes:
         table_at_knees = [150.0, 380.0, 250.0, 460.0]  # Lower body
         lower_overlap = compute_box_intersection_ratio(table_at_knees, person_box, use_upper_torso=True)
         assert lower_overlap == 0.0, "Lower body detection must have 0.0 upper torso overlap!"
+
+    def test_helmet_aspect_ratio_table_surface_rejected(self):
+        """Flat horizontal surface (aspect ratio hw/hh >= 1.70) is rejected as non-helmet."""
+        engine = SpatialSafetyEngine(consecutive_frames_thresh=1)
+        track = STrack(STrack.tlbr_to_tlwh(np.array([100.0, 100.0, 300.0, 500.0])), score=0.90, cls_id=0)
+        track.track_id = 1
+        track.is_activated = True
+
+        dummy_frame = np.zeros((600, 600, 3), dtype=np.uint8)
+        # Flat tabletop at head height: hw = 140, hh = 70 -> aspect ratio 2.0 > 1.70
+        flat_table_det = [{"box": [130.0, 100.0, 270.0, 170.0], "cls": 5, "name": "white_helmet", "conf": 0.88}]
+        reports, _ = engine.evaluate_frame([track], flat_table_det, dummy_frame)
+
+        assert len(reports) == 1
+        assert reports[0]["has_helmet"] is False, "Flat table surface (aspect ratio 2.0) must be rejected!"
+
+    def test_horizontal_head_centering_shoulder_detection_rejected(self):
+        """Object out on shoulder or elbow (|hcx - pcx| > 0.20 * pw) is rejected as head helmet."""
+        engine = SpatialSafetyEngine(consecutive_frames_thresh=1)
+        # Person: [100, 100, 300, 500] -> pcx=200, pw=200, allowed hcx in [160, 240]
+        track = STrack(STrack.tlbr_to_tlwh(np.array([100.0, 100.0, 300.0, 500.0])), score=0.90, cls_id=0)
+        track.track_id = 1
+        track.is_activated = True
+
+        dummy_frame = np.zeros((600, 600, 3), dtype=np.uint8)
+        # Object at far shoulder/arm: x in [260, 300] -> hcx = 280 (|hcx - pcx| = 80 = 0.40 * pw > 0.20 * pw)
+        shoulder_det = [{"box": [260.0, 110.0, 300.0, 150.0], "cls": 5, "name": "white_helmet", "conf": 0.85}]
+        reports, _ = engine.evaluate_frame([track], shoulder_det, dummy_frame)
+
+        assert len(reports) == 1
+        assert reports[0]["has_helmet"] is False, "Object out on shoulder must NOT match as head helmet!"

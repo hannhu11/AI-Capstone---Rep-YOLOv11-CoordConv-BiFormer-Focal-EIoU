@@ -356,8 +356,15 @@ class CCTVSurveillancePipeline:
                         sentry["box"] = b
                         if sentry["count"] > 30:
                             d["is_stationary_furniture"] = True
-                            if sentry["box"] not in self.confirmed_furniture_zones:
-                                self.confirmed_furniture_zones.append(list(sentry["box"]))
+                            if not sentry.get("is_confirmed", False):
+                                sentry["is_confirmed"] = True
+                                is_already_covered = any(
+                                    (max(0.0, min(b[2], zb[2]) - max(b[0], zb[0])) * max(0.0, min(b[3], zb[3]) - max(b[1], zb[1])))
+                                    / max(1.0, (b[2] - b[0]) * (b[3] - b[1])) >= 0.70
+                                    for zb in self.confirmed_furniture_zones
+                                )
+                                if not is_already_covered:
+                                    self.confirmed_furniture_zones.append(list(b))
                     else:
                         self.stationary_furniture_tracker[self.stationary_next_id] = {
                             "cx": cx,
@@ -365,6 +372,7 @@ class CCTVSurveillancePipeline:
                             "box": b,
                             "count": 1,
                             "last_frame": self.total_frames_processed,
+                            "is_confirmed": False,
                         }
                         self.stationary_next_id += 1
 
@@ -402,6 +410,15 @@ class CCTVSurveillancePipeline:
                         mean_val = float(np.mean(hsv[:, :, 2]))
                         if mean_val < 95.0:
                             continue
+
+                # Geometric Hardhat Plausibility Filter:
+                # Reject flat furniture / table surfaces (aspect ratio > 1.70) detected as helmets
+                if "helmet" in d["name"] or d["cls"] in (2, 3, 4, 5, 6):
+                    bx1, by1, bx2, by2 = d["box"][:4]
+                    bw = max(1.0, bx2 - bx1)
+                    bh = max(1.0, by2 - by1)
+                    if (bw / bh) > 1.70:
+                        continue
 
                 # Bipartite Spatial Association Filter (Eq. 24):
                 # Attenuate isolated PPE confidences by kappa = 0.15 if no person box overlaps by >= 25%
@@ -453,11 +470,15 @@ class CCTVSurveillancePipeline:
                     if "helmet" in d["name"]:
                         hb = d["box"]
                         hcx = (hb[0] + hb[2]) / 2.0
+                        hw = max(0.0, hb[2] - hb[0])
+                        hh = max(0.0, hb[3] - hb[1])
                         # Cranium Vertex Gating:
-                        # Genuine helmet top edge must be at or above head cranium (hy1 <= py1 + 0.18 * ph)
-                        if hb[1] > (tb[1] + 0.18 * th) or hb[3] < (tb[1] - 0.15 * th):
+                        # Genuine helmet top edge must be at or above head cranium (hy1 <= py1 + 0.12 * ph)
+                        if hb[1] > (tb[1] + 0.12 * th) or hb[3] < (tb[1] - 0.15 * th):
                             continue
-                        if abs(hcx - tcx) > 0.35 * tw:
+                        if abs(hcx - tcx) > 0.20 * tw:
+                            continue
+                        if hw > 0.85 * tw or (hw / max(1.0, hh)) > 1.70:
                             continue
                         if not (hb[2] < tb[0] or hb[0] > tb[2] or hb[3] < tb[1] or hb[1] > tb[1] + 0.40 * th):
                             matched_color = d.get("color") or d["name"].replace("_helmet", "")

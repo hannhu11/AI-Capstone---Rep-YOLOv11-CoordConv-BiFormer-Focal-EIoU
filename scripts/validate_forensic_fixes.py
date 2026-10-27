@@ -93,10 +93,19 @@ def validate_unauthorized_cctv():
                     sentry['box'] = b
                     if sentry['count'] > 30:
                         d['is_stationary_furniture'] = True
-                        if sentry['box'] not in confirmed_furniture_zones:
-                            confirmed_furniture_zones.append(list(sentry['box']))
+                        if not sentry.get('is_confirmed', False):
+                            sentry['is_confirmed'] = True
+                            is_already_covered = any(
+                                (max(0.0, min(b[2], zb[2]) - max(b[0], zb[0])) * max(0.0, min(b[3], zb[3]) - max(b[1], zb[1])))
+                                / max(1.0, (b[2] - b[0]) * (b[3] - b[1])) >= 0.70
+                                for zb in confirmed_furniture_zones
+                            )
+                            if not is_already_covered:
+                                confirmed_furniture_zones.append(list(b))
                 else:
-                    stationary_tracker[stationary_next_id] = {'cx': cx, 'cy': cy, 'box': b, 'count': 1, 'last_frame': frame_idx}
+                    stationary_tracker[stationary_next_id] = {
+                        'cx': cx, 'cy': cy, 'box': b, 'count': 1, 'last_frame': frame_idx, 'is_confirmed': False
+                    }
                     stationary_next_id += 1
 
         stationary_tracker = {
@@ -126,6 +135,14 @@ def validate_unauthorized_cctv():
                     mean_val = float(np.mean(hsv[:, :, 2]))
                     if mean_val < 95.0:
                         continue
+
+            # Geometric Hardhat Plausibility Filter (reject flat furniture)
+            if 'helmet' in d['name'] or d['cls'] in (2, 3, 4, 5, 6):
+                bx1, by1, bx2, by2 = d['box'][:4]
+                bw = max(1.0, bx2 - bx1)
+                bh = max(1.0, by2 - by1)
+                if (bw / bh) > 1.70:
+                    continue
 
             orig_conf = d['conf']
             max_overlap = 0.0
@@ -226,7 +243,84 @@ def validate_construction_1080p():
     print(">>> VALIDATION 2 PASSED 100%! <<<\n")
 
 
+def validate_cold_start_frame67():
+    print("=" * 70)
+    print("VALIDATION 3: Cold-Start Stream at Frame 67 (Zero Prior History)")
+    print("=" * 70)
+
+    video_path = "video_test/real_cctv_unauthorized_person_violations.mp4"
+    detector = SafetyObjectDetector(model_path='Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv7_best_deploy.pt')
+    tracker = BYTETracker()
+    engine = SpatialSafetyEngine(consecutive_frames_thresh=1)
+
+    cap = cv2.VideoCapture(video_path)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 67)
+
+    white_helmet_matches = 0
+    blue_helmet_matches = 0
+    violation_count = 0
+
+    for f in range(67, 75):
+        ret, frame = cap.read()
+        if not ret:
+            break
+        raw_dets, person_dets, _ = detector.predict(frame)
+        h_frame, w_frame = frame.shape[:2]
+
+        filtered_dets = []
+        for d in raw_dets:
+            if d['cls'] == 0 or 'person' in d['name']:
+                filtered_dets.append(d)
+                continue
+
+            # Blue helmet luminance gating
+            if d['name'] == 'blue_helmet' or d.get('color') == 'blue' or d['cls'] == 2:
+                bx1, by1, bx2, by2 = [int(round(v)) for v in d['box'][:4]]
+                bx1 = max(0, min(w_frame - 1, bx1))
+                by1 = max(0, min(h_frame - 1, by1))
+                bx2 = max(bx1 + 1, min(w_frame, bx2))
+                by2 = max(by1 + 1, min(h_frame, by2))
+                crop = frame[by1:by2, bx1:bx2]
+                if crop.size > 0 and np.any(crop > 0):
+                    hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+                    if float(np.mean(hsv[:, :, 2])) < 95.0:
+                        continue
+
+            # Geometric Hardhat Plausibility Filter
+            if 'helmet' in d['name'] or d['cls'] in (2, 3, 4, 5, 6):
+                bw = max(1.0, d['box'][2] - d['box'][0])
+                bh = max(1.0, d['box'][3] - d['box'][1])
+                if (bw / bh) > 1.70:
+                    continue
+
+            filtered_dets.append(d)
+
+        tracks = tracker.update(person_dets, frame=frame)
+        reports, alerts = engine.evaluate_frame(tracks, filtered_dets, frame)
+
+        for r in reports:
+            if r.get('helmet_color') == 'white':
+                white_helmet_matches += 1
+            if r.get('helmet_color') == 'blue':
+                blue_helmet_matches += 1
+            if r['status'] == 'VIOLATION':
+                violation_count += 1
+
+    cap.release()
+
+    print(f"Results on Cold Start Frame 67-74 (8 frames with 0 prior history):")
+    print(f" - Reports matching white helmet: {white_helmet_matches} (Must be 0)")
+    print(f" - Reports matching blue helmet:  {blue_helmet_matches} (Must be 0)")
+    print(f" - Violation reports:             {violation_count} (Expected >= 5)")
+
+    assert white_helmet_matches == 0, f"Table was matched as white helmet {white_helmet_matches} times during cold start!"
+    assert blue_helmet_matches == 0, f"Dark hair was matched as blue helmet {blue_helmet_matches} times during cold start!"
+    assert violation_count >= 5, f"Violation count {violation_count} below threshold 5!"
+    print(">>> VALIDATION 3 PASSED 100%! <<<\n")
+
+
 if __name__ == '__main__':
     validate_unauthorized_cctv()
     validate_construction_1080p()
+    validate_cold_start_frame67()
     print("ALL FORENSIC VALIDATION CRITERIA SATISFIED WITH 100% SCIENTIFIC INTEGRITY!")

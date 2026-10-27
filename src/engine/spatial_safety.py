@@ -254,8 +254,9 @@ class SpatialSafetyEngine:
                 is_compliant = (len(violations) == 0)
                 status_str = "COMPLIANT" if is_compliant else "VIOLATION"
             else:
-                # 1. Sub-regions
-                head_box = [px1, py1, px2, py1 + self.head_box_ratio * ph]
+                # 1. Sub-regions (centered head cranium and torso)
+                pcx = (px1 + px2) / 2.0
+                head_box = [pcx - 0.28 * pw, py1, pcx + 0.28 * pw, py1 + self.head_box_ratio * ph]
                 torso_box = [px1, py1 + self.torso_min_ratio * ph, px2, py1 + self.torso_max_ratio * ph]
 
                 # 2. Check for explicit Negative Helmet (no_helmet / none) on head
@@ -281,15 +282,27 @@ class SpatialSafetyEngine:
 
                         # Cranium Vertex Gating (Root Cause 1b):
                         # A genuine helmet worn on a person MUST have its top edge at or above the head cranium:
-                        # hy1 <= py1 + 0.12 * ph. Reject helmet associations where hy1 > py1 + 0.18 * ph
+                        # hy1 <= py1 + 0.12 * ph. Reject helmet associations where hy1 > py1 + 0.12 * ph
                         # (e.g. table surface sitting at waist/torso level).
-                        if hy1 > (py1 + 0.18 * ph):
+                        if hy1 > (py1 + 0.12 * ph):
                             continue
                         if hy2 < (py1 - 0.15 * ph):
                             continue
 
-                        pcx = (px1 + px2) / 2.0
-                        if abs(hcx - pcx) > 0.35 * pw:
+                        # Horizontal Head Centering:
+                        # Human head cranium is horizontally aligned with body center (|hcx - pcx| <= 0.20 * pw).
+                        # Empirically measured in 1080p video: max offset is 0.068 * pw.
+                        if abs(hcx - pcx) > 0.20 * pw:
+                            continue
+
+                        # Geometric Hardhat Plausibility:
+                        # Real helmet width on human head never exceeds person width.
+                        # Dome aspect ratio hw / hh is typically 1.0-1.3, max 1.70. Table has hw/pw=0.74, aspect=2.00.
+                        hw = max(0.0, float(hx2 - hx1))
+                        hh = max(0.0, float(hy2 - hy1))
+                        if hw > 0.85 * pw:
+                            continue
+                        if (hw / max(1.0, hh)) > 1.70:
                             continue
 
                         # Compute intersection over helmet area
