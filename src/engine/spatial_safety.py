@@ -178,7 +178,26 @@ class SpatialSafetyEngine:
                             color = c
                             break
                 color = color or "unknown"
-                positive_helmets.append({"box": box, "cls": cls_id, "name": name, "color": color, "conf": conf})
+
+                # Luminance / Value Gating on blue_helmet candidates (Root Cause 2):
+                # Bare dark hair under cool fluorescent lighting is misclassified as blue_helmet,
+                # but has very low luminance (V in [65, 82] out of 255) vs real blue hardhats (V >= 110).
+                # If mean HSV Value V < 95, reject it as dark hair / shadowed head texture!
+                if color == "blue" and frame_bgr is not None and frame_bgr.size > 0:
+                    bx1, by1, bx2, by2 = [int(round(v)) for v in box[:4]]
+                    h_img, w_img = frame_bgr.shape[:2]
+                    bx1 = max(0, min(w_img - 1, bx1))
+                    by1 = max(0, min(h_img - 1, by1))
+                    bx2 = max(bx1 + 1, min(w_img, bx2))
+                    by2 = max(by1 + 1, min(h_img, by2))
+                    crop = frame_bgr[by1:by2, bx1:bx2]
+                    if crop.size > 0 and np.any(crop > 0):
+                        hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+                        mean_val = float(np.mean(hsv[:, :, 2]))
+                        if mean_val < 95.0:
+                            continue
+
+                positive_helmets.append({"box": box, "cls": cls_id, "name": name, "color": color, "conf": conf, "is_stationary_furniture": d.get("is_stationary_furniture", False)})
                 continue
 
             # Check positive safety vest
@@ -206,14 +225,13 @@ class SpatialSafetyEngine:
             pw = max(0.0, px2 - px1)
             ph = max(0.0, py2 - py1)
 
-            # Boundary Transition Zone check:
-            # If worker is touching the edge of the camera frame, their head or vest may be partially outside
-            # the field of view. Mark border status and suppress premature violation streaks.
+            # Dynamic resolution-aware border margin: max(20, 5% of min dimension)
+            border_margin = max(20, int(0.05 * min(h_frame, w_frame)))
             is_at_border = (
-                px1 <= self.border_margin_px
-                or py1 <= self.border_margin_px
-                or px2 >= (w_frame - self.border_margin_px)
-                or py2 >= (h_frame - self.border_margin_px)
+                px1 <= border_margin
+                or py1 <= border_margin
+                or px2 >= (w_frame - border_margin)
+                or py2 >= (h_frame - border_margin)
             )
 
             # 2. Geometry check: Worker box must meet minimum dimensions and valid aspect ratio
@@ -254,10 +272,25 @@ class SpatialSafetyEngine:
                 matched_helmet = None
                 if not has_explicit_no_helmet:
                     for h in positive_helmets:
+                        if h.get("is_stationary_furniture", False):
+                            continue
                         hb = h["box"]
                         hx1, hy1, hx2, hy2 = hb[:4]
                         hcx = (hx1 + hx2) / 2.0
                         hcy = (hy1 + hy2) / 2.0
+
+                        # Cranium Vertex Gating (Root Cause 1b):
+                        # A genuine helmet worn on a person MUST have its top edge at or above the head cranium:
+                        # hy1 <= py1 + 0.12 * ph. Reject helmet associations where hy1 > py1 + 0.18 * ph
+                        # (e.g. table surface sitting at waist/torso level).
+                        if hy1 > (py1 + 0.18 * ph):
+                            continue
+                        if hy2 < (py1 - 0.15 * ph):
+                            continue
+
+                        pcx = (px1 + px2) / 2.0
+                        if abs(hcx - pcx) > 0.35 * pw:
+                            continue
 
                         # Compute intersection over helmet area
                         inter_x = max(0.0, min(head_box[2], hx2) - max(head_box[0], hx1))
@@ -314,12 +347,19 @@ class SpatialSafetyEngine:
                 if not has_vest:
                     violations.append("MISSING_SAFETY_VEST")
 
-                # Boundary Truncation Protection:
-                # If worker was previously compliant and is touching the camera frame edge,
+                # Boundary Truncation Protection (Root Cause 3 Fix):
+                # If worker was PREVIOUSLY compliant (compliance_streak >= 2) and is touching the camera frame edge,
                 # disappearing vest/helmet due to physical border clipping is NOT an infraction!
-                if is_at_border and not has_explicit_no_vest and not has_explicit_no_helmet:
-                    if getattr(track, "compliance_streak", 0) >= 2 or getattr(track, "violation_streak", 0) == 0:
-                        violations = []
+                if is_at_border and getattr(track, "compliance_streak", 0) >= 2:
+                    # Only suppress MISSING_SAFETY_VEST if the TORSO region itself is physically cut by the frame border (y1 <= 10 or y2 >= h - 10)
+                    torso_cut = (torso_box[1] <= 10.0 or torso_box[3] >= (h_frame - 10.0))
+                    if "MISSING_SAFETY_VEST" in violations and torso_cut and not has_explicit_no_vest:
+                        violations.remove("MISSING_SAFETY_VEST")
+
+                    # Only suppress MISSING_SAFETY_HELMET if the HEAD region itself is physically cut by the frame border (y1 <= 10)
+                    head_cut = (head_box[1] <= 10.0 or head_box[3] >= (h_frame - 10.0))
+                    if "MISSING_SAFETY_HELMET" in violations and head_cut and not has_explicit_no_helmet:
+                        violations.remove("MISSING_SAFETY_HELMET")
 
                 is_compliant = (len(violations) == 0)
                 status_str = "COMPLIANT" if is_compliant else "VIOLATION"
@@ -330,10 +370,7 @@ class SpatialSafetyEngine:
                 track.last_violation_types = violations
 
             # 7. Debounce streak update
-            if is_at_border:
-                # In boundary transition zone: worker entering or exiting, freeze/decrement streak
-                track.violation_streak = max(0, track.violation_streak - 1)
-            elif is_predicted_frame:
+            if is_predicted_frame:
                 # During grace period prediction, do not increment violation streak
                 pass
             elif is_compliant:
@@ -383,7 +420,6 @@ class SpatialSafetyEngine:
             should_alert = (
                 not is_predicted_frame
                 and not is_compliant
-                and not is_at_border
                 and is_mature_track
                 and track.violation_streak >= self.consecutive_frames_thresh
                 and strict_cooldown_passed

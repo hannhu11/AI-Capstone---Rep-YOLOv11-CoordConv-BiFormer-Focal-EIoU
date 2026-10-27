@@ -556,7 +556,7 @@
         data: {
           labels: ['Blue', 'Green', 'Red', 'White', 'Yellow'],
           datasets: [{
-            data: [1, 1, 1, 1, 1],
+            data: [0, 0, 0, 0, 0],
             backgroundColor: ['#0284c7', '#10b981', '#ef4444', '#e2e8f0', '#f59e0b'],
             borderWidth: 2,
             borderColor: '#1e293b',
@@ -613,7 +613,7 @@
             const h = data.helmet_colors;
             const vals = [h.blue || 0, h.green || 0, h.red || 0, h.white || 0, h.yellow || 0];
             const sum = vals.reduce((a, b) => a + b, 0);
-            helmetColorChart.data.datasets[0].data = sum > 0 ? vals : [1, 1, 1, 1, 1];
+            helmetColorChart.data.datasets[0].data = sum > 0 ? vals : [0, 0, 0, 0, 0];
             helmetColorChart.update('none');
           }
         } catch (e) {

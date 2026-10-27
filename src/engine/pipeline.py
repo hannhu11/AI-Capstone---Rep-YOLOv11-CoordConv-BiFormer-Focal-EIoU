@@ -39,6 +39,40 @@ CLASS_COLORS = {
 }
 
 
+def compute_box_intersection_ratio(
+    box_a: List[float] | np.ndarray,
+    box_b: List[float] | np.ndarray,
+    use_upper_torso: bool = True,
+    upper_torso_ratio: float = 0.60,
+) -> float:
+    r"""
+    Computes fraction of box_a's area that overlaps with box_b (or box_b's upper torso).
+    Overlap ratio = |box_a \cap box_b| / |box_a|
+    """
+    ax1, ay1, ax2, ay2 = box_a[:4]
+    bx1, by1, bx2, by2 = box_b[:4]
+
+    aw = max(0.0, float(ax2 - ax1))
+    ah = max(0.0, float(ay2 - ay1))
+    a_area = aw * ah
+    if a_area <= 1e-7:
+        return 0.0
+
+    if use_upper_torso:
+        by2_eff = float(by1) + max(0.0, float(by2 - by1)) * upper_torso_ratio
+    else:
+        by2_eff = float(by2)
+
+    ix1 = max(float(ax1), float(bx1))
+    iy1 = max(float(ay1), float(by1))
+    ix2 = min(float(ax2), float(bx2))
+    iy2 = min(float(ay2), by2_eff)
+
+    inter_w = max(0.0, ix2 - ix1)
+    inter_h = max(0.0, iy2 - iy1)
+    return (inter_w * inter_h) / a_area
+
+
 class CCTVSurveillancePipeline:
     """Thread-safe CCTV Surveillance and Video Processing Pipeline."""
 
@@ -67,9 +101,13 @@ class CCTVSurveillancePipeline:
             vest_overlap_thresh=config.vest_overlap_thresh,
             consecutive_frames_thresh=config.consecutive_violation_frames,
             cooldown_seconds=config.alert_cooldown_seconds,
-            border_margin_px=60,
             min_tracklet_len=getattr(config, "min_tracklet_len", 15),
         )
+
+        # Stationary Furniture Prior Tracker (Root Cause 1c)
+        self.stationary_furniture_tracker: Dict[int, Dict[str, Any]] = {}
+        self.confirmed_furniture_zones: List[List[float]] = []
+        self.stationary_next_id: int = 1
 
         # Focus / Solo Tracking Inspection Mode
         self.focus_track_id: Optional[int] = None
@@ -261,6 +299,9 @@ class CCTVSurveillancePipeline:
                     # Reset tracker on loop to prevent stale tracks carrying over
                     self.tracker.reset()
                     self.safety_engine.reset()
+                    self.stationary_furniture_tracker.clear()
+                    self.confirmed_furniture_zones.clear()
+                    self.stationary_next_id = 1
                     reid_registry.on_video_loop()
                 if not ret:
                     time.sleep(0.03)
@@ -280,6 +321,108 @@ class CCTVSurveillancePipeline:
             # 1. Run Object Detection (Inside Lock to avoid CUDA concurrency collisions)
             detections, person_dets, infer_ms = self.detector.predict(frame)
             self.inference_latency_ms = infer_ms
+
+            # Stationary Furniture Tracker (Root Cause 1c)
+            # Track static candidate detections across frames; candidates remaining motionless for > 30 frames
+            # are classified as stationary furniture (e.g. white round table, warning signs) and suppressed.
+            for d in detections:
+                if d["cls"] != 0 and "person" not in d["name"]:
+                    b = d["box"]
+                    cx = (b[0] + b[2]) / 2.0
+                    cy = (b[1] + b[3]) / 2.0
+
+                    # Check against established stationary furniture zones
+                    is_in_zone = False
+                    for zb in self.confirmed_furniture_zones:
+                        inter_w = max(0.0, min(b[2], zb[2]) - max(b[0], zb[0]))
+                        inter_h = max(0.0, min(b[3], zb[3]) - max(b[1], zb[1]))
+                        b_area = max(1.0, (b[2] - b[0]) * (b[3] - b[1]))
+                        if (inter_w * inter_h) / b_area >= 0.50:
+                            is_in_zone = True
+                            break
+                    if is_in_zone:
+                        d["is_stationary_furniture"] = True
+                        continue
+
+                    matched_sid = None
+                    for sid, sinfo in self.stationary_furniture_tracker.items():
+                        if abs(cx - sinfo["cx"]) <= 12.0 and abs(cy - sinfo["cy"]) <= 12.0:
+                            matched_sid = sid
+                            break
+                    if matched_sid is not None:
+                        sentry = self.stationary_furniture_tracker[matched_sid]
+                        sentry["count"] += 1
+                        sentry["last_frame"] = self.total_frames_processed
+                        sentry["box"] = b
+                        if sentry["count"] > 30:
+                            d["is_stationary_furniture"] = True
+                            if sentry["box"] not in self.confirmed_furniture_zones:
+                                self.confirmed_furniture_zones.append(list(sentry["box"]))
+                    else:
+                        self.stationary_furniture_tracker[self.stationary_next_id] = {
+                            "cx": cx,
+                            "cy": cy,
+                            "box": b,
+                            "count": 1,
+                            "last_frame": self.total_frames_processed,
+                        }
+                        self.stationary_next_id += 1
+
+            # Prune stationary tracker items not seen for > 15 frames
+            self.stationary_furniture_tracker = {
+                sid: sinfo
+                for sid, sinfo in self.stationary_furniture_tracker.items()
+                if (self.total_frames_processed - sinfo["last_frame"]) <= 15
+            }
+
+            # Bipartite Spatial Association Filter (Root Cause 1a) & Luminance Gating (Root Cause 2)
+            filtered_detections: List[Dict[str, Any]] = []
+            h_frame, w_frame = frame.shape[:2]
+
+            for d in detections:
+                if d["cls"] == 0 or "person" in d["name"]:
+                    filtered_detections.append(d)
+                    continue
+
+                # Suppress Stationary Furniture (Root Cause 1c)
+                if d.get("is_stationary_furniture", False):
+                    continue
+
+                # Luminance / Value Gating for blue_helmet candidates (Root Cause 2)
+                # Sample candidate crop; if mean HSV Value V < 95, reject as dark hair / shadowed head texture
+                if d["name"] == "blue_helmet" or d.get("color") == "blue" or d["cls"] == 2:
+                    bx1, by1, bx2, by2 = [int(round(v)) for v in d["box"][:4]]
+                    bx1 = max(0, min(w_frame - 1, bx1))
+                    by1 = max(0, min(h_frame - 1, by1))
+                    bx2 = max(bx1 + 1, min(w_frame, bx2))
+                    by2 = max(by1 + 1, min(h_frame, by2))
+                    crop = frame[by1:by2, bx1:bx2]
+                    if crop.size > 0 and np.any(crop > 0):
+                        hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+                        mean_val = float(np.mean(hsv[:, :, 2]))
+                        if mean_val < 95.0:
+                            continue
+
+                # Bipartite Spatial Association Filter (Eq. 24):
+                # Attenuate isolated PPE confidences by kappa = 0.15 if no person box overlaps by >= 25%
+                orig_conf = d["conf"]
+                max_overlap = 0.0
+                if len(person_dets) > 0:
+                    is_helmet = "helmet" in d["name"] or d["cls"] in (2, 3, 4, 5, 6)
+                    for p_box in person_dets:
+                        ov = compute_box_intersection_ratio(
+                            d["box"], p_box[:4], use_upper_torso=is_helmet, upper_torso_ratio=0.60
+                        )
+                        if ov > max_overlap:
+                            max_overlap = ov
+
+                effective_conf = orig_conf if max_overlap >= 0.25 else orig_conf * 0.15
+                if effective_conf >= 0.25:
+                    d_c = dict(d)
+                    d_c["conf"] = round(effective_conf, 4)
+                    filtered_detections.append(d_c)
+
+            detections = filtered_detections
 
             # Filter candidate person detections before tracking to discard background noise smudges
             # Relax edge bounding box aspect ratio: If box touches image borders, allow w/h <= 3.5;
@@ -303,10 +446,20 @@ class CCTVSurveillancePipeline:
             for track in active_tracks:
                 tb = track.tlbr
                 matched_color = None
+                th = max(1.0, tb[3] - tb[1])
+                tw = max(1.0, tb[2] - tb[0])
+                tcx = (tb[0] + tb[2]) / 2.0
                 for d in detections:
                     if "helmet" in d["name"]:
                         hb = d["box"]
-                        if not (hb[2] < tb[0] or hb[0] > tb[2] or hb[3] < tb[1] or hb[1] > tb[1] + 0.40 * (tb[3] - tb[1])):
+                        hcx = (hb[0] + hb[2]) / 2.0
+                        # Cranium Vertex Gating:
+                        # Genuine helmet top edge must be at or above head cranium (hy1 <= py1 + 0.18 * ph)
+                        if hb[1] > (tb[1] + 0.18 * th) or hb[3] < (tb[1] - 0.15 * th):
+                            continue
+                        if abs(hcx - tcx) > 0.35 * tw:
+                            continue
+                        if not (hb[2] < tb[0] or hb[0] > tb[2] or hb[3] < tb[1] or hb[1] > tb[1] + 0.40 * th):
                             matched_color = d.get("color") or d["name"].replace("_helmet", "")
                             break
                 canonical_id = reid_registry.get_or_create_canonical_id(
