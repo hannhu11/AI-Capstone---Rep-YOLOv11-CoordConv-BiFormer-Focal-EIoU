@@ -26,8 +26,6 @@ def main():
     assert pipe1.frame_stride == 2, f"Expected stride 2 for 60 FPS stream, got {pipe1.frame_stride}"
 
     t_start = time.perf_counter()
-    processed_count = 0
-    t_start = time.perf_counter()
     last_idx = -1
     processed_count = 0
     while processed_count < 100:
@@ -72,9 +70,6 @@ def main():
     pipe2.stop()
     print(f"Video 2 Complete: {processed_count} frames streamed in {elapsed:.2f}s ({processed_count / elapsed:.1f} FPS)")
 
-    elapsed = time.perf_counter() - t_start
-    pipe2.stop()
-    print(f"Video 2 Complete: {processed_count} frames processed in {elapsed:.2f}s ({processed_count / elapsed:.1f} FPS)")
 
     print("\n=================================================================")
     print("VERIFICATION RESULT: ALL VIDEO PIPELINE TESTS PASSED!")

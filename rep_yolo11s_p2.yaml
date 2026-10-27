@@ -1,5 +1,5 @@
 # Rep-YOLO11s-P2 Decoupled AFPN (4-Head High-Resolution PPE Detector)
-nc: 7
+nc: 6
 scales:
   s: [0.50, 0.50, 1024]
 

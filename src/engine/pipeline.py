@@ -333,9 +333,9 @@ class CCTVSurveillancePipeline:
                     self.detector.device = "cpu"
                     self.detector.use_half = False
 
-            # Target ~30 FPS smooth pacing
+            # Target stream-accurate pacing based on frame stride and stream FPS
             elapsed = time.perf_counter() - t0
-            target_delay = 1.0 / 30.0
+            target_delay = float(self.frame_stride) / max(1.0, float(self.stream_fps))
             if elapsed < target_delay:
                 time.sleep(target_delay - elapsed)
 
@@ -840,5 +840,16 @@ class CCTVSurveillancePipeline:
             }
 
 
-# Global singleton pipeline instance
-cctv_pipeline = CCTVSurveillancePipeline()
+# Lazy singleton pipeline proxy (delays background thread & GPU allocation until first accessed)
+class _LazyPipelineProxy:
+    _instance: Optional[CCTVSurveillancePipeline] = None
+
+    def _get_instance(self) -> CCTVSurveillancePipeline:
+        if self._instance is None:
+            self._instance = CCTVSurveillancePipeline()
+        return self._instance
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._get_instance(), name)
+
+cctv_pipeline = _LazyPipelineProxy()

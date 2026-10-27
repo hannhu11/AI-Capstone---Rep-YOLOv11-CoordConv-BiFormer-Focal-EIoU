@@ -244,3 +244,45 @@ def test_reid_reassociates_worker_1_when_same_worker_reenters_near_border():
     # Must re-associate back to Worker #1!
     assert reid_cid == 1, f"Expected Worker #1 preserved on re-entry, got #{reid_cid}"
 
+
+def test_reid_does_not_reassign_worker_1_when_departed_and_new_worker_appears_in_interior():
+    """When Worker #1 leaves scene, a new entrant in the interior with different clothing must NOT steal Worker #1's ID."""
+    registry = PersistentTrackRegistry(reid_affinity_thresh=0.40)
+
+    # Worker 1 appearance: Bright Yellow Torso in middle of frame
+    frame_w1 = np.full((1080, 1920, 3), 30, dtype=np.uint8)
+    frame_w1[:, :] = (30, 220, 220)
+    box_w1_mid = np.array([500.0, 300.0, 700.0, 700.0])
+
+    for f in range(1, 15):
+        cid = registry.get_or_create_canonical_id(1, box_w1_mid, frame_w1, "yellow", f)
+        assert cid == 1
+        registry.update_frame_end([cid], f)
+
+    assert registry.profiles[1].is_confirmed
+
+    # Worker 1 departs scene; 20 frames pass
+    for f in range(15, 36):
+        registry.update_frame_end([], f)
+
+    assert registry.profiles[1].is_active is False
+
+    # New entrant appears nearby in interior: completely different dark navy clothing
+    frame_w2 = np.full((1080, 1920, 3), 30, dtype=np.uint8)
+    frame_w2[:, :] = (180, 50, 30)
+    box_new = np.array([540.0, 310.0, 730.0, 710.0])
+
+    new_cid = registry.get_or_create_canonical_id(
+        raw_track_id=88,
+        box=box_new,
+        frame=frame_w2,
+        helmet_color="yellow",  # even if wearing same color helmet!
+        frame_idx=37,
+    )
+
+    # CRITICAL: Must mint new canonical ID #2, NOT steal departed Worker #1!
+    assert new_cid == 2, f"Expected new entrant to be assigned Worker #2, got #{new_cid}"
+    assert 1 in registry.profiles
+    assert 2 in registry.profiles
+
+

@@ -150,7 +150,7 @@ class SafetyObjectDetector:
             predict_kwargs["half"] = True
 
         with torch.inference_mode():
-            if "cuda" in str(self.device).lower():
+            if self.use_half and "cuda" in str(self.device).lower():
                 with torch.amp.autocast("cuda"):
                     results = self.yolo.predict(frame_bgr, **predict_kwargs)
             else:

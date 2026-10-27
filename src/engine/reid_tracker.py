@@ -301,13 +301,17 @@ class PersistentTrackRegistry:
 
                     # Anti-Hijack Guard:
                     # - If app_sim >= 0.45 (identical torso appearance), NEVER split the track on color flicker alone.
-                    # - Only break binding if appearance similarity is genuinely divergent (app_sim < 0.25) AND color conflict persists over multiple frames (>= 3 frames),
-                    #   or if appearance is severely divergent (app_sim < 0.05) and color conflict exists.
+                    # - Only break binding if appearance similarity is divergent:
+                    #   * app_sim < 0.20: Severely divergent torso appearance (different person/clothes), break immediately!
+                    #   * app_sim < 0.35 and color_conflict: Moderate divergence with conflicting helmet color, break immediately!
+                    #   * app_sim < 0.35 and persistent_conflict (>= 3 frames): Break binding!
                     should_break = False
                     if app_sim < 0.45:
-                        if app_sim < 0.25 and persistent_conflict:
+                        if app_sim < 0.20:
                             should_break = True
-                        elif app_sim < 0.05 and color_conflict:
+                        elif app_sim < 0.35 and color_conflict:
+                            should_break = True
+                        elif app_sim < 0.35 and persistent_conflict:
                             should_break = True
 
                     if should_break:
@@ -369,8 +373,11 @@ class PersistentTrackRegistry:
         for p in inactive_profiles:
             sim_color = max(0.0, p.get_max_appearance_sim(hist))
 
-            # Strictly require appearance similarity sim_color >= 0.50 before re-associating
-            # an inactive profile to a new entrant near the border to prevent hijacking Worker #1!
+            # Strictly require minimum appearance similarity sim_color >= 0.35 before re-associating
+            # any inactive profile to prevent an entrant from stealing a departed worker's ID (e.g. Worker #1).
+            # Near borders, require higher similarity sim_color >= 0.50.
+            if sim_color < 0.35:
+                continue
             if is_candidate_near_border and p.last_seen_near_border and sim_color < 0.50:
                 continue
 
@@ -536,6 +543,12 @@ class PersistentTrackRegistry:
         # Periodic consolidation every 30 frames
         if frame_idx % 30 == 0:
             self.consolidate_profiles(frame_idx)
+            # Clean stale raw_to_canonical mappings for tracks inactive for > 60 frames
+            for raw_id, cid in list(self.raw_to_canonical.items()):
+                if cid in self.profiles and not self.profiles[cid].is_active:
+                    if (frame_idx - self.profiles[cid].last_seen_frame) > 60:
+                        self.raw_to_canonical.pop(raw_id, None)
+                        self.raw_to_conflict_streak.pop(raw_id, None)
 
         if self.loop_cooldown_frames > 0:
             self.loop_cooldown_frames -= 1

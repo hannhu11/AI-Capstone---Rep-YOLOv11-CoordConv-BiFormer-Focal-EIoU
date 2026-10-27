@@ -365,28 +365,29 @@ class SpatialSafetyEngine:
 
                 # Boundary Truncation Protection (Root Cause 3 Fix):
                 # 1. Exiting worker protection: If worker was PREVIOUSLY compliant (compliance_streak >= 2) and touches edge
-                # 2. Entering worker protection: For new tracklets (tracklet_len <= 8 or time_since_update <= 2) touching edge
-                is_entering = (getattr(track, "tracklet_len", 0) <= 8 or getattr(track, "time_since_update", 0) <= 2)
+                # 2. Entering worker protection: For new tracklets (tracklet_len <= 8) touching edge
+                is_entering = (getattr(track, "tracklet_len", 0) <= 8)
                 was_compliant = (getattr(track, "compliance_streak", 0) >= 2)
 
                 if is_at_border and (was_compliant or is_entering):
+                    edge_cut_thresh = 5.0
                     # Suppress MISSING_SAFETY_VEST if the TORSO region itself is physically cut by any frame border
                     torso_cut = (
-                        torso_box[1] <= 10.0
-                        or torso_box[3] >= (h_frame - 10.0)
-                        or py2 >= (h_frame - 10.0)
-                        or px1 <= 10.0
-                        or px2 >= (w_frame - 10.0)
+                        torso_box[1] <= edge_cut_thresh
+                        or torso_box[3] >= (h_frame - edge_cut_thresh)
+                        or py2 >= (h_frame - edge_cut_thresh)
+                        or px1 <= edge_cut_thresh
+                        or px2 >= (w_frame - edge_cut_thresh)
                     )
                     if "MISSING_SAFETY_VEST" in violations and torso_cut and not has_explicit_no_vest:
                         violations.remove("MISSING_SAFETY_VEST")
 
                     # Suppress MISSING_SAFETY_HELMET if the HEAD region itself is physically cut by any frame border
                     head_cut = (
-                        py1 <= 10.0
-                        or head_box[3] >= (h_frame - 10.0)
-                        or px1 <= 10.0
-                        or px2 >= (w_frame - 10.0)
+                        py1 <= edge_cut_thresh
+                        or head_box[3] >= (h_frame - edge_cut_thresh)
+                        or px1 <= edge_cut_thresh
+                        or px2 >= (w_frame - edge_cut_thresh)
                     )
                     if "MISSING_SAFETY_HELMET" in violations and head_cut and not has_explicit_no_helmet:
                         violations.remove("MISSING_SAFETY_HELMET")
