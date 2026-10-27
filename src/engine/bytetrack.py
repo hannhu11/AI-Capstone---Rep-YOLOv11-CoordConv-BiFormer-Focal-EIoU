@@ -59,6 +59,7 @@ class STrack:
         self.color_history: deque[Optional[str]] = deque(maxlen=15)
         self.unconfirmed_misses = 0
         self.history_centers: List[Tuple[float, float]] = []
+        self.hist: Optional[np.ndarray] = None
 
     @property
     def stable_helmet_color(self) -> Optional[str]:
@@ -113,6 +114,8 @@ class STrack:
             self.track_id = self.next_id()
         self.score = new_track.score
         self.cls_id = new_track.cls_id
+        if new_track.hist is not None:
+            self.hist = new_track.hist if self.hist is None else (0.85 * self.hist + 0.15 * new_track.hist)
         self._record_center()
 
     def update(self, new_track: STrack, frame_id: int):
@@ -130,6 +133,8 @@ class STrack:
         self.is_activated = True
         self.score = new_track.score
         self.cls_id = new_track.cls_id
+        if new_track.hist is not None:
+            self.hist = new_track.hist if self.hist is None else (0.85 * self.hist + 0.15 * new_track.hist)
         self._record_center()
 
     def predict(self):
@@ -284,15 +289,28 @@ def compute_matching_cost(tracks: List[STrack], detections: List[STrack]) -> np.
 
     for i in range(len(tracks)):
         for j in range(len(detections)):
+            d_full = float(np.hypot(c_ax[i] - c_bx[j], c_ay[i] - c_by[j])) / diag
+            d_ub = float(np.hypot(ub_c_ax[i] - ub_c_bx[j], ub_c_ay[i] - ub_c_by[j])) / diag
+            d_center = min(d_full, d_ub)
+            u_iou = float(upper_iou[i, j])
+
             if dists[i, j] > 0.70:
-                d_full = float(np.hypot(c_ax[i] - c_bx[j], c_ay[i] - c_by[j])) / diag
-                d_ub = float(np.hypot(ub_c_ax[i] - ub_c_bx[j], ub_c_ay[i] - ub_c_by[j])) / diag
-                d_center = min(d_full, d_ub)
-                u_iou = float(upper_iou[i, j])
                 if d_center <= 0.08 and u_iou >= 0.20:
                     # Accept fallback match: scale into [0.45, 0.65] <= match_thresh (0.70)
                     fallback_dist = 0.65 - 0.20 * min(1.0, (u_iou - 0.20) / 0.80)
                     dists[i, j] = min(dists[i, j], fallback_dist)
+
+            # Appearance Feature Affinity Gating: Prevents identity swap during cross-over
+            if tracks[i].hist is not None and detections[j].hist is not None:
+                from src.engine.reid_tracker import hist_correlation
+                sim_app = hist_correlation(tracks[i].hist, detections[j].hist)
+                if sim_app < 0.15:
+                    # Distinct appearance conflict (e.g. Yellow Vest vs Grey Shirt)
+                    # Add heavy penalty to prevent Hungarian algorithm from swapping them!
+                    dists[i, j] += 0.80
+                elif sim_app >= 0.40 and (full_iou[i, j] > 0.05 or d_center <= 0.15):
+                    # Appearance similarity reward strictly conditioned on spatial proximity
+                    dists[i, j] = 0.60 * dists[i, j] + 0.40 * max(0.0, 1.0 - sim_app)
 
     return dists
 
@@ -336,9 +354,10 @@ class BYTETracker:
         self.frame_id = 0
         STrack.reset_counter()
 
-    def update(self, dets: np.ndarray) -> List[STrack]:
+    def update(self, dets: np.ndarray, frame: Optional[np.ndarray] = None) -> List[STrack]:
         """
         dets: array of shape (N, 5 or 6) with format: [x1, y1, x2, y2, score, (cls_id)]
+        frame: optional BGR image frame used for computing upper-torso appearance histograms.
         Returns: list of currently confirmed, active tracked STrack objects.
         """
         self.frame_id += 1
@@ -372,10 +391,13 @@ class BYTETracker:
             classes_second = np.empty((0,), dtype=int)
 
         # 1. Instantiate STrack candidate objects for first association
-        detections = [
-            STrack(STrack.tlbr_to_tlwh(tlbr), s, c)
-            for tlbr, s, c in zip(dets_first, scores_first, classes_first)
-        ]
+        detections = []
+        for tlbr, s, c in zip(dets_first, scores_first, classes_first):
+            trk = STrack(STrack.tlbr_to_tlwh(tlbr), s, c)
+            if frame is not None:
+                from src.engine.reid_tracker import compute_appearance_hist
+                trk.hist = compute_appearance_hist(frame, tlbr, use_torso_only=True)
+            detections.append(trk)
 
         # 2. Divide tracks into tracked pool and lost pool
         unconfirmed = []
@@ -408,10 +430,13 @@ class BYTETracker:
                 refind_stracks.append(track)
 
         # 4. Second Association: Low-score detections with remaining unmatched tracks
-        detections_second = [
-            STrack(STrack.tlbr_to_tlwh(tlbr), s, c)
-            for tlbr, s, c in zip(dets_second, scores_second, classes_second)
-        ]
+        detections_second = []
+        for tlbr, s, c in zip(dets_second, scores_second, classes_second):
+            trk = STrack(STrack.tlbr_to_tlwh(tlbr), s, c)
+            if frame is not None:
+                from src.engine.reid_tracker import compute_appearance_hist
+                trk.hist = compute_appearance_hist(frame, tlbr, use_torso_only=True)
+            detections_second.append(trk)
         r_tracked_stracks = [strack_pool[i] for i in u_track if strack_pool[i].state in (TrackState.Tracked, TrackState.Lost)]
 
         dists_second = compute_matching_cost(r_tracked_stracks, detections_second)

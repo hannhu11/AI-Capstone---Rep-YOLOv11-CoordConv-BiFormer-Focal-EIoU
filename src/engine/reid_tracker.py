@@ -3,12 +3,13 @@ src/engine/reid_tracker.py
 ==========================
 SOTA Spatio-Temporal Worker Re-Identification & Persistent Appearance Memory.
 Features:
-- Upper-Torso ROI Color Signature (immune to floor background contamination).
+- Upper-Torso ROI Color Signature (immune to floor background contamination & edge truncation).
+- Anti-Hijack Guard: Layer 2 verification against cross-over identity swaps.
 - Track Confirmation & Maturity Filtering (eliminates 1-frame ghost false positives).
-- Violation-Resilient Affinity Matrix (zero penalty for missing helmet / PPE violations).
-- Multi-View Appearance Gallery with EMA (matches workers front/back/profile).
-- Velocity-Aware Motion Extrapolation (tracks moving workers across occlusions).
-- Low-Density Single-Worker Fallback (strictly bounds ID population to true head count).
+- Single-Worker Low Density Prior (strictly bounds ID population to true head count).
+- Multi-View Appearance Gallery with EMA (matches workers across varied angles).
+- Dynamic Border Re-entry Affinity (smooth re-acquisition of workers entering/exiting frame edges).
+- Automatic Spatio-Temporal Profile Consolidation (merges temporal split IDs caused by posture shifts).
 - Infinite Loop Anchor Lock (Worker #1 at frame 0 remains Worker #1 across infinite loops).
 """
 
@@ -23,16 +24,32 @@ from typing import Dict, Any, Optional, List, Tuple
 def extract_torso_roi(box: np.ndarray, h_img: int, w_img: int) -> Tuple[int, int, int, int]:
     """
     Extracts the upper-torso bounding box crop (18% - 62% height, 15% - 85% width).
-    This region strictly captures safety vests and shirts while discarding floor background.
+    Robust to bottom-edge leg truncation and bending/stooping postures.
     """
     x1, y1, x2, y2 = box[:4]
-    bw = x2 - x1
-    bh = y2 - y1
+    bw = max(1.0, float(x2 - x1))
+    bh = max(1.0, float(y2 - y1))
+    aspect = bh / bw
+
+    is_bottom_truncated = (y2 >= h_img - 20)
+    is_bending = (aspect < 1.45)
+
+    if is_bottom_truncated and aspect < 2.0:
+        # Legs are clipped off by the bottom frame border.
+        # Visible portion consists mainly of the head and upper torso.
+        ty1 = int(max(0, min(h_img - 1, y1 + 0.20 * bh)))
+        ty2 = int(max(ty1 + 1, min(h_img, y2)))
+    elif is_bending:
+        # Stooping/bending posture: back and torso occupy upper-central portion.
+        ty1 = int(max(0, min(h_img - 1, y1 + 0.15 * bh)))
+        ty2 = int(max(ty1 + 1, min(h_img, y1 + 0.70 * bh)))
+    else:
+        # Standard upright walking posture: upper torso between 18% and 62% of box height.
+        ty1 = int(max(0, min(h_img - 1, y1 + 0.18 * bh)))
+        ty2 = int(max(ty1 + 1, min(h_img, y1 + 0.62 * bh)))
 
     tx1 = int(max(0, min(w_img - 1, x1 + 0.15 * bw)))
     tx2 = int(max(tx1 + 1, min(w_img, x2 - 0.15 * bw)))
-    ty1 = int(max(0, min(h_img - 1, y1 + 0.18 * bh)))
-    ty2 = int(max(ty1 + 1, min(h_img, y1 + 0.62 * bh)))
     return tx1, ty1, tx2, ty2
 
 
@@ -94,6 +111,8 @@ class PersistentWorkerProfile:
         self.consecutive_hits = 1
         self.status = "COMPLIANT"
         self.violations: List[str] = []
+        self.last_seen_near_border = False
+        self.active_intervals: List[Tuple[int, int]] = [(frame_idx, frame_idx)]
 
         # Velocity tracking (dx, dy per frame)
         self.vx = 0.0
@@ -119,6 +138,7 @@ class PersistentWorkerProfile:
         hist: Optional[np.ndarray] = None,
         status: str = "COMPLIANT",
         violations: Optional[List[str]] = None,
+        frame_shape: Optional[Tuple[int, int]] = None,
     ):
         dt = max(1, frame_idx - self.last_seen_frame)
         prev_cx = (self.last_box[0] + self.last_box[2]) / 2.0
@@ -142,6 +162,19 @@ class PersistentWorkerProfile:
         self.is_active = True
         self.status = status
         self.violations = violations or []
+
+        # Track active intervals for co-existence validation
+        if self.active_intervals and self.active_intervals[-1][1] >= frame_idx - 2:
+            self.active_intervals[-1] = (self.active_intervals[-1][0], frame_idx)
+        else:
+            self.active_intervals.append((frame_idx, frame_idx))
+
+        # Check if worker is near border
+        if frame_shape is not None:
+            h_img, w_img = frame_shape[:2]
+            self.last_seen_near_border = (
+                box[0] <= 50 or box[1] <= 50 or box[2] >= w_img - 50 or box[3] >= h_img - 50
+            )
 
         # Only update helmet color if a valid color is positively detected
         if helmet_color and helmet_color != "none":
@@ -171,6 +204,14 @@ class PersistentWorkerProfile:
             sims.append(hist_correlation(self.hist, candidate_hist))
         return max(sims) if sims else 0.0
 
+    def coexisted_with(self, other: PersistentWorkerProfile) -> bool:
+        """Returns True if self and other were active during overlapping frame windows."""
+        for (s1, e1) in self.active_intervals:
+            for (s2, e2) in other.active_intervals:
+                if max(s1, s2) <= min(e1, e2):
+                    return True
+        return False
+
 
 class PersistentTrackRegistry:
     """
@@ -178,9 +219,10 @@ class PersistentTrackRegistry:
     - Prevents ID fragmentation and explosion across occlusions and posture shifts.
     - Locks Baseline Loop Anchors so worker IDs are preserved across video loops.
     - Suppresses ghost false positives via track maturity gating.
+    - Defends against lock hijacking via Layer-2 Anti-Hijack Guard.
     """
 
-    def __init__(self, reid_affinity_thresh: float = 0.42):
+    def __init__(self, reid_affinity_thresh: float = 0.40):
         self.profiles: Dict[int, PersistentWorkerProfile] = {}
         self.next_available_id = 1
         self.reid_affinity_thresh = reid_affinity_thresh
@@ -221,29 +263,61 @@ class PersistentTrackRegistry:
     ) -> int:
         """
         Maps a ByteTrack tracklet to a canonical persistent Worker ID using:
-        1. Direct raw-to-canonical binding (if already active).
+        1. Direct raw-to-canonical binding with Layer-2 Anti-Hijack Guard.
         2. Loop Baseline Anchor matching (at start of video or loop).
-        3. Multi-View Torso Re-ID & Velocity-aware Spatial Gating among inactive profiles.
-        4. Single-Worker Low Density prior (prevents multi-ID minting on 1-worker scenes).
+        3. Single-Worker Low Density prior (prevents multi-ID minting on 1-worker scenes).
+        4. Multi-View Torso Re-ID & Border Re-entry Affinity among inactive profiles.
         5. Candidate minting if genuinely novel worker.
         """
-        # 1. Check direct raw_to_canonical binding or if raw_track_id is already an active canonical ID
-        if raw_track_id in self.raw_to_canonical:
-            cid = self.raw_to_canonical[raw_track_id]
-            if cid in self.profiles:
-                hist = compute_appearance_hist(frame, box, use_torso_only=True)
-                self.profiles[cid].update(box, frame_idx, helmet_color=helmet_color, hist=hist)
-                return cid
-
-        if raw_track_id in self.profiles:
-            hist = compute_appearance_hist(frame, box, use_torso_only=True)
-            self.profiles[raw_track_id].update(box, frame_idx, helmet_color=helmet_color, hist=hist)
-            self.raw_to_canonical[raw_track_id] = raw_track_id
-            return raw_track_id
-
         hist = compute_appearance_hist(frame, box, use_torso_only=True)
         h_img, w_img = frame.shape[:2]
         diag = np.sqrt(h_img**2 + w_img**2) + 1e-5
+
+        # 1. Direct Binding with Layer-2 Anti-Hijack Guard
+        if raw_track_id in self.raw_to_canonical:
+            cid = self.raw_to_canonical[raw_track_id]
+            if cid in self.profiles:
+                p = self.profiles[cid]
+                # Anti-Hijack Guard: If profile is confirmed (>= 8 frames), verify that this track
+                # has not been hijacked by a cross-over with an entirely different person
+                if p.is_confirmed and p.total_frames_seen >= 8:
+                    app_sim = p.get_max_appearance_sim(hist)
+                    color_conflict = (
+                        helmet_color
+                        and p.helmet_color
+                        and helmet_color != "none"
+                        and p.helmet_color != "none"
+                        and helmet_color != p.helmet_color
+                    )
+                    if app_sim < 0.10 or color_conflict:
+                        # Hijack intercepted! Break binding so Worker #cid is NOT stolen!
+                        del self.raw_to_canonical[raw_track_id]
+                    else:
+                        p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
+                        return cid
+                else:
+                    p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
+                    return cid
+
+        if raw_track_id in self.profiles:
+            p = self.profiles[raw_track_id]
+            if p.is_confirmed and p.total_frames_seen >= 8:
+                app_sim = p.get_max_appearance_sim(hist)
+                color_conflict = (
+                    helmet_color
+                    and p.helmet_color
+                    and helmet_color != "none"
+                    and p.helmet_color != "none"
+                    and helmet_color != p.helmet_color
+                )
+                if not (app_sim < 0.10 or color_conflict):
+                    p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
+                    self.raw_to_canonical[raw_track_id] = raw_track_id
+                    return raw_track_id
+            else:
+                p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
+                self.raw_to_canonical[raw_track_id] = raw_track_id
+                return raw_track_id
 
         # 2. Check Loop Baseline Anchors first if in loop recovery phase
         if self.is_looping_phase and self.baseline_anchors:
@@ -254,7 +328,6 @@ class PersistentTrackRegistry:
                     continue  # already occupied in current frame
                 abox = anchor["box"]
 
-                # Center distance normalized
                 d_cx = (box[0] + box[2]) / 2.0
                 d_cy = (box[1] + box[3]) / 2.0
                 a_cx = (abox[0] + abox[2]) / 2.0
@@ -273,43 +346,50 @@ class PersistentTrackRegistry:
             if best_anchor_id is not None:
                 profile = self.profiles.get(best_anchor_id)
                 if profile:
-                    profile.update(box, frame_idx, helmet_color=helmet_color, hist=hist)
+                    profile.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
                     self.raw_to_canonical[raw_track_id] = best_anchor_id
                     return best_anchor_id
 
         # 3. Check for Re-ID among currently INACTIVE worker profiles
-        best_match_id = None
-        best_affinity = -1.0
         inactive_profiles = [p for p in self.profiles.values() if not p.is_active]
+        active_profiles = [p for p in self.profiles.values() if p.is_active]
 
         # Case 3A: Single-Worker Special Optimization
-        # If there is only 1 confirmed profile in total, and 0 currently active:
-        if len(self.profiles) == 1 and len(inactive_profiles) == 1:
+        # In a scene where only 1 worker has been confirmed and 0 are currently active,
+        # any detected person is guaranteed to be that exact worker!
+        if len(self.profiles) == 1 and len(inactive_profiles) == 1 and len(active_profiles) == 0:
             p = inactive_profiles[0]
-            sim_col = p.get_max_appearance_sim(hist)
-            # As long as there is no blatant conflict, it's the exact same worker walking
-            if sim_col >= 0.20 or (helmet_color and p.helmet_color and helmet_color == p.helmet_color):
-                p.update(box, frame_idx, helmet_color=helmet_color, hist=hist)
+            color_mismatch = (
+                helmet_color
+                and p.helmet_color
+                and helmet_color != "none"
+                and p.helmet_color != "none"
+                and helmet_color != p.helmet_color
+            )
+            if not color_mismatch:
+                p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
                 self.raw_to_canonical[raw_track_id] = p.worker_id
                 return p.worker_id
 
+        best_match_id = None
+        best_affinity = -1.0
         d_cx = (box[0] + box[2]) / 2.0
         d_cy = (box[1] + box[3]) / 2.0
         dh = max(1.0, box[3] - box[1])
+        is_candidate_near_border = (
+            box[0] <= 50 or box[1] <= 50 or box[2] >= w_img - 50 or box[3] >= h_img - 50
+        )
 
         for p in inactive_profiles:
             dt = max(1, frame_idx - p.last_seen_frame)
-            # Kalman Velocity extrapolation of previous worker center
             pred_cx = (p.last_box[0] + p.last_box[2]) / 2.0 + p.vx * min(dt, 30)
             pred_cy = (p.last_box[1] + p.last_box[3]) / 2.0 + p.vy * min(dt, 30)
 
             dist_norm = np.sqrt((pred_cx - d_cx)**2 + (pred_cy - d_cy)**2) / diag
 
-            # Dynamic spatial affinity (expands search radius as time dt elapses)
             sigma_pos = min(0.35, 0.15 + 0.005 * dt)
             sim_pos = np.exp(- (dist_norm**2) / (2 * sigma_pos**2))
 
-            # Upper-Torso Appearance similarity across multi-view gallery
             sim_color = max(0.0, p.get_max_appearance_sim(hist))
 
             # Helmet color logic: DO NOT PENALIZE MISSING HELMET / VIOLATION
@@ -318,19 +398,15 @@ class PersistentTrackRegistry:
                     helm_score = 1.0
                     w_helm = 0.20
                 else:
-                    # Explicit conflicting helmet color (e.g. Yellow vs Blue)
-                    helm_score = -0.35
+                    helm_score = -0.40
                     w_helm = 0.20
             else:
-                # Helmet missing / occluded / violation -> NEUTRAL
                 helm_score = 0.0
                 w_helm = 0.0
 
-            # Scale similarity
             ph = max(1.0, p.last_box[3] - p.last_box[1])
             sim_scale = min(ph, dh) / max(ph, dh)
 
-            # Re-normalize remaining weights
             base_w_sum = 0.40 + 0.35 + 0.05 + w_helm
             w_pos = 0.40 / base_w_sum
             w_col = 0.35 / base_w_sum
@@ -344,9 +420,13 @@ class PersistentTrackRegistry:
                 + w_h * helm_score
             )
 
-            # Proximity boost if very close to predicted position
+            # Proximity boost if close to predicted position
             if dist_norm <= 0.08:
                 affinity += 0.12
+
+            # Border Re-entry boost: if both disappeared and reappeared near border
+            if is_candidate_near_border and p.last_seen_near_border:
+                affinity += 0.25
 
             if affinity > best_affinity and affinity >= self.reid_affinity_thresh:
                 best_affinity = affinity
@@ -354,7 +434,7 @@ class PersistentTrackRegistry:
 
         if best_match_id is not None:
             profile = self.profiles[best_match_id]
-            profile.update(box, frame_idx, helmet_color=helmet_color, hist=hist)
+            profile.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
             self.raw_to_canonical[raw_track_id] = best_match_id
             return best_match_id
 
@@ -369,6 +449,7 @@ class PersistentTrackRegistry:
             hist=hist,
             frame_idx=frame_idx,
         )
+        new_profile.last_seen_near_border = is_candidate_near_border
         self.profiles[canonical_id] = new_profile
         self.raw_to_canonical[raw_track_id] = canonical_id
 
@@ -382,6 +463,73 @@ class PersistentTrackRegistry:
 
         return canonical_id
 
+    def consolidate_profiles(self, current_frame: int):
+        """
+        Merges inactive duplicate profiles that represent the same physical worker
+        who was temporarily lost during posture change / occlusion.
+        """
+        inactive_confirmed = [
+            p for p in self.profiles.values()
+            if not p.is_active and (p.is_confirmed or p.total_frames_seen >= 8)
+        ]
+        if len(inactive_confirmed) < 2:
+            return
+
+        # Sort by worker_id ascending (keep smaller ID as canonical)
+        inactive_confirmed.sort(key=lambda x: x.worker_id)
+        to_remove = set()
+
+        for i in range(len(inactive_confirmed)):
+            p_primary = inactive_confirmed[i]
+            if p_primary.worker_id in to_remove:
+                continue
+
+            for j in range(i + 1, len(inactive_confirmed)):
+                p_candidate = inactive_confirmed[j]
+                if p_candidate.worker_id in to_remove:
+                    continue
+
+                # 1. Must never have co-existed in the same frame
+                if p_primary.coexisted_with(p_candidate):
+                    continue
+
+                # 2. Helmet colors must not conflict
+                if p_primary.helmet_color and p_candidate.helmet_color:
+                    if (
+                        p_primary.helmet_color != p_candidate.helmet_color
+                        and p_primary.helmet_color != "none"
+                        and p_candidate.helmet_color != "none"
+                    ):
+                        continue
+
+                # 3. High appearance correlation across galleries
+                max_sim = 0.0
+                for h1 in p_primary.hist_gallery:
+                    for h2 in p_candidate.hist_gallery:
+                        sim = hist_correlation(h1, h2)
+                        if sim > max_sim:
+                            max_sim = sim
+
+                if max_sim >= 0.45:
+                    # MERGE p_candidate into p_primary
+                    for h in p_candidate.hist_gallery:
+                        if len(p_primary.hist_gallery) < 5:
+                            p_primary.hist_gallery.append(h)
+                    p_primary.total_frames_seen += p_candidate.total_frames_seen
+                    p_primary.active_intervals.extend(p_candidate.active_intervals)
+                    p_primary.last_seen_frame = max(p_primary.last_seen_frame, p_candidate.last_seen_frame)
+
+                    # Remap all raw track mappings
+                    for raw_id, can_id in list(self.raw_to_canonical.items()):
+                        if can_id == p_candidate.worker_id:
+                            self.raw_to_canonical[raw_id] = p_primary.worker_id
+
+                    to_remove.add(p_candidate.worker_id)
+
+        for wid in to_remove:
+            if wid in self.profiles:
+                del self.profiles[wid]
+
     def update_frame_end(self, active_worker_ids: List[int], frame_idx: int):
         """Updates active states of all registered profiles at the end of each frame."""
         active_set = set(active_worker_ids)
@@ -393,6 +541,10 @@ class PersistentTrackRegistry:
                 p.is_active = False
                 p.consecutive_hits = 0
 
+        # Periodic consolidation every 30 frames
+        if frame_idx % 30 == 0:
+            self.consolidate_profiles(frame_idx)
+
         if self.loop_cooldown_frames > 0:
             self.loop_cooldown_frames -= 1
             if self.loop_cooldown_frames == 0:
@@ -401,13 +553,13 @@ class PersistentTrackRegistry:
     def get_registered_workers(self, filter_ghosts: bool = True) -> List[Dict[str, Any]]:
         """
         Returns structured metadata for registered workers.
-        If filter_ghosts is True, unconfirmed 1-frame spurious tracks are excluded.
+        If filter_ghosts is True, transient spurious detections (< 15 frames seen
+        and not currently active) are cleanly excluded from the official registry.
         """
         workers = []
         for wid in sorted(self.profiles.keys()):
             p = self.profiles[wid]
-            # Exclude unconfirmed spurious ghost detections (< 5 hits and not currently active)
-            if filter_ghosts and not p.is_confirmed and p.total_frames_seen < 5 and not p.is_active:
+            if filter_ghosts and not p.is_active and p.total_frames_seen < 15:
                 continue
 
             workers.append({
@@ -415,7 +567,7 @@ class PersistentTrackRegistry:
                 "helmet_color": p.helmet_color,
                 "status": p.status,
                 "is_active": p.is_active,
-                "is_confirmed": p.is_confirmed or (p.total_frames_seen >= 5),
+                "is_confirmed": p.is_confirmed or (p.total_frames_seen >= 10),
                 "first_frame": p.first_frame,
                 "last_seen_frame": p.last_seen_frame,
                 "total_frames_seen": p.total_frames_seen,

@@ -291,13 +291,13 @@ class CCTVSurveillancePipeline:
                     pw = p[2] - p[0]
                     ph = p[3] - p[1]
                     touches_border = (p[0] <= 60 or p[1] <= 60 or p[2] >= frame_w - 60 or p[3] >= frame_h - 60)
-                    max_aspect = 3.5 if touches_border else 1.65
+                    max_aspect = 3.5 if touches_border else 2.6
                     is_valid = (ph >= 35 and pw >= 15 and (pw / max(1.0, ph)) <= max_aspect)
                     valid_mask.append(is_valid)
                 person_dets = person_dets[np.array(valid_mask, dtype=bool)] if any(valid_mask) else np.empty((0, 6), dtype=np.float32)
 
-            # 2. Multi-Object Tracking on Workers
-            active_tracks = self.tracker.update(person_dets)
+            # 2. Multi-Object Tracking on Workers (with upper-torso appearance histograms)
+            active_tracks = self.tracker.update(person_dets, frame=frame)
 
             # Map raw ByteTrack tracks to Persistent Re-ID Canonical IDs
             for track in active_tracks:
@@ -316,7 +316,7 @@ class CCTVSurveillancePipeline:
                     helmet_color=matched_color,
                     frame_idx=self.total_frames_processed,
                 )
-                track.track_id = canonical_id
+                track.canonical_id = canonical_id
 
             # 3. Spatial Relational Safety Analysis & Debouncing
             worker_reports, alert_events = self.safety_engine.evaluate_frame(

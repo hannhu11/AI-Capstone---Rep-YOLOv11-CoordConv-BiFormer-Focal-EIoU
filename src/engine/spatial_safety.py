@@ -221,7 +221,7 @@ class SpatialSafetyEngine:
             # in the center, allow w/h <= 1.65 to accommodate bending postures.
             if pw < self.min_worker_width or ph < self.min_worker_height or (pw * ph) < self.min_worker_area:
                 continue
-            max_aspect = 3.5 if is_at_border else 1.65
+            max_aspect = 3.5 if is_at_border else 2.6
             if (pw / ph) > max_aspect:
                 continue
 
@@ -314,6 +314,13 @@ class SpatialSafetyEngine:
                 if not has_vest:
                     violations.append("MISSING_SAFETY_VEST")
 
+                # Boundary Truncation Protection:
+                # If worker was previously compliant and is touching the camera frame edge,
+                # disappearing vest/helmet due to physical border clipping is NOT an infraction!
+                if is_at_border and not has_explicit_no_vest and not has_explicit_no_helmet:
+                    if getattr(track, "compliance_streak", 0) >= 2 or getattr(track, "violation_streak", 0) == 0:
+                        violations = []
+
                 is_compliant = (len(violations) == 0)
                 status_str = "COMPLIANT" if is_compliant else "VIOLATION"
 
@@ -342,8 +349,9 @@ class SpatialSafetyEngine:
             # Report data structure (using temporally stable helmet color only when helmet is present)
             stable_col = getattr(track, "stable_helmet_color", None) or helmet_color
             effective_color = stable_col if has_helmet else None
+            effective_track_id = getattr(track, "canonical_id", track.track_id)
             report = {
-                "track_id": track.track_id,
+                "track_id": effective_track_id,
                 "bbox": [round(px1, 1), round(py1, 1), round(px2, 1), round(py2, 1)],
                 "confidence": round(float(track.score), 3),
                 "has_helmet": has_helmet,
@@ -393,9 +401,9 @@ class SpatialSafetyEngine:
                 )
 
                 alert_event = {
-                    "alert_id": f"ALERT-W{track.track_id}-{int(now)}",
+                    "alert_id": f"ALERT-W{effective_track_id}-{int(now)}",
                     "camera_id": camera_id,
-                    "worker_id": track.track_id,
+                    "worker_id": effective_track_id,
                     "timestamp": now_str,
                     "violations": violations,
                     "has_helmet": has_helmet,

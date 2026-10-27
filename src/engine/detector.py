@@ -18,6 +18,15 @@ from typing import List, Dict, Any, Optional, Tuple
 
 # Silence ultralytics FP16 deprecation warning flood
 warnings.filterwarnings("ignore", message=".*'half' is deprecated.*")
+try:
+    from ultralytics.utils import LOGGER
+    import logging
+    class UltralyticsHalfFilter(logging.Filter):
+        def filter(self, record):
+            return "is deprecated" not in record.getMessage()
+    LOGGER.addFilter(UltralyticsHalfFilter())
+except Exception:
+    pass
 
 # Add project root to sys.path
 root_dir = Path(__file__).resolve().parent.parent.parent
@@ -130,16 +139,18 @@ class SafetyObjectDetector:
         infer_conf = min(conf_val, getattr(config, "track_low_thresh", 0.15))
 
         t0 = time.perf_counter()
+        predict_kwargs = {
+            "conf": infer_conf,
+            "iou": iou_val,
+            "imgsz": imgsz,
+            "device": self.device,
+            "verbose": False,
+        }
+        if self.use_half and "cuda" in str(self.device).lower():
+            predict_kwargs["half"] = True
+
         with torch.inference_mode():
-            results = self.yolo.predict(
-                frame_bgr,
-                conf=infer_conf,
-                iou=iou_val,
-                imgsz=imgsz,
-                device=self.device,
-                half=self.use_half,
-                verbose=False,
-            )
+            results = self.yolo.predict(frame_bgr, **predict_kwargs)
         latency_ms = (time.perf_counter() - t0) * 1000.0
 
         all_detections: List[Dict[str, Any]] = []

@@ -33,7 +33,7 @@ services:
       - USE_HALF=False
       - TRACK_HIGH_THRESH=0.30
       - NEW_TRACK_THRESH=0.30
-      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+      - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
       - VIDEO_SOURCE=video_test/13921040-uhd_3840_2160_30fps.mp4
     deploy:
       resources:
