@@ -208,11 +208,53 @@
     </div>
   </section>
 
-  <!-- MAIN DASHBOARD CONTENT -->
-  <main class="max-w-[1700px] w-full mx-auto px-6 py-4 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5">
+  <!-- MAIN DASHBOARD CONTENT (3-COLUMN TRI-PANEL: INSPECTOR - CCTV - VIOLATIONS) -->
+  <main class="max-w-[1750px] w-full mx-auto px-4 py-4 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-    <!-- LEFT COLUMN: LIVE VIDEO FEED + CHARTS (8 Cols) -->
-    <div class="lg:col-span-8 flex flex-col space-y-5">
+    <!-- LEFT COLUMN: WORKER TRACKING INSPECTOR & FOCUS PANEL (3 Cols) -->
+    <div class="lg:col-span-3 flex flex-col space-y-4">
+      <div class="bg-surface-card border border-surface-border rounded-xl p-4 shadow-sm flex flex-col h-full min-h-[580px]">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-surface-border">
+          <div class="flex items-center space-x-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></div>
+            <h2 class="text-sm font-bold tracking-tight text-white uppercase flex items-center gap-1.5">
+              <span>Tracked Workers</span>
+            </h2>
+          </div>
+          <span id="trackedWorkersBadge" class="px-2 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-800/60 text-cyan-300 text-[11px] font-semibold">0 Workers</span>
+        </div>
+
+        <!-- Action Bar: View All / Reset -->
+        <div class="py-2.5 border-b border-surface-border flex items-center justify-between gap-2">
+          <button onclick="setFocusWorker(null)" id="btnViewAllWorkers" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-cyan-500 text-slate-950 shadow-md flex items-center justify-center gap-1.5 transition">
+            <span>🎯 View All (Tất cả)</span>
+          </button>
+          <button onclick="resetWorkerRegistry()" title="Reset Tracker Registry" class="py-1.5 px-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition">
+            <span>🔄 Reset</span>
+          </button>
+        </div>
+
+        <!-- Scrollable Worker Cards List -->
+        <div id="trackedWorkersList" class="flex-1 overflow-y-auto space-y-2 pt-2.5 pr-1 max-h-[500px]">
+          <div class="flex flex-col items-center justify-center h-48 text-center text-slate-500 p-4">
+            <svg class="w-8 h-8 mb-2 opacity-50 text-cyan-400 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <p class="text-xs font-medium text-slate-400">Scanning workers in frame...</p>
+            <p class="text-[11px] text-slate-600 mt-1">Spatio-temporal Re-ID active</p>
+          </div>
+        </div>
+
+        <!-- Instructions footer -->
+        <div class="pt-3 border-t border-surface-border text-[11px] text-slate-400 text-center">
+          Nhấn vào từng công nhân để <span class="text-cyan-300 font-semibold">Solo Focus</span> &amp; kiểm tra độ bám tracking
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER COLUMN: LIVE VIDEO FEED + CHARTS (6 Cols) -->
+    <div class="lg:col-span-6 flex flex-col space-y-4">
 
       <!-- Video Feed Container -->
       <div class="bg-surface-card border border-surface-border rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
@@ -290,8 +332,8 @@
 
     </div>
 
-    <!-- RIGHT COLUMN: LIVE VIOLATION FEED & ALERTS (4 Cols) -->
-    <div class="lg:col-span-4 flex flex-col space-y-4">
+    <!-- RIGHT COLUMN: LIVE VIOLATION FEED & ALERTS (3 Cols) -->
+    <div class="lg:col-span-3 flex flex-col space-y-4">
 
       <!-- Alert Feed Header Card -->
       <div class="bg-surface-card border border-surface-border rounded-xl p-4 shadow-sm flex flex-col h-full min-h-[580px]">
@@ -470,6 +512,7 @@
       initCharts();
       startTelemetryPolling();
       startAlertsPolling();
+      startWorkerPolling();
       loadInitialStatus();
     });
 
@@ -548,6 +591,9 @@
           document.getElementById('metricCompliant').innerText = data.compliant_count;
           document.getElementById('metricViolations').innerText = data.violations_count;
           document.getElementById('metricComplianceRate').innerText = data.compliance_rate.toFixed(1) + '%';
+          if (data.video_source) {
+            document.getElementById('videoFilenameBadge').innerText = data.video_source;
+          }
 
           // Pulse danger indicator if violations > 0
           const vDot = document.getElementById('metricViolationIndicator');
@@ -574,6 +620,133 @@
           // ignore transient poll errors
         }
       }, 500);
+    }
+
+    // -------------------------------------------------------------
+    // Persistent Worker Tracking & Focus Inspection Mode Logic
+    // -------------------------------------------------------------
+    let currentFocusTrackId = null;
+
+    async function setFocusWorker(trackId) {
+      currentFocusTrackId = (trackId !== null && trackId !== undefined) ? parseInt(trackId) : null;
+      try {
+        await fetch('/api/tracking/focus', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ track_id: currentFocusTrackId })
+        });
+        updateWorkersList();
+      } catch (err) {
+        console.error('Failed to set focus track:', err);
+      }
+    }
+
+    async function resetWorkerRegistry() {
+      if (confirm('Reset tracking memory and re-anchor all workers? (Sẽ quét và cấp lại ID mới từ đầu)')) {
+        try {
+          await fetch('/api/tracking/reset', { method: 'POST' });
+          currentFocusTrackId = null;
+          updateWorkersList();
+        } catch (err) {
+          console.error('Failed to reset tracker registry:', err);
+        }
+      }
+    }
+
+    const HELMET_DOT_CLASSES = {
+      blue: 'bg-sky-400',
+      green: 'bg-emerald-400',
+      red: 'bg-rose-500',
+      white: 'bg-slate-100',
+      yellow: 'bg-amber-400'
+    };
+
+    async function updateWorkersList() {
+      try {
+        const resp = await fetch('/api/tracking/workers');
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const workers = data.workers || [];
+        currentFocusTrackId = data.focus_track_id;
+
+        const badge = document.getElementById('trackedWorkersBadge');
+        if (badge) {
+          badge.innerText = `${workers.length} Workers`;
+        }
+
+        const btnAll = document.getElementById('btnViewAllWorkers');
+        if (btnAll) {
+          if (currentFocusTrackId === null) {
+            btnAll.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-cyan-500 text-slate-950 shadow-md flex items-center justify-center gap-1.5 transition';
+          } else {
+            btnAll.className = 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 flex items-center justify-center gap-1.5 transition';
+          }
+        }
+
+        const container = document.getElementById('trackedWorkersList');
+        if (!container) return;
+
+        if (workers.length === 0) {
+          container.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-48 text-center text-slate-500 p-4">
+              <svg class="w-8 h-8 mb-2 opacity-50 text-cyan-400 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <p class="text-xs font-medium text-slate-400">Scanning workers in frame...</p>
+              <p class="text-[11px] text-slate-600 mt-1">Spatio-temporal Re-ID active</p>
+            </div>
+          `;
+          return;
+        }
+
+        let html = '';
+        workers.forEach(w => {
+          const isFocused = (currentFocusTrackId === w.track_id);
+          const dotColor = HELMET_DOT_CLASSES[w.helmet_color] || 'bg-slate-400';
+          const isSafe = (w.status === 'COMPLIANT');
+
+          html += `
+            <div onclick="setFocusWorker(${isFocused ? 'null' : w.track_id})" class="p-2.5 rounded-xl border transition-all cursor-pointer ${
+              isFocused
+                ? 'border-cyan-400 bg-cyan-950/40 shadow-lg shadow-cyan-950/50 ring-1 ring-cyan-400'
+                : 'border-surface-border bg-slate-900/50 hover:border-slate-600 hover:bg-slate-900/80'
+            }">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <span class="w-2.5 h-2.5 rounded-full ${dotColor} ${w.is_active ? 'animate-pulse' : 'opacity-40'}"></span>
+                  <span class="font-bold text-xs text-white">WORKER #${w.track_id}</span>
+                  ${w.helmet_color ? `<span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">${w.helmet_color}</span>` : ''}
+                </div>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${isSafe ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60' : 'bg-rose-950/80 text-rose-400 border border-rose-800/60'}">
+                  ${isSafe ? 'SAFE' : 'VIOLATION'}
+                </span>
+              </div>
+              <div class="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+                <span class="flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full ${w.is_active ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
+                  ${w.is_active ? 'Active' : 'Occluded'}
+                  <span class="text-[10px] text-slate-500 font-mono">(${w.total_frames_seen}f)</span>
+                </span>
+                <button onclick="event.stopPropagation(); setFocusWorker(${isFocused ? 'null' : w.track_id})" class="px-2 py-0.5 rounded text-[10px] font-semibold transition ${
+                  isFocused
+                    ? 'bg-cyan-400 text-slate-950 hover:bg-cyan-300'
+                    : 'bg-slate-800 hover:bg-cyan-600 text-cyan-300 hover:text-white'
+                }">
+                  ${isFocused ? '🎯 Locked' : '🎯 Solo'}
+                </button>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    function startWorkerPolling() {
+      updateWorkersList();
+      setInterval(updateWorkersList, 1000);
     }
 
     // Alerts Polling (every 1000ms)

@@ -80,6 +80,10 @@ class ZaloTestPayload(BaseModel):
     chat_id: Optional[str] = None
 
 
+class FocusPayload(BaseModel):
+    track_id: Optional[int] = None
+
+
 # 1. Main Dashboard UI
 @app.get("/", response_class=HTMLResponse)
 async def serve_dashboard():
@@ -209,6 +213,36 @@ async def switch_video_source(payload: SwitchSourcePayload):
     cctv_pipeline.switch_source(target)
     alert_manager.clear_alerts()
     return {"message": f"Switched video source to {target}", "alerts_cleared": True}
+
+
+# 7. Worker Tracking Registry & Focus Inspection Mode Endpoints
+@app.post("/api/tracking/focus")
+async def set_tracking_focus(payload: FocusPayload):
+    """Sets or clears the worker track ID for solo/isolated tracking inspection mode."""
+    active_id = cctv_pipeline.set_focus_track(payload.track_id)
+    return {"status": "ok", "focus_track_id": active_id}
+
+
+@app.get("/api/tracking/workers")
+async def get_tracked_workers():
+    """Returns all persistent registered workers with their ID, helmet color, and compliance state."""
+    workers = cctv_pipeline.get_registered_workers()
+    return {
+        "status": "ok",
+        "workers": workers,
+        "total": len(workers),
+        "focus_track_id": cctv_pipeline.focus_track_id,
+    }
+
+
+@app.post("/api/tracking/reset")
+async def reset_tracking_registry():
+    """Explicitly resets persistent worker tracking memory."""
+    cctv_pipeline.tracker.reset()
+    cctv_pipeline.set_focus_track(None)
+    from src.engine.reid_tracker import reid_registry
+    reid_registry.reset()
+    return {"status": "ok", "message": "Worker tracking registry reset"}
 
 
 @app.post("/api/webhook/zalo")

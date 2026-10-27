@@ -20,6 +20,7 @@ from src.engine.detector import SafetyObjectDetector
 from src.engine.bytetrack import BYTETracker
 from src.engine.spatial_safety import SpatialSafetyEngine
 from src.alerting.alert_manager import alert_manager
+from src.engine.reid_tracker import reid_registry
 
 
 CLASS_COLORS = {
@@ -69,6 +70,10 @@ class CCTVSurveillancePipeline:
             border_margin_px=60,
             min_tracklet_len=getattr(config, "min_tracklet_len", 15),
         )
+
+        # Focus / Solo Tracking Inspection Mode
+        self.focus_track_id: Optional[int] = None
+        reid_registry.reset()
 
         # Isolate/clear alert history for fresh session
         alert_manager.clear_alerts()
@@ -122,6 +127,8 @@ class CCTVSurveillancePipeline:
             config.video_source = new_source
             self.tracker.reset()
             self.safety_engine.reset()
+            self.focus_track_id = None
+            reid_registry.reset()
             self._init_video_capture()
             self.active_workers_count = 0
             self.workers_count_ema = 0.0
@@ -254,6 +261,7 @@ class CCTVSurveillancePipeline:
                     # Reset tracker on loop to prevent stale tracks carrying over
                     self.tracker.reset()
                     self.safety_engine.reset()
+                    reid_registry.on_video_loop()
                 if not ret:
                     time.sleep(0.03)
                     return None
@@ -291,10 +299,37 @@ class CCTVSurveillancePipeline:
             # 2. Multi-Object Tracking on Workers
             active_tracks = self.tracker.update(person_dets)
 
+            # Map raw ByteTrack tracks to Persistent Re-ID Canonical IDs
+            for track in active_tracks:
+                tb = track.tlbr
+                matched_color = None
+                for d in detections:
+                    if "helmet" in d["name"]:
+                        hb = d["box"]
+                        if not (hb[2] < tb[0] or hb[0] > tb[2] or hb[3] < tb[1] or hb[1] > tb[1] + 0.40 * (tb[3] - tb[1])):
+                            matched_color = d.get("color") or d["name"].replace("_helmet", "")
+                            break
+                canonical_id = reid_registry.get_or_create_canonical_id(
+                    raw_track_id=track.track_id,
+                    box=tb,
+                    frame=frame,
+                    helmet_color=matched_color,
+                    frame_idx=self.total_frames_processed,
+                )
+                track.track_id = canonical_id
+
             # 3. Spatial Relational Safety Analysis & Debouncing
             worker_reports, alert_events = self.safety_engine.evaluate_frame(
                 active_tracks, detections, frame, camera_id=config.camera_id
             )
+
+            # Update persistent registry profile statuses and trajectories
+            for r in worker_reports:
+                wid = r["track_id"]
+                if wid in reid_registry.profiles:
+                    reid_registry.profiles[wid].status = r["status"]
+                    reid_registry.profiles[wid].violations = r["violations"]
+            reid_registry.update_frame_end([r["track_id"] for r in worker_reports], self.total_frames_processed)
 
             # 4. Enqueue Confirmed Violation Alerts to Dispatcher
             for alert in alert_events:
@@ -351,6 +386,90 @@ class CCTVSurveillancePipeline:
     ) -> np.ndarray:
         vis = frame.copy()
         h, w = vis.shape[:2]
+
+        # -------------------------------------------------------------
+        # 1. SPECIAL FOCUS / ISOLATION INSPECTION MODE
+        # If user selected a specific worker ID, render ONLY this worker + motion trail
+        # -------------------------------------------------------------
+        if self.focus_track_id is not None:
+            focused_worker = next((r for r in worker_reports if r["track_id"] == self.focus_track_id), None)
+            
+            # Draw Top Focus HUD Bar
+            hud_h = 44
+            cv2.rectangle(vis, (0, 0), (w, hud_h), (25, 20, 15), -1)
+            cv2.line(vis, (0, hud_h), (w, hud_h), (0, 240, 255), 2)
+            cv2.circle(vis, (20, 22), 6, (0, 255, 255), -1)
+
+            status_note = "LOCKED / ACTIVE" if focused_worker is not None else "LOST / OCCLUDED"
+            hud_text = (
+                f"FOCUS MODE: TRACKING WORKER #{self.focus_track_id} ONLY ({status_note}) | "
+                f"FPS: {self.fps_rolling:.1f} | Latency: {self.inference_latency_ms:.1f}ms | [CLICK 'VIEW ALL' TO EXIT]"
+            )
+            cv2.putText(vis, hud_text, (36, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 240, 255), 2, cv2.LINE_AA)
+
+            if focused_worker is not None:
+                r = focused_worker
+                x1, y1, x2, y2 = [int(v) for v in r["bbox"]]
+                is_compliant = (r["status"] == "COMPLIANT")
+                box_color = (0, 240, 255) if is_compliant else (0, 0, 255)
+
+                # Draw Historical Trajectory Trail (Motion Path)
+                if self.focus_track_id in reid_registry.profiles:
+                    traj = reid_registry.profiles[self.focus_track_id].trajectory
+                    pts = [(int(pt[0]), int(pt[1])) for pt in traj]
+                    for idx in range(1, len(pts)):
+                        alpha = float(idx) / max(1, len(pts) - 1)
+                        thick = max(1, int(4 * alpha))
+                        cv2.line(vis, pts[idx - 1], pts[idx], (0, 230, 255), thick, cv2.LINE_AA)
+                    if len(pts) > 0:
+                        cv2.circle(vis, pts[-1], 6, (0, 255, 255), -1)
+
+                # Main Bounding Box (High visibility 3px)
+                cv2.rectangle(vis, (x1, y1), (x2, y2), box_color, 3)
+
+                # Target Crosshair Brackets
+                d = min(22, (x2 - x1) // 3, (y2 - y1) // 3)
+                cv2.line(vis, (x1, y1), (x1 + d, y1), (255, 255, 0), 3)
+                cv2.line(vis, (x1, y1), (x1, y1 + d), (255, 255, 0), 3)
+                cv2.line(vis, (x2, y1), (x2 - d, y1), (255, 255, 0), 3)
+                cv2.line(vis, (x2, y1), (x2, y1 + d), (255, 255, 0), 3)
+                cv2.line(vis, (x1, y2), (x1 + d, y2), (255, 255, 0), 3)
+                cv2.line(vis, (x1, y2), (x1, y2 - d), (255, 255, 0), 3)
+                cv2.line(vis, (x2, y2), (x2 - d, y2), (255, 255, 0), 3)
+                cv2.line(vis, (x2, y2), (x2, y2 - d), (255, 255, 0), 3)
+
+                # Draw ONLY PPE associated with this target worker
+                for d_box in detections:
+                    if d_box["cls"] != 0 and "person" not in d_box["name"]:
+                        bx = d_box["box"]
+                        if not (bx[2] < x1 or bx[0] > x2 or bx[3] < y1 or bx[1] > y2):
+                            c_name = d_box["name"]
+                            p_color = CLASS_COLORS.get(c_name, (0, 230, 255))
+                            px1, py1, px2, py2 = [int(v) for v in bx]
+                            cv2.rectangle(vis, (px1, py1), (px2, py2), p_color, 2)
+                            p_label = f"{c_name.replace('_', ' ').upper()} {d_box['conf']*100:.0f}%"
+                            (lw, lh), _ = cv2.getTextSize(p_label, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
+                            cv2.rectangle(vis, (px1, max(0, py1 - 20)), (px1 + lw + 6, max(0, py1)), p_color, -1)
+                            cv2.putText(vis, p_label, (px1 + 3, max(14, py1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 1, cv2.LINE_AA)
+
+                # Target Worker Banner
+                h_color_tag = f" [{r['helmet_color'].upper()}]" if r.get("helmet_color") else ""
+                label_top = f"TARGET WORKER #{r['track_id']} [FOCUSED]{h_color_tag} - {r['status']}"
+                (lw, lh), _ = cv2.getTextSize(label_top, cv2.FONT_HERSHEY_SIMPLEX, 0.60, 2)
+                cv2.rectangle(vis, (x1, max(0, y1 - 28)), (x1 + lw + 10, max(0, y1)), box_color, -1)
+                cv2.putText(vis, label_top, (x1 + 5, max(20, y1 - 7)), cv2.FONT_HERSHEY_SIMPLEX, 0.60, (0, 0, 0), 2, cv2.LINE_AA)
+
+                if not is_compliant and r["violations"]:
+                    v_text = "MISSING: " + ", ".join([v.replace("MISSING_SAFETY_", "") for v in r["violations"]])
+                    (vw, vh), _ = cv2.getTextSize(v_text, cv2.FONT_HERSHEY_SIMPLEX, 0.50, 1)
+                    cv2.rectangle(vis, (x1, y2), (x1 + vw + 8, y2 + 22), (0, 0, 180), -1)
+                    cv2.putText(vis, v_text, (x1 + 4, y2 + 16), cv2.FONT_HERSHEY_SIMPLEX, 0.50, (255, 255, 255), 1, cv2.LINE_AA)
+
+            return vis
+
+        # -------------------------------------------------------------
+        # 2. STANDARD FULL SURVEILLANCE RENDERING (All Workers)
+        # -------------------------------------------------------------
 
         # Draw PPE equipment boxes (helmets and vests)
         for d in detections:
@@ -431,6 +550,17 @@ class CCTVSurveillancePipeline:
                 self.cap.release()
                 self.cap = None
 
+    def set_focus_track(self, track_id: Optional[int]) -> Optional[int]:
+        """Sets or clears the worker track ID for solo/isolated tracking inspection mode."""
+        with self.lock:
+            self.focus_track_id = int(track_id) if track_id is not None else None
+            return self.focus_track_id
+
+    def get_registered_workers(self) -> List[Dict[str, Any]]:
+        """Returns the full list of persistent registered workers from spatio-temporal Re-ID memory."""
+        with self.lock:
+            return reid_registry.get_registered_workers()
+
     def get_telemetry(self) -> Dict[str, Any]:
         """Returns structured metrics for real-time dashboard analytics."""
         with self.lock:
@@ -448,6 +578,8 @@ class CCTVSurveillancePipeline:
                 "model_path": Path(self.detector.model_path).name,
                 "video_source": Path(str(self.source_path)).name,
                 "total_frames": self.total_frames_processed,
+                "focus_track_id": self.focus_track_id,
+                "registered_workers_count": len(reid_registry.profiles),
             }
 
 
