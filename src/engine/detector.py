@@ -150,7 +150,11 @@ class SafetyObjectDetector:
             predict_kwargs["half"] = True
 
         with torch.inference_mode():
-            results = self.yolo.predict(frame_bgr, **predict_kwargs)
+            if "cuda" in str(self.device).lower():
+                with torch.amp.autocast("cuda"):
+                    results = self.yolo.predict(frame_bgr, **predict_kwargs)
+            else:
+                results = self.yolo.predict(frame_bgr, **predict_kwargs)
         latency_ms = (time.perf_counter() - t0) * 1000.0
 
         all_detections: List[Dict[str, Any]] = []

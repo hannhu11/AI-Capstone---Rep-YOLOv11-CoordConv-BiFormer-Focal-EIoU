@@ -166,3 +166,81 @@ def test_spatio_temporal_profile_consolidation():
     # Duplicate Profile #2 (minted by raw 17) should be merged into Profile #1 (canonical)!
     assert len(registry.profiles) == 1, f"Consolidation failed! Remaining profiles: {list(registry.profiles.keys())}"
     assert 1 in registry.profiles
+
+
+def test_reid_does_not_reassign_worker_1_to_different_entrant_near_border():
+    """When Worker #1 leaves the scene near border, a different entrant near border must NOT steal Worker #1's ID."""
+    registry = PersistentTrackRegistry(reid_affinity_thresh=0.40)
+
+    # Worker 1 appearance: Bright Yellow Torso
+    frame_w1 = np.full((1080, 1920, 3), 30, dtype=np.uint8)
+    frame_w1[:, :] = (30, 220, 220)  # Yellow HSV signature
+    box_w1_exit = np.array([1750, 300, 1910, 700])  # Near right border (px2 = 1910 >= 1870)
+
+    for f in range(1, 15):
+        cid = registry.get_or_create_canonical_id(1, box_w1_exit, frame_w1, "yellow", f)
+        assert cid == 1
+        registry.update_frame_end([cid], f)
+
+    assert registry.profiles[1].is_confirmed
+    assert bool(registry.profiles[1].last_seen_near_border) is True
+
+    # Worker 1 exits scene; 20 frames pass
+    for f in range(15, 36):
+        registry.update_frame_end([], f)
+
+    assert registry.profiles[1].is_active is False
+
+    # New entrant steps in from right border: Dark Navy/Blue Shirt, Blue Helmet
+    frame_w2 = np.full((1080, 1920, 3), 30, dtype=np.uint8)
+    frame_w2[:, :] = (200, 40, 20)  # Very distinct dark blue
+    box_new_entrant = np.array([1780, 280, 1915, 690])  # Also near right border
+
+    new_cid = registry.get_or_create_canonical_id(
+        raw_track_id=45,
+        box=box_new_entrant,
+        frame=frame_w2,
+        helmet_color="blue",
+        frame_idx=37,
+    )
+
+    # CRITICAL: New entrant MUST NOT steal Worker #1's ID!
+    assert new_cid != 1, f"CRITICAL BUG: Worker #1 ID was stolen by different entrant near border! Got #{new_cid}"
+    assert new_cid == 2, f"Expected new entrant to receive Canonical ID #2, got #{new_cid}"
+    assert 1 in registry.profiles
+    assert 2 in registry.profiles
+
+
+def test_reid_reassociates_worker_1_when_same_worker_reenters_near_border():
+    """When Worker #1 leaves near border and the SAME worker re-enters near border, Worker #1 ID is preserved."""
+    registry = PersistentTrackRegistry(reid_affinity_thresh=0.40)
+
+    # Worker 1 appearance: Bright Yellow Torso
+    frame_w1 = np.full((1080, 1920, 3), 30, dtype=np.uint8)
+    frame_w1[:, :] = (30, 220, 220)
+    box_w1_exit = np.array([1750, 300, 1910, 700])
+
+    for f in range(1, 15):
+        cid = registry.get_or_create_canonical_id(1, box_w1_exit, frame_w1, "yellow", f)
+        assert cid == 1
+        registry.update_frame_end([cid], f)
+
+    assert registry.profiles[1].is_confirmed
+
+    # Worker 1 exits scene; 10 frames pass
+    for f in range(15, 26):
+        registry.update_frame_end([], f)
+
+    # Worker 1 re-enters near border with SAME appearance and yellow helmet
+    box_w1_reenter = np.array([1760, 310, 1912, 705])
+    reid_cid = registry.get_or_create_canonical_id(
+        raw_track_id=99,
+        box=box_w1_reenter,
+        frame=frame_w1,
+        helmet_color="yellow",
+        frame_idx=27,
+    )
+
+    # Must re-associate back to Worker #1!
+    assert reid_cid == 1, f"Expected Worker #1 preserved on re-entry, got #{reid_cid}"
+

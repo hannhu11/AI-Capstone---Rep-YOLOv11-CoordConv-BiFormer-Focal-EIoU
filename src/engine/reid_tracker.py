@@ -357,24 +357,6 @@ class PersistentTrackRegistry:
         inactive_profiles = [p for p in self.profiles.values() if not p.is_active]
         active_profiles = [p for p in self.profiles.values() if p.is_active]
 
-        # Case 3A: Single-Worker Special Optimization
-        # In a scene where only 1 worker has been confirmed and 0 are currently active,
-        # any detected person is guaranteed to be that exact worker!
-        if len(self.profiles) == 1 and len(inactive_profiles) == 1 and len(active_profiles) == 0:
-            p = inactive_profiles[0]
-            color_mismatch = (
-                helmet_color
-                and p.helmet_color
-                and helmet_color != "none"
-                and p.helmet_color != "none"
-                and helmet_color != p.helmet_color
-            )
-            app_sim = p.get_max_appearance_sim(hist)
-            if not color_mismatch or app_sim >= 0.40:
-                p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
-                self.raw_to_canonical[raw_track_id] = p.worker_id
-                return p.worker_id
-
         best_match_id = None
         best_affinity = -1.0
         d_cx = (box[0] + box[2]) / 2.0
@@ -385,6 +367,13 @@ class PersistentTrackRegistry:
         )
 
         for p in inactive_profiles:
+            sim_color = max(0.0, p.get_max_appearance_sim(hist))
+
+            # Strictly require appearance similarity sim_color >= 0.50 before re-associating
+            # an inactive profile to a new entrant near the border to prevent hijacking Worker #1!
+            if is_candidate_near_border and p.last_seen_near_border and sim_color < 0.50:
+                continue
+
             dt = max(1, frame_idx - p.last_seen_frame)
             pred_cx = (p.last_box[0] + p.last_box[2]) / 2.0 + p.vx * min(dt, 30)
             pred_cy = (p.last_box[1] + p.last_box[3]) / 2.0 + p.vy * min(dt, 30)
@@ -393,8 +382,6 @@ class PersistentTrackRegistry:
 
             sigma_pos = min(0.35, 0.15 + 0.005 * dt)
             sim_pos = np.exp(- (dist_norm**2) / (2 * sigma_pos**2))
-
-            sim_color = max(0.0, p.get_max_appearance_sim(hist))
 
             # Helmet color logic: DO NOT PENALIZE MISSING HELMET / VIOLATION
             if helmet_color is not None and p.helmet_color is not None:
@@ -429,9 +416,9 @@ class PersistentTrackRegistry:
             if dist_norm <= 0.08:
                 affinity += 0.12
 
-            # Border Re-entry boost: if both disappeared and reappeared near border
+            # Border Re-entry boost: calibrated to 0.08 to prevent false hijacking
             if is_candidate_near_border and p.last_seen_near_border:
-                affinity += 0.25
+                affinity += 0.08
 
             if affinity > best_affinity and affinity >= self.reid_affinity_thresh:
                 best_affinity = affinity

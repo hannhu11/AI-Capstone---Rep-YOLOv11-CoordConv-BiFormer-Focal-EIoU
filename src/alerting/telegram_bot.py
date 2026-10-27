@@ -12,6 +12,7 @@ Features:
 
 from __future__ import annotations
 import os
+import time
 import requests
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
@@ -63,8 +64,8 @@ class TelegramAlertBot:
         return None
 
     def send_message(self, text: str, chat_id: Optional[str] = None) -> Tuple[bool, str]:
-        """Sends a text message with Markdown formatting."""
-        target_chat = chat_id or self.chat_id
+        """Sends a text message with Markdown formatting and exponential backoff retry."""
+        target_chat = chat_id or self.chat_id or config.telegram_chat_id
         if not target_chat:
             target_chat = self.discover_latest_chat_id()
         if not target_chat:
@@ -76,18 +77,25 @@ class TelegramAlertBot:
             "text": text,
             "parse_mode": "Markdown",
         }
-        try:
-            r = requests.post(url, json=payload, timeout=8.0)
-            data = r.json()
-            if r.status_code == 200 and data.get("ok"):
-                return True, "Message sent successfully"
-            return False, f"Telegram error {r.status_code}: {data.get('description', '')}"
-        except Exception as e:
-            return False, f"Network exception: {str(e)}"
+
+        last_error = ""
+        for attempt in range(3):
+            try:
+                r = requests.post(url, json=payload, timeout=10.0)
+                data = r.json()
+                if r.status_code == 200 and data.get("ok"):
+                    return True, "Message sent successfully"
+                last_error = f"Telegram error {r.status_code}: {data.get('description', '')}"
+                if r.status_code == 409 or r.status_code >= 500:
+                    time.sleep(1.0 * (attempt + 1))
+            except Exception as e:
+                last_error = f"Network exception: {str(e)}"
+                time.sleep(1.0 * (attempt + 1))
+        return False, last_error
 
     def send_photo(self, photo_path: str | Path, caption: str, chat_id: Optional[str] = None) -> Tuple[bool, str]:
-        """Uploads a photo snapshot along with caption."""
-        target_chat = chat_id or self.chat_id
+        """Uploads a photo snapshot along with caption with exponential backoff retry."""
+        target_chat = chat_id or self.chat_id or config.telegram_chat_id
         if not target_chat:
             target_chat = self.discover_latest_chat_id()
         if not target_chat:
@@ -98,21 +106,27 @@ class TelegramAlertBot:
         if not file_path.exists():
             return False, f"Snapshot file not found: {photo_path}"
 
-        try:
-            with open(file_path, "rb") as f:
-                files = {"photo": (file_path.name, f, "image/jpeg")}
-                data = {
-                    "chat_id": target_chat,
-                    "caption": caption,
-                    "parse_mode": "Markdown",
-                }
-                r = requests.post(url, data=data, files=files, timeout=12.0)
-                res = r.json()
-                if r.status_code == 200 and res.get("ok"):
-                    return True, "Photo sent successfully"
-                return False, f"Telegram error {r.status_code}: {res.get('description', '')}"
-        except Exception as e:
-            return False, f"Network exception: {str(e)}"
+        last_error = ""
+        for attempt in range(3):
+            try:
+                with open(file_path, "rb") as f:
+                    files = {"photo": (file_path.name, f, "image/jpeg")}
+                    data = {
+                        "chat_id": target_chat,
+                        "caption": caption,
+                        "parse_mode": "Markdown",
+                    }
+                    r = requests.post(url, data=data, files=files, timeout=15.0)
+                    res = r.json()
+                    if r.status_code == 200 and res.get("ok"):
+                        return True, "Photo sent successfully"
+                    last_error = f"Telegram error {r.status_code}: {res.get('description', '')}"
+                    if r.status_code == 409 or r.status_code >= 500:
+                        time.sleep(1.0 * (attempt + 1))
+            except Exception as e:
+                last_error = f"Network exception: {str(e)}"
+                time.sleep(1.0 * (attempt + 1))
+        return False, last_error
 
     def dispatch_alert(self, alert_event: Dict[str, Any]) -> Tuple[bool, str]:
         """Formats and dispatches safety violation alert."""

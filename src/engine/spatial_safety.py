@@ -364,16 +364,30 @@ class SpatialSafetyEngine:
                     violations.append("MISSING_SAFETY_VEST")
 
                 # Boundary Truncation Protection (Root Cause 3 Fix):
-                # If worker was PREVIOUSLY compliant (compliance_streak >= 2) and is touching the camera frame edge,
-                # disappearing vest/helmet due to physical border clipping is NOT an infraction!
-                if is_at_border and getattr(track, "compliance_streak", 0) >= 2:
-                    # Only suppress MISSING_SAFETY_VEST if the TORSO region itself is physically cut by the frame border (y1 <= 10 or y2 >= h - 10)
-                    torso_cut = (torso_box[1] <= 10.0 or torso_box[3] >= (h_frame - 10.0))
+                # 1. Exiting worker protection: If worker was PREVIOUSLY compliant (compliance_streak >= 2) and touches edge
+                # 2. Entering worker protection: For new tracklets (tracklet_len <= 8 or time_since_update <= 2) touching edge
+                is_entering = (getattr(track, "tracklet_len", 0) <= 8 or getattr(track, "time_since_update", 0) <= 2)
+                was_compliant = (getattr(track, "compliance_streak", 0) >= 2)
+
+                if is_at_border and (was_compliant or is_entering):
+                    # Suppress MISSING_SAFETY_VEST if the TORSO region itself is physically cut by any frame border
+                    torso_cut = (
+                        torso_box[1] <= 10.0
+                        or torso_box[3] >= (h_frame - 10.0)
+                        or py2 >= (h_frame - 10.0)
+                        or px1 <= 10.0
+                        or px2 >= (w_frame - 10.0)
+                    )
                     if "MISSING_SAFETY_VEST" in violations and torso_cut and not has_explicit_no_vest:
                         violations.remove("MISSING_SAFETY_VEST")
 
-                    # Only suppress MISSING_SAFETY_HELMET if the HEAD region itself is physically cut by the frame border (y1 <= 10)
-                    head_cut = (head_box[1] <= 10.0 or head_box[3] >= (h_frame - 10.0))
+                    # Suppress MISSING_SAFETY_HELMET if the HEAD region itself is physically cut by any frame border
+                    head_cut = (
+                        py1 <= 10.0
+                        or head_box[3] >= (h_frame - 10.0)
+                        or px1 <= 10.0
+                        or px2 >= (w_frame - 10.0)
+                    )
                     if "MISSING_SAFETY_HELMET" in violations and head_cut and not has_explicit_no_helmet:
                         violations.remove("MISSING_SAFETY_HELMET")
 
@@ -391,7 +405,7 @@ class SpatialSafetyEngine:
                 pass
             elif is_compliant:
                 track.compliance_streak += 1
-                if track.compliance_streak >= 5:
+                if track.compliance_streak >= 2:
                     track.violation_streak = 0
                     # Note: We do NOT reset track.is_alerted here to prevent immediate re-alerting
                     # when head orientation or temporary occlusion causes a brief PPE flicker.

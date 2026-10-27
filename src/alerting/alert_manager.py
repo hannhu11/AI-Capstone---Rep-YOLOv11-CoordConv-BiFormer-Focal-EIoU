@@ -52,42 +52,49 @@ class AlertManager:
         self.zalo_discovery_thread.start()
 
     def _telegram_discovery_loop(self):
-        """Polls Telegram getUpdates every 3 seconds if chat_id is not yet bound."""
+        """Polls Telegram getUpdates ONLY when chat_id is not yet bound."""
         while self.running:
             try:
-                if not config.telegram_chat_id:
-                    discovered = self.telegram.discover_latest_chat_id()
-                    if discovered:
-                        welcome_msg = (
-                            "🤖 *Rep-YOLO11s CCTV Safety Surveillance Connected!*\n\n"
-                            "Real-time safety violation alerts are now active for this chat.\n"
-                            "• Camera: `CCTV_GATE_A1_1080P`\n"
-                            "• Mode: Live Real-Time Monitoring\n"
-                            "• Monitored Violations: Missing Helmet / Missing Vest\n"
-                            "• Status: ACTIVE ✅"
-                        )
-                        self.telegram.send_message(welcome_msg, chat_id=discovered)
-            except Exception as e:
-                pass
-            time.sleep(3.0)
+                if config.telegram_chat_id or self.telegram.chat_id:
+                    # Chat ID already active; sleep and do not poll getUpdates to prevent HTTP 409
+                    time.sleep(10.0)
+                    continue
 
-    def _zalo_discovery_loop(self):
-        """Polls Zalo getUpdates every 3 seconds if chat_id is not yet bound."""
-        while self.running:
-            try:
-                if not config.zalo_chat_id:
-                    discovered = self.zalo.discover_latest_chat_id()
-                    if discovered:
-                        welcome_msg = (
-                            "[CANH BAO AN TOAN PPE - ZALO BOT PLATFORM]\n"
-                            "He thong giam sat an toan CCTV Rep-YOLO11s da ket noi thanh cong den Zalo Chat!\n"
-                            "• Camera: CCTV_GATE_A1_1080P\n"
-                            "• Trang thai: DANG HOAT DONG ✅"
-                        )
-                        self.zalo.send_message(welcome_msg, chat_id=discovered)
+                discovered = self.telegram.discover_latest_chat_id()
+                if discovered:
+                    welcome_msg = (
+                        "🤖 *Rep-YOLO11s CCTV Safety Surveillance Connected!*\n\n"
+                        "Real-time safety violation alerts are now active for this chat.\n"
+                        "• Camera: `CCTV_GATE_A1_1080P`\n"
+                        "• Mode: Live Real-Time Monitoring\n"
+                        "• Monitored Violations: Missing Helmet / Missing Vest\n"
+                        "• Status: ACTIVE ✅"
+                    )
+                    self.telegram.send_message(welcome_msg, chat_id=discovered)
             except Exception:
                 pass
-            time.sleep(3.0)
+            time.sleep(5.0)
+
+    def _zalo_discovery_loop(self):
+        """Polls Zalo getUpdates ONLY when chat_id is not yet bound."""
+        while self.running:
+            try:
+                if config.zalo_chat_id or self.zalo.chat_id:
+                    time.sleep(10.0)
+                    continue
+
+                discovered = self.zalo.discover_latest_chat_id()
+                if discovered:
+                    welcome_msg = (
+                        "[CANH BAO AN TOAN PPE - ZALO BOT PLATFORM]\n"
+                        "He thong giam sat an toan CCTV Rep-YOLO11s da ket noi thanh cong den Zalo Chat!\n"
+                        "• Camera: CCTV_GATE_A1_1080P\n"
+                        "• Trang thai: DANG HOAT DONG ✅"
+                    )
+                    self.zalo.send_message(welcome_msg, chat_id=discovered)
+            except Exception:
+                pass
+            time.sleep(5.0)
 
     def _load_existing_audit_log(self):
         if self.audit_log_path.exists():

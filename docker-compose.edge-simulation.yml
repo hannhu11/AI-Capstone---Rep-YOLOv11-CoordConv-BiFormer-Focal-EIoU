@@ -25,6 +25,8 @@ services:
       - ./scripts:/app/scripts
       - ./results:/app/results
       - ./.env:/app/.env
+    env_file:
+      - .env
     environment:
       - PYTHONUNBUFFERED=1
       - WEB_HOST=0.0.0.0
@@ -34,7 +36,13 @@ services:
       - TRACK_HIGH_THRESH=0.30
       - NEW_TRACK_THRESH=0.30
       - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128
-      - VIDEO_SOURCE=video_test/13921040-uhd_3840_2160_30fps.mp4
+      - VIDEO_SOURCE=${VIDEO_SOURCE:-video_test/construction_site_workers_1080p.mp4}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-8931795673:AAElznwj0coP6ef1NCtPNQj3veGaWRMvnNU}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-2005707486}
+      - TELEGRAM_ENABLED=${TELEGRAM_ENABLED:-True}
+      - ZALO_BOT_TOKEN=${ZALO_BOT_TOKEN:-4263098262366049360:ZeYiCYoZHuZVprjkhdzjapYQJssZWVdBpBtUTMuHhWGAPHamYqYdPoiYTmQlMlzo}
+      - ZALO_CHAT_ID=${ZALO_CHAT_ID:-}
+      - ZALO_ENABLED=${ZALO_ENABLED:-True}
     deploy:
       resources:
         limits:

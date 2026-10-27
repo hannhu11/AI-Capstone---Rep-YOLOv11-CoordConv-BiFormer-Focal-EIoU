@@ -218,3 +218,64 @@ class TestCCTVForensicFixes:
         assert reports[0]["matched_helmet_box"] == h_box
         assert reports[0]["matched_vest_box"] == v_box
         assert reports[0]["status"] == "COMPLIANT"
+
+    def test_horizontal_border_clipping_protected_on_exit(self):
+        """Worker exiting horizontally (px2 >= w_frame - 10) is protected from false missing vest/helmet alerts."""
+        engine = SpatialSafetyEngine(consecutive_frames_thresh=3)
+        # Frame 1080x1920. Worker walking out right border: px2=1920 >= 1910
+        track = STrack(STrack.tlbr_to_tlwh(np.array([1750.0, 200.0, 1920.0, 700.0])), score=0.90, cls_id=0)
+        track.track_id = 1
+        track.is_activated = True
+        track.compliance_streak = 5  # Established compliant worker
+
+        dummy_frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+        # Person walking out right edge, neither vest nor helmet detected due to clipping
+        reports, alerts = engine.evaluate_frame([track], [], dummy_frame)
+        assert len(reports) == 1
+        assert reports[0]["status"] == "COMPLIANT", "Worker walking out right frame edge must NOT be flagged as violation!"
+        assert len(alerts) == 0
+
+    def test_entering_worker_border_grace_period(self):
+        """Worker entering bottom border (tracklet_len <= 8, py2 >= h_frame - 10) with helmet has vest grace period."""
+        engine = SpatialSafetyEngine(consecutive_frames_thresh=3)
+        # Frame 1080x1920. Worker entering from bottom: py2 = 1078 >= 1070
+        track = STrack(STrack.tlbr_to_tlwh(np.array([1200.0, 700.0, 1600.0, 1078.0])), score=0.85, cls_id=0)
+        track.track_id = 2
+        track.is_activated = True
+        track.tracklet_len = 2  # New entrant
+        track.compliance_streak = 0
+
+        dummy_frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+        # Yellow helmet detected on head
+        helmet_det = [{"box": [1300.0, 700.0, 1500.0, 850.0], "cls": 6, "name": "yellow_helmet", "conf": 0.90}]
+
+        reports, alerts = engine.evaluate_frame([track], helmet_det, dummy_frame)
+        assert len(reports) == 1
+        assert reports[0]["status"] == "COMPLIANT", "Entering worker whose vest is truncated by bottom edge must have grace period!"
+        assert len(alerts) == 0
+
+    def test_debounce_recovery_symmetrized_to_two_frames(self):
+        """Debounce recovery clears violation streak after 2 consecutive compliant frames."""
+        engine = SpatialSafetyEngine(consecutive_frames_thresh=3)
+        track = STrack(STrack.tlbr_to_tlwh(np.array([200.0, 200.0, 400.0, 600.0])), score=0.90, cls_id=0)
+        track.track_id = 1
+        track.is_activated = True
+        track.violation_streak = 4
+        track.compliance_streak = 0
+
+        dummy_frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+        both_ppe = [
+            {"box": [260.0, 200.0, 340.0, 280.0], "cls": 6, "name": "yellow_helmet", "conf": 0.92},
+            {"box": [230.0, 280.0, 370.0, 500.0], "cls": 1, "name": "safety_vest", "conf": 0.90},
+        ]
+
+        # Frame 1 compliant -> compliance_streak = 1, violation_streak still 4
+        reports1, _ = engine.evaluate_frame([track], both_ppe, dummy_frame)
+        assert track.compliance_streak == 1
+        assert track.violation_streak == 4
+
+        # Frame 2 compliant -> compliance_streak = 2 -> violation_streak cleared to 0!
+        reports2, _ = engine.evaluate_frame([track], both_ppe, dummy_frame)
+        assert track.compliance_streak == 2
+        assert track.violation_streak == 0, "Violation streak must be cleared after 2 compliant frames!"
+

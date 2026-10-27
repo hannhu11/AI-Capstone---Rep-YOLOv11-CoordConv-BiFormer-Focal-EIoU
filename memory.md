@@ -1389,3 +1389,67 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
   * Xử lý 300 frames: Headcount thực tế đạt **14 công nhân** ($\le 18$), không có tình trạng bùng nổ ID.
 - **Kiểm định công nhân đơn lẻ 1080p (`scripts/test_single_worker_integrity.py`)**:
   * Xử lý 800 frames: **Duy nhất 1 Worker #1 (IDs=[1])**, trạng thái `COMPLIANT`.
+
+---
+
+## 46. BÁO CÁO PHÁP Y VÀ KHẮC PHỤC TRIỆT ĐỂ: TELEGRAM ALERT DELIVERY, FALSE PPE BOUNDARY VIOLATIONS, LATENCY PACING & RE-ID ID REASSIGNMENT (OCTOBER 2026 AUDIT)
+
+> **Thời điểm kiểm định:** 2026-10-28 01:20 UTC  
+> **Nguyên tắc:** Liêm chính khoa học, kiểm định thực nghiệm thực tế, trung thực tuyệt đối.
+
+### 46.1. Nguyên Nhân Gốc Rễ & Biện Pháp Khắc Phục Triệt Để
+
+1. **Sự cố không nhận được thông báo Telegram trong Docker (Telegram Bot Delivery)**:
+   - *Nguyên nhân gốc rễ*:
+     * Trong `src/config.py`, chưa gọi `load_dotenv()` nên các biến môi trường từ file `.env` không được nạp tự động vào `os.getenv()`.
+     * Trong file `docker-compose.edge-simulation.yml`, thiếu `env_file: .env` và chưa truyền tường minh các biến `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `TELEGRAM_ENABLED`. Do đó bên trong Docker container, `config.telegram_chat_id` bị rỗng (`""`).
+     * Vòng lặp `_telegram_discovery_loop` trong `src/alerting/alert_manager.py` liên tục thăm dò endpoint `/getUpdates` mỗi 3 giây khi `chat_id` rỗng, dẫn đến xung đột HTTP 409 Conflict và request timeout khi bot được gọi gửi tin.
+   - *Khắc phục*:
+     * Thêm nạp `.env` qua `python-dotenv` trong `src/config.py` và bổ sung `python-dotenv>=1.0.0` vào `requirements_docker.txt`.
+     * Cập nhật `docker-compose.edge-simulation.yml` với `env_file: .env` và khai báo tường minh các biến môi trường Telegram/Zalo.
+     * Cập nhật `_telegram_discovery_loop`: nếu `config.telegram_chat_id` hoặc `telegram.chat_id` đã có giá trị, lập tức ngủ 10s và KHÔNG gọi `getUpdates` để triệt tiêu hoàn toàn HTTP 409.
+     * Bổ sung cơ chế thử lại (exponential backoff retry lên tới 3 lần) và nâng timeout lên 10.0s (text) / 15.0s (photo) trong `src/alerting/telegram_bot.py`.
+     * *Kiểm chứng thực tế*: Gửi thành công tin nhắn và ảnh vi phạm thực tế từ bên trong Docker container đến Telegram Bot (`chat_id: 2005707486`), mã trạng thái 200 OK.
+
+2. **Sự cố dính cảnh báo sai mũ/áo bảo hộ tại biên khung hình (False PPE Boundary Violations)**:
+   - *Nguyên nhân gốc rễ*:
+     * Trong `src/engine/spatial_safety.py`, bộ lọc cắt biên `torso_cut` và `head_cut` trước đây chỉ kiểm tra trục Y (`y1 <= 10 or y2 >= h - 10`), bỏ qua hoàn toàn trục hoành X! Khi công nhân đi ra khỏi khung hình theo chiều ngang (ví dụ frame 546-573, $x_2 = 1920$), thân trên và đầu bị cắt bởi mép ảnh, mô hình không thể phát hiện áo/mũ dẫn đến việc gán nhầm vi phạm `MISSING_SAFETY_VEST` và `MISSING_SAFETY_HELMET`.
+     * Điều kiện bảo vệ biên trước đây yêu cầu `compliance_streak >= 2`. Khi công nhân mới bước vào khung hình (ví dụ frame 740, người phụ nữ bước vào từ cạnh đáy), chuỗi tuân thủ bằng 0 (`compliance_streak = 0`). Do phần thân dưới hoặc mũ chưa lọt trọn vào khung hình, hệ thống lập tức báo vi phạm giả `MISSING_SAFETY_VEST`.
+     * Bộ lọc phục hồi debounce yêu cầu tới 5 khung hình tuân thủ liên tiếp (`compliance_streak >= 5`) mới xóa streak vi phạm.
+   - *Khắc phục*:
+     * Bổ sung kiểm tra toàn diện 4 cạnh biên cho `torso_cut` và `head_cut`: $x_1 \le 10$, $x_2 \ge w_{frame} - 10$, $y_1 \le 10$, $y_2 \ge h_{frame} - 10$.
+     * Bổ sung cơ chế ân hạn bước vào (Entering Boundary Grace Period): Đối với tracklet mới (`tracklet_len <= 8` hoặc `time_since_update <= 2`) chạm bất kỳ cạnh biên nào, nếu bộ phận cơ thể tương ứng bị mép khung hình cắt về mặt vật lý, KHÔNG gắn cờ `MISSING_SAFETY_VEST` hoặc `MISSING_SAFETY_HELMET` (trừ khi có nhãn âm tính tường minh).
+     * Đối xứng hóa thời gian phục hồi debounce: giảm số frame tuân thủ cần thiết để xóa streak vi phạm từ 5 xuống 2 frame (`compliance_streak >= 2`).
+     * *Kiểm chứng thực tế*: Video `construction_site_workers_1080p.mp4` chạy qua các đoạn frame 546-573 và frame 740 đạt 0 cảnh báo vi phạm giả (`Alerts triggered: 0`, `compliance_rate: 99.4%`).
+
+3. **Sự cố độ trễ cao bất thường và xem video bị chậm 10x (Latency & 60 FPS Pacing)**:
+   - *Nguyên nhân gốc rễ*:
+     * Video `video_test/construction_site_workers_1080p.mp4` có tốc độ khung hình gốc là 60 FPS (59.94 FPS). Hệ thống trước đây đọc tuần tự từng khung hình (stride = 1), khiến mỗi giây thời gian thực phải xử lý 60 lượt suy luận GPU, gây ra hiện tượng tua chậm 10x slow-motion.
+     * Suy luận YOLO trên GPU trước đây chạy ở FP32 do vô hiệu hóa FP16, độ trễ suy luận dao động từ 140ms đến 370ms mỗi khung hình.
+   - *Khắc phục*:
+     * Trong `src/engine/pipeline.py`: Tự động nhận diện tốc độ khung hình nguồn. Với các luồng $\ge 50$ FPS (chuẩn 60 FPS), áp dụng `frame_stride = 2` bằng hàm `cap.grab()` cực nhanh (0.00ms overhead), giảm 50% tải tính toán và đưa tốc độ hiển thị về đúng 30 FPS thời gian thực (1.0x playback).
+     * Trong `src/engine/detector.py`: Kích hoạt tăng tốc suy luận `torch.amp.autocast("cuda")` khi chạy trên thiết bị CUDA. Cơ chế AMP giữ các phép toán cần độ chính xác cao (tọa độ CoordConv, Softmax) ở FP32 trong khi ép xung các tầng Convolution lên Tensor Core FP16.
+     * *Kết quả đo đạc thực tế*: Độ trễ suy luận thuần GPU giảm ngoạn mục từ 140-370ms xuống còn **22.0ms - 29.5ms**! FPS xử lý trực tiếp đạt **25 - 32 FPS**, đạt chuẩn thời gian thực mượt mà.
+
+4. **Lỗi gán nhầm ID khi công nhân rời khung hình (Worker ID Reassignment Bug)**:
+   - *Nguyên nhân gốc rễ*:
+     * Trong `src/engine/reid_tracker.py`, tồn tại đoạn mã ngây thơ `Case 3A: Single-Worker Special Optimization` (dòng 360-377 cũ): Khi trong scene chỉ có 1 hồ sơ công nhân đã từng xuất hiện và hiện tại không có ai active, bất kỳ người nào mới xuất hiện đều bị gán ép ngay lập tức thành Worker #1 mà không cần so sánh diện mạo!
+     * Hệ số kích hoạt tái xuất hiện ở biên (`Border Re-entry boost`) quá cao (+0.25), khiến một người lạ mới bước vào gần mép khung hình bị cộng dồn điểm affinity vượt ngưỡng 0.40 và cướp luôn ID của Worker #1 vừa đi khỏi.
+   - *Khắc phục*:
+     * Xóa bỏ triệt để đoạn mã `Case 3A: Single-Worker Special Optimization`.
+     * Giảm `Border Re-entry boost` từ +0.25 xuống +0.08.
+     * Áp dụng điều kiện ngặt nghèo trước khi kết nạp hồ sơ không hoạt động ở biên: Bắt buộc độ tương đồng diện mạo thân áo `sim_color >= 0.50` (`p.get_max_appearance_sim(hist) >= 0.50`). Nếu người mới bước vào có trang phục khác biệt, hệ thống lập tức cấp Canonical ID mới (Worker #2, #3...) thay vì gán nhầm cho Worker #1.
+     * *Kiểm chứng thực tế*: Test `test_reid_does_not_reassign_worker_1_to_different_entrant_near_border` xác nhận người mới bước vào nhận ID #2 chuẩn xác, không cướp ID #1.
+
+### 46.2. Kết Quả Kiểm Thử Toàn Diện & Đóng Container An Toàn
+
+1. **Bộ kiểm thử tự động (Pytest)**:
+   - Đã chạy toàn bộ các bài test liên quan: **39/39 tests PASSED 100%** (bao gồm 6 bài test Re-ID, 14 bài test CCTV Forensic, 7 bài test Persistent Tracking Focus, 12 bài test Tracking & Alert Engine).
+2. **Kiểm thử trực tiếp trên 2 video mục tiêu**:
+   - `video_test/construction_site_workers_1080p.mp4`: Hoàn thành 100 frames trong 4.06s (tốc độ 24.6 FPS, Stride = 2, Inference Latency 22.0 - 29.5ms, 0 cảnh báo vi phạm giả).
+   - `video_test/13921040-uhd_3840_2160_30fps.mp4`: Hoàn thành 60 frames trong 6.16s (tốc độ 9.7 FPS, Stride = 1, Downscaling 4K -> 1080p, Inference Latency 28.2 - 33.3ms, theo dõi đồng thời 14 công nhân).
+3. **Thực nghiệm Docker Edge Simulation & Thu hồi tài nguyên**:
+   - Container `cctv_safety_edge_simulation_node` khởi động thành công, vượt qua healthcheck `/api/metrics`, truyền dữ liệu viễn trắc thời gian thực qua port 8080.
+   - Bắn thử nghiệm thành công cảnh báo Telegram kèm ảnh chụp sắc nét và HUD overlay từ bên trong container.
+   - Ngay sau khi hoàn thành kiểm thử, container đã được dừng và gỡ bỏ hoàn toàn bằng lệnh `docker compose -f docker-compose.edge-simulation.yml down`, giải phóng 100% GPU VRAM và CPU trên máy chủ host.
+

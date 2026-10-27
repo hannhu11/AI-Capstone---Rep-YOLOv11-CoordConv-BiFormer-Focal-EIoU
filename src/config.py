@@ -13,6 +13,17 @@ from typing import Dict
 # Base project directory
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env if present
+try:
+    from dotenv import load_dotenv
+    env_file = PROJECT_ROOT / ".env"
+    if env_file.exists():
+        load_dotenv(dotenv_path=env_file, override=False)
+    else:
+        load_dotenv(override=False)
+except ImportError:
+    pass
+
 # Decoupled Model Weights (Default to Champion Rep-YOLO11s checkpoint)
 DEFAULT_MODEL_PATH = PROJECT_ROOT / "Output" / "kaggle_results" / "hannhu40022_warmstart_ablations" / "rep_yolo11s_chv7_best_deploy.pt"
 FALLBACK_MODEL_PATH = PROJECT_ROOT / "yolo11s.pt"
@@ -66,8 +77,8 @@ class SystemConfig:
         # 5. Telegram Bot Credentials
         self.telegram_bot_token: str = os.getenv(
             "TELEGRAM_BOT_TOKEN", "8931795673:AAElznwj0coP6ef1NCtPNQj3veGaWRMvnNU"
-        )
-        self.telegram_chat_id: str = os.getenv("TELEGRAM_CHAT_ID", "")
+        ).strip().strip("'\"")
+        self.telegram_chat_id: str = os.getenv("TELEGRAM_CHAT_ID", "").strip().strip("'\"")
         self.telegram_enabled: bool = os.getenv("TELEGRAM_ENABLED", "True").lower() in ("true", "1", "yes")
 
         # 6. Zalo Bot Credentials

@@ -117,6 +117,8 @@ class CCTVSurveillancePipeline:
         alert_manager.clear_alerts()
 
         self.cap: Optional[cv2.VideoCapture] = None
+        self.stream_fps: float = 30.0
+        self.frame_stride: int = 1
         self._init_video_capture()
 
         # Telemetry state (with EMA alpha = 0.25)
@@ -157,6 +159,15 @@ class CCTVSurveillancePipeline:
         self.cap = cv2.VideoCapture(src)
         if not self.cap.isOpened():
             print(f"⚠️ Warning: Could not open video source: {src}")
+            self.stream_fps = 30.0
+            self.frame_stride = 1
+        else:
+            src_fps = self.cap.get(cv2.CAP_PROP_FPS)
+            self.stream_fps = src_fps if (src_fps and src_fps > 0) else 30.0
+            # For ~60 FPS streams (e.g. 59.94 FPS), process every 2nd frame to cut compute by 50%
+            # and achieve real-time 30 FPS playback instead of slow motion
+            self.frame_stride = 2 if self.stream_fps >= 50.0 else 1
+            print(f"📹 Opened Video Source: {src} (Stream FPS: {self.stream_fps:.1f}, Stride: {self.frame_stride})")
 
     def switch_source(self, new_source: str):
         """Switches video simulation stream dynamically with clean slate."""
@@ -362,6 +373,11 @@ class CCTVSurveillancePipeline:
                 if not ret:
                     time.sleep(0.03)
                     return None
+
+            # High-framerate stride skipping (e.g. advance 1 extra frame on 60 FPS video to achieve true real-time 30 FPS pacing)
+            if self.frame_stride > 1:
+                for _ in range(self.frame_stride - 1):
+                    self.cap.grab()
 
             # High-Resolution Scaling Optimization (for 4K / UHD streams)
             # If input frame is ultra-high resolution (e.g. 3840x2160 or 2160x3840),
