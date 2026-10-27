@@ -24,7 +24,7 @@ def test_reid_appearance_histogram_computation():
 
     hist1 = compute_appearance_hist(dummy_frame, box)
     assert hist1 is not None
-    assert len(hist1) == 64
+    assert len(hist1) == 96
     assert np.any(hist1 > 0)
 
     # Identical box should have correlation near 1.0

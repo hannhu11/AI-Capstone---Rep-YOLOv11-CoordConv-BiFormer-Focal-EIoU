@@ -329,6 +329,8 @@ class CCTVSurveillancePipeline:
                 if wid in reid_registry.profiles:
                     reid_registry.profiles[wid].status = r["status"]
                     reid_registry.profiles[wid].violations = r["violations"]
+                    if r.get("helmet_color") and r["helmet_color"] != "none":
+                        reid_registry.profiles[wid].helmet_color = r["helmet_color"]
             reid_registry.update_frame_end([r["track_id"] for r in worker_reports], self.total_frames_processed)
 
             # 4. Enqueue Confirmed Violation Alerts to Dispatcher
@@ -556,10 +558,10 @@ class CCTVSurveillancePipeline:
             self.focus_track_id = int(track_id) if track_id is not None else None
             return self.focus_track_id
 
-    def get_registered_workers(self) -> List[Dict[str, Any]]:
+    def get_registered_workers(self, filter_ghosts: bool = True) -> List[Dict[str, Any]]:
         """Returns the full list of persistent registered workers from spatio-temporal Re-ID memory."""
         with self.lock:
-            return reid_registry.get_registered_workers()
+            return reid_registry.get_registered_workers(filter_ghosts=filter_ghosts)
 
     def get_telemetry(self) -> Dict[str, Any]:
         """Returns structured metrics for real-time dashboard analytics."""
@@ -579,7 +581,7 @@ class CCTVSurveillancePipeline:
                 "video_source": Path(str(self.source_path)).name,
                 "total_frames": self.total_frames_processed,
                 "focus_track_id": self.focus_track_id,
-                "registered_workers_count": len(reid_registry.profiles),
+                "registered_workers_count": len(reid_registry.get_registered_workers(filter_ghosts=True)),
             }
 
 

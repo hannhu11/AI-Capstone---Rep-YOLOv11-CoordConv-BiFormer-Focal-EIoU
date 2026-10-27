@@ -96,11 +96,11 @@
         </div>
 
         <!-- Zalo Status Pill -->
-        <div class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-blue-950/60 border border-blue-800/40 text-blue-300">
-          <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        <div class="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-200">
+          <svg class="w-4 h-4 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
           </svg>
-          <span class="font-medium">Zalo Bot</span>
+          <span class="font-medium">Zalo Alert</span>
           <span id="zaloStatusDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
         </div>
 
@@ -669,9 +669,10 @@
         const workers = data.workers || [];
         currentFocusTrackId = data.focus_track_id;
 
+        const activeCount = workers.filter(w => w.is_active).length;
         const badge = document.getElementById('trackedWorkersBadge');
         if (badge) {
-          badge.innerText = `${workers.length} Workers`;
+          badge.innerText = `${activeCount} Active · ${workers.length} Total`;
         }
 
         const btnAll = document.getElementById('btnViewAllWorkers');
@@ -699,8 +700,16 @@
           return;
         }
 
+        // Sort: Active workers first, then by ID
+        const sortedWorkers = [...workers].sort((a, b) => {
+          if (a.is_active !== b.is_active) {
+            return a.is_active ? -1 : 1;
+          }
+          return a.track_id - b.track_id;
+        });
+
         let html = '';
-        workers.forEach(w => {
+        sortedWorkers.forEach(w => {
           const isFocused = (currentFocusTrackId === w.track_id);
           const dotColor = HELMET_DOT_CLASSES[w.helmet_color] || 'bg-slate-400';
           const isSafe = (w.status === 'COMPLIANT');
@@ -724,7 +733,7 @@
               <div class="mt-2 flex items-center justify-between text-[11px] text-slate-400">
                 <span class="flex items-center gap-1.5">
                   <span class="w-1.5 h-1.5 rounded-full ${w.is_active ? 'bg-emerald-400' : 'bg-slate-500'}"></span>
-                  ${w.is_active ? 'Active' : 'Occluded'}
+                  ${w.is_active ? 'Active' : 'Tạm khuất'}
                   <span class="text-[10px] text-slate-500 font-mono">(${w.total_frames_seen}f)</span>
                 </span>
                 <button onclick="event.stopPropagation(); setFocusWorker(${isFocused ? 'null' : w.track_id})" class="px-2 py-0.5 rounded text-[10px] font-semibold transition ${
@@ -849,6 +858,7 @@
     async function applyVideoSource() {
       const sel = document.getElementById('videoSourceSelect').value;
       // Immediate clean-slate reset in UI
+      seenAlertIds.clear();
       const container = document.getElementById('alertsContainer');
       if (container) container.innerHTML = '';
       const countBadge = document.getElementById('alertsCountBadge');
@@ -1015,6 +1025,7 @@
 
     async function clearAlertHistory() {
       await fetch('/api/alerts/clear', { method: 'POST' });
+      seenAlertIds.clear();
       document.getElementById('alertsContainer').innerHTML = '';
       document.getElementById('alertsCountBadge').innerText = '0 Alerts';
       const placeholder = document.getElementById('noAlertsPlaceholder');
