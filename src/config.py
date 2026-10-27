@@ -39,14 +39,16 @@ class SystemConfig:
         self.iou_threshold: float = float(os.getenv("IOU_THRESHOLD", "0.45"))
         self.imgsz: int = int(os.getenv("IMGSZ", "640"))
         self.device: str = os.getenv("DEVICE", "cuda:0")
-        self.use_half: bool = os.getenv("USE_HALF", "True").lower() in ("true", "1", "yes")
+        self.use_half: bool = os.getenv("USE_HALF", "False").lower() in ("true", "1", "yes")
 
         # 2. Tracking Settings (ByteTrack)
-        self.track_high_thresh: float = float(os.getenv("TRACK_HIGH_THRESH", "0.45"))
+        self.track_high_thresh: float = float(os.getenv("TRACK_HIGH_THRESH", "0.30"))
         self.track_low_thresh: float = float(os.getenv("TRACK_LOW_THRESH", "0.15"))
-        self.new_track_thresh: float = float(os.getenv("NEW_TRACK_THRESH", "0.50"))
+        self.new_track_thresh: float = float(os.getenv("NEW_TRACK_THRESH", "0.30"))
         self.track_buffer: int = int(os.getenv("TRACK_BUFFER", "60"))  # frames to retain lost tracks (~2 sec)
         self.match_thresh: float = float(os.getenv("MATCH_THRESH", "0.70"))  # IoU distance threshold
+        self.min_tracklet_len: int = int(os.getenv("MIN_TRACKLET_LEN", "15"))  # Require tracklet maturity before alerting
+        self.track_grace_period: int = int(os.getenv("TRACK_GRACE_PERIOD", "2"))  # Retain recently missed tracks with Kalman coords
 
         # 3. Spatial Relational Safety Rules
         self.head_box_ratio: float = float(os.getenv("HEAD_BOX_RATIO", "0.35"))  # upper 35% of person height
@@ -97,6 +99,8 @@ class SystemConfig:
             "zalo_configured": bool(self.zalo_bot_token and (self.zalo_chat_id or self.zalo_webhook_url)),
             "video_source": self.video_source,
             "camera_id": self.camera_id,
+            "min_tracklet_len": self.min_tracklet_len,
+            "track_grace_period": self.track_grace_period,
         }
 
 

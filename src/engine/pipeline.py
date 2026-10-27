@@ -56,6 +56,7 @@ class CCTVSurveillancePipeline:
             new_track_thresh=config.new_track_thresh,
             track_buffer=config.track_buffer,
             match_thresh=config.match_thresh,
+            grace_period=getattr(config, "track_grace_period", 2),
         )
         self.safety_engine = SpatialSafetyEngine(
             head_box_ratio=config.head_box_ratio,
@@ -65,15 +66,22 @@ class CCTVSurveillancePipeline:
             vest_overlap_thresh=config.vest_overlap_thresh,
             consecutive_frames_thresh=config.consecutive_violation_frames,
             cooldown_seconds=config.alert_cooldown_seconds,
+            border_margin_px=60,
+            min_tracklet_len=getattr(config, "min_tracklet_len", 15),
         )
+
+        # Isolate/clear alert history for fresh session
+        alert_manager.clear_alerts()
 
         self.cap: Optional[cv2.VideoCapture] = None
         self._init_video_capture()
 
-        # Telemetry state
+        # Telemetry state (with EMA alpha = 0.25)
         self.fps_rolling = 0.0
         self.inference_latency_ms = 0.0
         self.total_latency_ms = 0.0
+        self.workers_count_ema = 0.0
+        self.compliance_rate_ema = 100.0
         self.active_workers_count = 0
         self.compliant_workers_count = 0
         self.active_violations_count = 0
@@ -89,6 +97,9 @@ class CCTVSurveillancePipeline:
         self.latest_encoded_jpeg: Optional[bytes] = None
         self.frame_idx = 0
         self.frame_condition = threading.Condition()
+
+        # Clean slate on startup to prevent stale alerts leaking from previous sessions
+        alert_manager.clear_alerts()
 
         # Start dedicated background streaming worker thread
         self.worker_thread = threading.Thread(target=self._stream_worker, daemon=True)
@@ -113,9 +124,11 @@ class CCTVSurveillancePipeline:
             self.safety_engine.reset()
             self._init_video_capture()
             self.active_workers_count = 0
+            self.workers_count_ema = 0.0
             self.compliant_workers_count = 0
             self.active_violations_count = 0
             self.compliance_rate = 100.0
+            self.compliance_rate_ema = 100.0
             self.total_frames_processed = 0
             self.fps_rolling = 0.0
             self.helmet_color_distribution = {"blue": 0, "green": 0, "red": 0, "white": 0, "yellow": 0}
@@ -261,11 +274,18 @@ class CCTVSurveillancePipeline:
             self.inference_latency_ms = infer_ms
 
             # Filter candidate person detections before tracking to discard background noise smudges
+            # Relax edge bounding box aspect ratio: If box touches image borders, allow w/h <= 3.5;
+            # in the center, allow w/h <= 1.65 to accommodate bending postures.
             if len(person_dets) > 0:
-                valid_mask = [
-                    ((p[3] - p[1]) >= 35 and (p[2] - p[0]) >= 15 and ((p[2] - p[0]) / max(1.0, p[3] - p[1])) <= 1.35)
-                    for p in person_dets
-                ]
+                frame_h, frame_w = frame.shape[:2]
+                valid_mask = []
+                for p in person_dets:
+                    pw = p[2] - p[0]
+                    ph = p[3] - p[1]
+                    touches_border = (p[0] <= 60 or p[1] <= 60 or p[2] >= frame_w - 60 or p[3] >= frame_h - 60)
+                    max_aspect = 3.5 if touches_border else 1.65
+                    is_valid = (ph >= 35 and pw >= 15 and (pw / max(1.0, ph)) <= max_aspect)
+                    valid_mask.append(is_valid)
                 person_dets = person_dets[np.array(valid_mask, dtype=bool)] if any(valid_mask) else np.empty((0, 6), dtype=np.float32)
 
             # 2. Multi-Object Tracking on Workers
@@ -280,15 +300,28 @@ class CCTVSurveillancePipeline:
             for alert in alert_events:
                 alert_manager.enqueue_alert(alert)
 
-            # 5. Aggregate Real-Time Telemetry
-            self.active_workers_count = len(worker_reports)
-            self.compliant_workers_count = sum(1 for r in worker_reports if r["status"] == "COMPLIANT")
-            self.active_violations_count = self.active_workers_count - self.compliant_workers_count
-            self.compliance_rate = (
-                (self.compliant_workers_count / self.active_workers_count * 100.0)
-                if self.active_workers_count > 0
+            # 5. Aggregate Real-Time Telemetry with Exponential Moving Average (EMA, alpha = 0.25)
+            instant_workers = len(worker_reports)
+            instant_compliant = sum(1 for r in worker_reports if r["status"] == "COMPLIANT")
+            instant_violations = instant_workers - instant_compliant
+            instant_compliance_rate = (
+                (instant_compliant / instant_workers * 100.0)
+                if instant_workers > 0
                 else 100.0
             )
+
+            alpha = 0.25
+            if self.total_frames_processed == 0:
+                self.workers_count_ema = float(instant_workers)
+                self.compliance_rate_ema = float(instant_compliance_rate)
+            else:
+                self.workers_count_ema = alpha * instant_workers + (1.0 - alpha) * self.workers_count_ema
+                self.compliance_rate_ema = alpha * instant_compliance_rate + (1.0 - alpha) * self.compliance_rate_ema
+
+            self.active_workers_count = int(round(self.workers_count_ema))
+            self.compliant_workers_count = instant_compliant
+            self.active_violations_count = instant_violations
+            self.compliance_rate = round(self.compliance_rate_ema, 1)
 
             # Update helmet color distribution based on active tracked workers' stable colors
             color_counts = {"blue": 0, "green": 0, "red": 0, "white": 0, "yellow": 0}

@@ -90,7 +90,7 @@ class SpatialSafetyEngine:
         vest_overlap_thresh: float = 0.20,
         consecutive_frames_thresh: int = 8,
         cooldown_seconds: float = 30.0,
-        border_margin_px: int = 25,
+        border_margin_px: int = 60,
         min_tracklet_len: int = 0,
         min_worker_width: float = 28.0,
         min_worker_height: float = 50.0,
@@ -194,26 +194,19 @@ class SpatialSafetyEngine:
         h_frame, w_frame = frame_bgr.shape[:2]
 
         for track in tracks:
-            # 1. State check: Reject lost/removed tracks and tracks not updated in the current frame
-            if hasattr(track, "state") and track.state in (TrackState.Lost, TrackState.Removed):
+            # 1. State check: Reject removed tracks and tracks with time_since_update > 2
+            if hasattr(track, "state") and track.state == TrackState.Removed:
                 continue
-            if getattr(track, "time_since_update", 0) > 0:
+            if getattr(track, "time_since_update", 0) > 2:
                 continue
-            if getattr(track, "score", 1.0) < 0.35:
+            if getattr(track, "score", 1.0) < 0.20:
                 continue
 
             px1, py1, px2, py2 = [float(v) for v in track.tlbr]
             pw = max(0.0, px2 - px1)
             ph = max(0.0, py2 - py1)
 
-            # 2. Geometry check: Worker box must meet minimum dimensions and valid aspect ratio
-            # Filters out tiny noise smudges, background artifacts, distant blurry figures, or horizontal debris
-            if pw < self.min_worker_width or ph < self.min_worker_height or (pw * ph) < self.min_worker_area:
-                continue
-            if (pw / ph) > 1.30:  # Valid upright human aspect ratio
-                continue
-
-            # 3. Boundary Transition Zone check:
+            # Boundary Transition Zone check:
             # If worker is touching the edge of the camera frame, their head or vest may be partially outside
             # the field of view. Mark border status and suppress premature violation streaks.
             is_at_border = (
@@ -223,91 +216,119 @@ class SpatialSafetyEngine:
                 or py2 >= (h_frame - self.border_margin_px)
             )
 
-            # 1. Sub-regions
-            head_box = [px1, py1, px2, py1 + self.head_box_ratio * ph]
-            torso_box = [px1, py1 + self.torso_min_ratio * ph, px2, py1 + self.torso_max_ratio * ph]
+            # 2. Geometry check: Worker box must meet minimum dimensions and valid aspect ratio
+            # Relax edge bounding box aspect ratio: If box touches image borders, allow w/h <= 3.5;
+            # in the center, allow w/h <= 1.65 to accommodate bending postures.
+            if pw < self.min_worker_width or ph < self.min_worker_height or (pw * ph) < self.min_worker_area:
+                continue
+            max_aspect = 3.5 if is_at_border else 1.65
+            if (pw / ph) > max_aspect:
+                continue
 
-            # 2. Check for explicit Negative Helmet (no_helmet / none) on head
-            has_explicit_no_helmet = False
-            for nh in negative_helmets:
-                hb = nh["box"]
-                hcx = (hb[0] + hb[2]) / 2.0
-                hcy = (hb[1] + hb[3]) / 2.0
-                if (head_box[0] <= hcx <= head_box[2] and head_box[1] <= hcy <= head_box[3]) or bbox_iou(head_box, hb) >= 0.10:
-                    has_explicit_no_helmet = True
-                    break
+            is_predicted_frame = getattr(track, "is_predicted", False) or getattr(track, "time_since_update", 0) > 0
 
-            # 3. Helmet Match & Color
-            matched_helmet = None
-            if not has_explicit_no_helmet:
-                for h in positive_helmets:
-                    hb = h["box"]
-                    hx1, hy1, hx2, hy2 = hb[:4]
-                    hcx = (hx1 + hx2) / 2.0
-                    hcy = (hy1 + hy2) / 2.0
+            if is_predicted_frame:
+                # Maintain previous compliance state during brief prediction grace period
+                violations = list(getattr(track, "last_violation_types", []))
+                has_helmet = (not any("HELMET" in v for v in violations))
+                has_vest = (not any("VEST" in v for v in violations))
+                helmet_color = getattr(track, "last_helmet_color", None)
+                is_compliant = (len(violations) == 0)
+                status_str = "COMPLIANT" if is_compliant else "VIOLATION"
+            else:
+                # 1. Sub-regions
+                head_box = [px1, py1, px2, py1 + self.head_box_ratio * ph]
+                torso_box = [px1, py1 + self.torso_min_ratio * ph, px2, py1 + self.torso_max_ratio * ph]
 
-                    # Compute intersection over helmet area
-                    inter_x = max(0.0, min(head_box[2], hx2) - max(head_box[0], hx1))
-                    inter_y = max(0.0, min(head_box[3], hy2) - max(head_box[1], hy1))
-                    inter_area = inter_x * inter_y
-                    hb_area = max(1.0, (hx2 - hx1) * (hy2 - hy1))
-                    io_helmet = inter_area / hb_area
-
-                    if (head_box[0] <= hcx <= head_box[2]) and (head_box[1] <= hcy <= head_box[3]):
-                        matched_helmet = h
-                        break
-                    elif bbox_iou(head_box, hb) >= self.helmet_overlap_thresh or io_helmet >= 0.25:
-                        matched_helmet = h
-                        break
-                    elif (px1 <= hcx <= px2) and (py1 - 0.10 * ph <= hcy <= py1 + 0.42 * ph):
-                        matched_helmet = h
+                # 2. Check for explicit Negative Helmet (no_helmet / none) on head
+                has_explicit_no_helmet = False
+                for nh in negative_helmets:
+                    hb = nh["box"]
+                    hcx = (hb[0] + hb[2]) / 2.0
+                    hcy = (hb[1] + hb[3]) / 2.0
+                    if (head_box[0] <= hcx <= head_box[2] and head_box[1] <= hcy <= head_box[3]) or bbox_iou(head_box, hb) >= 0.10:
+                        has_explicit_no_helmet = True
                         break
 
-            has_helmet = (matched_helmet is not None and not has_explicit_no_helmet)
-            helmet_color = matched_helmet["color"] if has_helmet else None
+                # 3. Helmet Match & Color
+                matched_helmet = None
+                if not has_explicit_no_helmet:
+                    for h in positive_helmets:
+                        hb = h["box"]
+                        hx1, hy1, hx2, hy2 = hb[:4]
+                        hcx = (hx1 + hx2) / 2.0
+                        hcy = (hy1 + hy2) / 2.0
 
-            # 4. Check for explicit Negative Vest (no_vest) on torso
-            has_explicit_no_vest = False
-            for nv in negative_vests:
-                vb = nv["box"]
-                vcx = (vb[0] + vb[2]) / 2.0
-                vcy = (vb[1] + vb[3]) / 2.0
-                if (torso_box[0] <= vcx <= torso_box[2] and torso_box[1] <= vcy <= torso_box[3]) or bbox_iou(torso_box, vb) >= 0.10:
-                    has_explicit_no_vest = True
-                    break
+                        # Compute intersection over helmet area
+                        inter_x = max(0.0, min(head_box[2], hx2) - max(head_box[0], hx1))
+                        inter_y = max(0.0, min(head_box[3], hy2) - max(head_box[1], hy1))
+                        inter_area = inter_x * inter_y
+                        hb_area = max(1.0, (hx2 - hx1) * (hy2 - hy1))
+                        io_helmet = inter_area / hb_area
 
-            # 5. Safety Vest Match
-            matched_vest = None
-            if not has_explicit_no_vest:
-                for v in positive_vests:
-                    vb = v["box"]
-                    vx1, vy1, vx2, vy2 = vb[:4]
-                    inter_vx = max(0.0, min(torso_box[2], vx2) - max(torso_box[0], vx1))
-                    inter_vy = max(0.0, min(torso_box[3], vy2) - max(torso_box[1], vy1))
-                    inter_varea = inter_vx * inter_vy
-                    vb_area = max(1.0, (vx2 - vx1) * (vy2 - vy1))
-                    io_vest = inter_varea / vb_area
+                        if (head_box[0] <= hcx <= head_box[2]) and (head_box[1] <= hcy <= head_box[3]):
+                            matched_helmet = h
+                            break
+                        elif bbox_iou(head_box, hb) >= self.helmet_overlap_thresh or io_helmet >= 0.25:
+                            matched_helmet = h
+                            break
+                        elif (px1 <= hcx <= px2) and (py1 - 0.10 * ph <= hcy <= py1 + 0.42 * ph):
+                            matched_helmet = h
+                            break
 
-                    if bbox_iou(torso_box, vb) >= self.vest_overlap_thresh or bbox_iou([px1, py1, px2, py2], vb) >= 0.25 or io_vest >= 0.35:
-                        matched_vest = v
+                has_helmet = (matched_helmet is not None and not has_explicit_no_helmet)
+                helmet_color = matched_helmet["color"] if has_helmet else None
+
+                # 4. Check for explicit Negative Vest (no_vest) on torso
+                has_explicit_no_vest = False
+                for nv in negative_vests:
+                    vb = nv["box"]
+                    vcx = (vb[0] + vb[2]) / 2.0
+                    vcy = (vb[1] + vb[3]) / 2.0
+                    if (torso_box[0] <= vcx <= torso_box[2] and torso_box[1] <= vcy <= torso_box[3]) or bbox_iou(torso_box, vb) >= 0.10:
+                        has_explicit_no_vest = True
                         break
 
-            has_vest = (matched_vest is not None and not has_explicit_no_vest)
+                # 5. Safety Vest Match
+                matched_vest = None
+                if not has_explicit_no_vest:
+                    for v in positive_vests:
+                        vb = v["box"]
+                        vx1, vy1, vx2, vy2 = vb[:4]
+                        inter_vx = max(0.0, min(torso_box[2], vx2) - max(torso_box[0], vx1))
+                        inter_vy = max(0.0, min(torso_box[3], vy2) - max(torso_box[1], vy1))
+                        inter_varea = inter_vx * inter_vy
+                        vb_area = max(1.0, (vx2 - vx1) * (vy2 - vy1))
+                        io_vest = inter_varea / vb_area
 
-            # 6. Violations classification
-            violations = []
-            if not has_helmet:
-                violations.append("MISSING_SAFETY_HELMET")
-            if not has_vest:
-                violations.append("MISSING_SAFETY_VEST")
+                        if bbox_iou(torso_box, vb) >= self.vest_overlap_thresh or bbox_iou([px1, py1, px2, py2], vb) >= 0.25 or io_vest >= 0.35:
+                            matched_vest = v
+                            break
 
-            is_compliant = (len(violations) == 0)
-            status_str = "COMPLIANT" if is_compliant else "VIOLATION"
+                has_vest = (matched_vest is not None and not has_explicit_no_vest)
+
+                # 6. Violations classification
+                violations = []
+                if not has_helmet:
+                    violations.append("MISSING_SAFETY_HELMET")
+                if not has_vest:
+                    violations.append("MISSING_SAFETY_VEST")
+
+                is_compliant = (len(violations) == 0)
+                status_str = "COMPLIANT" if is_compliant else "VIOLATION"
+
+                track.last_helmet_color = helmet_color
+                if hasattr(track, "color_history") and has_helmet and helmet_color:
+                    track.color_history.append(helmet_color)
+                track.last_violation_types = violations
 
             # 7. Debounce streak update
             if is_at_border:
                 # In boundary transition zone: worker entering or exiting, freeze/decrement streak
                 track.violation_streak = max(0, track.violation_streak - 1)
+            elif is_predicted_frame:
+                # During grace period prediction, do not increment violation streak
+                pass
             elif is_compliant:
                 track.compliance_streak += 1
                 if track.compliance_streak >= 5:
@@ -317,11 +338,6 @@ class SpatialSafetyEngine:
             else:
                 track.violation_streak += 1
                 track.compliance_streak = 0
-
-            track.last_helmet_color = helmet_color
-            if hasattr(track, "color_history") and has_helmet and helmet_color:
-                track.color_history.append(helmet_color)
-            track.last_violation_types = violations
 
             # Report data structure (using temporally stable helmet color only when helmet is present)
             stable_col = getattr(track, "stable_helmet_color", None) or helmet_color
@@ -357,7 +373,8 @@ class SpatialSafetyEngine:
             )
 
             should_alert = (
-                not is_compliant
+                not is_predicted_frame
+                and not is_compliant
                 and not is_at_border
                 and is_mature_track
                 and track.violation_streak >= self.consecutive_frames_thresh

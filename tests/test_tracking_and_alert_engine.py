@@ -281,3 +281,87 @@ def test_spatial_centroid_debouncing():
 
     _, alerts_2 = engine.evaluate_frame([track_b], [], dummy_frame)
     assert len(alerts_2) == 0  # SUPPRESSED by spatial centroid debouncing!
+
+
+def test_kalman_height_velocity_damping():
+    kf = KalmanFilter()
+    mean, cov = kf.initiate(np.array([500.0, 500.0, 0.4, 200.0], dtype=np.float32))
+
+    # Simulate an abrupt measurement jump in height (e.g. from 200 to 400)
+    meas_jump = np.array([500.0, 500.0, 0.2, 400.0], dtype=np.float32)
+    upd_mean, upd_cov = kf.update(mean, cov, meas_jump)
+
+    # Height velocity |v_h| (upd_mean[7]) must be damped to <= 0.15 * h
+    h = max(1.0, float(upd_mean[3]))
+    assert abs(upd_mean[7]) <= 0.15 * h + 1e-4
+
+    # Predict step must also respect damping
+    pred_mean, pred_cov = kf.predict(upd_mean, upd_cov)
+    h_pred = max(1.0, float(pred_mean[3]))
+    assert abs(pred_mean[7]) <= 0.15 * h_pred + 1e-4
+
+
+def test_bytetrack_centroid_distance_fallback():
+    tracker = BYTETracker(track_thresh=0.45, track_low_thresh=0.15, track_buffer=30)
+    tracker.reset()
+
+    # Frame 1: Worker standing upright
+    det1 = np.array([[500.0, 300.0, 600.0, 600.0, 0.90, 0]], dtype=np.float32)
+    tracks1 = tracker.update(det1)
+    assert len(tracks1) == 1
+    w_id = tracks1[0].track_id
+
+    # Frame 2: Worker bends over (low full IoU distance > 0.70, but upper-body overlap >= 0.20 and small centroid shift)
+    det2 = np.array([[510.0, 290.0, 610.0, 400.0, 0.88, 0]], dtype=np.float32)
+    tracks2 = tracker.update(det2)
+    assert len(tracks2) == 1
+    assert tracks2[0].track_id == w_id  # ID PRESERVED via centroid fallback!
+
+
+def test_tracklet_maturity_requirement():
+    # With min_tracklet_len = 15, violation alerts must NOT trigger until tracklet is mature
+    engine = SpatialSafetyEngine(consecutive_frames_thresh=3, cooldown_seconds=10.0, min_tracklet_len=15)
+    dummy_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+
+    track = STrack(STrack.tlbr_to_tlwh(np.array([100.0, 100.0, 200.0, 300.0])), score=0.90, cls_id=0)
+    track.track_id = 88
+    track.is_activated = True
+    track.tracklet_len = 5  # Immature tracklet (< 15)
+
+    # 4 consecutive violation frames
+    for _ in range(4):
+        reports, alerts = engine.evaluate_frame([track], [], dummy_frame)
+        assert len(alerts) == 0  # SUPPRESSED due to tracklet maturity requirement!
+
+    # Now simulate mature tracklet
+    track.tracklet_len = 16
+    reports, alerts = engine.evaluate_frame([track], [], dummy_frame)
+    assert len(alerts) == 1  # Fired once mature!
+
+
+def test_bytetrack_grace_period_rendering():
+    tracker = BYTETracker(track_thresh=0.45, track_low_thresh=0.15, track_buffer=30, grace_period=2)
+    tracker.reset()
+
+    # Frame 1: Worker detected
+    det1 = np.array([[100.0, 100.0, 150.0, 250.0, 0.90, 0]], dtype=np.float32)
+    tracks1 = tracker.update(det1)
+    assert len(tracks1) == 1
+    assert tracks1[0].is_predicted is False
+    w_id = tracks1[0].track_id
+
+    # Frame 2: 1-frame detection dip (empty)
+    tracks2 = tracker.update(np.empty((0, 6), dtype=np.float32))
+    assert len(tracks2) == 1
+    assert tracks2[0].track_id == w_id
+    assert tracks2[0].is_predicted is True  # Preserved in grace period!
+
+    # Frame 3: 2nd frame dip
+    tracks3 = tracker.update(np.empty((0, 6), dtype=np.float32))
+    assert len(tracks3) == 1
+    assert tracks3[0].track_id == w_id
+    assert tracks3[0].is_predicted is True
+
+    # Frame 4: 3rd frame dip (exceeds grace period of 2)
+    tracks4 = tracker.update(np.empty((0, 6), dtype=np.float32))
+    assert len(tracks4) == 0  # Dropped from active output

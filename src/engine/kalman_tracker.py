@@ -82,6 +82,13 @@ class KalmanFilter:
 
         mean = np.dot(self._motion_mat, mean)
         covariance = np.linalg.multi_dot((self._motion_mat, covariance, self._motion_mat.T)) + motion_cov
+
+        # Kalman Height Velocity Damping: clamp vertical height velocity |v_h| <= 0.15 * h
+        # to prevent Kalman prediction explosion when box toggles between upper body and full body
+        h = max(1.0, float(mean[3]))
+        max_vh = 0.15 * h
+        mean[7] = np.clip(mean[7], -max_vh, max_vh)
+
         return mean, covariance
 
     def project(self, mean: np.ndarray, covariance: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
@@ -116,4 +123,10 @@ class KalmanFilter:
         innovation = measurement - projected_mean
         new_mean = mean + np.dot(innovation, kalman_gain.T)
         new_covariance = covariance - np.linalg.multi_dot((kalman_gain, projected_cov, kalman_gain.T))
+
+        # Kalman Height Velocity Damping: clamp vertical height velocity |v_h| <= 0.15 * h
+        h = max(1.0, float(new_mean[3]))
+        max_vh = 0.15 * h
+        new_mean[7] = np.clip(new_mean[7], -max_vh, max_vh)
+
         return new_mean, new_covariance

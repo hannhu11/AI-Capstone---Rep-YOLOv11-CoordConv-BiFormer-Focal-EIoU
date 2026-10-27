@@ -43,6 +43,7 @@ class STrack:
         self.tracklet_len = 0
         self.state = TrackState.New
         self.time_since_update = 0
+        self.is_predicted = False
 
         self.track_id = 0
         self.frame_id = 0
@@ -94,6 +95,7 @@ class STrack:
         self.frame_id = frame_id
         self.start_frame = frame_id
         self.time_since_update = 0
+        self.is_predicted = False
         self._record_center()
 
     def re_activate(self, new_track: STrack, frame_id: int, new_id: bool = False):
@@ -106,6 +108,7 @@ class STrack:
         self.is_activated = True
         self.frame_id = frame_id
         self.time_since_update = 0
+        self.is_predicted = False
         if new_id:
             self.track_id = self.next_id()
         self.score = new_track.score
@@ -117,6 +120,7 @@ class STrack:
         self.frame_id = frame_id
         self.tracklet_len += 1
         self.time_since_update = 0
+        self.is_predicted = False
 
         new_tlwh = new_track.tlwh
         self.mean, self.covariance = self.kalman_filter.update(
@@ -237,6 +241,62 @@ def linear_assignment(cost_matrix: np.ndarray, thresh: float) -> Tuple[np.ndarra
     return matches, np.asarray(unmatched_a, dtype=int), np.asarray(unmatched_b, dtype=int)
 
 
+def compute_matching_cost(tracks: List[STrack], detections: List[STrack]) -> np.ndarray:
+    """
+    Computes cost matrix between tracks and detections based on IoU distance (1 - IoU)
+    with Centroid Distance Fallback in Hungarian matching:
+    If IoU distance > 0.70, calculate normalized centroid distance d_center.
+    If d_center <= 0.08 and Upper-Body IoU >= 0.20, accept the match by capping cost <= 0.65.
+    """
+    if len(tracks) == 0 or len(detections) == 0:
+        return np.zeros((len(tracks), len(detections)), dtype=np.float32)
+
+    boxes_a = np.array([s.tlbr for s in tracks], dtype=np.float32)
+    boxes_b = np.array([d.tlbr for d in detections], dtype=np.float32)
+
+    full_iou = box_iou_batch(boxes_a, boxes_b)
+    dists = 1.0 - full_iou
+
+    max_w = max(1920.0, float(np.max(boxes_a[:, 2])), float(np.max(boxes_b[:, 2])))
+    max_h = max(1080.0, float(np.max(boxes_a[:, 3])), float(np.max(boxes_b[:, 3])))
+    diag = float(np.hypot(max_w, max_h))
+
+    # Upper-body boxes (top 50% of bounding box height)
+    ub_a = boxes_a.copy()
+    ub_a[:, 3] = ub_a[:, 1] + 0.50 * np.maximum(1.0, ub_a[:, 3] - ub_a[:, 1])
+
+    ub_b = boxes_b.copy()
+    ub_b[:, 3] = ub_b[:, 1] + 0.50 * np.maximum(1.0, ub_b[:, 3] - ub_b[:, 1])
+
+    upper_iou = box_iou_batch(ub_a, ub_b)
+
+    # Full-body centroids
+    c_ax = (boxes_a[:, 0] + boxes_a[:, 2]) / 2.0
+    c_ay = (boxes_a[:, 1] + boxes_a[:, 3]) / 2.0
+    c_bx = (boxes_b[:, 0] + boxes_b[:, 2]) / 2.0
+    c_by = (boxes_b[:, 1] + boxes_b[:, 3]) / 2.0
+
+    # Upper-body centroids (for robust association when worker bends)
+    ub_c_ax = (ub_a[:, 0] + ub_a[:, 2]) / 2.0
+    ub_c_ay = (ub_a[:, 1] + ub_a[:, 3]) / 2.0
+    ub_c_bx = (ub_b[:, 0] + ub_b[:, 2]) / 2.0
+    ub_c_by = (ub_b[:, 1] + ub_b[:, 3]) / 2.0
+
+    for i in range(len(tracks)):
+        for j in range(len(detections)):
+            if dists[i, j] > 0.70:
+                d_full = float(np.hypot(c_ax[i] - c_bx[j], c_ay[i] - c_by[j])) / diag
+                d_ub = float(np.hypot(ub_c_ax[i] - ub_c_bx[j], ub_c_ay[i] - ub_c_by[j])) / diag
+                d_center = min(d_full, d_ub)
+                u_iou = float(upper_iou[i, j])
+                if d_center <= 0.08 and u_iou >= 0.20:
+                    # Accept fallback match: scale into [0.45, 0.65] <= match_thresh (0.70)
+                    fallback_dist = 0.65 - 0.20 * min(1.0, (u_iou - 0.20) / 0.80)
+                    dists[i, j] = min(dists[i, j], fallback_dist)
+
+    return dists
+
+
 class BYTETracker:
     """
     SOTA ByteTrack Tracker for CCTV Safety Surveillance.
@@ -251,6 +311,7 @@ class BYTETracker:
         track_buffer: int = 60,
         match_thresh: float = 0.70,
         frame_rate: int = 30,
+        grace_period: int = 0,
     ):
         self.track_thresh = track_thresh
         self.track_low_thresh = track_low_thresh
@@ -258,6 +319,7 @@ class BYTETracker:
         self.track_buffer = track_buffer
         self.match_thresh = match_thresh
         self.frame_rate = frame_rate
+        self.grace_period = grace_period
 
         self.kalman_filter = KalmanFilter()
         self.tracked_stracks: List[STrack] = []
@@ -332,10 +394,7 @@ class BYTETracker:
         strack_pool = tracked_stracks + self.lost_stracks
 
         # 3. First Association: High-score detections with strack_pool
-        dists = 1.0 - box_iou_batch(
-            np.array([s.tlbr for s in strack_pool], dtype=np.float32),
-            np.array([d.tlbr for d in detections], dtype=np.float32),
-        )
+        dists = compute_matching_cost(strack_pool, detections)
         matches, u_track, u_detection = linear_assignment(dists, thresh=self.match_thresh)
 
         for itracked, idet in matches:
@@ -355,10 +414,7 @@ class BYTETracker:
         ]
         r_tracked_stracks = [strack_pool[i] for i in u_track if strack_pool[i].state in (TrackState.Tracked, TrackState.Lost)]
 
-        dists_second = 1.0 - box_iou_batch(
-            np.array([s.tlbr for s in r_tracked_stracks], dtype=np.float32),
-            np.array([d.tlbr for d in detections_second], dtype=np.float32),
-        )
+        dists_second = compute_matching_cost(r_tracked_stracks, detections_second)
         matches_second, u_track_second, _ = linear_assignment(dists_second, thresh=self.match_thresh)
 
         for itracked, idet in matches_second:
@@ -428,6 +484,17 @@ class BYTETracker:
 
         # Return active tracked objects
         output_stracks = [track for track in self.tracked_stracks if track.is_activated]
+        for t in output_stracks:
+            t.is_predicted = False
+
+        # Grace Period Rendering: Activated tracks with time_since_update <= grace_period
+        # remain in output_stracks using Kalman predicted coordinates (with is_predicted = True)
+        if self.grace_period > 0:
+            for track in self.lost_stracks:
+                if track.is_activated and 1 <= track.time_since_update <= self.grace_period:
+                    track.is_predicted = True
+                    output_stracks.append(track)
+
         return output_stracks
 
     @staticmethod

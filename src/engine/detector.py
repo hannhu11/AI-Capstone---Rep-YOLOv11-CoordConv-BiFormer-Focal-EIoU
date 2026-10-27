@@ -55,7 +55,7 @@ class SafetyObjectDetector:
         conf_thresh: float = 0.25,
         iou_thresh: float = 0.45,
         device: Optional[str] = None,
-        use_half: bool = True,
+        use_half: bool = False,
     ):
         self.model_path = model_path or config.model_path
         self.conf_thresh = conf_thresh
@@ -86,6 +86,19 @@ class SafetyObjectDetector:
         self.yolo = YOLO(str(target_path))
         self.class_names = self.yolo.names
 
+        # Disable FP16 for models containing custom modules (CoordConv, BiFormerBlockLite)
+        # to eliminate numerical overflow that produces ghost clusters on the floor
+        has_custom_modules = False
+        if hasattr(self.yolo, "model") and hasattr(self.yolo.model, "modules"):
+            for m in self.yolo.model.modules():
+                m_type = type(m).__name__
+                if m_type in ("CoordConv", "BiFormerBlockLite", "BiFormerBlock", "BiFormerSequentialWrapper"):
+                    has_custom_modules = True
+                    break
+        if has_custom_modules and self.use_half:
+            print("⚠️ Disabling FP16 (enforcing FP32) to prevent numerical overflow in custom CoordConv/BiFormer modules.")
+            self.use_half = False
+
         # Warm-up pass on GPU
         dummy_img = np.zeros((640, 640, 3), dtype=np.uint8)
         self.yolo.predict(
@@ -108,18 +121,19 @@ class SafetyObjectDetector:
         """
         Runs inference on an image / video frame.
         Returns:
-            all_detections: list of dicts for all classes
-            person_boxes: numpy array (N, 6) [x1, y1, x2, y2, conf, cls_id] for ByteTrack
+            all_detections: list of dicts for all classes (filtered at conf_val >= 0.25 for display)
+            person_boxes: numpy array (N, 6) [x1, y1, x2, y2, conf, cls_id] for ByteTrack (down to track_low_thresh 0.15)
             latency_ms: pure inference latency in milliseconds
         """
         conf_val = conf if conf is not None else self.conf_thresh
         iou_val = iou if iou is not None else self.iou_thresh
+        infer_conf = min(conf_val, getattr(config, "track_low_thresh", 0.15))
 
         t0 = time.perf_counter()
         with torch.inference_mode():
             results = self.yolo.predict(
                 frame_bgr,
-                conf=conf_val,
+                conf=infer_conf,
                 iou=iou_val,
                 imgsz=imgsz,
                 device=self.device,
@@ -145,9 +159,12 @@ class SafetyObjectDetector:
                     "conf": round(conf_score, 4),
                     "name": c_name,
                 }
-                all_detections.append(det_dict)
 
-                # Collect person detections specifically for tracking
+                # Keep all_detections (equipment display, etc.) at conf_val (e.g. 0.25)
+                if conf_score >= conf_val:
+                    all_detections.append(det_dict)
+
+                # Collect person detections specifically for tracking (down to track_low_thresh 0.15)
                 has_person_class = any("person" in n.lower() or "worker" in n.lower() or "human" in n.lower() for n in self.class_names.values())
                 is_person = ("person" in c_name or "worker" in c_name or "human" in c_name) if has_person_class else (cls_id == 0)
                 if is_person:
