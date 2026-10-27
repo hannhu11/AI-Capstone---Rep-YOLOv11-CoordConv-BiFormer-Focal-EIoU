@@ -863,6 +863,7 @@
       });
       if (res.ok) {
         reloadStream();
+        updateWorkersList();
       }
     }
 
@@ -879,6 +880,7 @@
         const data = await res.json();
         alert('Uploaded and switched to: ' + data.filename);
         reloadStream();
+        updateWorkersList();
       } else {
         alert('Upload failed');
       }
