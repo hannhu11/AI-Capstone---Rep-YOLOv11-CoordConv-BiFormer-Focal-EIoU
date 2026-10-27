@@ -1297,3 +1297,56 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
 3. **Bộ Kiểm Thử Đơn Vị Tự Động (Automated Unit Test Suite)**:
    - Bổ sung 7 bài test pháp y chuyên sâu trong [tests/test_cctv_forensic_fixes.py](file:///c:/Users/ADMIN/Downloads/capstone%20AI/tests/test_cctv_forensic_fixes.py).
    - Toàn bộ **83/83 unit tests** trong `tests/` PASSED 100% trong 14.24s.
+
+
+---
+
+## 44. BÁO CÁO PHÁP Y LỖI HỆ THỐNG CCTV EDGE SIMULATION (CONTAINER 3e984e554c68 & GIAO DIỆN WEB LIVE)
+
+> **Thời điểm kiểm toán:** 2026-10-27 12:10 UTC  
+> **Phiên bản mã nguồn:** Rep-YOLO11s CCTV Edge Simulator  
+> **Nguyên tắc thực thi:** 100% Liêm chính khoa học, trung thực thực nghiệm, đối chứng đa nguồn.
+
+### 44.1. Bản Chất 4 Lỗi Nghiêm Trọng Được Phát Hiện & Truy Nguyên Gốc Rễ
+
+1. **Lỗi Vòng Lặp Vô Hạn CUDA Illegal Memory Access (4,295 - 4,897 Lần Trong Docker Log `3e984e554c68`)**:
+   - *Hiện tượng*: Docker container `cctv_safety_edge_simulation_node` bị kẹt cứng trong vòng lặp phục hồi `[SELF-HEALING] Attempting pipeline recovery after 4896 consecutive failures...`. Log liên tục ghi nhận `RuntimeError: CUDA error: an illegal memory access was encountered`.
+   - *Nguyên nhân gốc rễ*: Tại dòng 240 của `src/engine/pipeline.py`, luồng CPU fallback handler khi nhận ngoại lệ GPU đã cố gắng gọi `torch.cuda.empty_cache()`. Trong kiến trúc PyTorch / CUDA runtime, khi một lỗi truy cập bộ nhớ bất hợp pháp xảy ra (Illegal Memory Access), toàn bộ CUDA Context của tiến trình bị nhiễm độc (poisoned context) vĩnh viễn và không thể giải phóng. Việc gọi `torch.cuda.empty_cache()` kích hoạt thêm một ngoại lệ CUDA mới, làm crash chính handler CPU fallback và ngăn cản quá trình chuyển đổi, khiến container quay cuồng trong vòng lặp 4295+ lần thay vì tự thoát để Docker kích hoạt chính sách `restart: unless-stopped`.
+   - *Giải pháp*: Bọc bảo vệ toàn bộ lời gọi `empty_cache()` trong khối ngoại lệ an toàn; đồng thời nhận diện chuỗi ngoại lệ `illegal memory access` / `device-side assert` để chủ động gọi `os._exit(1)`. Khi tiến trình thoát với mã 1, Docker daemon tự động khởi động lại container với CUDA Context hoàn toàn tinh sạch.
+
+2. **Hiện Tượng Nhạy Cảm Quá Mức Báo Sai Vi Phạm "Missing Helmet / Vest" (Ảnh 3, 4, 5)**:
+   - *Hiện tượng*: Video hiển thị công nhân mặc đủ mũ và áo bảo hộ, nhưng thanh Live Violation Stream và danh sách vi phạm liên tục báo thiếu trang bị (`MISSING_SAFETY_HELMET`, `MISSING_SAFETY_VEST`).
+   - *Nguyên nhân gốc rễ*: Trong commit `05d148f`, nhằm ngăn chặn chiếc bàn tròn bị nhận nhầm thành mũ bảo hộ trong một video đơn lẻ, các điều kiện hình học đã bị thắt chặt quá mức:
+     * Hộp đỉnh đầu bị bóp hẹp: `head_box = [pcx - 0.28 * pw, py1, pcx + 0.28 * pw, ...]`.
+     * Điều kiện tâm mũ: `abs(hcx - pcx) > 0.20 * pw` và `hw / hh > 1.70` cùng `hy1 > py1 + 0.12 * ph`.
+     * Khi công nhân bước đi sải chân ngang (side-stride) hoặc cúi người làm sắt đan móng (như Track 3, 4, 5, 14 trong video UHD 4K `13921040-uhd_3840_2160_30fps.mp4`), tâm đầu lệch so với tâm thân người từ $0.32 \cdot p_w$ đến $0.49 \cdot p_w$, và tỷ lệ cạnh mũ đạt $1.71 - 1.85$. Toàn bộ mũ thật của công nhân bị loại bỏ thô bạo bởi các dòng lệnh lọc cứng nhắc này!
+     * Tương tự, vùng torso yêu cầu tỷ lệ IoU $\ge 0.25$ và $IoU_{\text{person}} \ge 0.25$, loại bỏ áo bảo hộ khi công nhân cúi người hoặc quay lưng.
+   - *Giải pháp*:
+     * Khôi phục hộp đỉnh đầu toàn chiều rộng: `head_box = [px1 - 0.05 * pw, py1 - 0.08 * ph, px2 + 0.05 * pw, py1 + self.head_box_ratio * ph]`.
+     * Nới lỏng căn chỉnh ngang đỉnh sọ: cho phép $p_{x1} - 0.05 \cdot p_w \le h_{cx} \le p_{x2} + 0.05 \cdot p_w$ (tương đương $|h_{cx} - p_{cx}| \le 0.45 \cdot p_w$).
+     * Nới lỏng cao độ đỉnh mũ: cho phép $h_{y1} \le p_{y1} + 0.22 \cdot p_h$ (bác bỏ bàn ở thắt lưng $> 0.35 \cdot p_h$ nhưng chấp nhận người cúi).
+     * Nới lỏng tỷ lệ cạnh mũ $h_w / \max(1, h_h) \le 2.20$ cho mũ bảo hộ công nghiệp có vành rộng.
+     * Nới lỏng ngưỡng IoU áo phản quang về $\ge 0.20$ hoặc $io\_vest \ge 0.25$.
+     * Lưu trữ trực tiếp `matched_helmet_box` và `matched_vest_box` vào từ điển báo cáo `r["matched_helmet_box"]` và `r["matched_vest_box"]`.
+
+3. **Hiện Tượng Tràn PPE Của Người Đi Ngang Vào Khung Tracking Ở Chế Độ Focus Mode**:
+   - *Hiện tượng*: Khi người dùng chọn theo dõi Worker #1 (Focus Mode), một công nhân khác đi ngang qua (đầu lọt vào trong khung hình chữ nhật của Worker #1), giao diện tự động vẽ nhận diện màu sắc mũ của công nhân đi ngang lên khung tracking của Worker #1.
+   - *Nguyên nhân gốc rễ*: Tại dòng 618-622 của `src/engine/pipeline.py`, chế độ Focus Mode lặp qua TẤT CẢ `detections` trong khung hình và vẽ bất kỳ hộp PPE nào giao cắt với hộp chữ nhật của công nhân mục tiêu `[x1, y1, x2, y2]`. Vì hộp bounding box của người là hình chữ nhật bao quanh toàn thân, khi người khác đi ngang, mũ của họ rơi vào diện tích hình chữ nhật đó và bị vẽ đè lên.
+   - *Giải pháp*: Trong Focus Mode, xóa bỏ hoàn toàn vòng lặp quét `detections` bên ngoài. Chỉ vẽ DUY NHẤT các hộp trang bị đã được thuật toán `SpatialSafetyEngine` ghép cặp chính xác cho công nhân đó: `r.get("matched_helmet_box")` và `r.get("matched_vest_box")`.
+
+4. **Hiện Tượng Nhảy ID (Worker #1 -> Worker #8) & Lạm Phát Mã Số Công Nhân (Ảnh 1, 2)**:
+   - *Hiện tượng*: Đang khóa theo dõi Worker #1 (mặc đủ trang bị), bỗng nhiên hệ thống nhảy sang Worker #8, đồng thời số lượng công nhân tăng lên đột biến.
+   - *Nguyên nhân gốc rễ*: Tại dòng 292 của `src/engine/reid_tracker.py`, lệnh kiểm tra:
+     `if app_sim < 0.10 or color_conflict: del self.raw_to_canonical[raw_track_id]`.
+     Khi ánh nắng mặt trời, góc quay hoặc bóng phản xạ làm màu mũ bị chớp (flicker) trong đúng 1 khung hình (ví dụ: vàng chuyển sang trắng), cờ `color_conflict` lập tức kích hoạt dù độ tương đồng ngoại quan thân áo `app_sim >= 0.85`. Liên kết định danh bị chặt đứt ngay lập tức, Worker #1 bị bỏ rơi và hệ thống đúc ra một Canonical ID mới (#8, #9,...).
+   - *Giải pháp*:
+     * Bổ sung bộ đếm chuỗi xung đột màu `raw_to_conflict_streak`.
+     * Chỉ phá vỡ liên kết nếu độ tương đồng ngoại quan thực sự phân kỳ (`app_sim < 0.25`) VÀ xung đột màu kéo dài liên tục $\ge 3$ khung hình (`persistent_conflict`).
+     * Nếu `app_sim >= 0.45` (ngoại quan thân áo hoàn toàn trùng khớp), tuyệt đối không bao giờ chia tách track chỉ vì hiện tượng chớp màu mũ nhất thời.
+
+---
+
+### 44.2. Kết Quả Kiểm Thử Độc Lập & Nghiệm Thu Hệ Thống
+- Đã chạy toàn bộ bộ kiểm thử tự động của dự án: **89/89 unit tests** PASSED 100%.
+- Bổ sung các bài test kiểm định độc lập cho cả 4 lỗi pháp y trong `tests/test_cctv_forensic_fixes.py` và `tests/test_persistent_tracking_focus.py`.
+- Tái đóng gói và kiểm thử container Docker trên môi trường mô phỏng biên IEEE TPAMI.

@@ -217,12 +217,20 @@ class CCTVSurveillancePipeline:
                     traceback.print_exc()
                     last_error_log_time = curr_t
 
+                err_msg = str(e).lower()
+                # Fast exit on unrecoverable CUDA context poisoning so Docker's restart policy restarts cleanly
+                if "illegal memory access" in err_msg or "device-side assert" in err_msg:
+                    print(f"🚨 [CUDA FATAL] Unrecoverable CUDA context poisoning detected: {e}")
+                    print("🚨 [CUDA FATAL] Exiting process with code 1 to allow container clean restart...")
+                    import os
+                    os._exit(1)
+
                 # Self-healing recovery for CUDA/driver exceptions
-                if torch.cuda.is_available():
-                    try:
+                try:
+                    if torch.cuda.is_available():
                         torch.cuda.empty_cache()
-                    except Exception:
-                        pass
+                except Exception:
+                    pass
 
                 if consecutive_errors >= 3:
                     print(f"🔄 [SELF-HEALING] Attempting pipeline recovery after {consecutive_errors} consecutive failures...")
@@ -234,10 +242,16 @@ class CCTVSurveillancePipeline:
                         print("✅ [SELF-HEALING] Successfully re-initialized detector and video capture!")
                     except Exception as rec_err:
                         print(f"⚠️ [SELF-HEALING] GPU reload failed: {rec_err}. Falling back to CPU mode...")
+                        if "illegal memory access" in str(rec_err).lower():
+                            import os
+                            os._exit(1)
                         try:
                             with self.lock:
-                                if torch.cuda.is_available():
-                                    torch.cuda.empty_cache()
+                                try:
+                                    if torch.cuda.is_available():
+                                        torch.cuda.empty_cache()
+                                except Exception:
+                                    pass
                                 self.detector.device = "cpu"
                                 self.detector.use_half = False
                                 self.detector.load_model(self.detector.model_path)
@@ -245,6 +259,9 @@ class CCTVSurveillancePipeline:
                             print("✅ [SELF-HEALING] Successfully recovered in CPU fallback mode!")
                         except Exception as cpu_err:
                             print(f"❌ [SELF-HEALING] CPU fallback failed: {cpu_err}")
+                            if "illegal memory access" in str(cpu_err).lower():
+                                import os
+                                os._exit(1)
 
                 time.sleep(0.1)
 
@@ -257,7 +274,10 @@ class CCTVSurveillancePipeline:
             ):
                 try:
                     with self.lock:
-                        torch.cuda.empty_cache()
+                        try:
+                            torch.cuda.empty_cache()
+                        except Exception:
+                            pass
                         self.detector.device = config.device
                         self.detector.use_half = config.use_half
                         self.detector.load_model(self.detector.model_path)
@@ -614,19 +634,28 @@ class CCTVSurveillancePipeline:
                 cv2.line(vis, (x2, y2), (x2 - d, y2), (255, 255, 0), 3)
                 cv2.line(vis, (x2, y2), (x2, y2 - d), (255, 255, 0), 3)
 
-                # Draw ONLY PPE associated with this target worker
-                for d_box in detections:
-                    if d_box["cls"] != 0 and "person" not in d_box["name"]:
-                        bx = d_box["box"]
-                        if not (bx[2] < x1 or bx[0] > x2 or bx[3] < y1 or bx[1] > y2):
-                            c_name = d_box["name"]
-                            p_color = CLASS_COLORS.get(c_name, (0, 230, 255))
-                            px1, py1, px2, py2 = [int(v) for v in bx]
-                            cv2.rectangle(vis, (px1, py1), (px2, py2), p_color, 2)
-                            p_label = f"{c_name.replace('_', ' ').upper()} {d_box['conf']*100:.0f}%"
-                            (lw, lh), _ = cv2.getTextSize(p_label, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
-                            cv2.rectangle(vis, (px1, max(0, py1 - 20)), (px1 + lw + 6, max(0, py1)), p_color, -1)
-                            cv2.putText(vis, p_label, (px1 + 3, max(14, py1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 1, cv2.LINE_AA)
+                # Draw ONLY PPE associated with this target worker (strictly matched by SpatialSafetyEngine)
+                m_helmet = r.get("matched_helmet_box")
+                if m_helmet is not None:
+                    hx1, hy1, hx2, hy2 = [int(v) for v in m_helmet[:4]]
+                    h_color_name = r.get("helmet_color") or "helmet"
+                    c_name = f"{h_color_name}_helmet" if not h_color_name.endswith("helmet") else h_color_name
+                    p_color = CLASS_COLORS.get(c_name, (0, 230, 255))
+                    cv2.rectangle(vis, (hx1, hy1), (hx2, hy2), p_color, 2)
+                    p_label = f"{c_name.replace('_', ' ').upper()}"
+                    (lw, lh), _ = cv2.getTextSize(p_label, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
+                    cv2.rectangle(vis, (hx1, max(0, hy1 - 20)), (hx1 + lw + 6, max(0, hy1)), p_color, -1)
+                    cv2.putText(vis, p_label, (hx1 + 3, max(14, hy1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 1, cv2.LINE_AA)
+
+                m_vest = r.get("matched_vest_box")
+                if m_vest is not None:
+                    vx1, vy1, vx2, vy2 = [int(v) for v in m_vest[:4]]
+                    v_color = CLASS_COLORS.get("safety_vest", (0, 255, 128))
+                    cv2.rectangle(vis, (vx1, vy1), (vx2, vy2), v_color, 2)
+                    v_label = "SAFETY VEST"
+                    (lw, lh), _ = cv2.getTextSize(v_label, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
+                    cv2.rectangle(vis, (vx1, max(0, vy1 - 20)), (vx1 + lw + 6, max(0, vy1)), v_color, -1)
+                    cv2.putText(vis, v_label, (vx1 + 3, max(14, vy1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 1, cv2.LINE_AA)
 
                 # Target Worker Banner
                 h_color_tag = f" [{r['helmet_color'].upper()}]" if r.get("helmet_color") else ""

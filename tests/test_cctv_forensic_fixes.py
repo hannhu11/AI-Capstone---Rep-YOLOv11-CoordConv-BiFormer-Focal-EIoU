@@ -149,32 +149,72 @@ class TestCCTVForensicFixes:
         assert lower_overlap == 0.0, "Lower body detection must have 0.0 upper torso overlap!"
 
     def test_helmet_aspect_ratio_table_surface_rejected(self):
-        """Flat horizontal surface (aspect ratio hw/hh >= 1.70) is rejected as non-helmet."""
+        """Flat horizontal surface (aspect ratio hw/hh > 2.20) is rejected as non-helmet."""
         engine = SpatialSafetyEngine(consecutive_frames_thresh=1)
         track = STrack(STrack.tlbr_to_tlwh(np.array([100.0, 100.0, 300.0, 500.0])), score=0.90, cls_id=0)
         track.track_id = 1
         track.is_activated = True
 
         dummy_frame = np.zeros((600, 600, 3), dtype=np.uint8)
-        # Flat tabletop at head height: hw = 140, hh = 70 -> aspect ratio 2.0 > 1.70
-        flat_table_det = [{"box": [130.0, 100.0, 270.0, 170.0], "cls": 5, "name": "white_helmet", "conf": 0.88}]
+        # Flat tabletop at head height: hw = 160, hh = 65 -> aspect ratio 2.46 > 2.20
+        flat_table_det = [{"box": [120.0, 100.0, 280.0, 165.0], "cls": 5, "name": "white_helmet", "conf": 0.88}]
         reports, _ = engine.evaluate_frame([track], flat_table_det, dummy_frame)
 
         assert len(reports) == 1
-        assert reports[0]["has_helmet"] is False, "Flat table surface (aspect ratio 2.0) must be rejected!"
+        assert reports[0]["has_helmet"] is False, "Flat table surface (aspect ratio > 2.20) must be rejected!"
 
     def test_horizontal_head_centering_shoulder_detection_rejected(self):
-        """Object out on shoulder or elbow (|hcx - pcx| > 0.20 * pw) is rejected as head helmet."""
+        """Object out on shoulder or elbow (|hcx - pcx| > 0.45 * pw) is rejected as head helmet."""
         engine = SpatialSafetyEngine(consecutive_frames_thresh=1)
-        # Person: [100, 100, 300, 500] -> pcx=200, pw=200, allowed hcx in [160, 240]
+        # Person: [100, 100, 300, 500] -> pcx=200, pw=200, allowed hcx in [110, 290] (0.45*pw)
         track = STrack(STrack.tlbr_to_tlwh(np.array([100.0, 100.0, 300.0, 500.0])), score=0.90, cls_id=0)
         track.track_id = 1
         track.is_activated = True
 
         dummy_frame = np.zeros((600, 600, 3), dtype=np.uint8)
-        # Object at far shoulder/arm: x in [260, 300] -> hcx = 280 (|hcx - pcx| = 80 = 0.40 * pw > 0.20 * pw)
-        shoulder_det = [{"box": [260.0, 110.0, 300.0, 150.0], "cls": 5, "name": "white_helmet", "conf": 0.85}]
+        # Object far out on arm/elbow: x in [300, 340] -> hcx = 320 (|hcx - pcx| = 120 = 0.60 * pw > 0.45 * pw)
+        shoulder_det = [{"box": [300.0, 110.0, 340.0, 150.0], "cls": 5, "name": "white_helmet", "conf": 0.85}]
         reports, _ = engine.evaluate_frame([track], shoulder_det, dummy_frame)
 
         assert len(reports) == 1
         assert reports[0]["has_helmet"] is False, "Object out on shoulder must NOT match as head helmet!"
+
+    def test_side_stride_and_wide_brim_helmet_accepted(self):
+        """Worker walking in profile/stride with head offset 0.35*pw and wide-brim helmet (aspect 1.85) is accepted."""
+        engine = SpatialSafetyEngine(consecutive_frames_thresh=1)
+        # Person: [100, 100, 300, 500] -> pcx=200, pw=200, py1=100, ph=400
+        track = STrack(STrack.tlbr_to_tlwh(np.array([100.0, 100.0, 300.0, 500.0])), score=0.90, cls_id=0)
+        track.track_id = 1
+        track.is_activated = True
+
+        dummy_frame = np.zeros((600, 600, 3), dtype=np.uint8)
+        # Head shifted in stride: hcx = 200 + 0.35 * 200 = 270 (x in [233, 307], hw = 74, hh = 40 -> aspect 1.85)
+        # hy1 = 100 + 0.15 * 400 = 160 (<= py1 + 0.22*ph = 188)
+        stride_helmet = [{"box": [233.0, 120.0, 307.0, 160.0], "cls": 6, "name": "yellow_helmet", "conf": 0.89}]
+        reports, _ = engine.evaluate_frame([track], stride_helmet, dummy_frame)
+
+        assert len(reports) == 1
+        assert reports[0]["has_helmet"] is True, "Side-stride worker helmet must be accepted!"
+        assert reports[0]["helmet_color"] == "yellow"
+        assert reports[0]["matched_helmet_box"] == [233.0, 120.0, 307.0, 160.0]
+
+    def test_matched_ppe_boxes_stored_in_report(self):
+        """Worker report must store matched_helmet_box and matched_vest_box directly."""
+        engine = SpatialSafetyEngine(consecutive_frames_thresh=1)
+        track = STrack(STrack.tlbr_to_tlwh(np.array([100.0, 100.0, 300.0, 500.0])), score=0.90, cls_id=0)
+        track.track_id = 1
+        track.is_activated = True
+
+        dummy_frame = np.zeros((600, 600, 3), dtype=np.uint8)
+        h_box = [170.0, 100.0, 230.0, 150.0]
+        v_box = [130.0, 180.0, 270.0, 380.0]
+        dets = [
+            {"box": h_box, "cls": 5, "name": "white_helmet", "conf": 0.92},
+            {"box": v_box, "cls": 1, "name": "safety_vest", "conf": 0.88},
+        ]
+        reports, _ = engine.evaluate_frame([track], dets, dummy_frame)
+
+        assert len(reports) == 1
+        assert reports[0]["matched_helmet_box"] == h_box
+        assert reports[0]["matched_vest_box"] == v_box
+        assert reports[0]["status"] == "COMPLIANT"

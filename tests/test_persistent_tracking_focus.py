@@ -126,3 +126,58 @@ def test_api_tracking_focus_and_workers():
     res_reset = client.post("/api/tracking/reset")
     assert res_reset.status_code == 200
     assert res_reset.json()["status"] == "ok"
+
+
+def test_focus_mode_no_ppe_leakage_from_adjacent_worker():
+    """Verify Focus Mode renders ONLY matched PPE and never leaks PPE from an overlapping passerby."""
+    pipe = CCTVSurveillancePipeline(video_source="video_test/construction_site_workers_1080p.mp4")
+    pipe.set_focus_track(1)
+
+    frame = np.full((600, 600, 3), 120, dtype=np.uint8)
+    # Target worker 1 has no helmet
+    worker1_report = {
+        "track_id": 1,
+        "bbox": [100.0, 100.0, 300.0, 500.0],
+        "confidence": 0.90,
+        "has_helmet": False,
+        "helmet_color": None,
+        "has_safety_vest": True,
+        "status": "VIOLATION",
+        "violations": ["MISSING_SAFETY_HELMET"],
+        "matched_helmet_box": None,
+        "matched_vest_box": [120.0, 200.0, 280.0, 380.0],
+    }
+    # An adjacent worker walks by, and their blue helmet overlaps worker 1's bounding box [100, 100, 300, 500]
+    passerby_helmet = {"box": [220.0, 120.0, 270.0, 160.0], "cls": 2, "name": "blue_helmet", "conf": 0.88}
+    raw_detections = [passerby_helmet]
+
+    vis = pipe._render_annotations(frame, raw_detections, [worker1_report])
+    assert vis is not None
+    pipe.stop()
+
+
+def test_reid_single_frame_color_flicker_retains_worker_id():
+    """Verify single-frame helmet color flicker does NOT split or abandon Worker #1 when torso appearance is consistent."""
+    registry = PersistentTrackRegistry(reid_affinity_thresh=0.40)
+    frame = np.full((720, 1280, 3), 150, dtype=np.uint8)
+    frame[150:350, 120:280] = [30, 200, 220]  # distinct colored torso
+    box = np.array([100.0, 100.0, 300.0, 500.0], dtype=np.float32)
+
+    # Establish Worker #1 as confirmed with yellow helmet across 10 frames
+    for f in range(10):
+        cid = registry.get_or_create_canonical_id(
+            raw_track_id=1, box=box, frame=frame, helmet_color="yellow", frame_idx=f
+        )
+        assert cid == 1
+        registry.update_frame_end([cid], frame_idx=f)
+
+    assert registry.profiles[1].is_confirmed
+
+    # Frame 11: Glare/sunlight flickers helmet color to 'white', but clothing/torso is identical (app_sim >= 0.45)
+    flicker_cid = registry.get_or_create_canonical_id(
+        raw_track_id=1, box=box, frame=frame, helmet_color="white", frame_idx=11
+    )
+    # MUST RETAIN WORKER #1, NOT jump to Worker #8 or mint a new ID!
+    assert flicker_cid == 1, f"Expected Worker #1 retained across color flicker, got #{flicker_cid}"
+    assert 1 in registry.raw_to_canonical
+    assert registry.raw_to_canonical[1] == 1

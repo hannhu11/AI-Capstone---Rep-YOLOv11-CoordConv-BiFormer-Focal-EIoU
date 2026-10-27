@@ -251,12 +251,14 @@ class SpatialSafetyEngine:
                 has_helmet = (not any("HELMET" in v for v in violations))
                 has_vest = (not any("VEST" in v for v in violations))
                 helmet_color = getattr(track, "last_helmet_color", None)
+                matched_helmet_box = getattr(track, "last_matched_helmet_box", None)
+                matched_vest_box = getattr(track, "last_matched_vest_box", None)
                 is_compliant = (len(violations) == 0)
                 status_str = "COMPLIANT" if is_compliant else "VIOLATION"
             else:
-                # 1. Sub-regions (centered head cranium and torso)
+                # 1. Sub-regions (restored full-width head cranium and torso)
                 pcx = (px1 + px2) / 2.0
-                head_box = [pcx - 0.28 * pw, py1, pcx + 0.28 * pw, py1 + self.head_box_ratio * ph]
+                head_box = [px1 - 0.05 * pw, py1 - 0.08 * ph, px2 + 0.05 * pw, py1 + self.head_box_ratio * ph]
                 torso_box = [px1, py1 + self.torso_min_ratio * ph, px2, py1 + self.torso_max_ratio * ph]
 
                 # 2. Check for explicit Negative Helmet (no_helmet / none) on head
@@ -280,29 +282,26 @@ class SpatialSafetyEngine:
                         hcx = (hx1 + hx2) / 2.0
                         hcy = (hy1 + hy2) / 2.0
 
-                        # Cranium Vertex Gating (Root Cause 1b):
-                        # A genuine helmet worn on a person MUST have its top edge at or above the head cranium:
-                        # hy1 <= py1 + 0.12 * ph. Reject helmet associations where hy1 > py1 + 0.12 * ph
-                        # (e.g. table surface sitting at waist/torso level).
-                        if hy1 > (py1 + 0.12 * ph):
+                        # Cranium Vertex Gating:
+                        # Allow hy1 <= py1 + 0.22 * ph (rejecting waist-level table at > 0.35 * ph while preserving real bending heads).
+                        if hy1 > (py1 + 0.22 * ph):
                             continue
                         if hy2 < (py1 - 0.15 * ph):
                             continue
 
                         # Horizontal Head Centering:
-                        # Human head cranium is horizontally aligned with body center (|hcx - pcx| <= 0.20 * pw).
-                        # Empirically measured in 1080p video: max offset is 0.068 * pw.
-                        if abs(hcx - pcx) > 0.20 * pw:
+                        # Relax cranium horizontal alignment to px1 - 0.05 * pw <= hcx <= px2 + 0.05 * pw (or abs(hcx - pcx) <= 0.45 * pw).
+                        if not (px1 - 0.05 * pw <= hcx <= px2 + 0.05 * pw) and abs(hcx - pcx) > 0.45 * pw:
                             continue
 
                         # Geometric Hardhat Plausibility:
                         # Real helmet width on human head never exceeds person width.
-                        # Dome aspect ratio hw / hh is typically 1.0-1.3, max 1.70. Table has hw/pw=0.74, aspect=2.00.
+                        # Relax helmet aspect ratio to hw / max(1.0, hh) <= 2.20 for wide-brim hardhats.
                         hw = max(0.0, float(hx2 - hx1))
                         hh = max(0.0, float(hy2 - hy1))
-                        if hw > 0.85 * pw:
+                        if hw > 1.05 * pw:
                             continue
-                        if (hw / max(1.0, hh)) > 1.70:
+                        if (hw / max(1.0, hh)) > 2.20:
                             continue
 
                         # Compute intersection over helmet area
@@ -324,6 +323,8 @@ class SpatialSafetyEngine:
 
                 has_helmet = (matched_helmet is not None and not has_explicit_no_helmet)
                 helmet_color = matched_helmet["color"] if has_helmet else None
+                matched_helmet_box = matched_helmet["box"] if has_helmet else None
+                track.last_matched_helmet_box = matched_helmet_box
 
                 # 4. Check for explicit Negative Vest (no_vest) on torso
                 has_explicit_no_vest = False
@@ -347,11 +348,13 @@ class SpatialSafetyEngine:
                         vb_area = max(1.0, (vx2 - vx1) * (vy2 - vy1))
                         io_vest = inter_varea / vb_area
 
-                        if bbox_iou(torso_box, vb) >= self.vest_overlap_thresh or bbox_iou([px1, py1, px2, py2], vb) >= 0.25 or io_vest >= 0.35:
+                        if bbox_iou(torso_box, vb) >= self.vest_overlap_thresh or bbox_iou([px1, py1, px2, py2], vb) >= 0.20 or io_vest >= 0.25:
                             matched_vest = v
                             break
 
                 has_vest = (matched_vest is not None and not has_explicit_no_vest)
+                matched_vest_box = matched_vest["box"] if has_vest else None
+                track.last_matched_vest_box = matched_vest_box
 
                 # 6. Violations classification
                 violations = []
@@ -415,6 +418,8 @@ class SpatialSafetyEngine:
                 "is_alerted": track.is_alerted,
                 "is_at_border": is_at_border,
                 "tracklet_len": getattr(track, "tracklet_len", 0),
+                "matched_helmet_box": matched_helmet_box,
+                "matched_vest_box": matched_vest_box,
             }
             worker_reports.append(report)
 

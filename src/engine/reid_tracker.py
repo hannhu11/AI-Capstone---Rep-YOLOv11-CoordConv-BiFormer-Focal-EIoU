@@ -229,6 +229,7 @@ class PersistentTrackRegistry:
 
         # Map ByteTrack raw track ID to canonical worker ID
         self.raw_to_canonical: Dict[int, int] = {}
+        self.raw_to_conflict_streak: Dict[int, int] = {}
 
         # Frame 0-30 Baseline Anchors to lock IDs on video loop
         self.baseline_anchors: Dict[int, Dict[str, Any]] = {}
@@ -239,6 +240,7 @@ class PersistentTrackRegistry:
         """Cleans registry for a brand-new video source or explicit reset."""
         self.profiles.clear()
         self.raw_to_canonical.clear()
+        self.raw_to_conflict_streak.clear()
         self.baseline_anchors.clear()
         self.next_available_id = 1
         self.is_looping_phase = False
@@ -249,6 +251,7 @@ class PersistentTrackRegistry:
         self.is_looping_phase = True
         self.loop_cooldown_frames = 35
         self.raw_to_canonical.clear()
+        self.raw_to_conflict_streak.clear()
         for p in self.profiles.values():
             p.is_active = False
             p.consecutive_hits = 0
@@ -289,9 +292,28 @@ class PersistentTrackRegistry:
                         and p.helmet_color != "none"
                         and helmet_color != p.helmet_color
                     )
-                    if app_sim < 0.10 or color_conflict:
+                    if color_conflict:
+                        self.raw_to_conflict_streak[raw_track_id] = self.raw_to_conflict_streak.get(raw_track_id, 0) + 1
+                    else:
+                        self.raw_to_conflict_streak[raw_track_id] = 0
+
+                    persistent_conflict = (self.raw_to_conflict_streak[raw_track_id] >= 3)
+
+                    # Anti-Hijack Guard:
+                    # - If app_sim >= 0.45 (identical torso appearance), NEVER split the track on color flicker alone.
+                    # - Only break binding if appearance similarity is genuinely divergent (app_sim < 0.25) AND color conflict persists over multiple frames (>= 3 frames),
+                    #   or if appearance is severely divergent (app_sim < 0.05) and color conflict exists.
+                    should_break = False
+                    if app_sim < 0.45:
+                        if app_sim < 0.25 and persistent_conflict:
+                            should_break = True
+                        elif app_sim < 0.05 and color_conflict:
+                            should_break = True
+
+                    if should_break:
                         # Hijack intercepted! Break binding so Worker #cid is NOT stolen!
                         del self.raw_to_canonical[raw_track_id]
+                        self.raw_to_conflict_streak.pop(raw_track_id, None)
                     else:
                         p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
                         return cid
@@ -310,7 +332,20 @@ class PersistentTrackRegistry:
                     and p.helmet_color != "none"
                     and helmet_color != p.helmet_color
                 )
-                if not (app_sim < 0.10 or color_conflict):
+                if color_conflict:
+                    self.raw_to_conflict_streak[raw_track_id] = self.raw_to_conflict_streak.get(raw_track_id, 0) + 1
+                else:
+                    self.raw_to_conflict_streak[raw_track_id] = 0
+
+                persistent_conflict = (self.raw_to_conflict_streak[raw_track_id] >= 3)
+                should_break = False
+                if app_sim < 0.45:
+                    if app_sim < 0.25 and persistent_conflict:
+                        should_break = True
+                    elif app_sim < 0.05 and color_conflict:
+                        should_break = True
+
+                if not should_break:
                     p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
                     self.raw_to_canonical[raw_track_id] = raw_track_id
                     return raw_track_id
@@ -366,7 +401,8 @@ class PersistentTrackRegistry:
                 and p.helmet_color != "none"
                 and helmet_color != p.helmet_color
             )
-            if not color_mismatch:
+            app_sim = p.get_max_appearance_sim(hist)
+            if not color_mismatch or app_sim >= 0.40:
                 p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
                 self.raw_to_canonical[raw_track_id] = p.worker_id
                 return p.worker_id
