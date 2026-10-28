@@ -1934,3 +1934,73 @@ Thay thế các thẻ phồng neon bằng 6 khối số liệu công nghiệp g�
 2. **Liêm chính khoa học & Tính tương thích**:
    - 100% các API endpoint (`/api/metrics`, `/api/status`, `/api/tracking/workers`, `/api/tracking/focus`, `/api/tracking/reset`, `/api/alerts`, `/api/switch_source`, `/api/switch_model`, `/api/settings`) giữ nguyên cấu trúc dữ liệu và hoạt động trơn tru.
    - Không còn bất kỳ icon rác, emoji hay hiệu ứng giật cục nào. Giao diện đạt chuẩn báo cáo đồ án tốt nghiệp xuất sắc và sẵn sàng cho các hội nghị khoa học quốc tế.
+
+
+---
+
+## 54. TÁI THIẾT KẾ TOÀN DIỆN GIAO DIỆN WEB (CLAUDE WARM THEME & BRAND LOGO VECTOR SVG)
+
+> **Mục tiêu:** Nâng cấp toàn diện giao diện Web VMS (`src/web/templates/dashboard.html`) từ Dark Theme sang Tone màu ấm Claude (Warm Sand / Ivory / Skin-tone Light Theme), tích hợp Logo vector SVG AI Industrial nhận diện thương hiệu độc quyền, tuân thủ tiêu chuẩn các phần mềm VMS hàng đầu (Milestone, Siemens, Axis), đảm bảo 100% tính toàn vẹn hệ thống và vượt qua 103/103 tests.
+
+### 54.1. Thiết Kế Logo Thương Hiệu AI Industrial Giám Sát An Toàn (AEGIS-CCTV VMS Suite)
+1. **Biểu tượng Vector SVG Độc Quyền (Custom Vector SVG Brand Logo)**:
+   - Thay thế hoàn toàn icon chiếc khiên màu xanh đơn điệu mặc định.
+   - Kết hợp tinh tế 4 thành tố công nghệ:
+     - **Mũ bảo hộ công nghiệp (Industrial Hardhat)**: Vòm bảo hộ với dải chuyển màu hổ phách / đất nung Claude (`#F59E0B` &rarr; `#D97706` &rarr; `#C2410C`), gờ chịu lực đỉnh đầu và vành mũ bảo hộ.
+     - **Ống kính quang học & Tâm ngắm AI Vision (Optical Reticle / Sensor Aperture)**: Tâm ngắm hình tròn đồng tâm, thấu kính camera quang học Navy (`#1E293B`) với viền Electric Cobalt (`#2563EB`), vòng chia độ cảm biến cyan và vạch chia chữ thập ngắm bắn.
+     - **Khung ngắm nhận diện vật thể (Targeting Brackets)**: 4 góc bracket định vị bounding box thông minh.
+     - **Vi mạch Neural Node Traces**: Đường vi mạch neural kết nối các điểm nút dữ liệu ở các góc và chân đế biểu tượng.
+   - Bảng màu thương hiệu chuẩn mực:
+     - **Deep Obsidian Navy** (`#1E293B`): Đại diện cho phần cứng trạm giám sát và khung đế quang học vững chắc.
+     - **Claude Terracotta / Amber** (`#D97706` / `#C2410C`): Đại diện cho văn hóa an toàn lao động, mũ bảo hộ và tinh thần thiết kế chuẩn Claude.
+     - **Electric Cobalt** (`#2563EB`): Đại diện cho mắt thần AI thị giác máy tính và luồng suy luận mạng nơ-ron.
+2. **Định Danh Thương Hiệu & Trạm Quan Sát**:
+   - Dòng 1: **AEGIS-CCTV • VMS SAFETY SUITE** (Typography đậm, sắc sảo, đẳng cấp công nghiệp) kèm huy hiệu `CHV 7-Class (Person + PPE)`, `AAIML 2027` và nhãn `INDUSTRIAL CCTV SURVEILLANCE`.
+   - Dòng 2: `FACILITY: SECTOR-04 • CAM-01 [GATE_A1_1080P] • GPU: CUDA FP16`.
+3. **SVG Favicon Trình Duyệt Dạng Data URI**:
+   - Tích hợp trực tiếp vào thẻ `<head>` chuỗi data URI vector SVG đồng nhất, hiển thị sắc nét trên mọi tab trình duyệt mà không phụ thuộc file tĩnh bên ngoài.
+
+### 54.2. Chuyển Đổi Không Gian & Bảng Màu Nền Sang Tone Màu Ấm Claude (Warm Light Theme)
+1. **Bảng màu ấm chống chói mắt (Ergonomic Warm Sand / Ivory Palette)**:
+   - **Canvas / Body Background**: `#FAF8F5` (Tone kem cát ấm dịu mắt, chống lóa màn hình khi giám sát ca dài).
+   - **Bề mặt Khối Card (Surface Containers)**: Trắng tinh khôi `#FFFFFF` với viền hairline ấm tinh tế `#E7E3DC` (hoặc `#D6D0C7` khi hover), kết hợp hiệu ứng đổ bóng môi trường siêu nhẹ `shadow-[0_1px_3px_rgba(40,30,20,0.04)]`.
+   - **Header Bar & Sub-panels**: `#FFFFFF` / `#F5F2EB` phủ lớp `backdrop-blur-md` sang trọng.
+   - **Typography & Tương Phản Đọc**:
+     - Tiêu đề & KPI chính: Màu than ấm đậm `#1C1917` (Stone-900) — tương phản cực cao, tuyệt đối không bị mờ nhạt hay rửa trôi màu.
+     - Nhãn telemetry & phụ đề: `#57534E` (Stone-600) và `#78716C` (Stone-500).
+     - Font số học phần cứng: `font-mono tabular-nums text-[#1C1917]`.
+2. **Hệ thống Pills Trạng Thái Tinh Tế (Soft Harmonized Pastels)**:
+   - **Compliance / Hợp quy**: Soft emerald pill (`bg-emerald-50 text-emerald-800 border-emerald-200`) + chấm xanh lục bảo `#10B981`.
+   - **Breach / Vi phạm**: Soft rose pill (`bg-rose-50 text-rose-800 border-rose-200`) + chấm đỏ thẫm `#EF4444`.
+   - **Warning / Coasting**: Soft amber pill (`bg-amber-50 text-amber-900 border-amber-200`) + chấm vàng hổ phách `#F59E0B`.
+   - **Personnel / Re-ID**: Soft blue pill (`bg-blue-50 text-blue-800 border-blue-200`) + chấm xanh cobalt `#2563EB`.
+
+### 54.3. Giữ Vững Khung Viền Màn Hình Camera CCTV Matte Đen Công Nghiệp (Video Viewport Standard)
+1. **Chuẩn Mực VMS Quốc Tế (Milestone XProtect / Siemens Siveillance)**:
+   - Toàn bộ khung viền camera bên trong (CCTV monitor bezel) giữ màu tối công nghiệp matte đen `#0B0F17` và nền stream `#05080E`.
+   - Giúp khung video CCTV ban ngày lẫn ban đêm đạt độ tương phản tối đa, bảo vệ mắt điều phối viên khỏi hiện tượng lóa viền (bezel glare).
+2. **Thanh OSD Trên Khung Camera**:
+   - Đèn chỉ báo ghi hình nhấp nháy đỏ `● REC`, định danh trạm `CAM-01 [GATE_A1_1080P]`, tên tệp nguồn video.
+   - Telemetry băng thông và độ trễ (`~3.8 Mbps • 24.2ms`), thông số độ phân giải và FPS (`1920×1080 @ 60 FPS`).
+   - Nút làm mới luồng (Refresh) và nút toàn màn hình (Fullscreen) sắc nét.
+3. **Banner Khóa Mục Tiêu HUD Nổi (Floating Target Focus HUD)**:
+   - Hiển thị động theo trạng thái thời gian thực: `LOCKED // ACTIVE` (chấm xanh lục) hoặc `LOST // COASTING` (chấm hổ phách) kèm nút thoát `[✕ Exit Focus (Esc)]`.
+
+### 54.4. Đồng Bộ & Tinh Chỉnh Các Thành Phần Nghiệp Vụ
+1. **Dải Telemetry KPI 6 Card**:
+   - Card trắng viền ấm `#E7E3DC`, số liệu font `tabular-nums text-[#1C1917]`, tag phân loại màu mềm mại.
+2. **Sổ Bộ Nhân Sự (Personnel Registry)**:
+   - Nền card công nhân `#FAF8F5` viền `#E7E3DC`, khi chọn focus hiển thị viền xanh cobalt `border-blue-500 bg-blue-50/70`.
+   - Chấm màu mũ thực tế sắc nét, hỗ trợ chống lóa viền cho mũ trắng (`bg-stone-300 border border-stone-400`).
+3. **Dòng Sự Kiện Vi Phậm (Incident Audit Stream)**:
+   - Card vi phạm nền trắng thanh lịch có dải màu phân cấp nổi bật bên trái: `border-l-4 border-l-rose-500` cho lỗi nguy cấp (không mũ), `border-l-4 border-l-amber-500` cho cảnh báo (thiếu áo).
+   - Nút bấm `[ 📷 Evidence ]` mở cửa sổ Forensic Snapshot Lightbox tối để phân tích bằng chứng rõ nét nhất.
+4. **Biểu Đồ Trực Quan Hóa (Chart.js Modern Light)**:
+   - Line chart: Đường cong xanh ngọc `#059669`, diện tích phủ `rgba(5, 150, 105, 0.08)`, lưới trục nhạt `#E7E3DC`, nhãn trục `#78716C`.
+   - Doughnut chart: Viền trắng tinh khôi `#FFFFFF` sắc nét giữa các lát cắt 5 màu mũ.
+5. **Cửa Sổ Cấu Hình (Settings Modal)**:
+   - Nền trắng thanh lịch, các section bo tròn màu kem cát `#FAF8F5` viền `#E7E3DC`, input trắng viền `#D6D0C7`, chữ than đậm nét.
+
+### 54.5. Kết Quả Kiểm Thử & Liêm Chính Khoa Học
+- **Kiểm thử tự động toàn diện**: `pytest tests/ -v`: **103/103 tests PASS 100%**.
+- Tương thích 100% các API backend, phím tắt (`Esc`, `F`, `R`), và hệ thống Webhook Telegram/Zalo.
