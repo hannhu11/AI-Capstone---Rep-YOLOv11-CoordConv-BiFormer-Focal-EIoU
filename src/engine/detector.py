@@ -93,41 +93,48 @@ class SafetyObjectDetector:
         if not target_path.exists():
             raise FileNotFoundError(f"Model weights file not found: {model_path}")
 
-        self.yolo = YOLO(str(target_path))
-        self.class_names = self.yolo.names
+        lock = getattr(self, "infer_lock", None)
+        if lock is not None:
+            lock.acquire()
+        try:
+            self.yolo = YOLO(str(target_path))
+            self.class_names = self.yolo.names
 
-        # Dynamic Taxonomy Detection (Supports GDUT 5-class, CHV 7-class, SHWD 2-class)
-        names_lower = [str(n).lower() for n in self.class_names.values()]
-        self.has_person_class = any("person" in n or "worker" in n or "human" in n for n in names_lower)
-        self.has_vest_class = any("vest" in n for n in names_lower)
-        self.is_helmet_only = (not self.has_person_class) and any(
-            n in ("blue", "white", "yellow", "red", "green", "none", "no_helmet", "helmet") for n in names_lower
-        )
-        if self.is_helmet_only:
-            print("🪖 [Taxonomy Adapter] Detected Helmet-Only model (e.g. GDUT 5-class). Person tracking bypassed; activating direct Helmet Violation Mode.")
-        # to eliminate numerical overflow that produces ghost clusters on the floor
-        has_custom_modules = False
-        if hasattr(self.yolo, "model") and hasattr(self.yolo.model, "modules"):
-            for m in self.yolo.model.modules():
-                m_type = type(m).__name__
-                if m_type in ("CoordConv", "BiFormerBlockLite", "BiFormerBlock", "BiFormerSequentialWrapper"):
-                    has_custom_modules = True
-                    break
-        if has_custom_modules and self.use_half:
-            print("⚠️ Disabling FP16 (enforcing FP32) to prevent numerical overflow in custom CoordConv/BiFormer modules.")
-            self.use_half = False
+            # Dynamic Taxonomy Detection (Supports GDUT 5-class, CHV 7-class, SHWD 2-class)
+            names_lower = [str(n).lower() for n in self.class_names.values()]
+            self.has_person_class = any("person" in n or "worker" in n or "human" in n for n in names_lower)
+            self.has_vest_class = any("vest" in n for n in names_lower)
+            self.is_helmet_only = (not self.has_person_class) and any(
+                n in ("blue", "white", "yellow", "red", "green", "none", "no_helmet", "helmet") for n in names_lower
+            )
+            if self.is_helmet_only:
+                print("🪖 [Taxonomy Adapter] Detected Helmet-Only model (e.g. GDUT 5-class). Person tracking bypassed; activating direct Helmet Violation Mode.")
+            # to eliminate numerical overflow that produces ghost clusters on the floor
+            has_custom_modules = False
+            if hasattr(self.yolo, "model") and hasattr(self.yolo.model, "modules"):
+                for m in self.yolo.model.modules():
+                    m_type = type(m).__name__
+                    if m_type in ("CoordConv", "BiFormerBlockLite", "BiFormerBlock", "BiFormerSequentialWrapper"):
+                        has_custom_modules = True
+                        break
+            if has_custom_modules and self.use_half:
+                print("⚠️ Disabling FP16 (enforcing FP32) to prevent numerical overflow in custom CoordConv/BiFormer modules.")
+                self.use_half = False
 
-        # Warm-up pass on GPU
-        dummy_img = np.zeros((640, 640, 3), dtype=np.uint8)
-        self.yolo.predict(
-            dummy_img,
-            device=self.device,
-            half=self.use_half,
-            conf=self.conf_thresh,
-            verbose=False,
-        )
-        self.model_path = str(target_path)
-        print(f"✅ Model loaded successfully on {self.device.upper()} (FP16={self.use_half}) | Classes: {self.class_names}")
+            # Warm-up pass on GPU
+            dummy_img = np.zeros((640, 640, 3), dtype=np.uint8)
+            self.yolo.predict(
+                dummy_img,
+                device=self.device,
+                half=self.use_half,
+                conf=self.conf_thresh,
+                verbose=False,
+            )
+            self.model_path = str(target_path)
+            print(f"✅ Model loaded successfully on {self.device.upper()} (FP16={self.use_half}) | Classes: {self.class_names}")
+        finally:
+            if lock is not None:
+                lock.release()
 
     def predict(
         self,

@@ -1643,3 +1643,54 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
 4. **Hồ Sơ Kiểm Thử Tự Động & Nghiệm Thu**:
    - `scripts/test_dynamic_taxonomy_gdut.py`: **6/6 test steps PASSED 100%**.
    - `pytest tests/`: **96/96 tests PASSED 100%**.
+
+---
+
+## 51. KHẮC PHỤC TRIỆT ĐỂ LỖI KHỞI ĐỘNG DOCKER EDGE, CƠ CHẾ HOT-SWAP 1-CLICK VÀ BẢO VỆ CHỐNG ĐUA TIẾN TRÌNH GPU (OCTOBER 2026)
+
+> **Thời điểm hoàn thành:** 2026-10-28 10:55 UTC  
+> **Nguyên tắc thực thi:** Liêm chính khoa học tuyệt đối, minh bạch kỹ thuật, kiểm nghiệm thực tế trên phần cứng thật.
+
+### 51.1. Giám Định Pháp Y: Tại Sao Bấm `start_docker_edge.bat` Lại Bị Đen Màn Hình / Không Chạy Được?
+1. **Đua tiến trình (Race Condition) trong `_LazyPipelineProxy` (`src/engine/pipeline.py`)**:
+   - Khi container khởi động và người dùng mở trình duyệt vào `http://localhost:8080`, trình duyệt phát đồng thời nhiều yêu cầu: `GET /`, `GET /video_feed`, `GET /api/metrics`, `GET /api/status`.
+   - Lớp `_LazyPipelineProxy` chưa được bọc khóa `threading.Lock()`. Trong 3-5 giây PyTorch nạp trọng số lên CUDA GPU, `self._instance` vẫn là `None` đối với các luồng khác, dẫn tới việc khởi tạo cùng lúc 2 instance `CCTVSurveillancePipeline`. Cả 2 luồng đều tạo worker thread ngầm tranh chấp GPU context và VideoCapture OpenCV, dẫn tới video feed bị treo và màn hình đen.
+   - **Khắc phục**: Triển khai mẫu hình **Double-Checked Locking** với `threading.Lock()`, đảm bảo chỉ duy nhất 1 pipeline instance được phép khởi tạo trong toàn bộ vòng đời ứng dụng.
+2. **Nghẽn Event Loop chính trong Uvicorn (`src/web/app.py`)**:
+   - Hàm `get_metrics()` và `switch_model()` ban đầu khai báo dưới dạng `async def`. Trong FastAPI, các hàm `async def` chạy trực tiếp trên luồng asyncio chính. Khi `get_metrics()` yêu cầu khóa `self.lock` (đang bị luồng background worker giữ khi xử lý frame hoặc swap model), toàn bộ asyncio event loop bị đông cứng (freeze), chặn đứng luồng streaming MJPEG.
+   - **Khắc phục**: Chuyển các endpoint (`get_metrics`, `get_status`, `switch_model`, `switch_video_source`, `set_tracking_focus`, `get_tracked_workers`, `reset_tracking_registry`) sang hàm đồng bộ `def` tiêu chuẩn. FastAPI tự động chuyển giao các hàm `def` sang ThreadPool riêng (`anyio/starlette worker threadpool`), giữ cho event loop luôn thông thoáng.
+3. **Thông báo sớm "Container is running" trong file BAT cũ**:
+   - Script `start_docker_edge.bat` cũ chỉ gọi `docker compose up -d` và lập tức in "STATUS: Container is running!", khiến người dùng mở trình duyệt ngay khi PyTorch còn chưa kịp nạp weights và khởi tạo CUDA.
+   - **Khắc phục**: Tích hợp vòng lặp kiểm tra sức khỏe tự động (**Automated Healthcheck Wait Loop**) bằng `curl.exe` thăm dò `http://localhost:8080/api/metrics`. Chỉ khi nào API phản hồi mã `200 OK` (xác nhận PyTorch CUDA warm-up hoàn tất), script mới thông báo sẵn sàng và tự động mở trình duyệt `start http://localhost:8080`.
+4. **Bẫy cú pháp Windows CMD parser (Dấu ngoặc đơn lồng trong block `if`)**:
+   - Khi viết batch script có khối lệnh `if (...)`, việc xuất chuỗi chứa dấu ngoặc đơn đóng `)` (ví dụ: `echo (... (HTTP !API_CODE!).)`) làm CMD hiểu nhầm là đóng khối `if`, sinh lỗi `. was unexpected at this time.`. Đã chuẩn hóa toàn bộ dấu ngoặc thành `[...]` và bảo đảm định dạng ngắt dòng Windows CRLF (`\r\n`).
+
+### 51.2. Hướng Dẫn Vận Hành & Pipeline Thực Nghiệm Cho Người Dùng
+Người dùng **KHÔNG** cần phải sửa file `.env` mỗi lần muốn đổi mô hình! Cơ chế vận hành chuẩn mực:
+1. **Khởi động hệ thống**:
+   - Chỉ cần click đúp vào `start_docker_edge.bat`.
+   - Script tự động:
+     * Kiểm tra Docker CLI và trạng thái daemon Docker Desktop.
+     * Khởi chạy container với tài nguyên giả lập Edge (4 vCPU, 4GB RAM, NVIDIA CUDA passthrough).
+     * Chờ CUDA warm-up hoàn tất qua polling `curl.exe`.
+     * Tự động bật trình duyệt vào `http://localhost:8080`.
+2. **Cơ chế Hot-Swap Chuyển Đổi Mô Hình Trong 1 Container Duy Nhất (Không cần khởi động lại container)**:
+   - **Cách 1 (Trực tiếp từ Web UI Dashboard)**:
+     * Trên thanh tiêu đề, bấm **Control Panel**.
+     * Tại mục **Model Checkpoint (Decoupled Hot-Swap)**, chọn mô hình mong muốn:
+       - `rep_yolo11s_chv7_best_deploy.pt` (Champion 7-Class: Person + PPE Relational Tracking).
+       - `rep_yolo11s_gdut_a6_deploy.pt` (GDUT 5-Class: Helmet-Only SOTA).
+     * Bấm nút **Swap Weights**. Hệ thống lập tức hoán đổi trọng số GPU, xóa bộ nhớ đệm tracker cũ và cập nhật nhãn trong < 1.5 giây mà không làm gián đoạn luồng stream.
+   - **Cách 2 (1-Click bằng Batch Script tiện ích tại thư mục gốc)**:
+     * Muốn chuyển sang GDUT 5-Class: Click đúp `switch_to_gdut.bat`.
+     * Muốn chuyển sang Champion 7-Class: Click đúp `switch_to_champion.bat`.
+   - **Khi nào mới cần sửa `.env`?**:
+     * Chỉ sửa biến `MODEL_PATH` trong `.env` khi bạn muốn **đặt mô hình đó làm mặc định khởi động** cho những lần bật container tiếp theo.
+
+### 51.3. Hồ Sơ Kiểm Thử & Nghiệm Thu
+- `scripts/test_dynamic_taxonomy_gdut.py`: PASS 100%.
+- `pytest tests/`: 96/96 tests PASS 100%.
+- Kiểm thử thực tế `switch_to_gdut.bat`: Exit code 0, phản hồi JSON hợp lệ, kích hoạt `is_helmet_only: true`.
+- Kiểm thử thực tế `switch_to_champion.bat`: Exit code 0, phản hồi JSON hợp lệ, kích hoạt `is_helmet_only: false`.
+- Kiểm thử thực tế `start_docker_edge.bat`: Exit code 0, phát hiện container khỏe mạnh `Up (healthy)`, HTTP 200 OK.
+

@@ -120,12 +120,12 @@ async def video_feed():
 
 # 3. Telemetry & Metrics API
 @app.get("/api/metrics")
-async def get_metrics():
+def get_metrics():
     return JSONResponse(content=cctv_pipeline.get_telemetry())
 
 
 @app.get("/api/status")
-async def get_status():
+def get_status():
     import torch
     return {
         "status": "online",
@@ -135,6 +135,7 @@ async def get_status():
         "model_path": cctv_pipeline.detector.model_path,
         "video_source": str(cctv_pipeline.source_path),
         "classes": cctv_pipeline.detector.class_names,
+        "is_helmet_only": getattr(cctv_pipeline.detector, "is_helmet_only", False),
         "config": config.to_dict(),
     }
 
@@ -206,7 +207,7 @@ async def list_available_videos():
 # 6. Video Source Controls & Upload
 @app.post("/api/switch_source")
 @app.post("/api/controls/source")
-async def switch_video_source(payload: SwitchSourcePayload):
+def switch_video_source(payload: SwitchSourcePayload):
     target = payload.target_source
     if not target:
         raise HTTPException(status_code=400, detail="Missing 'video_source' or 'source' field in request body")
@@ -217,14 +218,14 @@ async def switch_video_source(payload: SwitchSourcePayload):
 
 # 7. Worker Tracking Registry & Focus Inspection Mode Endpoints
 @app.post("/api/tracking/focus")
-async def set_tracking_focus(payload: FocusPayload):
+def set_tracking_focus(payload: FocusPayload):
     """Sets or clears the worker track ID for solo/isolated tracking inspection mode."""
     active_id = cctv_pipeline.set_focus_track(payload.track_id)
     return {"status": "ok", "focus_track_id": active_id}
 
 
 @app.get("/api/tracking/workers")
-async def get_tracked_workers():
+def get_tracked_workers():
     """Returns all persistent registered workers with their ID, helmet color, and compliance state."""
     workers = cctv_pipeline.get_registered_workers()
     return {
@@ -236,7 +237,7 @@ async def get_tracked_workers():
 
 
 @app.post("/api/tracking/reset")
-async def reset_tracking_registry():
+def reset_tracking_registry():
     """Explicitly resets persistent worker tracking memory."""
     cctv_pipeline.tracker.reset()
     cctv_pipeline.set_focus_track(None)
@@ -271,11 +272,16 @@ async def upload_video(file: UploadFile = File(...)):
 
 # 7. Model Checkpoint Hot-Swap API
 @app.post("/api/switch_model")
-async def switch_model(payload: SwitchModelPayload):
+def switch_model(payload: SwitchModelPayload):
     try:
-        cctv_pipeline.detector.load_model(payload.model_path)
-        config.model_path = payload.model_path
-        return {"message": f"Successfully loaded model: {payload.model_path}"}
+        cctv_pipeline.switch_model(payload.model_path)
+        return {
+            "status": "success",
+            "message": f"Successfully loaded model: {payload.model_path}",
+            "model_path": payload.model_path,
+            "classes": cctv_pipeline.detector.class_names,
+            "is_helmet_only": cctv_pipeline.detector.is_helmet_only,
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to load model: {str(e)}")
 

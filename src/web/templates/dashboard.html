@@ -65,7 +65,7 @@
           <div class="flex items-center space-x-2.5">
             <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
               INDUSTRIAL CCTV SURVEILLANCE & PPE ENGINE
-              <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium">Rep-YOLO11s SOTA</span>
+              <span id="headerModelBadge" class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium">Rep-YOLO11s SOTA</span>
             </h1>
           </div>
           <p class="text-xs text-slate-400 flex items-center gap-2">
@@ -412,11 +412,12 @@
           <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Model Checkpoint (Decoupled Hot-Swap)</label>
           <div class="flex gap-2">
             <select id="modelSelect" class="flex-1 bg-surface-dark border border-surface-border rounded-lg px-3 py-2 text-slate-200 text-xs focus:ring-1 focus:ring-sky-500 focus:outline-none">
-              <option value="Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv7_best_deploy.pt">rep_yolo11s_chv7_best_deploy.pt (Champion A6 Rep-YOLO11s)</option>
+              <option value="Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv7_best_deploy.pt">rep_yolo11s_chv7_best_deploy.pt (Champion A6 Rep-YOLO11s 7-Class)</option>
+              <option value="Output/GDUT_Bộ số 1_stage2-full-train-run-a6/deploy_weights/rep_yolo11s_gdut_a6_deploy.pt">rep_yolo11s_gdut_a6_deploy.pt (GDUT 5-Class Helmet-Only SOTA)</option>
               <option value="Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv6_warmstart_deploy.pt">rep_yolo11s_chv6_warmstart_deploy.pt (6-Class Baseline)</option>
               <option value="yolo11s.pt">yolo11s.pt (COCO Pretrained Fallback)</option>
             </select>
-            <button onclick="applyModelSelection()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition">Swap Weights</button>
+            <button id="btnSwapWeights" onclick="applyModelSelection()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition">Swap Weights</button>
           </div>
         </div>
 
@@ -898,15 +899,35 @@
 
     async function applyModelSelection() {
       const sel = document.getElementById('modelSelect').value;
-      const res = await fetch('/api/switch_model', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model_path: sel })
-      });
-      if (res.ok) {
-        alert('Model successfully hot-swapped to: ' + sel);
-      } else {
-        alert('Model switch failed');
+      const swapBtn = document.getElementById('btnSwapWeights');
+      if (swapBtn) {
+        swapBtn.disabled = true;
+        swapBtn.innerText = 'Swapping...';
+      }
+      try {
+        const res = await fetch('/api/switch_model', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model_path: sel })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const modeLabel = data.is_helmet_only ? '5-Class Direct Helmet Violation' : '7-Class Person + PPE Relational Tracking';
+          alert('Model successfully hot-swapped!\n\nWeights: ' + sel + '\nMode: ' + modeLabel + '\nClasses: ' + JSON.stringify(data.classes));
+          reloadStream();
+          updateWorkersList();
+          loadInitialStatus();
+        } else {
+          const errText = await res.text();
+          alert('Model switch failed: ' + errText);
+        }
+      } catch (err) {
+        alert('Network/Request error: ' + err.message);
+      } finally {
+        if (swapBtn) {
+          swapBtn.disabled = false;
+          swapBtn.innerText = 'Swap Weights';
+        }
       }
     }
 
@@ -915,6 +936,29 @@
         const res = await fetch('/api/status');
         if (!res.ok) return;
         const data = await res.json();
+        if (data.model_path) {
+          const mSel = document.getElementById('modelSelect');
+          if (mSel) {
+            for (let i = 0; i < mSel.options.length; i++) {
+              if (mSel.options[i].value === data.model_path || data.model_path.includes(mSel.options[i].value) || mSel.options[i].value.includes(data.model_path)) {
+                mSel.selectedIndex = i;
+                break;
+              }
+            }
+          }
+        }
+        if (data.is_helmet_only !== undefined) {
+          const badge = document.getElementById('headerModelBadge');
+          if (badge) {
+            if (data.is_helmet_only) {
+              badge.innerText = 'GDUT 5-Class (Helmet Only)';
+              badge.className = 'text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-medium';
+            } else {
+              badge.innerText = 'CHV 7-Class (Person + PPE)';
+              badge.className = 'text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium';
+            }
+          }
+        }
         if (data.config) {
           if (data.config.telegram_configured || data.config.telegram_chat_id) {
             document.getElementById('tgStatusDot').className = 'w-2 h-2 rounded-full bg-emerald-400';

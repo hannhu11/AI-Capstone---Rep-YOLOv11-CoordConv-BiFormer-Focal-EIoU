@@ -193,6 +193,28 @@ class CCTVSurveillancePipeline:
             alert_manager.clear_alerts()
             print(f"📹 Switched Video Source to: {new_source} (Clean Slate Active)")
 
+    def switch_model(self, new_model_path: str):
+        """Hot-swaps detector weights dynamically, resetting trackers and alerts for a clean slate."""
+        with self.lock:
+            self.detector.load_model(new_model_path)
+            config.model_path = new_model_path
+            self.tracker.reset()
+            self.safety_engine.reset()
+            self.focus_track_id = None
+            reid_registry.reset()
+            self.active_workers_count = 0
+            self.workers_count_ema = 0.0
+            self.compliant_workers_count = 0
+            self.active_violations_count = 0
+            self.compliance_rate = 100.0
+            self.compliance_rate_ema = 100.0
+            self.total_frames_processed = 0
+            self.fps_rolling = 0.0
+            self.helmet_color_distribution = {"blue": 0, "green": 0, "red": 0, "white": 0, "yellow": 0}
+            self.latest_encoded_jpeg = None
+            alert_manager.clear_alerts()
+            print(f"🔄 Switched Model Weights to: {new_model_path} (Clean Slate Active)")
+
     def _stream_worker(self):
         """Dedicated background loop that continuously runs inference and encodes frames with self-healing recovery."""
         consecutive_errors = 0
@@ -858,10 +880,13 @@ class CCTVSurveillancePipeline:
 # Lazy singleton pipeline proxy (delays background thread & GPU allocation until first accessed)
 class _LazyPipelineProxy:
     _instance: Optional[CCTVSurveillancePipeline] = None
+    _lock: threading.Lock = threading.Lock()
 
     def _get_instance(self) -> CCTVSurveillancePipeline:
         if self._instance is None:
-            self._instance = CCTVSurveillancePipeline()
+            with self._lock:
+                if self._instance is None:
+                    self._instance = CCTVSurveillancePipeline()
         return self._instance
 
     def __getattr__(self, name: str) -> Any:
