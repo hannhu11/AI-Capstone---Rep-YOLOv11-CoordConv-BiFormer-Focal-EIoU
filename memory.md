@@ -1629,11 +1629,17 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
    - **Precision:** $91.25\%$ vs $89.99\%$ ($\mathbf{+1.26\text{ pp}}$), đặc biệt lớp `red` tăng $+5.10\text{ pp}$ ($86.6\%$ vs $81.5\%$).
    - **mAP@50:** $92.51\%$ vs $92.74\%$ (tương đương, đều vượt xa ngưỡng 90% của đề tài).
    - **Vi phạm `none`:** mAP@50 đạt $89.60\%$ vs $88.50\%$ ($+1.10\text{ pp}$), mAP@50-95 đạt $56.00\%$ vs $55.60\%$ ($+0.40\text{ pp}$).
+4. `gdut_a6_ieee_report.tex` & `gdut_a6_ieee_report.pdf`:
+   - Toàn văn bài báo IEEE Conference Paper (3 trang) hoàn chỉnh.
+   - Đã biên dịch sạch (Exit Code 0) bằng `pdflatex` (TinyTeX) thành tệp PDF chính thức: [gdut_a6_ieee_report.pdf](file:///c:/Users/ADMIN/Downloads/capstone%20AI/Output/GDUT_A6_IEEE_BENCHMARK_REPORT/gdut_a6_ieee_report.pdf) (194,995 bytes).
 
-### 50.5. Hồ Sơ Kiểm Thử Tự Động & Nghiệm Thu (Deliverable 4)
-- Script kiểm định độc lập `scripts/test_dynamic_taxonomy_gdut.py`: **5/5 tests PASSED 100%**.
-- Suite kiểm thử toàn diện (`pytest tests/ scripts/test_dynamic_taxonomy_gdut.py`): **33/33 tests PASSED 100%**:
-  * `tests/test_reid_anti_hijack_and_consolidation.py`: 7/7 PASSED.
-  * `tests/test_cctv_forensic_fixes.py`: 14/14 PASSED.
-  * `tests/test_tracking_and_alert_engine.py`: 12/12 PASSED.
-- Kiểm tra tính tương thích ngược với mô hình CHV 7-class: **PASSED 100%**.
+### 50.5. Khắc Phục Edge Cases & Nghiệm Thu Pháp Y
+1. **Cô lập logic Helmet Violation Mode (`is_helmet_only`)**:
+   - Khắc phục lỗi tiềm ẩn khi chạy mô hình CHV 7-class: nếu cảnh quay không có công nhân (`len(tracks) == 0`) nhưng có mũ bảo hộ trên bàn, hệ thống không bị kích hoạt nhầm sang Helmet Violation Mode để sinh công nhân ảo `HEAD_P_1` hoặc cảnh báo giả `HEAD_V_1`.
+2. **Khử xung đột hiển thị nhãn (Visual Label Overlap Collision)**:
+   - Trong `pipeline._render_annotations()`, khi `is_helmet_only=True`, bỏ qua vòng lặp vẽ equipment trùng lặp tọa độ, đảm bảo các badge tuân thủ / vi phạm đầu trần hiển thị sắc nét, không bị đè chữ.
+3. **Đồng bộ Volume Docker Compose**:
+   - Đã gắn kết `custom_ablation_modules.py:/app/custom_ablation_modules.py:ro` vào `docker-compose.yml` và `docker-compose.edge-simulation.yml`.
+4. **Hồ Sơ Kiểm Thử Tự Động & Nghiệm Thu**:
+   - `scripts/test_dynamic_taxonomy_gdut.py`: **6/6 test steps PASSED 100%**.
+   - `pytest tests/`: **96/96 tests PASSED 100%**.

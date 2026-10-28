@@ -38,28 +38,28 @@ Rep-YOLOv8s A6 (Baseline) & 12.45 & 15.22 & 14.16 & 70.6 & 89.99 & \textbf{87.01
 % ------------------------------------------------------------------------------
 \begin{table*}[t]
 \centering
-\caption{Granular Per-Class Detection Performance Comparison on the GDUT-HWD Dataset Across 5 Head/PPE Categories.}
+\caption{Granular Per-Class Detection Performance Comparison on the GDUT-HWD Validation Split Across 5 Head/PPE Categories.}
 \label{tab:gdut_per_class_benchmark}
 \small
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llcccccc@{}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccc@{}}
 \toprule
-\textbf{Class Category} & \textbf{Evaluation Split} & \textbf{Images} & \textbf{Instances} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{mAP@50 (\%)} & \textbf{mAP@50-95 (\%)} \\
+\textbf{Class Category} & \textbf{Images} & \textbf{Instances} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{mAP@50 (\%)} & \textbf{mAP@50-95 (\%)} \\
 \midrule
-\multicolumn{8}{l}{\textbf{Rep-YOLOv8s A6 (Baseline Stage 2 Full Fusion)}} \\
-\quad Blue Helmet (\texttt{blue})    & Validation & 84  & 258 & 91.00 & 86.00 & 91.70 & 63.70 \\
-\quad White Helmet (\texttt{white})  & Validation & 123 & 349 & 91.80 & \textbf{90.40} & \textbf{94.80} & \textbf{63.80} \\
-\quad Yellow Helmet (\texttt{yellow})& Validation & 137 & 448 & 92.60 & 86.90 & \textbf{94.40} & \textbf{60.90} \\
-\quad Red Helmet (\texttt{red})      & Validation & 97  & 279 & 81.50 & \textbf{92.10} & 94.00 & 63.10 \\
-\quad No Helmet Violation (\texttt{none}) & Validation & 96 & 404 & \textbf{92.50} & 78.90 & 88.50 & 55.60 \\
-\quad \textit{All Classes Combined}  & Validation & 316 & 1,738 & 89.99 & \textbf{87.01} & \textbf{92.74} & \textbf{61.42} \\
+\multicolumn{7}{l}{\textbf{Rep-YOLOv8s A6 (Baseline Stage 2 Full Fusion)}} \\
+\quad Blue Helmet (\texttt{blue})    & 84  & 258 & 91.00 & 86.00 & 91.70 & 63.70 \\
+\quad White Helmet (\texttt{white})  & 123 & 349 & 91.80 & \textbf{90.40} & \textbf{94.80} & \textbf{63.80} \\
+\quad Yellow Helmet (\texttt{yellow})& 137 & 448 & 92.60 & 86.90 & \textbf{94.40} & \textbf{60.90} \\
+\quad Red Helmet (\texttt{red})      & 97  & 279 & 81.50 & \textbf{92.10} & 94.00 & 63.10 \\
+\quad No Helmet Violation (\texttt{none}) & 96 & 404 & \textbf{92.50} & 78.90 & 88.50 & 55.60 \\
+\quad \textit{All Classes Combined}  & 316 & 1,738 & 89.99 & \textbf{87.01} & \textbf{92.74} & \textbf{61.42} \\
 \midrule
-\multicolumn{8}{l}{\textbf{Rep-YOLO11s A6 (Proposed Architecture)}} \\
-\quad Blue Helmet (\texttt{blue})    & Validation & 84  & 258 & \textbf{92.60} & \textbf{87.00} & \textbf{91.70} & 63.10 \\
-\quad White Helmet (\texttt{white})  & Validation & 123 & 349 & \textbf{91.90} & 88.30 & 93.80 & \textbf{63.80} \\
-\quad Yellow Helmet (\texttt{yellow})& Validation & 137 & 448 & \textbf{92.80} & \textbf{90.20} & 93.30 & 60.00 \\
-\quad Red Helmet (\texttt{red})      & Validation & 97  & 279 & \textbf{86.60} & 90.30 & \textbf{94.20} & \textbf{63.30} \\
-\quad No Helmet Violation (\texttt{none}) & Validation & 96 & 404 & 91.50 & \textbf{79.70} & \textbf{89.60} & \textbf{56.00} \\
-\quad \textit{All Classes Combined}  & Validation & 316 & 1,738 & \textbf{91.25} & \textbf{87.01} & 92.51 & 61.31 \\
+\multicolumn{7}{l}{\textbf{Rep-YOLO11s A6 (Proposed Architecture)}} \\
+\quad Blue Helmet (\texttt{blue})    & 84  & 258 & \textbf{92.60} & \textbf{87.00} & \textbf{91.70} & 63.10 \\
+\quad White Helmet (\texttt{white})  & 123 & 349 & \textbf{91.90} & 88.30 & 93.80 & \textbf{63.80} \\
+\quad Yellow Helmet (\texttt{yellow})& 137 & 448 & \textbf{92.80} & \textbf{90.20} & 93.30 & 60.00 \\
+\quad Red Helmet (\texttt{red})      & 97  & 279 & \textbf{86.60} & 90.30 & \textbf{94.20} & \textbf{63.30} \\
+\quad No Helmet Violation (\texttt{none}) & 96 & 404 & 91.50 & \textbf{79.70} & \textbf{89.60} & \textbf{56.00} \\
+\quad \textit{All Classes Combined}  & 316 & 1,738 & \textbf{91.25} & \textbf{87.01} & 92.51 & 61.31 \\
 \bottomrule
 \end{tabular*}
 \end{table*}

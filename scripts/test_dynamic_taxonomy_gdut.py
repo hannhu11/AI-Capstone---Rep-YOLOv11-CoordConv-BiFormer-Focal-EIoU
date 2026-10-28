@@ -61,8 +61,8 @@ def main():
         {"box": [400.0, 100.0, 480.0, 180.0], "cls": 4, "name": "none", "conf": 0.85},
     ]
 
-    reports, alerts = safety.evaluate_frame(tracks, mock_detections, dummy, camera_id="TEST_CAM")
-    print(f"   [+] Total Worker Reports: {len(reports)}")
+    reports, alerts = safety.evaluate_frame(tracks, mock_detections, dummy, camera_id="TEST_CAM", is_helmet_only=True)
+    print(f"   [+] Total Worker Reports (is_helmet_only=True): {len(reports)}")
     for r in reports:
         print(f"       - {r['track_id']}: status={r['status']}, helmet={r['helmet_color']}, violations={r['violations']}")
 
@@ -76,6 +76,15 @@ def main():
     assert len(alerts) == 1, f"Expected 1 alert event, got {len(alerts)}"
     assert alerts[0]["violations"] == ["MISSING_SAFETY_HELMET"], f"Unexpected violations: {alerts[0]['violations']}"
 
+    # Regression test: When is_helmet_only=False (e.g. CHV 7-class) and 0 tracks exist,
+    # isolated helmet detections MUST NOT create fake worker reports or fire head alerts!
+    safety.reset()
+    chv_empty_reports, chv_empty_alerts = safety.evaluate_frame(tracks, mock_detections, dummy, camera_id="TEST_CAM", is_helmet_only=False)
+    print(f"   [+] Total Worker Reports (is_helmet_only=False): {len(chv_empty_reports)}")
+    assert len(chv_empty_reports) == 0, f"Expected 0 reports in CHV mode with 0 tracks, got {len(chv_empty_reports)}"
+    assert len(chv_empty_alerts) == 0, f"Expected 0 alerts in CHV mode with 0 tracks, got {len(chv_empty_alerts)}"
+    print("   [+] Verified: CHV mode safely ignores isolated PPE when tracks are empty!")
+
     print("\n==================================================")
     print("🧪 Step 5: Loading GDUT A6 YOLOv8s deploy checkpoint")
     deploy_8s = PROJECT_ROOT / "Output" / "GDUT_Bộ số 1_stage2-full-train-run-a6" / "deploy_weights" / "rep_yolov8s_gdut_a6_deploy.pt"
@@ -85,6 +94,19 @@ def main():
     print(f"   [+] Loaded names: {detector_8s.class_names}")
     assert not detector_8s.has_person_class
     assert detector_8s.is_helmet_only
+
+    print("\n==================================================")
+    print("🧪 Step 6: Testing Helmet-Only Pipeline Rendering (No Collision)")
+    from src.engine.pipeline import CCTVSurveillancePipeline
+    # Verify _render_annotations works cleanly in helmet-only mode without label collision
+    vis_out = CCTVSurveillancePipeline._render_annotations(
+        self=type("MockPipeline", (), {"detector": detector, "focus_track_id": None, "fps_rolling": 30.0, "inference_latency_ms": 12.0, "active_workers_count": 3, "compliant_workers_count": 2, "active_violations_count": 1, "compliance_rate": 66.7})(),
+        frame=dummy,
+        detections=mock_detections,
+        worker_reports=reports,
+    )
+    assert vis_out is not None and vis_out.shape == dummy.shape
+    print("   [+] Helmet-Only visual rendering passed cleanly!")
 
     print("\n🎉 ALL DYNAMIC TAXONOMY & HELMET VIOLATION ENGINE TESTS PASSED!")
 

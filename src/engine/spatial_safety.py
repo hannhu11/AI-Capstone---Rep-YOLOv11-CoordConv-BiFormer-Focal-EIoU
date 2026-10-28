@@ -126,6 +126,7 @@ class SpatialSafetyEngine:
         raw_detections: List[Dict[str, Any]],
         frame_bgr: np.ndarray,
         camera_id: str = "CCTV_GATE_01",
+        is_helmet_only: Optional[bool] = None,
     ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """
         Evaluate compliance for all active tracked workers.
@@ -214,12 +215,23 @@ class SpatialSafetyEngine:
 
         # -------------------------------------------------------------
         # HELMET VIOLATION MODE (e.g. GDUT 5-class helmet-only dataset)
-        # When no worker body tracks exist (len(tracks) == 0) but helmet / head detections are present:
+        # When no worker body tracks exist (len(tracks) == 0) and model is helmet-only:
         # Directly evaluate head-level safety:
         # - Positive helmets (blue, white, yellow, red) -> COMPLIANT
         # - Negative helmets ('none' / no_helmet) -> DIRECT VIOLATION (MISSING_SAFETY_HELMET)
+        # Note: If is_helmet_only is explicitly False (e.g. 7-class CHV with full body tracking),
+        # an empty tracks list signifies an empty scene where isolated PPE should NEVER generate fake workers!
         # -------------------------------------------------------------
-        if len(tracks) == 0 and (len(positive_helmets) > 0 or len(negative_helmets) > 0):
+        if is_helmet_only is None:
+            has_person_det = any(
+                ("person" in str(d.get("name", "")).lower() or "worker" in str(d.get("name", "")).lower() or "human" in str(d.get("name", "")).lower())
+                for d in raw_detections
+            )
+            should_run_helmet_only = (not has_person_det) and len(tracks) == 0
+        else:
+            should_run_helmet_only = is_helmet_only and len(tracks) == 0
+
+        if should_run_helmet_only and (len(positive_helmets) > 0 or len(negative_helmets) > 0):
             # 1. Process positive helmets as compliant heads
             for idx, h in enumerate(positive_helmets):
                 hb = h["box"]

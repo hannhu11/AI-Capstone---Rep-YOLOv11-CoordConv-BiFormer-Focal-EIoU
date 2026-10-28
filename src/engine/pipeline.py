@@ -574,7 +574,7 @@ class CCTVSurveillancePipeline:
 
             # 3. Spatial Relational Safety Analysis & Debouncing
             worker_reports, alert_events = self.safety_engine.evaluate_frame(
-                active_tracks, detections, frame, camera_id=config.camera_id
+                active_tracks, detections, frame, camera_id=config.camera_id, is_helmet_only=is_helmet_only
             )
 
             # Update persistent registry profile statuses and trajectories
@@ -738,17 +738,22 @@ class CCTVSurveillancePipeline:
 
         # Draw PPE equipment boxes (helmets and vests)
         has_person_class = getattr(self.detector, "has_person_class", True)
-        for d in detections:
-            is_worker_body = "person" in d["name"] or "worker" in d["name"] or (has_person_class and d["cls"] == 0)
-            if not is_worker_body:
-                c_name = d["name"]
-                color = CLASS_COLORS.get(c_name, (0, 230, 255))
-                x1, y1, x2, y2 = [int(v) for v in d["box"]]
-                cv2.rectangle(vis, (x1, y1), (x2, y2), color, 2)
-                label = f"{c_name.replace('_', ' ').upper()} {d['conf']*100:.0f}%"
-                (lw, lh), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
-                cv2.rectangle(vis, (x1, max(0, y1 - 20)), (x1 + lw + 6, max(0, y1)), color, -1)
-                cv2.putText(vis, label, (x1 + 3, max(14, y1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 1, cv2.LINE_AA)
+        is_helmet_only = getattr(self.detector, "is_helmet_only", False)
+        # In helmet-only mode (e.g. GDUT 5-class), each detection box is already rendered
+        # via worker_reports with full compliance state and debouncing.
+        # Avoid drawing double boxes and overlapping text labels on identical coordinates.
+        if not (is_helmet_only and len(worker_reports) > 0):
+            for d in detections:
+                is_worker_body = "person" in d["name"] or "worker" in d["name"] or (has_person_class and d["cls"] == 0)
+                if not is_worker_body:
+                    c_name = d["name"]
+                    color = CLASS_COLORS.get(c_name, (0, 230, 255))
+                    x1, y1, x2, y2 = [int(v) for v in d["box"]]
+                    cv2.rectangle(vis, (x1, y1), (x2, y2), color, 2)
+                    label = f"{c_name.replace('_', ' ').upper()} {d['conf']*100:.0f}%"
+                    (lw, lh), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
+                    cv2.rectangle(vis, (x1, max(0, y1 - 20)), (x1 + lw + 6, max(0, y1)), color, -1)
+                    cv2.putText(vis, label, (x1 + 3, max(14, y1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 0), 1, cv2.LINE_AA)
 
         # Draw Workers with Persistent Track ID and Compliance State
         for r in worker_reports:

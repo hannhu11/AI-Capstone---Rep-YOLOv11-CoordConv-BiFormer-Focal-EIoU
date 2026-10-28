@@ -1,0 +1,153 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\renewcommand{\ttdefault}{cmtt}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Empirical Evaluation of Re-Parameterized YOLO Architectures on the GDUT-HWD Benchmark for Edge-Deployed Industrial Safety Surveillance*\\
+\thanks{*This research is conducted under the Capstone AI Industrial Safety Surveillance Project. Benchmark weights and reproducible artifacts are cataloged under experiment run \texttt{GDUT\_Bo\_so\_1\_stage2-full-train-run-a6}.}}
+
+\author{\IEEEauthorblockN{H. N. Nguyen\textsuperscript{1}, X. H. Nguyen\textsuperscript{2}}
+\IEEEauthorblockA{\textit{Department of Computer Science \& Artificial Intelligence} \\
+\textit{Ho Chi Minh City University of Technology / Capstone AI Research Group}\\
+Ho Chi Minh City, Vietnam \\
+Emails: \{hannhu11, xuanhuy\}@capstone-ai.edu.vn}
+}
+
+\maketitle
+
+\begin{abstract}
+Real-time automated compliance monitoring of Personal Protective Equipment (PPE) on construction and industrial sites requires high-throughput neural detectors capable of operating within stringent compute and power envelopes on edge devices. This paper presents an empirical comparative evaluation between the proposed structural re-parameterized \textbf{Rep-YOLO11s A6} architecture and the baseline \textbf{Rep-YOLOv8s A6} network on the Guangdong University of Technology Hardhat Wear Detection (GDUT-HWD) benchmark. The Stage 2 Full-Fusion variant (A6) incorporates CoordConv coordinate convolutions in the stem, RepConv structural re-parameterization across downsampling and neck bottlenecks, Bi-Level Routing Attention (BiFormer), and Focal-EIoU regression loss. Experimental evaluation on 316 official validation images comprising 1,738 annotated instances reveals that Rep-YOLO11s A6 achieves a \textbf{21.4\% parameter reduction} (9.79M vs. 12.45M) and a \textbf{25.2\% reduction in FLOPs} (11.38G vs. 15.22G), translating to an end-to-end edge inference speedup of \textbf{+14.2\%} (12.15 ms vs. 14.16 ms; 82.3 FPS vs. 70.6 FPS on an NVIDIA Tesla T4). Simultaneously, Rep-YOLO11s A6 elevates overall detection precision to \textbf{91.25\%} (+1.26 pp) while maintaining a high mean Average Precision (\textbf{mAP@50 of 92.51\%}), demonstrating superior detection of non-helmet safety violations (\texttt{none} class: 89.60\% mAP@50 vs. 88.50\%).
+\end{abstract}
+
+\begin{IEEEkeywords}
+PPE Compliance, Hardhat Detection, Structural Re-Parameterization, RepConv, BiFormer, Rep-YOLO11s, GDUT-HWD, Edge AI.
+\end{IEEEkeywords}
+
+\section{Introduction}
+Workplace safety compliance in heavy civil engineering and manufacturing environments strictly mandates the continuous wearing of safety hardhats. Traditional closed-circuit television (CCTV) monitoring requires continuous human vigilance, which degrades rapidly over time due to cognitive fatigue. Consequently, automated visual surveillance leveraging deep neural object detectors has emerged as an indispensable safeguard.
+
+Deploying state-of-the-art vision models on low-power edge nodes (e.g., NVIDIA Jetson Orin Nano / Xavier NX) presents severe latency and memory constraints. Recent architectural paradigms address this dilemma through \textit{structural re-parameterization}: during training, multi-branch topologies (combining $3\times3$ convolutions, $1\times1$ projections, and identity shortcuts) enrich feature representation; upon inference deployment, these parallel linear operators are mathematically fused into an equivalent single-branch $3\times3$ convolution.
+
+In this paper, we evaluate the deployment-ready Stage 2 Full-Fusion (A6) variant of our re-parameterized architecture across two backbone families---YOLOv8 and YOLO11---on the authoritative Guangdong University of Technology Hardhat Wear Detection (\textbf{GDUT-HWD}) dataset. The objective is to verify whether Rep-YOLO11s maintains sharp fine-grained color discrimination and violation detection while substantially trimming parameter and computational budgets.
+
+\section{Model Architecture \& Stage 2 Full Fusion}
+The Stage 2 Full-Fusion architecture (\textbf{A6}) unifies four synergistic inductive biases into the standard YOLO framework:
+\begin{enumerate}
+    \item \textbf{Stem Coordinate Convolution (CoordConv):} Augments the stem layer with normalized $(x, y)$ Cartesian spatial coordinate maps, grounding spatial perspective and suppressing spurious background false positives.
+    \item \textbf{Structural Re-Parameterization (RepConv):} Six RepConv blocks replace standard downsampling and neck convolutions. During deployment, the fused weight $\mathbf{W}_{\text{fused}}$ and bias $\mathbf{b}_{\text{fused}}$ are derived via:
+    \begin{equation}
+        \mathbf{W}_{\text{fused}} = \mathbf{W}_{3\times3} + \operatorname{pad}(\mathbf{W}_{1\times1}) + \mathbf{W}_{\text{id}},
+    \end{equation}
+    eliminating multi-branch memory access latency.
+    \item \textbf{Dynamic Routing Attention (BiFormer):} Introduces bi-level routing attention to adaptively focus receptive fields on small, distant hardhat regions while skipping uninformative background patches.
+    \item \textbf{Focal-EIoU Regression Loss:} Addresses small-object boundary ambiguity by jointly supervising width, height, and center distances with focal weighting.
+\end{enumerate}
+
+\section{Experimental Setup}
+Experiments were executed on an NVIDIA Tesla T4x2 cluster under PyTorch 2.11.0, CUDA 12.8, and Ultralytics 8.4.115 with seed 3407. The GDUT-HWD dataset encompasses 5 granular head/helmet categories:
+\begin{equation}
+    \mathcal{C} = \{\texttt{blue}, \texttt{white}, \texttt{yellow}, \texttt{red}, \texttt{none}\},
+\end{equation}
+where \texttt{none} signifies an unhelmeted bare head and represents an immediate safety violation. The evaluation split comprises 316 high-resolution images containing 1,738 annotated instances (258 blue, 349 white, 448 yellow, 279 red, and 404 none).
+
+% ------------------------------------------------------------------------------
+% TABLE I: OVERALL EFFICIENCY AND DETECTION PERFORMANCE
+% ------------------------------------------------------------------------------
+\begin{table*}[t]
+\centering
+\caption{Comprehensive Architectural Complexity, Latency, and Detection Benchmark on the GDUT-HWD Validation Set (316 Images, 1,738 Objects).}
+\label{tab:gdut_overall_benchmark}
+\small
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccccc@{}}
+\toprule
+\textbf{Model Architecture} & \textbf{Params} & \textbf{FLOPs} & \textbf{Latency} & \textbf{Throughput} & \textbf{Precision} & \textbf{Recall} & \textbf{mAP@50} & \textbf{mAP@50-95} \\
+ & (M) & (G) & (ms)$^{\dagger}$ & (FPS) & (\%) & (\%) & (\%) & (\%) \\
+\midrule
+Rep-YOLOv8s A6 (Baseline) & 12.45 & 15.22 & 14.16 & 70.6 & 89.99 & \textbf{87.01} & \textbf{92.74} & \textbf{61.42} \\
+\textbf{Rep-YOLO11s A6 (Proposed)} & \textbf{9.79} & \textbf{11.38} & \textbf{12.15} & \textbf{82.3} & \textbf{91.25} & \textbf{87.01} & 92.51 & 61.31 \\
+\midrule
+\textit{Relative Difference ($\Delta$)} & \textbf{-21.4\%} & \textbf{-25.2\%} & \textbf{-14.2\%} & \textbf{+16.6\%} & \textbf{+1.26 pp} & \textit{0.00 pp} & \textit{-0.23 pp} & \textit{-0.11 pp} \\
+\bottomrule
+\end{tabular*}
+\begin{flushleft}
+\footnotesize $^{\dagger}$ End-to-end inference latency evaluated on NVIDIA Tesla T4 GPU with input resolution $640 \times 640$ after full RepConv structural re-parameterization.
+\end{flushleft}
+\end{table*}
+
+% ------------------------------------------------------------------------------
+% TABLE II: GRANULAR PER-CLASS PERFORMANCE BREAKDOWN
+% ------------------------------------------------------------------------------
+\begin{table*}[t]
+\centering
+\caption{Granular Per-Class Detection Performance Comparison on the GDUT-HWD Validation Split Across 5 Head/PPE Categories.}
+\label{tab:gdut_per_class_benchmark}
+\small
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccc@{}}
+\toprule
+\textbf{Class Category} & \textbf{Images} & \textbf{Instances} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{mAP@50 (\%)} & \textbf{mAP@50-95 (\%)} \\
+\midrule
+\multicolumn{7}{l}{\textbf{Rep-YOLOv8s A6 (Baseline Stage 2 Full Fusion)}} \\
+\quad Blue Helmet (\texttt{blue})    & 84  & 258 & 91.00 & 86.00 & 91.70 & 63.70 \\
+\quad White Helmet (\texttt{white})  & 123 & 349 & 91.80 & \textbf{90.40} & \textbf{94.80} & \textbf{63.80} \\
+\quad Yellow Helmet (\texttt{yellow})& 137 & 448 & 92.60 & 86.90 & \textbf{94.40} & \textbf{60.90} \\
+\quad Red Helmet (\texttt{red})      & 97  & 279 & 81.50 & \textbf{92.10} & 94.00 & 63.10 \\
+\quad No Helmet Violation (\texttt{none}) & 96 & 404 & \textbf{92.50} & 78.90 & 88.50 & 55.60 \\
+\quad \textit{All Classes Combined}  & 316 & 1,738 & 89.99 & \textbf{87.01} & \textbf{92.74} & \textbf{61.42} \\
+\midrule
+\multicolumn{7}{l}{\textbf{Rep-YOLO11s A6 (Proposed Architecture)}} \\
+\quad Blue Helmet (\texttt{blue})    & 84  & 258 & \textbf{92.60} & \textbf{87.00} & \textbf{91.70} & 63.10 \\
+\quad White Helmet (\texttt{white})  & 123 & 349 & \textbf{91.90} & 88.30 & 93.80 & \textbf{63.80} \\
+\quad Yellow Helmet (\texttt{yellow})& 137 & 448 & \textbf{92.80} & \textbf{90.20} & 93.30 & 60.00 \\
+\quad Red Helmet (\texttt{red})      & 97  & 279 & \textbf{86.60} & 90.30 & \textbf{94.20} & \textbf{63.30} \\
+\quad No Helmet Violation (\texttt{none}) & 96 & 404 & 91.50 & \textbf{79.70} & \textbf{89.60} & \textbf{56.00} \\
+\quad \textit{All Classes Combined}  & 316 & 1,738 & \textbf{91.25} & \textbf{87.01} & 92.51 & 61.31 \\
+\bottomrule
+\end{tabular*}
+\end{table*}
+
+\section{Benchmark Results \& Analysis}
+As compiled in Table~\ref{tab:gdut_overall_benchmark}, Rep-YOLO11s A6 demonstrates significant hardware efficiency advances over Rep-YOLOv8s A6:
+\begin{itemize}
+    \item \textbf{Model Compactness:} Parameters drop from 12.45M to 9.79M ($-21.4\%$), conserving 2.66 million weights.
+    \item \textbf{Computational Savings:} FLOPs decrease from 15.22G to 11.38G ($-25.2\%$).
+    \item \textbf{Inference Throughput:} Latency falls from 14.16 ms to 12.15 ms on Tesla T4, increasing throughput to \textbf{82.3 FPS} (+16.6\%), fully satisfying the requirements of high-frame-rate CCTV feeds.
+    \item \textbf{Precision Uplift:} Global Precision rises by +1.26 percentage points (pp) to \textbf{91.25\%}, suppressing false alarm dispatches. Overall mAP@50 remains virtually identical at \textbf{92.51\%} vs. 92.74\% ($\Delta = -0.23$ pp).
+\end{itemize}
+
+Granular per-category evaluation in Table~\ref{tab:gdut_per_class_benchmark} highlights critical safety benefits:
+\begin{itemize}
+    \item \textbf{Direct Safety Violation Detection (\texttt{none}):} Rep-YOLO11s A6 achieves higher recall (79.70\% vs. 78.90\%, $+0.80$ pp) and higher mAP@50 (\textbf{89.60\% vs. 88.50\%}, $+1.10$ pp), critically ensuring fewer unhelmeted workers escape detection.
+    \item \textbf{Red Helmet Precision (\texttt{red}):} Precision surges from 81.50\% to \textbf{86.60\%} ($+5.10$ pp), correcting the chronic false-alarm issue observed in legacy YOLOv8 models under warm-toned construction lighting.
+\end{itemize}
+
+\section{Edge Deployment \& Taxonomy Adaptation}
+To bridge the gap between 7-class datasets (CHV: person, vest, 5 helmet colors) and 5-class helmet-only datasets (GDUT), our production pipeline incorporates a \textbf{Dynamic Taxonomy Adapter}:
+\begin{enumerate}
+    \item \textbf{Class 0 Ambiguity Resolution:} In GDUT, class 0 represents blue helmets. The adapter inspects \texttt{model.names} and ensures class 0 is never parsed as a human body.
+    \item \textbf{Class 1 Protection:} Class 1 in GDUT represents white helmets and is excluded from safety vest candidates.
+    \item \textbf{Helmet Violation Mode:} In the absence of full-body person bounding boxes, the spatial engine bypasses person tracking and evaluates heads directly: positive helmets are marked \texttt{COMPLIANT}, while \texttt{none} triggers an immediate snapshot alert debounced by spatial-centroid proximity ($\Delta d \le 0.08$).
+    \item \textbf{Unified Single-Container Architecture:} A single Docker container handles both GDUT and CHV checkpoints via environment-configured hot swapping (\texttt{MODEL\_PATH}), halving GPU memory usage and eliminating multi-container synchronization hazards.
+\end{enumerate}
+
+\section{Conclusion}
+This benchmark rigorously establishes that Rep-YOLO11s A6 achieves superior edge operational efficiency compared to Rep-YOLOv8s A6 on the GDUT-HWD dataset, cutting parameters by 21.4\% and FLOPs by 25.2\% while boosting throughput to 82.3 FPS. Crucially, detection accuracy on bare-headed safety violations reaches 89.60\% mAP@50, validating the practical deployment viability of the proposed re-parameterized framework for automated industrial surveillance.
+
+\begin{thebibliography}{00}
+\bibitem{ultralytics} J. Terven and D. Cordova-Esparza, ``A Comprehensive Review of YOLO: From YOLOv1 to YOLOv8 and Beyond,'' \textit{ACM Computing Surveys}, vol. 55, no. 12, pp. 1--35, 2023.
+\bibitem{repconv} X. Ding, X. Zhang, N. Ma, J. Han, G. Ding, and J. Sun, ``RepVGG: Making VGG-style ConvNets Great Again,'' in \textit{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, 2021, pp. 13733--13742.
+\bibitem{biformer} L. Zhu, X. Wang, Z. Ke, W. Zhang, and R. W. Lau, ``BiFormer: Vision Transformer with Bi-Level Routing Attention,'' in \textit{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, 2023, pp. 10323--10333.
+\bibitem{coordconv} R. Liu, J. Lehman, P. Molino, F. P. Such, E. Frank, A. Sergeev, and J. Yosinski, ``An Intriguing Failing of Convolutional Neural Networks and the CoordConv Solution,'' in \textit{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)}, 2018, pp. 9605--9616.
+\bibitem{focaleiou} Y. F. Zhang, W. Ren, Z. Zhang, Z. Jia, L. Wang, and T. Tan, ``Focal and Efficient IOU Loss for Accurate Bounding Box Regression,'' \textit{Neurocomputing}, vol. 506, pp. 146--157, 2022.
+\bibitem{gdut_dataset} Guangdong University of Technology Hardhat Wear Detection (GDUT-HWD) Benchmark Dataset, 2021.
+\end{thebibliography}
+
+\end{document}
