@@ -642,24 +642,27 @@ class CCTVSurveillancePipeline:
         if self.focus_track_id is not None:
             focused_worker = next((r for r in worker_reports if r["track_id"] == self.focus_track_id), None)
             
-            # Draw Top Focus HUD Bar
-            hud_h = 44
-            cv2.rectangle(vis, (0, 0), (w, hud_h), (25, 20, 15), -1)
-            cv2.line(vis, (0, hud_h), (w, hud_h), (0, 240, 255), 2)
-            cv2.circle(vis, (20, 22), 6, (0, 255, 255), -1)
+            # Draw Sleek CCTV OSD Telemetry Banner
+            hud_h = 36
+            cv2.rectangle(vis, (0, 0), (w, hud_h), (18, 22, 28), -1)
+            cv2.line(vis, (0, hud_h), (w, hud_h), (40, 50, 68), 1)
 
-            status_note = "LOCKED / ACTIVE" if focused_worker is not None else "LOST / OCCLUDED"
+            is_locked = (focused_worker is not None)
+            status_note = "LOCKED // ACTIVE" if is_locked else "LOST // COASTING"
+            dot_color = (80, 200, 100) if is_locked else (0, 180, 240)  # Emerald vs Amber
+            cv2.circle(vis, (20, 18), 5, dot_color, -1)
+
             hud_text = (
-                f"FOCUS MODE: TRACKING WORKER #{self.focus_track_id} ONLY ({status_note}) | "
-                f"FPS: {self.fps_rolling:.1f} | Latency: {self.inference_latency_ms:.1f}ms | [CLICK 'VIEW ALL' TO EXIT]"
+                f"TARGET LOCK: WORKER #{self.focus_track_id}  |  STATUS: {status_note}  |  "
+                f"INFERENCE: {self.fps_rolling:.1f} FPS  |  LATENCY: {self.inference_latency_ms:.1f}ms"
             )
-            cv2.putText(vis, hud_text, (36, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 240, 255), 2, cv2.LINE_AA)
+            cv2.putText(vis, hud_text, (36, 23), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (240, 244, 248), 1, cv2.LINE_AA)
 
             if focused_worker is not None:
                 r = focused_worker
                 x1, y1, x2, y2 = [int(v) for v in r["bbox"]]
                 is_compliant = (r["status"] == "COMPLIANT")
-                box_color = (0, 240, 255) if is_compliant else (0, 0, 255)
+                box_color = (80, 200, 100) if is_compliant else (40, 40, 220)
 
                 # Draw Historical Trajectory Trail (Motion Path)
                 if self.focus_track_id in reid_registry.profiles:
@@ -751,33 +754,34 @@ class CCTVSurveillancePipeline:
         for r in worker_reports:
             x1, y1, x2, y2 = [int(v) for v in r["bbox"]]
             is_compliant = (r["status"] == "COMPLIANT")
-            box_color = (0, 230, 115) if is_compliant else (0, 0, 255)  # Green vs Red
+            box_color = (80, 200, 100) if is_compliant else (40, 40, 220)  # Industrial Emerald vs Alert Crimson
 
-            # Main Bounding Box
-            cv2.rectangle(vis, (x1, y1), (x2, y2), box_color, 2 if is_compliant else 3)
+            # Main Bounding Box (Hairline precision)
+            cv2.rectangle(vis, (x1, y1), (x2, y2), box_color, 2)
 
             # Highlighting corner marks for violations
             if not is_compliant:
                 d = min(15, (x2 - x1) // 4, (y2 - y1) // 4)
-                cv2.line(vis, (x1, y1), (x1 + d, y1), (0, 255, 255), 3)
-                cv2.line(vis, (x1, y1), (x1, y1 + d), (0, 255, 255), 3)
-                cv2.line(vis, (x2, y1), (x2 - d, y1), (0, 255, 255), 3)
-                cv2.line(vis, (x2, y1), (x2, y1 + d), (0, 255, 255), 3)
+                cv2.line(vis, (x1, y1), (x1 + d, y1), (0, 200, 255), 2)
+                cv2.line(vis, (x1, y1), (x1, y1 + d), (0, 200, 255), 2)
+                cv2.line(vis, (x2, y1), (x2 - d, y1), (0, 200, 255), 2)
+                cv2.line(vis, (x2, y1), (x2, y1 + d), (0, 200, 255), 2)
 
-            # Label Header
-            status_text = "COMPLIANT" if is_compliant else f"VIOLATION ({r['violation_streak']})"
+            # Label Header (Sleek dark translucent tag with hairline border)
+            status_text = "COMPLIANT" if is_compliant else f"ALERT ({r['violation_streak']}f)"
             h_color_tag = f" [{r['helmet_color'].upper()}]" if r.get("helmet_color") else ""
-            label_top = f"WORKER #{r['track_id']}: {status_text}{h_color_tag}"
+            label_top = f"WORKER #{r['track_id']} | {status_text}{h_color_tag}"
 
-            (lw, lh), _ = cv2.getTextSize(label_top, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 1)
-            cv2.rectangle(vis, (x1, max(0, y1 - 24)), (x1 + lw + 8, max(0, y1)), box_color, -1)
+            (lw, lh), _ = cv2.getTextSize(label_top, cv2.FONT_HERSHEY_SIMPLEX, 0.48, 1)
+            cv2.rectangle(vis, (x1, max(0, y1 - 22)), (x1 + lw + 8, max(0, y1)), (18, 22, 28), -1)
+            cv2.rectangle(vis, (x1, max(0, y1 - 22)), (x1 + lw + 8, max(0, y1)), box_color, 1)
             cv2.putText(
                 vis,
                 label_top,
-                (x1 + 4, max(18, y1 - 6)),
+                (x1 + 4, max(16, y1 - 6)),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.55,
-                (0, 0, 0) if is_compliant else (255, 255, 255),
+                0.48,
+                (240, 245, 250),
                 1,
                 cv2.LINE_AA,
             )

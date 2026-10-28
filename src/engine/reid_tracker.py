@@ -700,6 +700,17 @@ class PersistentTrackRegistry:
                         self.raw_to_canonical.pop(raw_id, None)
                         self.raw_to_conflict_streak.pop(raw_id, None)
 
+            # Purge transient unconfirmed tracks that were lost > 90 frames ago (false positives / noise)
+            dead_ghosts = [
+                wid for wid, p in self.profiles.items()
+                if not p.is_active and not p.is_confirmed and p.total_frames_seen < 10 and (frame_idx - p.last_seen_frame) > 90
+            ]
+            for wid in dead_ghosts:
+                self.profiles.pop(wid, None)
+                for raw_id, cid in list(self.raw_to_canonical.items()):
+                    if cid == wid:
+                        self.raw_to_canonical.pop(raw_id, None)
+
         if self.loop_cooldown_frames > 0:
             self.loop_cooldown_frames -= 1
             if self.loop_cooldown_frames == 0:
@@ -712,11 +723,13 @@ class PersistentTrackRegistry:
         and not currently active) are cleanly excluded from the official registry.
         """
         workers = []
+        latest_frame = max([p.last_seen_frame for p in self.profiles.values()], default=0)
         for wid in sorted(self.profiles.keys()):
             p = self.profiles[wid]
             if filter_ghosts and not p.is_active and p.total_frames_seen < 15:
                 continue
 
+            frames_since_seen = max(0, latest_frame - p.last_seen_frame) if not p.is_active else 0
             workers.append({
                 "track_id": p.worker_id,
                 "helmet_color": p.helmet_color,
@@ -726,6 +739,7 @@ class PersistentTrackRegistry:
                 "first_frame": p.first_frame,
                 "last_seen_frame": p.last_seen_frame,
                 "total_frames_seen": p.total_frames_seen,
+                "frames_since_seen": frames_since_seen,
                 "violations": list(p.violations),
                 "trajectory_len": len(p.trajectory),
             })
