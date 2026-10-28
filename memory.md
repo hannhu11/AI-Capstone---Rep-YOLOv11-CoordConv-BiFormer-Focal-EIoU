@@ -1872,11 +1872,13 @@ Thay thế các thẻ phồng neon bằng 6 khối số liệu công nghiệp g�
 6. **Active PPE Policy**: `HELMET + VEST` &bull; Architecture `Rep-YOLO11s A6` &bull; 7-Class Relational MOT.
 
 #### 3. Màn Hình Quan Sát CCTV & Lớp Phủ OSD Tinh Tế
-- **CCTV Monitor Frame Bezel**:
-  - Thanh OSD đỉnh màn hình: Đèn đỏ nhấp nháy `● REC`, mã camera `CAM-01 [GATE_A1_1080P]`, tên video nguồn, độ phân giải `1920×1080 @ 60 FPS`.
+- **CCTV Monitor Frame Bezel (Milestone XProtect / Siemens Siveillance Standard)**:
+  - Thanh OSD đỉnh màn hình: Đèn đỏ nhấp nháy `● REC`, mã camera `CAM-01 [GATE_A1_1080P]`, tên video nguồn.
+  - Telemetry luồng động: Badge độ phân giải và FPS cập nhật tự động theo nguồn video thực tế (1080p, 4K UHD, Webcam: `1920×1080 @ 60 FPS` / `3840×2160 @ 30 FPS`), kèm thông số băng thông truyền tải thời gian thực và độ trễ (`~3.8 Mbps • 24.2ms`).
   - Phím điều khiển nhanh: Nút làm mới luồng (Refresh), nút toàn màn hình (Fullscreen) và phím tắt bàn phím (`F` để Fullscreen, `R` để Refresh).
-- **Banner Focus Mode Nổi Trên Web (Floating HUD Overlay)**:
-  - Thay vì vẽ một vệt vàng đè chết khung hình camera, hệ thống sử dụng một thanh HUD bán trong suốt tuyệt đẹp nằm trên container video: `TARGET LOCK: WORKER #<id> | STATUS: ACTIVE | [✕ Exit Focus (Esc)]`.
+- **Banner Focus Mode Nổi Trên Web (Floating HUD Overlay Động)**:
+  - Thay vì dải vàng thô vẽ đè lên điểm ảnh video camera, hệ thống sử dụng thanh HUD bán trong suốt tinh tế nằm trên container video: `TARGET LOCK: WORKER #<id> | STATUS: LOCKED // ACTIVE | [✕ Exit Focus (Esc)]`.
+  - Trạng thái được cập nhật thời gian thực động: khi mục tiêu hiện diện hiển thị `LOCKED // ACTIVE` (chấm xanh lục nhấp nháy), khi mục tiêu tạm khuất sau cột hiển thị `LOST // COASTING` (chấm hổ phách cảnh báo).
   - Hỗ trợ phím tắt `Esc` để thoát tức thì chế độ focus.
 - **Tinh chỉnh hiển thị Bounding Box trên Video Frame (`pipeline.py`)**:
   - Bounding box mảnh 2px chuẩn CCTV (`(80, 200, 100)` cho hợp quy, `(40, 40, 220)` cho vi phạm).
@@ -1888,17 +1890,23 @@ Thay thế các thẻ phồng neon bằng 6 khối số liệu công nghiệp g�
   - Tab 1: `Active On-Site` (Mặc định) — Chỉ hiển thị những công nhân thực tế đang có mặt trong góc quay camera hoặc tạm khuất ngắn hạn (&le; 45 khung hình ~ 1.5 giây).
   - Tab 2: `Audit History` — Lưu trữ danh mục định danh kiểm toán lịch sử.
 - **Giải quyết dứt điểm hiện tượng "106 Total"**:
-  - Badge trạng thái hiển thị rõ ràng: `1 Active On-Site` (thay vì dồn toàn bộ 106 tracklet cũ vào làm rối mắt).
+  - Badge trạng thái hiển thị rõ ràng: `1 Active • 1 Registered` (hoặc `X Active • Y Registered`).
   - Card công nhân thiết kế chuẩn thẻ an ninh: Mã nhân sự `WORKER #01`, chấm màu mũ bảo hộ thực tế, chip trạng thái `COMPLIANT` / `BREACH`, số khung hình bám vết, nút bấm `[ ⌖ Focus ]` / `[ 🔒 Locked ]`.
 - **Dọn dẹp tự động các tracklet bóng ma (`reid_tracker.py`)**:
-  - Bổ sung cơ chế tự động thanh lọc các tracklet chưa được xác nhận (`not p.is_confirmed`) và đã biến mất $>90$ frames khỏi bộ nhớ tạm, loại bỏ 100% rác bộ nhớ.
+  - Tự động thanh lọc các tracklet chưa được xác nhận hoặc xuất hiện ngắn hạn (< 15 frames) và đã biến mất $>90$ frames khỏi bộ nhớ tạm, loại bỏ 100% rác bộ nhớ và ngăn chặn leo số ID.
+  - Ngăn ngừa hiện tượng vẽ lại DOM giật cục (flicker): cơ chế so sánh chữ ký (signature comparison) chỉ cập nhật lại DOM khi danh sách nhân sự có thay đổi thực tế.
 
 #### 5. Dòng Sự Kiện Vi Phạm Thời Gian Thực (Incident Audit Log)
-- Nhật ký kiểm toán an ninh với giao diện Dark Minimalist: Dấu thời gian chính xác đến từng giây, thẻ vi phạm màu đỏ cảnh báo (`MISSING SAFETY VEST`, `MISSING SAFETY HELMET`), độ tin cậy và số khung hình duy trì.
-- Nút bấm `[ Inspect Snapshot ]` mở cửa sổ Forensic Evidence Lightbox hiển thị ảnh phóng to độ nét cao với đầy đủ thông tin pháp y.
+- Nhật ký kiểm toán an ninh với giao diện Dark Minimalist: Dấu thời gian chính xác đến từng giây, phân cấp mức độ nghiêm trọng chuẩn OSHA/Công nghiệp:
+  * Thẻ mức độ vi phạm: `CRITICAL` (Đỏ thẫm, dành cho không đội mũ bảo hộ) vs `WARNING` (Hổ phách, dành cho thiếu áo phản quang).
+  * Chip vi phạm chi tiết: `NO HARDHAT`, `MISSING SAFETY VEST`.
+  * Chỉ số tin cậy suy luận và số khung hình duy trì vi phạm (`Conf: 94.5% • Dur: 12f`).
+- Nút bấm bằng chứng pháp y `[ 📷 Evidence ]` mở cửa sổ Forensic Evidence Lightbox hiển thị ảnh phóng to độ nét cao với đầy đủ thông tin pháp y.
+- Cơ chế non-flickering DOM updates: Chỉ vẽ lại container khi mảng alerts có sự thay đổi thực sự.
 
 #### 6. Biểu Đồ Trực Quan Hóa Dữ Liệu (Industrial Charts)
 - Đổi mới toàn diện giao diện Chart.js sang bảng màu tối công nghiệp: Đường cong mượt mà màu xanh lục bảo `#10b981`, lưới tọa độ tối giản `#1a273a`, biểu đồ tròn hardhat phân định rõ ràng 5 màu mũ (Xanh dương `#2563eb`, Xanh lá `#10b981`, Đỏ `#ef4444`, Trắng `#cbd5e1`, Vàng `#f59e0b`).
+- Nạp chuẩn Typography Google Fonts `Inter` và `JetBrains Mono` trực tiếp trong `<head>` với thuộc tính `tabular-nums` đảm bảo mọi số liệu hiển thị ổn định, không bị xô lệch trên mọi thiết bị.
 
 ---
 
@@ -1909,17 +1917,17 @@ Thay thế các thẻ phồng neon bằng 6 khối số liệu công nghiệp g�
 | **Bảng màu chủ đạo** | Xanh tím neon (`#0b1120`), viền sáng cyan rực rỡ, drop-shadow phát quang. | Matte Industrial Slate (`#090d16`, `#0f172a`), viền hairline mỏng `#233248`, màu xanh coban doanh nghiệp (`#2563eb`). |
 | **Định vị & Thương hiệu** | Badge tròn gradient lòe loẹt, chữ "INDUSTRIAL CCTV SURVEILLANCE & PPE ENGINE". | `VMS INDUSTRIAL SAFETY SUITE`, mã trạm quan sát `CAM-01 [GATE_A1_1080P]`, chuẩn ISO timestamp. |
 | **Dải đo số liệu (KPIs)** | 6 thẻ to viền dạ quang, icon lớn, font chữ co giãn không cố định. | 6 thẻ telemetry mật độ cao, font monospace `tabular-nums`, micro-labels in hoa chuẩn SCADA. |
-| **Chế độ Focus Tracking** | Dải vàng thô in đè lên video camera kèm chữ `[CLICK 'VIEW ALL' TO EXIT]`. | Thanh HUD nổi bán trong suốt trên Web UI, nút bấm thoát chuyên nghiệp, phím tắt `Esc` công thái học. |
-| **Danh sách công nhân** | Cột dài hiển thị `1 Active · 106 Total`, tràn ngập công nhân tạm khuất từ 300+ frames. | Phân 2 tab rõ ràng: `Active On-Site` (chỉ hiển thị người thật trong góc quay) và `Audit History`. |
-| **Thẻ công nhân (Cards)** | Viền neon xanh ngọc, nút bấm bo tròn dạng viên thuốc. | Thẻ an ninh công nghiệp chuẩn mực, chấm màu mũ bảo hộ thực tế, nút Focus / Locked tối giản. |
-| **Khung hình CCTV** | Không có thông tin REC/Camera ID chuẩn, viền dày. | Bezel camera giám sát tiêu chuẩn, OSD Header có đèn đỏ `● REC`, độ phân giải, FPS và nút điều khiển. |
-| **Nhật ký vi phạm** | Card đỏ rực, đường link màu xanh gạch chân nghiệp dư. | Thẻ kiểm toán an ninh tinh tế, nút bấm `Inspect Snapshot` mở Lightbox forensic chuyên nghiệp. |
+| **Chế độ Focus Tracking** | Dải vàng thô in đè lên video camera kèm chữ `[CLICK 'VIEW ALL' TO EXIT]`. | Thanh HUD nổi bán trong suốt trên Web UI, hiển thị động `LOCKED // ACTIVE` vs `LOST // COASTING`, phím tắt `Esc` công thái học. |
+| **Danh sách công nhân** | Cột dài hiển thị `1 Active · 106 Total`, tràn ngập công nhân tạm khuất từ 300+ frames. | Phân 2 tab rõ ràng: `Active On-Site` (chỉ hiển thị người thật trong góc quay) và `Audit History`, badge `X Active • Y Registered`. |
+| **Thẻ công nhân (Cards)** | Viền neon xanh ngọc, nút bấm bo tròn dạng viên thuốc. | Thẻ an ninh công nghiệp chuẩn mực, chấm màu mũ bảo hộ thực tế, nút Focus / Locked tối giản, chống giật DOM. |
+| **Khung hình CCTV** | Không có thông tin REC/Camera ID chuẩn, viền dày. | Bezel camera giám sát tiêu chuẩn, OSD Header có đèn đỏ `● REC`, độ phân giải & FPS động, băng thông & độ trễ trực tiếp. |
+| **Nhật ký vi phạm** | Card đỏ rực, đường link màu xanh gạch chân nghiệp dư. | Thẻ kiểm toán an ninh tinh tế, thẻ phân cấp `CRITICAL` / `WARNING`, nút bấm `[ 📷 Evidence ]` mở Lightbox forensic. |
 
 ---
 
 ### 53.5. Kết Quả Kiểm Thử & Tính Toàn Vẹn Hệ Thống
 1. **Kiểm thử tự động (Unit & Integration Tests)**:
-   - Toàn bộ test suite `pytest tests/`: **103/103 tests PASS 100%** trong 11.67 giây.
+   - Toàn bộ test suite `pytest tests/`: **103/103 tests PASS 100%** trong 11.53 giây.
    - Kiểm tra tương thích giao diện `test_fastapi_web_endpoints`: **PASS 100%**.
    - Kiểm tra bám vết và focus mode `test_persistent_tracking_focus`: **PASS 100%**.
    - Kiểm tra chống cướp ID `test_reid_anti_hijack_and_consolidation`: **PASS 100%**.

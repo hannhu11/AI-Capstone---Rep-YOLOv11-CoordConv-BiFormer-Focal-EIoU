@@ -4,10 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rep-YOLO11s VMS &bull; Enterprise Industrial Safety &amp; PPE Surveillance</title>
+  
+  <!-- Preconnect & Enterprise Font Typography (Inter + JetBrains Mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -15,22 +22,23 @@
         extend: {
           colors: {
             vms: {
-              bg: '#090d16',
-              surface: '#0f172a',
-              panel: '#131d31',
-              card: '#162035',
-              border: '#233248',
-              borderLight: '#334155',
-              cobalt: '#2563eb',
-              cobaltHover: '#1d4ed8',
-              emerald: '#10b981',
-              emeraldDark: '#064e3b',
-              amber: '#f59e0b',
-              amberDark: '#78350f',
-              crimson: '#ef4444',
-              crimsonDark: '#7f1d1d',
-              slateMuted: '#64748b',
-              slateText: '#94a3b8',
+              bg: '#090d16',          // Deepest industrial slate
+              surface: '#0f172a',     // Primary container surface
+              panel: '#131d31',       // Secondary well / card group
+              card: '#162035',        // Individual component card
+              cardHover: '#1c2842',   // Card hover elevation
+              border: '#233248',      // Crisp 1px hairline border
+              borderLight: '#334155', // Elevated border
+              cobalt: '#2563eb',      // Enterprise Control Cobalt
+              cobaltHover: '#1d4ed8', // Darker Cobalt
+              emerald: '#10b981',     // Compliance Emerald Green
+              emeraldDark: '#064e3b', // Deep forest compliance
+              amber: '#f59e0b',       // Safety Warning Amber
+              amberDark: '#78350f',   // Deep warning
+              crimson: '#ef4444',     // Critical Breach Crimson
+              crimsonDark: '#7f1d1d', // Deep breach
+              slateMuted: '#64748b',  // Secondary labels / subtitles
+              slateText: '#94a3b8',   // Medium body text
             }
           },
           fontFamily: {
@@ -41,22 +49,28 @@
       }
     }
   </script>
+  
   <style>
     @keyframes pulse-subtle {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.35; }
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.92); }
     }
     .pulse-record {
-      animation: pulse-subtle 1.4s infinite ease-in-out;
+      animation: pulse-subtle 1.5s infinite ease-in-out;
     }
     .pulse-alert {
       animation: pulse-subtle 1.0s infinite ease-in-out;
     }
-    /* Industrial Scrollbar */
+    /* Enterprise Industrial Scrollbars */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #090d16; }
     ::-webkit-scrollbar-thumb { background: #233248; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+    
+    /* Hardware tabular numbers */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
   </style>
 </head>
 <body class="bg-vms-bg text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
@@ -65,11 +79,11 @@
   <!-- 1. ENTERPRISE INDUSTRIAL VMS HEADER BAR                                  -->
   <!-- ========================================================================= -->
   <header class="border-b border-vms-border bg-vms-surface/95 backdrop-blur-md sticky top-0 z-40 px-5 py-2.5">
-    <div class="max-w-[1850px] mx-auto flex flex-wrap items-center justify-between gap-3">
+    <div class="max-w-[1880px] mx-auto flex flex-wrap items-center justify-between gap-3">
       
       <!-- System Brand & Facility Station Info -->
       <div class="flex items-center space-x-3.5">
-        <div class="w-9 h-9 rounded-lg bg-blue-600/15 border border-blue-500/40 flex items-center justify-center text-blue-400">
+        <div class="w-9 h-9 rounded-lg bg-blue-600/15 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
@@ -136,7 +150,7 @@
   <!-- ========================================================================= -->
   <!-- 2. HIGH-DENSITY ENTERPRISE KPI TELEMETRY RIBBON                          -->
   <!-- ========================================================================= -->
-  <section class="max-w-[1850px] w-full mx-auto px-5 pt-3.5 pb-2">
+  <section class="max-w-[1880px] w-full mx-auto px-5 pt-3.5 pb-2">
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
 
       <!-- KPI 1: Pipeline Throughput (FPS) -->
@@ -147,7 +161,7 @@
         </div>
         <div class="mt-1 flex items-baseline justify-between">
           <div class="flex items-baseline space-x-1">
-            <span id="metricFps" class="text-2xl font-bold font-mono tracking-tight text-white">--</span>
+            <span id="metricFps" class="text-2xl font-bold font-mono tabular-nums tracking-tight text-white">--</span>
             <span class="text-[11px] text-vms-slateMuted font-mono">FPS</span>
           </div>
           <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/40">Real-Time</span>
@@ -165,7 +179,7 @@
         </div>
         <div class="mt-1 flex items-baseline justify-between">
           <div class="flex items-baseline space-x-1">
-            <span id="metricLatency" class="text-2xl font-bold font-mono tracking-tight text-blue-400">--</span>
+            <span id="metricLatency" class="text-2xl font-bold font-mono tabular-nums tracking-tight text-blue-400">--</span>
             <span class="text-[11px] text-vms-slateMuted font-mono">ms</span>
           </div>
           <span class="text-[10px] font-mono text-blue-400 bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-800/40">Optimal</span>
@@ -183,13 +197,13 @@
         </div>
         <div class="mt-1 flex items-baseline justify-between">
           <div class="flex items-baseline space-x-1">
-            <span id="metricWorkers" class="text-2xl font-bold font-mono tracking-tight text-white">0</span>
+            <span id="metricWorkers" class="text-2xl font-bold font-mono tabular-nums tracking-tight text-white">0</span>
             <span class="text-[11px] text-vms-slateMuted font-mono">Active</span>
           </div>
-          <span id="metricWorkersTag" class="text-[10px] font-mono text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">ByteTrack</span>
+          <span id="metricWorkersTag" class="text-[10px] font-mono text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">Re-ID Active</span>
         </div>
-        <div class="mt-1.5 text-[10px] text-vms-slateMuted font-mono truncate">
-          Spatio-Temporal Re-ID Active
+        <div id="metricWorkersSubtitle" class="mt-1.5 text-[10px] text-vms-slateMuted font-mono truncate">
+          Registered: 0 Total Profiles
         </div>
       </div>
 
@@ -201,7 +215,7 @@
         </div>
         <div class="mt-1 flex items-baseline justify-between">
           <div class="flex items-baseline space-x-1">
-            <span id="metricComplianceRate" class="text-2xl font-bold font-mono tracking-tight text-emerald-400">100.0%</span>
+            <span id="metricComplianceRate" class="text-2xl font-bold font-mono tabular-nums tracking-tight text-emerald-400">100.0%</span>
           </div>
           <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/40">Nominal</span>
         </div>
@@ -218,7 +232,7 @@
         </div>
         <div class="mt-1 flex items-baseline justify-between">
           <div class="flex items-baseline space-x-1">
-            <span id="metricViolations" class="text-2xl font-bold font-mono tracking-tight text-slate-100">0</span>
+            <span id="metricViolations" class="text-2xl font-bold font-mono tabular-nums tracking-tight text-slate-100">0</span>
             <span class="text-[11px] text-vms-slateMuted font-mono">Alerts</span>
           </div>
           <span id="metricViolationsTag" class="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/40">Zero Incident</span>
@@ -238,7 +252,7 @@
           <span id="metricPolicyName" class="text-lg font-bold font-mono tracking-tight text-amber-400 truncate">HELMET + VEST</span>
         </div>
         <div class="mt-1.5 text-[10px] text-vms-slateMuted font-mono truncate">
-          Model: Rep-YOLO11s A6
+          Standard: OSHA 1926.100
         </div>
       </div>
 
@@ -248,7 +262,7 @@
   <!-- ========================================================================= -->
   <!-- 3. MAIN WORKSPACE (TRI-PANEL: PERSONNEL - CCTV - INCIDENTS)              -->
   <!-- ========================================================================= -->
-  <main class="max-w-[1850px] w-full mx-auto px-5 py-3 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4">
+  <main class="max-w-[1880px] w-full mx-auto px-5 py-3 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4">
 
     <!-- --------------------------------------------------------------------- -->
     <!-- LEFT COLUMN: PERSONNEL TRACKING REGISTRY (3 Cols)                     -->
@@ -264,16 +278,16 @@
             </svg>
             <h2 class="text-xs font-bold tracking-wider text-slate-200 uppercase">Personnel Registry</h2>
           </div>
-          <span id="trackedWorkersBadge" class="px-2 py-0.5 rounded bg-blue-950/60 border border-blue-800/50 text-blue-300 text-[11px] font-mono font-semibold">0 Active</span>
+          <span id="trackedWorkersBadge" class="px-2 py-0.5 rounded bg-blue-950/60 border border-blue-800/50 text-blue-300 text-[11px] font-mono font-semibold">0 Active &bull; 0 Registered</span>
         </div>
 
         <!-- Tab Controls: Active vs All Audit History -->
         <div class="grid grid-cols-2 gap-1.5 pt-2.5 pb-2 border-b border-vms-border">
-          <button onclick="setWorkerTab('active')" id="tabActiveWorkers" class="py-1 px-2 text-[11px] font-semibold rounded bg-blue-600 text-white transition flex items-center justify-center gap-1">
+          <button onclick="setWorkerTab('active')" id="tabActiveWorkers" class="py-1 px-2 text-[11px] font-semibold rounded bg-blue-600 text-white transition flex items-center justify-center gap-1 shadow-sm">
             <span>Active On-Site</span>
             <span id="tabActiveCount" class="text-[10px] font-mono opacity-80">(0)</span>
           </button>
-          <button onclick="setWorkerTab('all')" id="tabAllWorkers" class="py-1 px-2 text-[11px] font-medium rounded bg-slate-800 text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1">
+          <button onclick="setWorkerTab('all')" id="tabAllWorkers" class="py-1 px-2 text-[11px] font-medium rounded bg-slate-800 text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1 border border-slate-700/60">
             <span>Audit History</span>
             <span id="tabAllCount" class="text-[10px] font-mono opacity-80">(0)</span>
           </button>
@@ -324,25 +338,30 @@
       <!-- CCTV Camera Monitor Container -->
       <div class="bg-vms-surface border border-vms-border rounded-lg overflow-hidden shadow-xl flex flex-col">
         
-        <!-- OSD Header Bar -->
-        <div class="px-3.5 py-2 bg-slate-950/90 border-b border-vms-border flex items-center justify-between text-xs font-mono">
-          <div class="flex items-center space-x-2">
-            <span class="w-2 h-2 rounded-full bg-rose-500 pulse-record"></span>
-            <span class="text-rose-400 font-bold tracking-wider text-[11px]">REC</span>
+        <!-- OSD Header Bar (Milestone / Siemens SCADA Standard) -->
+        <div class="px-3.5 py-2 bg-slate-950/95 border-b border-vms-border flex items-center justify-between text-xs font-mono">
+          <div class="flex items-center space-x-2 truncate">
+            <span class="w-2 h-2 rounded-full bg-rose-500 pulse-record shrink-0"></span>
+            <span class="text-rose-400 font-bold tracking-wider text-[11px] shrink-0">REC</span>
             <span class="text-slate-600">|</span>
-            <span class="text-slate-200 font-semibold text-[11px]">CAM-01 [GATE_A1_1080P]</span>
+            <span class="text-slate-200 font-semibold text-[11px] shrink-0">CAM-01 [GATE_A1_1080P]</span>
             <span class="text-slate-600">|</span>
-            <span id="videoFilenameBadge" class="text-slate-400 text-[10px] truncate max-w-[220px]">construction_site_workers_1080p.mp4</span>
+            <span id="videoFilenameBadge" class="text-slate-400 text-[10px] truncate max-w-[200px]">construction_site_workers_1080p.mp4</span>
           </div>
 
-          <div class="flex items-center space-x-3 text-slate-400 text-[11px]">
-            <span id="videoResolutionBadge" class="hidden sm:inline">1920&times;1080 @ 60 FPS</span>
-            <button onclick="reloadStream()" class="hover:text-white transition p-0.5" title="Refresh Stream (R)">
+          <div class="flex items-center space-x-2 text-slate-400 text-[11px] shrink-0">
+            <span id="videoBitrateBadge" class="hidden md:inline font-mono text-[10px] text-slate-400 bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded">
+              ~3.8 Mbps &bull; --ms
+            </span>
+            <span id="videoResolutionBadge" class="hidden sm:inline font-mono text-[10px] text-slate-300 bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded">
+              1920&times;1080 @ 60 FPS
+            </span>
+            <button onclick="reloadStream()" class="hover:text-white transition p-1 hover:bg-slate-800 rounded" title="Refresh Stream (R)">
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
               </svg>
             </button>
-            <button onclick="toggleVideoFullscreen()" class="hover:text-white transition p-0.5" title="Toggle Fullscreen (F)">
+            <button onclick="toggleVideoFullscreen()" class="hover:text-white transition p-1 hover:bg-slate-800 rounded" title="Toggle Fullscreen (F)">
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
               </svg>
@@ -360,14 +379,14 @@
             onerror="handleVideoError(this)"
           />
 
-          <!-- Floating Target Focus Inspection HUD Banner -->
-          <div id="focusBannerOverlay" class="absolute top-2.5 left-2.5 right-2.5 hidden items-center justify-between px-3 py-2 rounded-md bg-slate-950/85 backdrop-blur-md border border-blue-500/60 shadow-lg font-mono text-xs">
+          <!-- Floating Target Focus Inspection HUD Banner (Dynamic Status) -->
+          <div id="focusBannerOverlay" class="absolute top-2.5 left-2.5 right-2.5 hidden items-center justify-between px-3 py-2 rounded-md bg-slate-950/90 backdrop-blur-md border border-blue-500/60 shadow-lg font-mono text-xs">
             <div class="flex items-center space-x-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping"></span>
+              <span id="focusBannerDot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-record"></span>
               <span class="font-bold text-blue-300">TARGET LOCK:</span>
               <span id="focusBannerWorkerId" class="text-white font-bold">WORKER #--</span>
-              <span class="text-slate-500">|</span>
-              <span id="focusBannerStatus" class="text-emerald-400 font-semibold">ACTIVE</span>
+              <span class="text-slate-600">|</span>
+              <span id="focusBannerStatus" class="text-emerald-400 font-semibold tracking-wide">LOCKED // ACTIVE</span>
             </div>
             <button onclick="setFocusWorker(null)" class="px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-semibold transition flex items-center gap-1 shadow">
               <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -543,7 +562,7 @@
               <option value="video_test/concreting 10.mp4">[CCTV] Đổ bê tông (Mũ xanh dương, Mũ vàng, Áo)</option>
               <option value="0">[LIVE] Webcam máy tính / Camera USB trực tiếp (Index 0)</option>
             </select>
-            <button onclick="applyVideoSource()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold transition">
+            <button onclick="applyVideoSource()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold transition shadow-sm">
               Switch
             </button>
           </div>
@@ -566,7 +585,7 @@
               <option value="Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv6_warmstart_deploy.pt">rep_yolo11s_chv6_warmstart_deploy.pt (6-Class Baseline)</option>
               <option value="yolo11s.pt">yolo11s.pt (COCO Pretrained Fallback)</option>
             </select>
-            <button id="btnSwapWeights" onclick="applyModelSelection()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold transition">
+            <button id="btnSwapWeights" onclick="applyModelSelection()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold transition shadow-sm">
               Deploy
             </button>
           </div>
@@ -602,7 +621,7 @@
           <div class="flex gap-2">
             <input type="text" id="tgChatIdInput" placeholder="Telegram Chat ID" class="flex-1 bg-vms-bg border border-vms-border rounded px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono" />
             <button onclick="autoDetectTelegramChatId()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-medium transition border border-slate-700">Auto-Detect</button>
-            <button onclick="sendTestTelegramAlert()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold transition">Test Ping</button>
+            <button onclick="sendTestTelegramAlert()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold transition shadow-sm">Test Ping</button>
           </div>
         </div>
 
@@ -617,7 +636,7 @@
           <div class="flex gap-2">
             <input type="text" id="zaloWebhookInput" placeholder="Zalo Chat ID / Webhook URL" class="flex-1 bg-vms-bg border border-vms-border rounded px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono" />
             <button onclick="autoDetectZaloChatId()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-medium transition border border-slate-700">Auto-Detect</button>
-            <button onclick="sendTestZaloAlert()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold transition">Test Ping</button>
+            <button onclick="sendTestZaloAlert()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold transition shadow-sm">Test Ping</button>
           </div>
         </div>
 
@@ -625,7 +644,7 @@
 
       <div class="mt-5 pt-3 border-t border-vms-border flex justify-end gap-2.5">
         <button onclick="toggleSettingsModal()" class="px-4 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition border border-slate-700">Cancel</button>
-        <button onclick="saveAllSettings()" class="px-5 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition">Save &amp; Deploy</button>
+        <button onclick="saveAllSettings()" class="px-5 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition shadow-sm">Save &amp; Deploy</button>
       </div>
 
     </div>
@@ -645,6 +664,8 @@
     let currentWorkerTab = 'active';
     let currentFocusTrackId = null;
     let cachedWorkersList = [];
+    let lastAlertsSignature = '';
+    let lastWorkersSignature = '';
 
     window.addEventListener('DOMContentLoaded', () => {
       initCharts();
@@ -685,6 +706,10 @@
           if (!['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
             toggleVideoFullscreen();
           }
+        } else if (e.key === 'r' || e.key === 'R') {
+          if (!['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+            reloadStream();
+          }
         }
       });
     }
@@ -696,12 +721,13 @@
       const tabAll = document.getElementById('tabAllWorkers');
 
       if (tab === 'active') {
-        tabAct.className = 'py-1 px-2 text-[11px] font-semibold rounded bg-blue-600 text-white transition flex items-center justify-center gap-1';
-        tabAll.className = 'py-1 px-2 text-[11px] font-medium rounded bg-slate-800 text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1';
+        tabAct.className = 'py-1 px-2 text-[11px] font-semibold rounded bg-blue-600 text-white transition flex items-center justify-center gap-1 shadow-sm';
+        tabAll.className = 'py-1 px-2 text-[11px] font-medium rounded bg-slate-800 text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1 border border-slate-700/60';
       } else {
-        tabAll.className = 'py-1 px-2 text-[11px] font-semibold rounded bg-blue-600 text-white transition flex items-center justify-center gap-1';
-        tabAct.className = 'py-1 px-2 text-[11px] font-medium rounded bg-slate-800 text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1';
+        tabAll.className = 'py-1 px-2 text-[11px] font-semibold rounded bg-blue-600 text-white transition flex items-center justify-center gap-1 shadow-sm';
+        tabAct.className = 'py-1 px-2 text-[11px] font-medium rounded bg-slate-800 text-slate-400 hover:text-slate-200 transition flex items-center justify-center gap-1 border border-slate-700/60';
       }
+      lastWorkersSignature = ''; // Force re-render on tab switch
       renderWorkers(cachedWorkersList);
     }
 
@@ -731,7 +757,15 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              callbacks: {
+                label: (ctx) => `Compliance: ${ctx.parsed.y.toFixed(1)}%`
+              }
+            }
+          },
           scales: {
             y: {
               min: 0,
@@ -791,8 +825,22 @@
           document.getElementById('metricComplianceRate').innerText = data.compliance_rate.toFixed(1) + '%';
           document.getElementById('metricViolations').innerText = data.violations_count;
 
+          const regCount = data.registered_workers_count !== undefined ? data.registered_workers_count : data.workers_count;
+          const regSub = document.getElementById('metricWorkersSubtitle');
+          if (regSub) {
+            regSub.innerText = `Registered: ${regCount} Total Profiles`;
+          }
+
           if (data.video_source) {
             document.getElementById('videoFilenameBadge').innerText = data.video_source;
+          }
+
+          // Update Camera Monitor Bezel Dynamic Telemetry
+          if (data.resolution && data.stream_fps) {
+            document.getElementById('videoResolutionBadge').innerText = `${data.resolution} @ ${data.stream_fps} FPS`;
+          }
+          if (data.bitrate_mbps !== undefined && data.inference_ms !== undefined) {
+            document.getElementById('videoBitrateBadge').innerText = `~${data.bitrate_mbps.toFixed(1)} Mbps \u2022 ${data.inference_ms.toFixed(1)}ms`;
           }
 
           // Violation status tags
@@ -808,12 +856,26 @@
             vTag.innerText = 'Zero Incident';
           }
 
-          // Update Floating Focus Banner
+          // Update Floating Focus Banner (Dynamically handle ACTIVE vs LOST)
           const focusOverlay = document.getElementById('focusBannerOverlay');
           if (data.focus_track_id !== null && data.focus_track_id !== undefined) {
             focusOverlay.classList.remove('hidden');
             focusOverlay.classList.add('flex');
             document.getElementById('focusBannerWorkerId').innerText = `WORKER #${data.focus_track_id}`;
+            
+            const isTargetActive = (data.focus_status === 'ACTIVE' || (data.focus_status === undefined && data.workers_count > 0));
+            const statusEl = document.getElementById('focusBannerStatus');
+            const dotEl = document.getElementById('focusBannerDot');
+            
+            if (isTargetActive) {
+              statusEl.innerText = 'LOCKED // ACTIVE';
+              statusEl.className = 'text-emerald-400 font-semibold tracking-wide';
+              dotEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-record';
+            } else {
+              statusEl.innerText = 'LOST // COASTING';
+              statusEl.className = 'text-amber-400 font-semibold tracking-wide';
+              dotEl.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 pulse-alert';
+            }
           } else {
             focusOverlay.classList.add('hidden');
             focusOverlay.classList.remove('flex');
@@ -858,6 +920,7 @@
         try {
           await fetch('/api/tracking/reset', { method: 'POST' });
           currentFocusTrackId = null;
+          lastWorkersSignature = '';
           updateWorkersList();
         } catch (err) {
           console.error('Failed to reset tracker registry:', err);
@@ -882,9 +945,11 @@
         cachedWorkersList = workers;
         currentFocusTrackId = data.focus_track_id;
 
+        const activeWorkers = workers.filter(w => w.is_active || (w.frames_since_seen !== undefined && w.frames_since_seen <= 45));
         const activeCount = workers.filter(w => w.is_active).length;
-        document.getElementById('trackedWorkersBadge').innerText = `${activeCount} Active On-Site`;
-        document.getElementById('tabActiveCount').innerText = `(${activeCount})`;
+        
+        document.getElementById('trackedWorkersBadge').innerText = `${activeCount} Active \u2022 ${workers.length} Registered`;
+        document.getElementById('tabActiveCount').innerText = `(${activeWorkers.length})`;
         document.getElementById('tabAllCount').innerText = `(${workers.length})`;
 
         renderWorkers(workers);
@@ -911,6 +976,14 @@
         if (a.is_active !== b.is_active) return a.is_active ? -1 : 1;
         return a.track_id - b.track_id;
       });
+
+      // Avoid DOM rebuild if signature has not changed
+      const currentSignature = displayWorkers.map(w => 
+        `${w.track_id}:${w.is_active}:${w.status}:${w.helmet_color}:${w.total_frames_seen}:${currentFocusTrackId === w.track_id}`
+      ).join('|');
+      
+      if (currentSignature === lastWorkersSignature) return;
+      lastWorkersSignature = currentSignature;
 
       if (displayWorkers.length === 0) {
         container.innerHTML = `
@@ -942,7 +1015,7 @@
               <div class="flex items-center space-x-2">
                 <span class="w-2 h-2 rounded-full ${w.is_active ? 'bg-emerald-500' : 'bg-slate-500'}"></span>
                 <span class="font-bold text-xs text-white font-mono">WORKER #${w.track_id}</span>
-                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded ${w.is_active ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/40' : 'bg-slate-800 text-slate-400'}">
+                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded ${w.is_active ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/40' : 'bg-slate-800 text-slate-400'}">
                   ${w.is_active ? 'ACTIVE' : 'OCCLUDED'}
                 </span>
               </div>
@@ -954,7 +1027,7 @@
             <div class="mt-2 flex items-center justify-between text-[11px] font-mono text-slate-300">
               <div class="flex items-center gap-1.5 text-[10px]">
                 <span class="w-2 h-2 rounded-full ${dotColor}"></span>
-                <span class="text-slate-300">${helmetLabel}</span>
+                <span class="text-slate-300 font-medium">${helmetLabel}</span>
               </div>
               <button onclick="event.stopPropagation(); setFocusWorker(${isFocused ? 'null' : w.track_id})" class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold transition inline-flex items-center gap-1 ${
                 isFocused
@@ -983,7 +1056,7 @@
       setInterval(updateWorkersList, 1000);
     }
 
-    // 7. Live Incident Audit Log Polling
+    // 7. Live Incident Audit Log Polling (With Severity Tags & Evidence Trigger)
     function startAlertsPolling() {
       setInterval(async () => {
         try {
@@ -1006,40 +1079,65 @@
       countBadge.innerText = `${count} Incident${count === 1 ? '' : 's'}`;
 
       if (!alerts || alerts.length === 0) {
-        container.innerHTML = '';
-        if (placeholder) placeholder.style.display = 'flex';
+        if (lastAlertsSignature !== 'empty') {
+          container.innerHTML = '';
+          if (placeholder) placeholder.style.display = 'flex';
+          lastAlertsSignature = 'empty';
+        }
         return;
       }
       if (placeholder) placeholder.style.display = 'none';
 
-      container.innerHTML = '';
-      alerts.forEach(item => {
-        const vBadges = item.violations.map(v => 
-          `<span class="px-1.5 py-0.5 rounded bg-rose-950/80 border border-rose-800 text-rose-300 font-mono font-semibold text-[10px]">${v.replace(/_/g, ' ')}</span>`
-        ).join(' ');
+      // Avoid DOM rebuild if alerts have not changed
+      const currentSignature = alerts.map(a => `${a.worker_id}:${a.timestamp}:${a.violation_duration_frames}`).join('|');
+      if (currentSignature === lastAlertsSignature) return;
+      lastAlertsSignature = currentSignature;
 
-        const card = document.createElement('div');
-        card.className = 'bg-vms-card border border-rose-900/40 rounded-lg p-2.5 hover:border-rose-700/60 transition shadow-sm flex flex-col space-y-1.5';
-        card.innerHTML = `
-          <div class="flex items-center justify-between text-xs font-mono">
-            <span class="font-bold text-rose-400 flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-              WORKER #${item.worker_id}
-            </span>
-            <span class="text-[10px] text-vms-slateMuted">${item.timestamp}</span>
-          </div>
-          <div class="flex flex-wrap gap-1">${vBadges}</div>
-          <div class="flex items-center justify-between text-[10px] font-mono text-vms-slateMuted pt-1 border-t border-slate-800/80">
-            <span>Conf: ${(item.confidence * 100).toFixed(1)}% &bull; Dur: ${item.violation_duration_frames}f</span>
-            ${item.snapshot_filename ? `
-              <button onclick="viewSnapshot('${item.snapshot_filename}', ${item.worker_id})" class="text-blue-400 hover:text-blue-300 font-semibold underline text-[10px]">
-                Inspect Snapshot
-              </button>
-            ` : ''}
+      let html = '';
+      alerts.forEach((item, idx) => {
+        const hasNoHelmet = item.violations.some(v => v.toLowerCase().includes('helmet'));
+        const severityTag = hasNoHelmet ? 'CRITICAL' : 'WARNING';
+        const severityBadgeClass = hasNoHelmet 
+          ? 'bg-rose-950/90 text-rose-400 border border-rose-800' 
+          : 'bg-amber-950/90 text-amber-400 border border-amber-800';
+
+        const vBadges = item.violations.map(v => {
+          const label = v.replace(/_/g, ' ');
+          const isCrit = v.toLowerCase().includes('helmet');
+          return `<span class="px-1.5 py-0.5 rounded font-mono font-semibold text-[10px] ${
+            isCrit ? 'bg-rose-950/80 border border-rose-800 text-rose-300' : 'bg-amber-950/80 border border-amber-800 text-amber-300'
+          }">${label}</span>`;
+        }).join(' ');
+
+        html += `
+          <div class="bg-vms-card border border-rose-900/40 rounded-lg p-2.5 hover:border-rose-700/60 transition shadow-sm flex flex-col space-y-1.5">
+            <div class="flex items-center justify-between text-xs font-mono">
+              <div class="flex items-center space-x-1.5">
+                <span class="w-1.5 h-1.5 rounded-full ${hasNoHelmet ? 'bg-rose-500' : 'bg-amber-500'}"></span>
+                <span class="font-bold text-white">WORKER #${item.worker_id}</span>
+                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${severityBadgeClass}">${severityTag}</span>
+              </div>
+              <span class="text-[10px] text-vms-slateMuted">${item.timestamp}</span>
+            </div>
+            
+            <div class="flex flex-wrap gap-1 pt-0.5">${vBadges}</div>
+            
+            <div class="flex items-center justify-between text-[10px] font-mono text-vms-slateMuted pt-1.5 border-t border-slate-800/80">
+              <span>Conf: ${(item.confidence * 100).toFixed(1)}% &bull; Dur: ${item.violation_duration_frames}f</span>
+              ${item.snapshot_filename ? `
+                <button onclick="viewSnapshot('${item.snapshot_filename}', ${item.worker_id})" class="px-2 py-0.5 rounded bg-blue-950/70 hover:bg-blue-900 border border-blue-800/60 text-blue-300 hover:text-white font-mono text-[10px] font-semibold transition flex items-center gap-1 shadow-sm">
+                  <svg class="w-3 h-3 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>Evidence</span>
+                </button>
+              ` : ''}
+            </div>
           </div>
         `;
-        container.appendChild(card);
       });
+      container.innerHTML = html;
     }
 
     // 8. Modal & Video Controls
@@ -1085,6 +1183,8 @@
         body: JSON.stringify({ video_source: sel })
       });
       if (res.ok) {
+        lastWorkersSignature = '';
+        lastAlertsSignature = '';
         reloadStream();
         updateWorkersList();
       }
@@ -1102,6 +1202,8 @@
       if (res.ok) {
         const data = await res.json();
         alert('Loaded and streaming: ' + data.filename);
+        lastWorkersSignature = '';
+        lastAlertsSignature = '';
         reloadStream();
         updateWorkersList();
       } else {
@@ -1125,6 +1227,8 @@
         if (res.ok) {
           const data = await res.json();
           alert('Model deployed successfully: ' + sel);
+          lastWorkersSignature = '';
+          lastAlertsSignature = '';
           reloadStream();
           updateWorkersList();
           loadInitialStatus();
@@ -1269,6 +1373,7 @@
       document.getElementById('alertsCountBadge').innerText = '0 Incidents';
       const placeholder = document.getElementById('noAlertsPlaceholder');
       if (placeholder) placeholder.style.display = 'flex';
+      lastAlertsSignature = 'empty';
     }
   </script>
 </body>

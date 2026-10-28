@@ -120,6 +120,9 @@ class CCTVSurveillancePipeline:
         self.cap: Optional[cv2.VideoCapture] = None
         self.stream_fps: float = 30.0
         self.frame_stride: int = 1
+        self.frame_width: int = 1920
+        self.frame_height: int = 1080
+        self.latest_active_track_ids: List[int] = []
         self._init_video_capture()
 
         # Telemetry state (with EMA alpha = 0.25)
@@ -162,13 +165,19 @@ class CCTVSurveillancePipeline:
             print(f"⚠️ Warning: Could not open video source: {src}")
             self.stream_fps = 30.0
             self.frame_stride = 1
+            self.frame_width = 1920
+            self.frame_height = 1080
         else:
             src_fps = self.cap.get(cv2.CAP_PROP_FPS)
             self.stream_fps = src_fps if (src_fps and src_fps > 0) else 30.0
+            src_w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            src_h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            self.frame_width = src_w if src_w > 0 else 1920
+            self.frame_height = src_h if src_h > 0 else 1080
             # For ~60 FPS streams (e.g. 59.94 FPS), process every 2nd frame to cut compute by 50%
             # and achieve real-time 30 FPS playback instead of slow motion
             self.frame_stride = 2 if self.stream_fps >= 50.0 else 1
-            print(f"📹 Opened Video Source: {src} (Stream FPS: {self.stream_fps:.1f}, Stride: {self.frame_stride})")
+            print(f"📹 Opened Video Source: {src} ({self.frame_width}x{self.frame_height} @ {self.stream_fps:.1f} FPS, Stride: {self.frame_stride})")
 
     def switch_source(self, new_source: str):
         """Switches video simulation stream dynamically with clean slate."""
@@ -577,7 +586,9 @@ class CCTVSurveillancePipeline:
                     reid_registry.profiles[wid].violations = r["violations"]
                     if r.get("helmet_color") and r["helmet_color"] != "none":
                         reid_registry.profiles[wid].helmet_color = r["helmet_color"]
-            reid_registry.update_frame_end([r["track_id"] for r in worker_reports], self.total_frames_processed)
+            active_ids = [r["track_id"] for r in worker_reports]
+            self.latest_active_track_ids = active_ids
+            reid_registry.update_frame_end(active_ids, self.total_frames_processed)
 
             # 4. Enqueue Confirmed Violation Alerts to Dispatcher
             for alert in alert_events:
@@ -832,6 +843,14 @@ class CCTVSurveillancePipeline:
     def get_telemetry(self) -> Dict[str, Any]:
         """Returns structured metrics for real-time dashboard analytics."""
         with self.lock:
+            focus_status = None
+            if self.focus_track_id is not None:
+                focus_status = "ACTIVE" if (self.focus_track_id in self.latest_active_track_ids) else "LOST"
+
+            reg_workers = reid_registry.get_registered_workers(filter_ghosts=True)
+            active_reg_count = sum(1 for w in reg_workers if w.get("is_active"))
+            bitrate_mbps = round(max(1.2, min(15.0, (self.fps_rolling * 95.0 * 1024 * 8) / 1_000_000)), 1) if self.fps_rolling > 0 else 0.0
+
             return {
                 "timestamp": time.time(),
                 "fps": round(self.fps_rolling, 1),
@@ -845,9 +864,14 @@ class CCTVSurveillancePipeline:
                 "device": self.detector.device.upper(),
                 "model_path": Path(self.detector.model_path).name,
                 "video_source": Path(str(self.source_path)).name,
+                "resolution": f"{self.frame_width}x{self.frame_height}",
+                "stream_fps": round(self.stream_fps, 1),
+                "bitrate_mbps": bitrate_mbps,
                 "total_frames": self.total_frames_processed,
                 "focus_track_id": self.focus_track_id,
-                "registered_workers_count": len(reid_registry.get_registered_workers(filter_ghosts=True)),
+                "focus_status": focus_status,
+                "active_registered_count": active_reg_count,
+                "registered_workers_count": len(reg_workers),
             }
 
 

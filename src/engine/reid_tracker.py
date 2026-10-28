@@ -703,7 +703,7 @@ class PersistentTrackRegistry:
             # Purge transient unconfirmed tracks that were lost > 90 frames ago (false positives / noise)
             dead_ghosts = [
                 wid for wid, p in self.profiles.items()
-                if not p.is_active and not p.is_confirmed and p.total_frames_seen < 10 and (frame_idx - p.last_seen_frame) > 90
+                if not p.is_active and (p.total_frames_seen < 15 or not p.is_confirmed) and (frame_idx - p.last_seen_frame) > 90
             ]
             for wid in dead_ghosts:
                 self.profiles.pop(wid, None)
