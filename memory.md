@@ -1496,4 +1496,39 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
 | **Video 2 (UHD 4K 30 FPS)** | `13921040-uhd_3840_2160_30fps.mp4` | 60 frames trong 3.77s (**15.9 FPS**), Latency: **18.5 - 20.7ms** | Phát hiện chuẩn xác 13 vi phạm, Telegram gửi ảnh thành công |
 | **Trạng thái Docker Host** | `docker-compose.edge-simulation.yml` | `docker ps` trả về bảng rỗng (**0 container chạy**) | Toàn bộ tài nguyên CPU / GPU VRAM máy chủ đã được thu hồi an toàn |
 
+---
+
+## 48. CẨM NANG VẬN HÀNH LOCAL GPU & DOCKER EDGE SIMULATION, MINH BẠCH SUB-AGENTS VÀ FORENSIC CRASH CONTAINER (OCTOBER 2026)
+
+### 48.1. Minh Bạch Hoạt Động Của Các Sub-agents Trong Hệ Thống
+1. **Danh sách các Sub-agents đã xuất hiện trong UI**:
+   - `Lead AI Systems & Deployment Engineer`: Sub-agent điều phối chính được giao nhiệm vụ giải quyết tận gốc 5 lỗi kỹ thuật (tràn số FP16 CoordConv, Re-ID cướp ID, cắt biên giả vi phạm, Telegram gửi ảnh và tối ưu độ trễ).
+   - `Improvement Coding Worker` & `Layer 0 Coding Worker`: Các tiến trình con (sub-threads) chạy cô lập trong sandbox để:
+     * Viết và chạy 52 bài test kiểm thử tự động `pytest`.
+     * Benchmark trực tiếp 2 luồng video mục tiêu (`construction_site_workers_1080p.mp4` và `13921040-uhd_3840_2160_30fps.mp4`).
+     * Kiểm thử container Docker và xác nhận đóng container an toàn.
+2. **Trạng thái hiện tại**:
+   - Toàn bộ sub-agents đã **hoàn thành 100%** công việc, commit code `5cb3dc1` lên GitHub `origin/main`, và đã **tự động đóng/hủy hoàn toàn**, không còn bất kỳ tiến trình nào chạy ngầm.
+
+### 48.2. Giám Định Pháp Y Nguyên Nhân Docker Không Mở Được (Forensic Audit)
+1. **Tại sao Docker Desktop ban đầu hiện "No containers are running"**:
+   - Theo đúng yêu cầu nghiêm ngặt của người dùng nhằm tránh lag máy, ngay sau khi kiểm thử xong, sub-agent đã chạy `docker compose down` để giải phóng 100% VRAM và CPU máy chủ.
+2. **Tại sao khi người dùng bấm nút "Run" trên Image trong Docker Desktop lại bị văng (Exit code 1)**:
+   - *Log thực tế thu được từ container `happy_faraday`*:
+     `FileNotFoundError: Model weights file not found: /app/yolo11s.pt`
+   - *Nguyên nhân kỹ thuật*: Khi bấm nút "Run" trực tiếp trên tab **Images** của Docker Desktop, Docker chỉ chạy một lệnh `docker run` trần trụi (không mount thư mục `./Output` chứa weights từ máy thật, không cấp quyền GPU NVIDIA, không map port 8080:8000). Container không tìm thấy file trọng số trong thư mục `/app/Output/` nên rơi vào fallback `/app/yolo11s.pt` và crash ngay lập tức.
+   - *Khắc phục chuẩn mực*: Khởi động thông qua Compose hoặc bấm Start trên Container đã được compose cấu hình sẵn.
+
+### 48.3. Hướng Dẫn Vận Hành 2 Chế Độ
+1. **Chế độ 1: Local GPU (Khuyên dùng nhất - Nhanh, Nhẹ, Trực tiếp)**:
+   - Click đúp vào file `run_local.bat` ở thư mục gốc (hoặc chạy `python scripts/run_local_dashboard.py` trong CMD).
+   - Truy cập: `http://localhost:8000`.
+   - Tắt: Nhấn `Ctrl + C` tại cửa sổ lệnh.
+2. **Chế độ 2: Docker Edge Simulation (Mô phỏng Edge Node)**:
+   - Khởi động qua script: Click đúp `start_docker_edge.bat` (hoặc chạy `docker compose -f docker-compose.edge-simulation.yml up -d`).
+   - Khởi động qua Docker Desktop GUI: Vào tab **Containers**, tìm `cctv_safety_edge_simulation_node` và click nút **Start (▶)**.
+   - Truy cập: `http://localhost:8080`.
+   - Dừng container: Click đúp `stop_docker_edge.bat` (hoặc bấm nút **Stop ⏹** trong Docker Desktop).
+
+
 
