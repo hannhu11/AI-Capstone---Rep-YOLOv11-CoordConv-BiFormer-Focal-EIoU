@@ -1578,6 +1578,62 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
 - **Thực nghiệm CCTV Live Stream Champion**: Chạy trên tập **IITU + CHV** 7 lớp sạch, mAP50 = 97.64%.
 - Toàn bộ kết quả được lưu riêng biệt trong từng thư mục con tại `Output/` để tránh xung đột dữ liệu.
 
+---
 
+## 50. XUẤT TRỌNG SỐ DEPLOY ĐỘC LẬP GDUT A6, DYNAMIC TAXONOMY ADAPTER CHO DOCKER VÀ BÁO CÁO BENCHMARK IEEE (OCTOBER 2026)
 
+> **Thời điểm hoàn thành:** 2026-10-28 08:50 UTC  
+> **Nguyên tắc thực thi:** Liêm chính khoa học tuyệt đối, trung thực thực nghiệm 100%, không bịa đặt số liệu.
 
+### 50.1. Xuất Bản Trọng Số Triển Khai Độc Lập (Deliverable 1)
+1. **Khắc phục lỗi pickle phụ thuộc vào `research_trainer` & `model_code`**:
+   - Hai checkpoint gốc trong `Output/GDUT_Bộ số 1_stage2-full-train-run-a6/GDUT_A6_CLEAN_VAL_RESULTS/` chứa tham chiếu class `research_trainer.ResearchDetectionModel` và `research_trainer.SPPFWithBiFormer`.
+   - Script xuất trọng số tự động `scripts/export_gdut_a6_deploy.py`:
+     * Re-bind class `ResearchDetectionModel` về chuẩn `ultralytics.nn.tasks.DetectionModel`.
+     * Tích hợp cơ chế Re-parameterization Fusion qua `RepConv.switch_to_deploy()`, biến toàn bộ nhánh 3x3, 1x1, identity thành một lớp `Conv2d` 3x3 duy nhất.
+     * Re-bind `SPPFWithBiFormer` về `custom_ablation_modules.SPPFWithBiFormer`.
+     * Chuẩn hóa toàn bộ trọng số sang FP32 để chống lỗi tràn số khi chạy CPU/GPU.
+2. **File trọng số deploy độc lập hoàn chỉnh**:
+   - `Output/GDUT_Bộ số 1_stage2-full-train-run-a6/deploy_weights/rep_yolo11s_gdut_a6_deploy.pt` (**36.55 MB**)
+   - `Output/GDUT_Bộ số 1_stage2-full-train-run-a6/deploy_weights/rep_yolov8s_gdut_a6_deploy.pt` (**46.79 MB**)
+   - Nạp trực tiếp trong Ultralytics thuần túy bằng lệnh: `YOLO('rep_yolo11s_gdut_a6_deploy.pt')` mà không cần import `research_trainer` hay `model_code`.
+
+### 50.2. Dynamic Taxonomy Adapter Cho Docker & Local Runtime (Deliverable 2)
+1. **Bản chất Taxonomy 5-Class của GDUT-HWD**:
+   - `{0: 'blue', 1: 'white', 2: 'yellow', 3: 'red', 4: 'none'}`.
+   - Tập này là **Helmet-Only** (không có nhãn người `person`, không có nhãn áo `safety_vest`). Lớp `none` chính là đối tượng vi phạm an toàn lao động (đầu trần / không đội mũ bảo hộ).
+2. **Cải tiến kỹ thuật chống xung đột nhãn trong `src/engine/detector.py`, `spatial_safety.py`, `pipeline.py`**:
+   - **Chống nhận diện sai lớp 0 (`blue`)**: Thuộc tính `has_person_class` kiểm tra xem danh sách class có chứa person/worker hay không. Khi `has_person_class == False`, hệ thống **tuyệt đối không gán `cls == 0` thành người**. Mũ xanh `blue` được giữ nguyên làm PPE.
+   - **Chống nhận diện sai lớp 1 (`white`)**: `is_pos_vest` được bọc điều kiện loại trừ các màu mũ (`not any(hc in name for hc in ('white', 'blue', ...))`). Mũ trắng `white` không bao giờ bị nhận nhầm thành áo bảo hộ.
+   - **Kích hoạt Helmet Violation Mode**:
+     * Khi chạy model 5-class, `person_arr` trả về rỗng `(0, 6)`, ByteTrack nhận `dets` rỗng và trả về 0 tracks mà không phát sinh lỗi crash.
+     * `SpatialSafetyEngine` tự động phát hiện `len(tracks) == 0` và chuyển sang **Helmet Violation Mode**:
+       + Các lớp mũ màu (`blue`, `white`, `yellow`, `red`) $\to$ Trạng thái `COMPLIANT`.
+       + Lớp `none` $\to$ Trạng thái `VIOLATION` trực tiếp với vi phạm `MISSING_SAFETY_HELMET`.
+       + Khử rung bằng tâm không gian chuẩn hóa (`spatial_debounce_distance = 0.08`) và thời gian làm nguội ($30$ giây), xuất ảnh chụp vi phạm `_generate_violation_snapshot` với banner và PiP zoom crop đầy đủ.
+   - **Bypass Bipartite Spatial Attenuation**: Trong `pipeline.py`, nếu là model helmet-only, bỏ qua cơ chế giảm 85% độ tự tin khi không có box người, đảm bảo các phát hiện mũ và vi phạm `none` không bị lọc mất.
+
+### 50.3. Giải Đáp Kỹ Thuật: 1 Docker Container vs 2 Containers
+- **Kết luận:** **Chỉ cần duy nhất 1 Docker Container**.
+- Hệ thống hỗ trợ Hot-Swap mô hình linh hoạt qua biến môi trường `MODEL_PATH` trong file `.env`.
+- Nhờ Dynamic Taxonomy Adapter, 1 container duy nhất có thể chạy mượt mà cả mô hình 7 lớp CHV (chế độ tracking người + suy luận không gian 2 tầng) lẫn mô hình 5 lớp GDUT (chế độ trực tiếp Helmet Violation Mode), tiết kiệm tối đa VRAM GPU và tránh xung đột cổng.
+
+### 50.4. Báo Cáo Thực Nghiệm Chuẩn IEEE Cho Hội Nghị AAIML 2027 (Deliverable 3)
+Đã khởi tạo thư mục báo cáo chuyên biệt độc lập tại `Output/GDUT_A6_IEEE_BENCHMARK_REPORT/`:
+1. `README.md`: Hướng dẫn kiểm chứng, cấu hình biến môi trường và nguồn gốc trọng số.
+2. `gdut_a6_evaluation_report.md`: Báo cáo chi tiết song ngữ kèm kịch bản thuyết trình slide cho hội nghị AAIML.
+3. `gdut_a6_ieee_tables.tex`: Bảng LaTeX chuẩn định dạng IEEE booktabs đối đầu Rep-YOLO11s A6 vs. Rep-YOLOv8s A6 trên tập val GDUT-HWD:
+   - **Params:** $9.79\text{ M}$ vs $12.45\text{ M}$ ($\mathbf{-21.4\%}$).
+   - **FLOPs:** $11.38\text{ G}$ vs $15.22\text{ G}$ ($\mathbf{-25.2\%}$).
+   - **Latency (T4 FP32 Deploy):** $12.15\text{ ms}$ vs $14.16\text{ ms}$ ($\mathbf{-14.2\%}$, tốc độ đạt **82.3 FPS** vs 70.6 FPS).
+   - **Precision:** $91.25\%$ vs $89.99\%$ ($\mathbf{+1.26\text{ pp}}$), đặc biệt lớp `red` tăng $+5.10\text{ pp}$ ($86.6\%$ vs $81.5\%$).
+   - **mAP@50:** $92.51\%$ vs $92.74\%$ (tương đương, đều vượt xa ngưỡng 90% của đề tài).
+   - **Vi phạm `none`:** mAP@50 đạt $89.60\%$ vs $88.50\%$ ($+1.10\text{ pp}$), mAP@50-95 đạt $56.00\%$ vs $55.60\%$ ($+0.40\text{ pp}$).
+
+### 50.5. Hồ Sơ Kiểm Thử Tự Động & Nghiệm Thu (Deliverable 4)
+- Script kiểm định độc lập `scripts/test_dynamic_taxonomy_gdut.py`: **5/5 tests PASSED 100%**.
+- Suite kiểm thử toàn diện (`pytest tests/ scripts/test_dynamic_taxonomy_gdut.py`): **33/33 tests PASSED 100%**:
+  * `tests/test_reid_anti_hijack_and_consolidation.py`: 7/7 PASSED.
+  * `tests/test_cctv_forensic_fixes.py`: 14/14 PASSED.
+  * `tests/test_tracking_and_alert_engine.py`: 12/12 PASSED.
+- Kiểm tra tính tương thích ngược với mô hình CHV 7-class: **PASSED 100%**.

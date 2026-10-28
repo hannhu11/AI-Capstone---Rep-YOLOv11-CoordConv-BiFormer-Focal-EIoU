@@ -13,6 +13,7 @@ import time
 import warnings
 import torch
 import numpy as np
+import threading
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 
@@ -77,6 +78,7 @@ class SafetyObjectDetector:
             self.device = device if torch.cuda.is_available() and device.startswith("cuda") else "cpu"
 
         self.use_half = use_half and self.device.startswith("cuda")
+        self.infer_lock = threading.Lock()
         self.yolo: Optional[YOLO] = None
         self.class_names: Dict[int, str] = {}
         self.load_model(self.model_path)
@@ -91,11 +93,18 @@ class SafetyObjectDetector:
         if not target_path.exists():
             raise FileNotFoundError(f"Model weights file not found: {model_path}")
 
-        print(f"🔄 Loading Detection Model: {target_path}")
         self.yolo = YOLO(str(target_path))
         self.class_names = self.yolo.names
 
-        # Disable FP16 for models containing custom modules (CoordConv, BiFormerBlockLite)
+        # Dynamic Taxonomy Detection (Supports GDUT 5-class, CHV 7-class, SHWD 2-class)
+        names_lower = [str(n).lower() for n in self.class_names.values()]
+        self.has_person_class = any("person" in n or "worker" in n or "human" in n for n in names_lower)
+        self.has_vest_class = any("vest" in n for n in names_lower)
+        self.is_helmet_only = (not self.has_person_class) and any(
+            n in ("blue", "white", "yellow", "red", "green", "none", "no_helmet", "helmet") for n in names_lower
+        )
+        if self.is_helmet_only:
+            print("🪖 [Taxonomy Adapter] Detected Helmet-Only model (e.g. GDUT 5-class). Person tracking bypassed; activating direct Helmet Violation Mode.")
         # to eliminate numerical overflow that produces ghost clusters on the floor
         has_custom_modules = False
         if hasattr(self.yolo, "model") and hasattr(self.yolo.model, "modules"):
@@ -149,12 +158,13 @@ class SafetyObjectDetector:
         if self.use_half and "cuda" in str(self.device).lower():
             predict_kwargs["half"] = True
 
-        with torch.inference_mode():
-            if self.use_half and "cuda" in str(self.device).lower():
-                with torch.amp.autocast("cuda"):
+        with self.infer_lock:
+            with torch.inference_mode():
+                if self.use_half and "cuda" in str(self.device).lower():
+                    with torch.amp.autocast("cuda"):
+                        results = self.yolo.predict(frame_bgr, **predict_kwargs)
+                else:
                     results = self.yolo.predict(frame_bgr, **predict_kwargs)
-            else:
-                results = self.yolo.predict(frame_bgr, **predict_kwargs)
         latency_ms = (time.perf_counter() - t0) * 1000.0
 
         all_detections: List[Dict[str, Any]] = []
@@ -180,10 +190,11 @@ class SafetyObjectDetector:
                     all_detections.append(det_dict)
 
                 # Collect person detections specifically for tracking (down to track_low_thresh 0.15)
-                has_person_class = any("person" in n.lower() or "worker" in n.lower() or "human" in n.lower() for n in self.class_names.values())
-                is_person = ("person" in c_name or "worker" in c_name or "human" in c_name) if has_person_class else (cls_id == 0)
-                if is_person:
-                    person_raw.append([x1, y1, x2, y2, conf_score, cls_id])
+                # Only if the model defines a person/worker class. Never mistake cls_id == 0 (e.g. blue helmet) for person!
+                if self.has_person_class:
+                    is_person = ("person" in c_name or "worker" in c_name or "human" in c_name)
+                    if is_person:
+                        person_raw.append([x1, y1, x2, y2, conf_score, cls_id])
 
         person_arr = np.array(person_raw, dtype=np.float32) if person_raw else np.empty((0, 6), dtype=np.float32)
         return all_detections, person_arr, latency_ms

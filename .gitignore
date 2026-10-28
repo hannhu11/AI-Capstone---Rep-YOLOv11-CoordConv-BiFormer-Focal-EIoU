@@ -27,7 +27,8 @@ events.out.tfevents.*
 *.onnx
 *.engine
 *.bin
-Output/
+Output/*
+!Output/GDUT_A6_IEEE_BENCHMARK_REPORT/
 runs/
 exported_engines/
 
@@ -57,3 +58,4 @@ video_test/
 *.engine
 ~$*
 Dò notebook Số liệu của dũng và thành/
+snapshots/

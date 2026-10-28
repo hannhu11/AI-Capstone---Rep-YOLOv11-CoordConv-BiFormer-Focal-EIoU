@@ -45,19 +45,24 @@ class KalmanFilter:
             mean: 8-dimensional state vector
             covariance: 8x8 covariance matrix
         """
-        mean_pos = measurement
+        meas = np.asarray(measurement, dtype=np.float32).copy()
+        if np.isnan(meas).any() or np.isinf(meas).any():
+            meas = np.array([0.0, 0.0, 0.4, 100.0], dtype=np.float32)
+        h_m = max(1.0, float(meas[3]))
+        meas[3] = h_m
+        mean_pos = meas
         mean_vel = np.zeros_like(mean_pos)
         mean = np.r_[mean_pos, mean_vel]
 
         std = [
-            2 * self._std_weight_position * measurement[3],
-            2 * self._std_weight_position * measurement[3],
+            2 * self._std_weight_position * h_m,
+            2 * self._std_weight_position * h_m,
             1e-2,
-            2 * self._std_weight_position * measurement[3],
-            10 * self._std_weight_velocity * measurement[3],
-            10 * self._std_weight_velocity * measurement[3],
+            2 * self._std_weight_position * h_m,
+            10 * self._std_weight_velocity * h_m,
+            10 * self._std_weight_velocity * h_m,
             1e-5,
-            10 * self._std_weight_velocity * measurement[3],
+            10 * self._std_weight_velocity * h_m,
         ]
         covariance = np.diag(np.square(std))
         return mean, covariance
@@ -113,16 +118,18 @@ class KalmanFilter:
         """
         projected_mean, projected_cov = self.project(mean, covariance)
 
-        # Cholesky factorization for stable inversion
-        chol_factor, lower = np.linalg.cholesky(projected_cov), True
-        kalman_gain = np.linalg.solve(
-            projected_cov,
-            np.dot(covariance, self._update_mat.T).T
-        ).T
-
-        innovation = measurement - projected_mean
-        new_mean = mean + np.dot(innovation, kalman_gain.T)
-        new_covariance = covariance - np.linalg.multi_dot((kalman_gain, projected_cov, kalman_gain.T))
+        try:
+            chol_factor, lower = np.linalg.cholesky(projected_cov), True
+            kalman_gain = np.linalg.solve(
+                projected_cov,
+                np.dot(covariance, self._update_mat.T).T
+            ).T
+            innovation = measurement - projected_mean
+            new_mean = mean + np.dot(innovation, kalman_gain.T)
+            new_covariance = covariance - np.linalg.multi_dot((kalman_gain, projected_cov, kalman_gain.T))
+        except np.linalg.LinAlgError:
+            new_mean = mean.copy()
+            new_covariance = covariance.copy()
 
         # Kalman Height Velocity Damping: clamp vertical height velocity |v_h| <= 0.15 * h
         h = max(1.0, float(new_mean[3]))

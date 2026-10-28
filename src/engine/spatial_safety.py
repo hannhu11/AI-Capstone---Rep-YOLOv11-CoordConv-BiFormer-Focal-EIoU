@@ -200,10 +200,10 @@ class SpatialSafetyEngine:
                 positive_helmets.append({"box": box, "cls": cls_id, "name": name, "color": color, "conf": conf, "is_stationary_furniture": d.get("is_stationary_furniture", False)})
                 continue
 
-            # Check positive safety vest
+            # Check positive safety vest (Must NEVER classify helmet colors like 'white' as vest)
             is_pos_vest = (
-                cls_id == 1
-                or ("vest" in name and not any(neg in name for neg in ("no_", "no-", "without", "none")))
+                ("vest" in name and not any(neg in name for neg in ("no_", "no-", "without", "none")))
+                or (cls_id == 1 and not any(hc in name for hc in ("white", "blue", "yellow", "red", "green", "helmet", "none")))
             )
             if is_pos_vest:
                 positive_vests.append({"box": box, "cls": cls_id, "name": name, "conf": conf})
@@ -211,6 +211,97 @@ class SpatialSafetyEngine:
         worker_reports: List[Dict[str, Any]] = []
         alert_events: List[Dict[str, Any]] = []
         h_frame, w_frame = frame_bgr.shape[:2]
+
+        # -------------------------------------------------------------
+        # HELMET VIOLATION MODE (e.g. GDUT 5-class helmet-only dataset)
+        # When no worker body tracks exist (len(tracks) == 0) but helmet / head detections are present:
+        # Directly evaluate head-level safety:
+        # - Positive helmets (blue, white, yellow, red) -> COMPLIANT
+        # - Negative helmets ('none' / no_helmet) -> DIRECT VIOLATION (MISSING_SAFETY_HELMET)
+        # -------------------------------------------------------------
+        if len(tracks) == 0 and (len(positive_helmets) > 0 or len(negative_helmets) > 0):
+            # 1. Process positive helmets as compliant heads
+            for idx, h in enumerate(positive_helmets):
+                hb = h["box"]
+                h_col = h.get("color", "unknown")
+                h_conf = float(h.get("conf", 1.0))
+                worker_reports.append({
+                    "track_id": f"HEAD_P_{idx+1}",
+                    "bbox": [round(float(v), 1) for v in hb[:4]],
+                    "confidence": round(h_conf, 3),
+                    "has_helmet": True,
+                    "helmet_color": h_col,
+                    "stable_helmet_color": h_col,
+                    "has_safety_vest": True,  # Safety vest not part of helmet-only taxonomy
+                    "status": "COMPLIANT",
+                    "violations": [],
+                    "violation_streak": 0,
+                    "compliance_streak": 1,
+                    "is_alerted": False,
+                    "is_at_border": False,
+                    "tracklet_len": 1,
+                    "matched_helmet_box": hb,
+                    "matched_vest_box": None,
+                })
+
+            # 2. Process negative helmets ('none' = bare head) as direct violations
+            for idx, nh in enumerate(negative_helmets):
+                nb = nh["box"]
+                n_conf = float(nh.get("conf", 1.0))
+                rep_id = f"HEAD_V_{idx+1}"
+                v_report = {
+                    "track_id": rep_id,
+                    "bbox": [round(float(v), 1) for v in nb[:4]],
+                    "confidence": round(n_conf, 3),
+                    "has_helmet": False,
+                    "helmet_color": "none",
+                    "stable_helmet_color": "none",
+                    "has_safety_vest": True,
+                    "status": "VIOLATION",
+                    "violations": ["MISSING_SAFETY_HELMET"],
+                    "violation_streak": 1,
+                    "compliance_streak": 0,
+                    "is_alerted": True,
+                    "is_at_border": False,
+                    "tracklet_len": 1,
+                    "matched_helmet_box": None,
+                    "matched_vest_box": None,
+                }
+                worker_reports.append(v_report)
+
+                # Spatial-Centroid Alert Debouncing (prevent duplicate alerts within cooldown & radius)
+                nx1, ny1, nx2, ny2 = [float(v) for v in nb[:4]]
+                norm_cx = (nx1 + nx2) / (2.0 * max(1, w_frame))
+                norm_cy = (ny1 + ny2) / (2.0 * max(1, h_frame))
+                is_spatially_debounced = any(
+                    np.hypot(norm_cx - rcx, norm_cy - rcy) < self.spatial_debounce_distance
+                    for rcx, rcy, _ in self.recent_alert_centroids
+                )
+
+                if not is_spatially_debounced and n_conf >= 0.25:
+                    self.recent_alert_centroids.append((norm_cx, norm_cy, now))
+                    snapshot_filename, snapshot_path, crop_filename, crop_path = self._generate_violation_snapshot(
+                        frame_bgr, v_report, camera_id, now_str
+                    )
+                    alert_events.append({
+                        "alert_id": f"ALERT-HEAD-{int(now * 1000) % 1000000}-{idx+1}",
+                        "camera_id": camera_id,
+                        "worker_id": rep_id,
+                        "timestamp": now_str,
+                        "violations": ["MISSING_SAFETY_HELMET"],
+                        "has_helmet": False,
+                        "helmet_color": "none",
+                        "has_vest": True,
+                        "confidence": v_report["confidence"],
+                        "violation_duration_frames": 1,
+                        "snapshot_filename": snapshot_filename,
+                        "snapshot_path": str(snapshot_path),
+                        "crop_filename": crop_filename,
+                        "crop_path": str(crop_path),
+                        "bbox": v_report["bbox"],
+                    })
+
+            return worker_reports, alert_events
 
         for track in tracks:
             # 1. State check: Reject removed tracks and tracks with time_since_update > 2

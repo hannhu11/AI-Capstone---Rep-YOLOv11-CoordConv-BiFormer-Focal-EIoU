@@ -88,6 +88,38 @@ def hist_correlation(h1: Optional[np.ndarray], h2: Optional[np.ndarray]) -> floa
     return float(cv2.compareHist(h1, h2, cv2.HISTCMP_CORREL))
 
 
+def compute_lower_body_hist(frame: Optional[np.ndarray], box: np.ndarray) -> Optional[np.ndarray]:
+    """
+    Computes a normalized 2D HSV color histogram (12 Hue bins, 8 Saturation bins)
+    from the lower-body ROI (pants/trousers: 60% - 95% height, 15% - 85% width).
+    Returns None if lower body is truncated by frame boundaries or invalid.
+    """
+    if frame is None:
+        return None
+    h_img, w_img = frame.shape[:2]
+    x1, y1, x2, y2 = [float(v) for v in box[:4]]
+    bw = max(1.0, x2 - x1)
+    bh = max(1.0, y2 - y1)
+
+    # If legs are clipped by bottom frame border (within 25px of bottom), pants are cut off
+    if y2 >= (h_img - 25):
+        return None
+
+    ly1 = int(max(0, min(h_img - 1, y1 + 0.60 * bh)))
+    ly2 = int(max(ly1 + 1, min(h_img, y1 + 0.95 * bh)))
+    lx1 = int(max(0, min(w_img - 1, x1 + 0.15 * bw)))
+    lx2 = int(max(lx1 + 1, min(w_img, x2 - 0.15 * bw)))
+
+    crop = frame[ly1:ly2, lx1:lx2]
+    if crop.size == 0 or crop.shape[0] < 4 or crop.shape[1] < 4:
+        return None
+
+    hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+    hist = cv2.calcHist([hsv], [0, 1], None, [12, 8], [0, 180, 0, 256])
+    cv2.normalize(hist, hist, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
+    return hist.flatten().astype(np.float32)
+
+
 class PersistentWorkerProfile:
     """Persistent identity and historical profile of a tracked worker."""
 
@@ -98,6 +130,7 @@ class PersistentWorkerProfile:
         helmet_color: Optional[str] = None,
         hist: Optional[np.ndarray] = None,
         frame_idx: int = 0,
+        frame: Optional[np.ndarray] = None,
     ):
         self.worker_id = worker_id
         self.initial_box = np.asarray(box[:4], dtype=np.float32).copy()
@@ -124,6 +157,18 @@ class PersistentWorkerProfile:
             self.hist_gallery.append(hist)
         self.hist = hist
 
+        # Lower-body appearance (pants/trousers) to distinguish workers with identical safety vests
+        self.lower_hist = compute_lower_body_hist(frame, box) if frame is not None else None
+        self.lower_hist_gallery: deque[np.ndarray] = deque(maxlen=5)
+        if self.lower_hist is not None:
+            self.lower_hist_gallery.append(self.lower_hist)
+
+        # Aspect ratio / build history (distinguishes stout vs slender workers)
+        bw = max(1.0, float(box[2] - box[0]))
+        bh = max(1.0, float(box[3] - box[1]))
+        self.aspect_history: deque[float] = deque(maxlen=30)
+        self.aspect_history.append(bw / bh)
+
         # Historical motion trajectory (bottom-center coordinates)
         bx_center = float((box[0] + box[2]) / 2.0)
         by_bottom = float(box[3])
@@ -139,6 +184,7 @@ class PersistentWorkerProfile:
         status: str = "COMPLIANT",
         violations: Optional[List[str]] = None,
         frame_shape: Optional[Tuple[int, int]] = None,
+        frame: Optional[np.ndarray] = None,
     ):
         dt = max(1, frame_idx - self.last_seen_frame)
         prev_cx = (self.last_box[0] + self.last_box[2]) / 2.0
@@ -195,6 +241,22 @@ class PersistentWorkerProfile:
         by_bottom = float(box[3])
         self.trajectory.append((bx_center, by_bottom))
 
+        bw = max(1.0, float(box[2] - box[0]))
+        bh = max(1.0, float(box[3] - box[1]))
+        self.aspect_history.append(bw / bh)
+
+        if frame is not None:
+            l_hist = compute_lower_body_hist(frame, box)
+            if l_hist is not None:
+                if self.lower_hist is None:
+                    self.lower_hist = l_hist
+                    self.lower_hist_gallery.append(l_hist)
+                else:
+                    self.lower_hist = 0.85 * self.lower_hist + 0.15 * l_hist
+                    max_l_sim = max([hist_correlation(h, l_hist) for h in self.lower_hist_gallery]) if self.lower_hist_gallery else 0.0
+                    if max_l_sim < 0.85 and len(self.lower_hist_gallery) < 5:
+                        self.lower_hist_gallery.append(l_hist)
+
     def get_max_appearance_sim(self, candidate_hist: np.ndarray) -> float:
         """Finds maximum correlation across all stored perspective views."""
         if candidate_hist is None or np.all(candidate_hist == 0):
@@ -203,6 +265,20 @@ class PersistentWorkerProfile:
         if self.hist is not None:
             sims.append(hist_correlation(self.hist, candidate_hist))
         return max(sims) if sims else 0.0
+
+    def get_max_lower_appearance_sim(self, candidate_hist: Optional[np.ndarray]) -> float:
+        """Finds maximum correlation across stored lower-body views."""
+        if candidate_hist is None or np.all(candidate_hist == 0):
+            return 0.0
+        sims = [hist_correlation(h, candidate_hist) for h in self.lower_hist_gallery]
+        if self.lower_hist is not None:
+            sims.append(hist_correlation(self.lower_hist, candidate_hist))
+        return max(sims) if sims else 0.0
+
+    def get_mean_aspect_ratio(self) -> float:
+        if not self.aspect_history:
+            return 0.38
+        return float(sum(self.aspect_history) / len(self.aspect_history))
 
     def coexisted_with(self, other: PersistentWorkerProfile) -> bool:
         """Returns True if self and other were active during overlapping frame windows."""
@@ -366,6 +442,9 @@ class PersistentTrackRegistry:
         d_cx = (box[0] + box[2]) / 2.0
         d_cy = (box[1] + box[3]) / 2.0
         dh = max(1.0, box[3] - box[1])
+        cand_bw = max(1.0, float(box[2] - box[0]))
+        cand_aspect = cand_bw / dh
+        cand_lower_hist = compute_lower_body_hist(frame, box)
         is_candidate_near_border = (
             box[0] <= 50 or box[1] <= 50 or box[2] >= w_img - 50 or box[3] >= h_img - 50
         )
@@ -381,14 +460,60 @@ class PersistentTrackRegistry:
             if is_candidate_near_border and p.last_seen_near_border and sim_color < 0.50:
                 continue
 
+            # Single-Worker Scene Prior: If only 1 worker profile exists in the entire registry,
+            # no active workers exist, and appearance matches (sim_color >= 0.35), reassociate directly.
+            # This handles long occlusions, crouching, and re-entry across distant parts of the frame.
+            if len(self.profiles) == 1 and len(inactive_profiles) == 1 and len(active_profiles) == 0:
+                p.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img), frame=frame)
+                self.raw_to_canonical[raw_track_id] = p.worker_id
+                return p.worker_id
+
             dt = max(1, frame_idx - p.last_seen_frame)
             pred_cx = (p.last_box[0] + p.last_box[2]) / 2.0 + p.vx * min(dt, 30)
             pred_cy = (p.last_box[1] + p.last_box[3]) / 2.0 + p.vy * min(dt, 30)
 
             dist_norm = np.sqrt((pred_cx - d_cx)**2 + (pred_cy - d_cy)**2) / diag
 
+            # -------------------------------------------------------------
+            # FIX 2: TEMPORAL & SPATIAL CONTINUITY GATING (ANTI-HIJACKING)
+            # -------------------------------------------------------------
+            # For workers gone for more than 150 frames (~5-10s):
+            # Do NOT reassign them based solely on orange vest!
+            # Require spatial continuity. If gone for a long time without spatial continuity, allocate a NEW ID!
+            if dt > 150:
+                # Single-Worker Scene Prior: If only 1 worker profile exists in the entire registry, preserve Worker #1
+                if len(self.profiles) == 1:
+                    pass
+                else:
+                    p_last_cx = (p.last_box[0] + p.last_box[2]) / 2.0
+                    p_last_cy = (p.last_box[1] + p.last_box[3]) / 2.0
+                    border_dist = np.hypot(p_last_cx - d_cx, p_last_cy - d_cy) / diag
+                    is_same_border = (is_candidate_near_border and p.last_seen_near_border and border_dist <= 0.15)
+
+                    if not is_same_border and dist_norm > 0.12:
+                        continue
+                    # If gone for more than 350 frames without looping, mint a new ID!
+                    if dt > 350 and not self.is_looping_phase:
+                        continue
+
+            # LOWER BODY / PANTS COLOR CHECK
+            # If both have visible pants, compare lower-body HSV signature
+            if cand_lower_hist is not None and p.lower_hist is not None:
+                sim_lower = p.get_max_lower_appearance_sim(cand_lower_hist)
+                if sim_lower < 0.25:
+                    # Clear pants color mismatch (e.g. blue jeans vs grey trousers)
+                    continue
+
+            # ASPECT RATIO / BUILD CHECK (Stout vs Slender)
+            p_aspect = p.get_mean_aspect_ratio()
+            if abs(cand_aspect - p_aspect) > 0.12 and dt > 30:
+                continue
+
+            # Prohibit match if spatial position is completely disconnected
             sigma_pos = min(0.35, 0.15 + 0.005 * dt)
             sim_pos = np.exp(- (dist_norm**2) / (2 * sigma_pos**2))
+            if sim_pos < 0.05 and not (is_candidate_near_border and p.last_seen_near_border):
+                continue
 
             # Helmet color logic: DO NOT PENALIZE MISSING HELMET / VIOLATION
             if helmet_color is not None and p.helmet_color is not None:
@@ -433,7 +558,7 @@ class PersistentTrackRegistry:
 
         if best_match_id is not None:
             profile = self.profiles[best_match_id]
-            profile.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img))
+            profile.update(box, frame_idx, helmet_color=helmet_color, hist=hist, frame_shape=(h_img, w_img), frame=frame)
             self.raw_to_canonical[raw_track_id] = best_match_id
             return best_match_id
 
@@ -447,6 +572,7 @@ class PersistentTrackRegistry:
             helmet_color=helmet_color,
             hist=hist,
             frame_idx=frame_idx,
+            frame=frame,
         )
         new_profile.last_seen_near_border = is_candidate_near_border
         self.profiles[canonical_id] = new_profile
@@ -501,7 +627,28 @@ class PersistentTrackRegistry:
                     ):
                         continue
 
-                # 3. High appearance correlation across galleries
+                # 3. Temporal gap check: Must be within 150 frames of each other
+                time_gap = abs(p_candidate.first_frame - p_primary.last_seen_frame)
+                if time_gap > 150:
+                    continue
+
+                # 4. Spatial proximity check: Candidate must start near where primary ended
+                prim_cx = (p_primary.last_box[0] + p_primary.last_box[2]) / 2.0
+                prim_cy = (p_primary.last_box[1] + p_primary.last_box[3]) / 2.0
+                cand_cx = (p_candidate.initial_box[0] + p_candidate.initial_box[2]) / 2.0
+                cand_cy = (p_candidate.initial_box[1] + p_candidate.initial_box[3]) / 2.0
+                dist_sep = np.hypot(prim_cx - cand_cx, prim_cy - cand_cy)
+                is_same_border = (p_primary.last_seen_near_border and p_candidate.last_seen_near_border and dist_sep <= 200.0)
+                if dist_sep > 120.0 and not is_same_border:
+                    continue
+
+                # 5. Lower-body / Pants check if available
+                if p_primary.lower_hist is not None and p_candidate.lower_hist is not None:
+                    l_sim = hist_correlation(p_primary.lower_hist, p_candidate.lower_hist)
+                    if l_sim < 0.40:
+                        continue
+
+                # 6. High appearance correlation across galleries (>= 0.70 to avoid merging distinct workers in uniform vests)
                 max_sim = 0.0
                 for h1 in p_primary.hist_gallery:
                     for h2 in p_candidate.hist_gallery:
@@ -509,11 +656,14 @@ class PersistentTrackRegistry:
                         if sim > max_sim:
                             max_sim = sim
 
-                if max_sim >= 0.45:
+                if max_sim >= 0.70:
                     # MERGE p_candidate into p_primary
                     for h in p_candidate.hist_gallery:
                         if len(p_primary.hist_gallery) < 5:
                             p_primary.hist_gallery.append(h)
+                    for lh in p_candidate.lower_hist_gallery:
+                        if len(p_primary.lower_hist_gallery) < 5:
+                            p_primary.lower_hist_gallery.append(lh)
                     p_primary.total_frames_seen += p_candidate.total_frames_seen
                     p_primary.active_intervals.extend(p_candidate.active_intervals)
                     p_primary.last_seen_frame = max(p_primary.last_seen_frame, p_candidate.last_seen_frame)

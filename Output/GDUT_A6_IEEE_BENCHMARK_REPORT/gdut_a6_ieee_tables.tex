@@ -1,0 +1,65 @@
+% ==============================================================================
+% IEEE TRANSACTIONS / CONFERENCE FORMAT TABLES: GDUT-HWD BENCHMARK
+% Rep-YOLO11s A6 (Proposed) vs. Rep-YOLOv8s A6 (Baseline)
+% Stage 2 Full-Fusion Ablation (CoordConv + RepConv + BiFormer + Focal-EIoU)
+% ==============================================================================
+
+% Requires in preamble:
+% \usepackage{booktabs}
+% \usepackage{multirow}
+% \usepackage{siunitx}
+
+% ------------------------------------------------------------------------------
+% TABLE I: OVERALL EFFICIENCY AND DETECTION PERFORMANCE COMPARISON ON GDUT-HWD
+% ------------------------------------------------------------------------------
+\begin{table*}[t]
+\centering
+\caption{Comprehensive Architectural Complexity, Latency, and Detection Benchmark on the GDUT-HWD Validation Set (316 Images, 1,738 Objects).}
+\label{tab:gdut_overall_benchmark}
+\small
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccccc@{}}
+\toprule
+\textbf{Model Architecture} & \textbf{Params} & \textbf{FLOPs} & \textbf{Latency} & \textbf{Throughput} & \textbf{Precision} & \textbf{Recall} & \textbf{mAP@50} & \textbf{mAP@50-95} \\
+ & (M) & (G) & (ms)$^{\dagger}$ & (FPS) & (\%) & (\%) & (\%) & (\%) \\
+\midrule
+Rep-YOLOv8s A6 (Baseline) & 12.45 & 15.22 & 14.16 & 70.6 & 89.99 & \textbf{87.01} & \textbf{92.74} & \textbf{61.42} \\
+\textbf{Rep-YOLO11s A6 (Proposed)} & \textbf{9.79} & \textbf{11.38} & \textbf{12.15} & \textbf{82.3} & \textbf{91.25} & \textbf{87.01} & 92.51 & 61.31 \\
+\midrule
+\textit{Relative Difference ($\Delta$)} & \textbf{-21.4\%} & \textbf{-25.2\%} & \textbf{-14.2\%} & \textbf{+16.6\%} & \textbf{+1.26 pp} & \textit{0.00 pp} & \textit{-0.23 pp} & \textit{-0.11 pp} \\
+\bottomrule
+\end{tabular*}
+\begin{flushleft}
+\footnotesize $^{\dagger}$ End-to-end inference latency evaluated on NVIDIA Tesla T4 GPU with input resolution $640 \times 640$ after full RepConv structural re-parameterization.
+\end{flushleft}
+\end{table*}
+
+% ------------------------------------------------------------------------------
+% TABLE II: GRANULAR PER-CLASS PERFORMANCE BREAKDOWN ON GDUT-HWD
+% ------------------------------------------------------------------------------
+\begin{table*}[t]
+\centering
+\caption{Granular Per-Class Detection Performance Comparison on the GDUT-HWD Dataset Across 5 Head/PPE Categories.}
+\label{tab:gdut_per_class_benchmark}
+\small
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llcccccc@{}}
+\toprule
+\textbf{Class Category} & \textbf{Evaluation Split} & \textbf{Images} & \textbf{Instances} & \textbf{Precision (\%)} & \textbf{Recall (\%)} & \textbf{mAP@50 (\%)} & \textbf{mAP@50-95 (\%)} \\
+\midrule
+\multicolumn{8}{l}{\textbf{Rep-YOLOv8s A6 (Baseline Stage 2 Full Fusion)}} \\
+\quad Blue Helmet (\texttt{blue})    & Validation & 84  & 258 & 91.00 & 86.00 & 91.70 & 63.70 \\
+\quad White Helmet (\texttt{white})  & Validation & 123 & 349 & 91.80 & \textbf{90.40} & \textbf{94.80} & \textbf{63.80} \\
+\quad Yellow Helmet (\texttt{yellow})& Validation & 137 & 448 & 92.60 & 86.90 & \textbf{94.40} & \textbf{60.90} \\
+\quad Red Helmet (\texttt{red})      & Validation & 97  & 279 & 81.50 & \textbf{92.10} & 94.00 & 63.10 \\
+\quad No Helmet Violation (\texttt{none}) & Validation & 96 & 404 & \textbf{92.50} & 78.90 & 88.50 & 55.60 \\
+\quad \textit{All Classes Combined}  & Validation & 316 & 1,738 & 89.99 & \textbf{87.01} & \textbf{92.74} & \textbf{61.42} \\
+\midrule
+\multicolumn{8}{l}{\textbf{Rep-YOLO11s A6 (Proposed Architecture)}} \\
+\quad Blue Helmet (\texttt{blue})    & Validation & 84  & 258 & \textbf{92.60} & \textbf{87.00} & \textbf{91.70} & 63.10 \\
+\quad White Helmet (\texttt{white})  & Validation & 123 & 349 & \textbf{91.90} & 88.30 & 93.80 & \textbf{63.80} \\
+\quad Yellow Helmet (\texttt{yellow})& Validation & 137 & 448 & \textbf{92.80} & \textbf{90.20} & 93.30 & 60.00 \\
+\quad Red Helmet (\texttt{red})      & Validation & 97  & 279 & \textbf{86.60} & 90.30 & \textbf{94.20} & \textbf{63.30} \\
+\quad No Helmet Violation (\texttt{none}) & Validation & 96 & 404 & 91.50 & \textbf{79.70} & \textbf{89.60} & \textbf{56.00} \\
+\quad \textit{All Classes Combined}  & Validation & 316 & 1,738 & \textbf{91.25} & \textbf{87.01} & 92.51 & 61.31 \\
+\bottomrule
+\end{tabular*}
+\end{table*}

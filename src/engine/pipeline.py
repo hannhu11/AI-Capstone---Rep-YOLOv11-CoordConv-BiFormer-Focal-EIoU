@@ -36,6 +36,7 @@ CLASS_COLORS = {
     "red": (0, 0, 255),
     "white": (230, 230, 230),
     "yellow": (0, 230, 255),
+    "none": (0, 0, 255),               # Alert Red for missing helmet
 }
 
 
@@ -458,9 +459,12 @@ class CCTVSurveillancePipeline:
             # Bipartite Spatial Association Filter (Root Cause 1a) & Luminance Gating (Root Cause 2)
             filtered_detections: List[Dict[str, Any]] = []
             h_frame, w_frame = frame.shape[:2]
+            is_helmet_only = getattr(self.detector, "is_helmet_only", False)
+            has_person_class = getattr(self.detector, "has_person_class", True)
 
             for d in detections:
-                if d["cls"] == 0 or "person" in d["name"]:
+                is_person_cls = "person" in d["name"] or "worker" in d["name"] or (has_person_class and d["cls"] == 0)
+                if is_person_cls:
                     filtered_detections.append(d)
                     continue
 
@@ -470,7 +474,7 @@ class CCTVSurveillancePipeline:
 
                 # Luminance / Value Gating for blue_helmet candidates (Root Cause 2)
                 # Sample candidate crop; if mean HSV Value V < 95, reject as dark hair / shadowed head texture
-                if d["name"] == "blue_helmet" or d.get("color") == "blue" or d["cls"] == 2:
+                if d["name"] == "blue_helmet" or d["name"] == "blue" or d.get("color") == "blue" or (has_person_class and d["cls"] == 2):
                     bx1, by1, bx2, by2 = [int(round(v)) for v in d["box"][:4]]
                     bx1 = max(0, min(w_frame - 1, bx1))
                     by1 = max(0, min(h_frame - 1, by1))
@@ -485,7 +489,8 @@ class CCTVSurveillancePipeline:
 
                 # Geometric Hardhat Plausibility Filter:
                 # Reject flat furniture / table surfaces (aspect ratio > 2.20) detected as helmets
-                if "helmet" in d["name"] or d["cls"] in (2, 3, 4, 5, 6):
+                is_any_helmet = "helmet" in d["name"] or d["name"] in ("blue", "white", "yellow", "red", "green", "none") or (has_person_class and d["cls"] in (2, 3, 4, 5, 6))
+                if is_any_helmet:
                     bx1, by1, bx2, by2 = d["box"][:4]
                     bw = max(1.0, bx2 - bx1)
                     bh = max(1.0, by2 - by1)
@@ -493,19 +498,22 @@ class CCTVSurveillancePipeline:
                         continue
 
                 # Bipartite Spatial Association Filter (Eq. 24):
-                # Attenuate isolated PPE confidences by kappa = 0.15 if no person box overlaps by >= 25%
+                # For models with person classes: Attenuate isolated PPE confidences by kappa = 0.15 if no person box overlaps by >= 25%
+                # For helmet-only models (e.g. GDUT 5-class): Bypass attenuation so valid helmet/violation detections are preserved!
                 orig_conf = d["conf"]
-                max_overlap = 0.0
-                if len(person_dets) > 0:
-                    is_helmet = "helmet" in d["name"] or d["cls"] in (2, 3, 4, 5, 6)
-                    for p_box in person_dets:
-                        ov = compute_box_intersection_ratio(
-                            d["box"], p_box[:4], use_upper_torso=is_helmet, upper_torso_ratio=0.60
-                        )
-                        if ov > max_overlap:
-                            max_overlap = ov
+                if is_helmet_only:
+                    effective_conf = orig_conf
+                else:
+                    max_overlap = 0.0
+                    if len(person_dets) > 0:
+                        for p_box in person_dets:
+                            ov = compute_box_intersection_ratio(
+                                d["box"], p_box[:4], use_upper_torso=is_any_helmet, upper_torso_ratio=0.60
+                            )
+                            if ov > max_overlap:
+                                max_overlap = ov
+                    effective_conf = orig_conf if max_overlap >= 0.25 else orig_conf * 0.15
 
-                effective_conf = orig_conf if max_overlap >= 0.25 else orig_conf * 0.15
                 if effective_conf >= 0.25:
                     d_c = dict(d)
                     d_c["conf"] = round(effective_conf, 4)
@@ -729,8 +737,10 @@ class CCTVSurveillancePipeline:
         # -------------------------------------------------------------
 
         # Draw PPE equipment boxes (helmets and vests)
+        has_person_class = getattr(self.detector, "has_person_class", True)
         for d in detections:
-            if d["cls"] != 0 and "person" not in d["name"]:
+            is_worker_body = "person" in d["name"] or "worker" in d["name"] or (has_person_class and d["cls"] == 0)
+            if not is_worker_body:
                 c_name = d["name"]
                 color = CLASS_COLORS.get(c_name, (0, 230, 255))
                 x1, y1, x2, y2 = [int(v) for v in d["box"]]

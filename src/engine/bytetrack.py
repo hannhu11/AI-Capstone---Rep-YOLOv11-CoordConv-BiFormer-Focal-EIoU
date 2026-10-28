@@ -141,7 +141,17 @@ class STrack:
         mean_state = self.mean.copy()
         if self.state != TrackState.Tracked:
             mean_state[7] = 0
+        h = max(1.0, float(mean_state[3]))
+        # Clamp velocity components to physical human limits
+        mean_state[4] = np.clip(mean_state[4], -0.25 * h, 0.25 * h)
+        mean_state[5] = np.clip(mean_state[5], -0.25 * h, 0.25 * h)
+        mean_state[6] = np.clip(mean_state[6], -0.05, 0.05)
+        mean_state[7] = np.clip(mean_state[7], -0.15 * h, 0.15 * h)
         self.mean, self.covariance = self.kalman_filter.predict(mean_state, self.covariance)
+        if np.isnan(self.mean).any() or np.isinf(self.mean).any():
+            self.mean = mean_state
+        if np.isnan(self.covariance).any() or np.isinf(self.covariance).any():
+            self.covariance = np.eye(8, dtype=np.float32) * 10.0
         self.time_since_update += 1
 
     def mark_lost(self):
@@ -161,11 +171,14 @@ class STrack:
     @property
     def tlwh(self) -> np.ndarray:
         """Get current position in bounding box format `(top left x, top left y, width, height)`."""
-        if self.mean is None:
+        if self.mean is None or np.isnan(self.mean).any() or np.isinf(self.mean).any():
             return self._tlwh.copy()
         ret = self.mean[:4].copy()
         h = max(float(ret[3]), 1.0)
-        a = max(float(ret[2]), 1e-4)
+        a = float(ret[2])
+        if np.isnan(a) or np.isinf(a):
+            a = 0.40
+        a = max(0.05, min(a, 4.0))
         w = max(a * h, 1.0)
         ret[2] = w
         ret[3] = h
@@ -183,16 +196,23 @@ class STrack:
     def tlwh_to_xyah(tlwh: np.ndarray) -> np.ndarray:
         """Convert bounding box to `(center x, center y, aspect ratio, height)`."""
         ret = np.asarray(tlwh, dtype=np.float32).copy()
+        if np.isnan(ret).any() or np.isinf(ret).any():
+            return np.array([0.0, 0.0, 0.40, 100.0], dtype=np.float32)
         ret[:2] += ret[2:] / 2
         h = max(float(ret[3]), 1e-4)
-        ret[2] /= h
+        w = max(float(ret[2]), 1e-4)
+        ret[2] = w / h
         ret[3] = h
         return ret
 
     @staticmethod
     def tlbr_to_tlwh(tlbr: np.ndarray) -> np.ndarray:
         ret = np.asarray(tlbr, dtype=np.float32).copy()
+        if np.isnan(ret).any() or np.isinf(ret).any():
+            return np.array([0.0, 0.0, 40.0, 100.0], dtype=np.float32)
         ret[2:] -= ret[:2]
+        ret[2] = max(float(ret[2]), 1.0)
+        ret[3] = max(float(ret[3]), 1.0)
         return ret
 
 
@@ -517,6 +537,27 @@ class BYTETracker:
         if self.grace_period > 0:
             for track in self.lost_stracks:
                 if track.is_activated and 1 <= track.time_since_update <= self.grace_period:
+                    # GHOST BOX ELIMINATION:
+                    # 1. Require activated tracklet, eliminating unconfirmed spurious detections
+                    if not track.is_activated:
+                        continue
+                    # 2. Kalman filter validity: no NaN or Inf
+                    if track.mean is None or np.isnan(track.mean).any() or np.isinf(track.mean).any():
+                        continue
+                    # 3. Suppress tracks with excessive velocity or diverged covariance
+                    if np.hypot(track.mean[4], track.mean[5]) > 60.0:
+                        continue
+                    if track.covariance is not None and np.trace(track.covariance[:2, :2]) > 5000.0:
+                        continue
+                    b = track.tlbr
+                    bw = b[2] - b[0]
+                    bh = b[3] - b[1]
+                    if bw < 10 or bh < 25 or (bw / max(1.0, bh)) > 3.5:
+                        continue
+                    if frame is not None:
+                        fh, fw = frame.shape[:2]
+                        if b[2] < -50 or b[0] > fw + 50 or b[3] < -50 or b[1] > fh + 50:
+                            continue
                     track.is_predicted = True
                     output_stracks.append(track)
 

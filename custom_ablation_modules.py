@@ -267,6 +267,42 @@ class BiFormerBlockLite(nn.Module):
         pass
 
 
+class SPPFWithBiFormer(nn.Module):
+    """Retain the YOLOv8 SPPF and apply attention to its P5 output."""
+
+    def __init__(self, sppf: nn.Module, attention: nn.Module) -> None:
+        super().__init__()
+        self.sppf = sppf
+        self.attention = attention
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.attention(self.sppf(x))
+
+
+class BiFormerSequentialWrapper(nn.Module):
+    """Sequential wrapper for SPPF and BiFormer attention (supports both orig_layer and layer attributes)."""
+
+    def __init__(self, orig_layer: nn.Module, biformer: nn.Module) -> None:
+        super().__init__()
+        self.orig_layer = orig_layer
+        self.layer = orig_layer
+        self.biformer = biformer
+        self.type = "BiFormerSequentialWrapper"
+        self.scale = nn.Parameter(torch.zeros(1))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        base_layer = getattr(self, "orig_layer", getattr(self, "layer", None))
+        orig_out = base_layer(x) if base_layer is not None else x
+        if hasattr(self, "scale"):
+            return orig_out + self.scale * self.biformer(orig_out)
+        return self.biformer(orig_out)
+
+    def fuse(self) -> None:
+        base_layer = getattr(self, "orig_layer", getattr(self, "layer", None))
+        if base_layer is not None and hasattr(base_layer, "fuse"):
+            base_layer.fuse()
+
+
 def xywh_to_xyxy(boxes: torch.Tensor) -> torch.Tensor:
     x, y, w, h = boxes.unbind(-1)
     half_w = w / 2
@@ -391,6 +427,21 @@ def smoke_test() -> None:
     pred = torch.tensor([[0.5, 0.5, 0.2, 0.2], [0.4, 0.4, 0.1, 0.2]])
     target = torch.tensor([[0.5, 0.5, 0.2, 0.2], [0.45, 0.4, 0.1, 0.2]])
     print({"focal_eiou": float(focal_eiou_loss(pred, target))})
+
+
+# Register custom research modules into ultralytics and global namespaces
+try:
+    import ultralytics.nn.modules as _un_mod
+    import ultralytics.nn.tasks as _un_tasks
+    import sys as _sys
+    _main = _sys.modules.get("__main__")
+    for _cls in (ConvBNAct, CoordConv, RepConv, BiFormerBlockLite, SPPFWithBiFormer, BiFormerSequentialWrapper):
+        setattr(_un_mod, _cls.__name__, _cls)
+        setattr(_un_tasks, _cls.__name__, _cls)
+        if _main is not None:
+            setattr(_main, _cls.__name__, _cls)
+except Exception:
+    pass
 
 
 if __name__ == "__main__":
