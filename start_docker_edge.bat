@@ -23,14 +23,33 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-:: Verify Docker Daemon is running
+:: Verify Docker Daemon is running (auto-launch if inactive)
 docker info >nul 2>&1
 if %ERRORLEVEL% neq 0 (
-    echo [ERROR] Docker daemon is not running!
-    echo Please launch Docker Desktop and wait until the whale icon stops animating, then re-run this script.
-    pause
-    exit /b 1
+    echo [WARNING] Docker daemon is not active. Attempting to launch Docker Desktop...
+    if exist "%LOCALAPPDATA%\Programs\DockerDesktop\Docker Desktop.exe" (
+        start "" "%LOCALAPPDATA%\Programs\DockerDesktop\Docker Desktop.exe"
+    ) else if exist "C:\Program Files\Docker\Docker\Docker Desktop.exe" (
+        start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+    )
+    echo [*] Waiting for Docker daemon to initialize...
+    set /a d_attempts=0
+    :DOCKER_WAIT
+    set /a d_attempts+=1
+    timeout /t 2 /nobreak >nul
+    docker info >nul 2>&1
+    if !ERRORLEVEL! equ 0 goto DOCKER_READY
+    if !d_attempts! geq 30 (
+        echo.
+        echo [ERROR] Docker daemon did not initialize in time.
+        echo Please ensure Docker Desktop is open and running, then re-run this script.
+        pause
+        exit /b 1
+    )
+    <nul set /p=.
+    goto DOCKER_WAIT
 )
+:DOCKER_READY
 
 :: Ensure .env exists
 if not exist "%~dp0.env" (
@@ -93,5 +112,6 @@ start http://localhost:8080
 echo.
 echo [COMMANDS]:
 echo - Live logs: docker logs -f cctv_safety_edge_simulation_node
+echo - Restart container: restart_docker_edge.bat
 echo - Stop container: stop_docker_edge.bat
 pause

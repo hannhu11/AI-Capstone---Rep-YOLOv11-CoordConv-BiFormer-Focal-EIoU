@@ -1689,8 +1689,12 @@ Người dùng **KHÔNG** cần phải sửa file `.env` mỗi lần muốn đ�
 
 ### 51.3. Hồ Sơ Kiểm Thử & Nghiệm Thu
 - `scripts/test_dynamic_taxonomy_gdut.py`: PASS 100%.
-- `pytest tests/`: 96/96 tests PASS 100%.
+- `pytest tests/`: 97/97 tests PASS 100% (bổ sung bài test `test_api_switch_model_hot_swap` kiểm thử toàn diện hoán đổi GDUT <-> CHV và xử lý lỗi đường dẫn sai 400).
+- Tự động hóa Docker Desktop: Tích hợp cơ chế tự động phát hiện và khởi động Docker Desktop (`Docker Desktop.exe`) nếu daemon chưa chạy trong `start_docker_edge.bat`.
+- Bổ sung `restart_docker_edge.bat` và chuẩn hóa `stop_docker_edge.bat` với đường dẫn Docker trong PATH và kiểm tra an toàn `%~dp0`.
+- Bổ sung mô hình GDUT YOLOv8s baseline (`rep_yolov8s_gdut_a6_deploy.pt`) vào menu thả xuống của Dashboard Web UI.
 - Kiểm thử thực tế `switch_to_gdut.bat`: Exit code 0, phản hồi JSON hợp lệ, kích hoạt `is_helmet_only: true`.
 - Kiểm thử thực tế `switch_to_champion.bat`: Exit code 0, phản hồi JSON hợp lệ, kích hoạt `is_helmet_only: false`.
 - Kiểm thử thực tế `start_docker_edge.bat`: Exit code 0, phát hiện container khỏe mạnh `Up (healthy)`, HTTP 200 OK.
+
 

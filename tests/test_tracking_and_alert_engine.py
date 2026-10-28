@@ -365,3 +365,32 @@ def test_bytetrack_grace_period_rendering():
     # Frame 4: 3rd frame dip (exceeds grace period of 2)
     tracks4 = tracker.update(np.empty((0, 6), dtype=np.float32))
     assert len(tracks4) == 0  # Dropped from active output
+
+
+def test_api_switch_model_hot_swap():
+    """Verify POST /api/switch_model dynamically hot-swaps models, alters taxonomy mode, and handles missing files."""
+    client = TestClient(app)
+
+    # 1. Test invalid model path returns 400
+    res_bad = client.post("/api/switch_model", json={"model_path": "non_existent_weights.pt"})
+    assert res_bad.status_code == 400
+    assert "Failed to load model" in res_bad.json()["detail"]
+
+    # 2. Hot-swap to GDUT 5-Class Helmet-Only Model
+    gdut_path = "Output/GDUT_Bộ số 1_stage2-full-train-run-a6/deploy_weights/rep_yolo11s_gdut_a6_deploy.pt"
+    res_gdut = client.post("/api/switch_model", json={"model_path": gdut_path})
+    assert res_gdut.status_code == 200
+    data_gdut = res_gdut.json()
+    assert data_gdut["status"] == "success"
+    assert data_gdut["is_helmet_only"] is True
+    assert "none" in data_gdut["classes"].values()
+
+    # 3. Hot-swap back to Champion 7-Class Person + PPE Relational Model
+    chv7_path = "Output/kaggle_results/hannhu40022_warmstart_ablations/rep_yolo11s_chv7_best_deploy.pt"
+    res_chv7 = client.post("/api/switch_model", json={"model_path": chv7_path})
+    assert res_chv7.status_code == 200
+    data_chv7 = res_chv7.json()
+    assert data_chv7["status"] == "success"
+    assert data_chv7["is_helmet_only"] is False
+    assert "person" in data_chv7["classes"].values()
+
