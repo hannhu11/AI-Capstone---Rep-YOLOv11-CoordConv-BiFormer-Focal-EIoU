@@ -444,10 +444,11 @@ class CCTVSurveillancePipeline:
 
                 # Luminance / Value Gating for blue_helmet candidates (Root Cause 2)
                 # Sample candidate crop; if mean HSV Value V < 95, reject as dark hair / shadowed head texture
+                d_name_l = str(d.get("name", "")).lower()
                 is_blue_cand = (
-                    d["name"] in ("blue_helmet", "blue")
+                    "blue" in d_name_l
                     or d.get("color") == "blue"
-                    or (has_person_class and d["cls"] == 2 and "yellow" not in str(d["name"]).lower())
+                    or (has_person_class and d["cls"] == 2 and (not d_name_l or d_name_l.isdigit()))
                 )
                 if is_blue_cand:
                     bx1, by1, bx2, by2 = [int(round(v)) for v in d["box"][:4]]
@@ -464,7 +465,15 @@ class CCTVSurveillancePipeline:
 
                 # Geometric Hardhat Plausibility Filter:
                 # Reject flat furniture / table surfaces (aspect ratio > 2.20) detected as helmets
-                is_any_helmet = "helmet" in d["name"] or d["name"] in ("blue", "white", "yellow", "red", "green", "none") or (has_person_class and d["cls"] in (2, 3, 4, 5, 6))
+                is_any_helmet = (
+                    "vest" not in d_name_l
+                    and "person" not in d_name_l
+                    and (
+                        "helmet" in d_name_l
+                        or d_name_l in ("blue", "white", "yellow", "red", "green", "none")
+                        or (has_person_class and d["cls"] in (2, 3, 4, 5, 6) and (not d_name_l or d_name_l.isdigit()))
+                    )
+                )
                 if is_any_helmet:
                     bx1, by1, bx2, by2 = d["box"][:4]
                     bw = max(1.0, bx2 - bx1)
@@ -522,7 +531,9 @@ class CCTVSurveillancePipeline:
                 tw = max(1.0, tb[2] - tb[0])
                 tcx = (tb[0] + tb[2]) / 2.0
                 for d in detections:
-                    if "helmet" in d["name"]:
+                    dn = str(d.get("name", "")).lower()
+                    is_h = ("helmet" in dn or dn in ("blue", "white", "yellow", "red", "green")) and "vest" not in dn
+                    if is_h:
                         hb = d["box"]
                         hcx = (hb[0] + hb[2]) / 2.0
                         hw = max(0.0, hb[2] - hb[0])
@@ -536,7 +547,13 @@ class CCTVSurveillancePipeline:
                         if hw > 1.05 * tw or (hw / max(1.0, hh)) > 2.20:
                             continue
                         if not (hb[2] < tb[0] or hb[0] > tb[2] or hb[3] < tb[1] or hb[1] > tb[1] + 0.42 * th):
-                            matched_color = d.get("color") or d["name"].replace("_helmet", "")
+                            c = d.get("color")
+                            if not c:
+                                for col in ("yellow", "blue", "green", "red", "white"):
+                                    if col in dn:
+                                        c = col
+                                        break
+                            matched_color = c or dn.replace("_helmet", "").replace("-helmet", "")
                             break
                 canonical_id = reid_registry.get_or_create_canonical_id(
                     raw_track_id=track.track_id,

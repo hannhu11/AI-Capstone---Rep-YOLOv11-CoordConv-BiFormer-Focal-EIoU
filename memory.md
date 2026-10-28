@@ -1803,6 +1803,18 @@ Dưới đây là danh mục toàn diện, minh bạch và chính xác về mọ
 ---
 
 ### 52.5. Kết Quả Kiểm Thử Pháp Y Sau Cải Tiến
-- Toàn bộ test suite `pytest tests/`: **101/101 bài test PASS 100%** trong 12.19 giây.
+- Toàn bộ test suite `pytest tests/`: **103/103 bài test PASS 100%** trong 11.78 giây.
 - `scripts/test_dynamic_taxonomy_gdut.py`: **PASS 100%** (xác nhận GDUT cls=2 nhận diện chính xác thành `yellow`, 0 alert giả).
-- `tests/test_stationary_worker_ppe.py`: **PASS 100%** (xác nhận công nhân đứng yên 100 frames liên tiếp giữ vững 100% tuân thủ bảo hộ, không bị mất bounding box, không bị xóa PPE).
+- `tests/test_stationary_worker_ppe.py`: **6/6 bài test PASS 100%** (xác nhận công nhân đứng yên 100 frames liên tiếp giữ vững 100% tuân thủ bảo hộ, không bị mất bounding box, không bị xóa PPE; xác nhận áo phản quang và người với các class ID khác nhau không bao giờ bị nhận nhầm thành mũ bảo hộ).
+- Toàn bộ thư mục `src/web/`: **0 icon emoji rác** (quét mã Unicode xác nhận sạch 100%).
+
+---
+
+### 52.6. Khắc Phục Bổ Sung: Triệt Tiêu Xung Đột Áo Phản Quang Bị Nhận Nhầm Thành Mũ Trắng Do Fallback Class ID
+1. **Phát hiện pháp y (Forensic finding)**:
+   - Trong quá trình kiểm tra chéo đa tập dữ liệu (Cross-Taxonomy Audit), phát hiện trường hợp mô hình 7 lớp có thứ tự nhãn gán `safety_vest` vào `cls_id = 5` hoặc `cls_id = 2`.
+   - Do điều kiện `cls_id in HELMET_COLOR_MAP` (vốn chứa `{2: 'blue', 3: 'green', 4: 'red', 5: 'white', 6: 'yellow'}`) được đánh giá trước khi kiểm tra áo phản quang, detection `safety_vest` bị gán nhầm thành mũ bảo hộ màu trắng (`white_helmet`), dẫn đến việc công nhân mặc áo phản quang nhưng lại bị báo vi phạm thiếu áo `MISSING_SAFETY_VEST`.
+2. **Khắc phục**:
+   - Thêm điều kiện sàng lọc nghiêm ngặt: Tuyệt đối không cho phép bất kỳ detection nào chứa từ khóa `vest`, `person`, `worker`, `human` được lọt vào danh sách mũ bảo hộ `positive_helmets`.
+   - Đưa việc nhận diện áo phản quang (`is_pos_vest`) lên kiểm tra trước, và chỉ sử dụng `HELMET_COLOR_MAP` fallback khi `name` bị rỗng hoặc là chuỗi số nguyên thuần túy.
+   - Đồng bộ hóa logic lọc mũ trong `pipeline.py` (dòng 447, 467, 533) để đảm bảo đồng nhất 100% giữa detector, tracking và spatial engine.

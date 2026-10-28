@@ -129,3 +129,53 @@ class TestStationaryWorkerPPE:
         assert len(pipeline.stationary_furniture_tracker) == 0, "switch_model must clear stationary_furniture_tracker"
         assert len(pipeline.confirmed_furniture_zones) == 0, "switch_model must clear confirmed_furniture_zones"
         assert pipeline.stationary_next_id == 1
+
+    def test_vest_with_arbitrary_cls_never_becomes_helmet(self):
+        """
+        When a dataset assigns safety_vest to cls_id in (2, 3, 4, 5, 6) (e.g. cls=5),
+        SpatialSafetyEngine must recognize it as a safety vest, NOT as a white/blue helmet.
+        """
+        safety = SpatialSafetyEngine()
+        dummy_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+
+        person_box = np.array([100.0, 100.0, 200.0, 400.0], dtype=np.float32)
+        track = STrack(STrack.tlbr_to_tlwh(person_box), score=0.92, cls_id=0)
+        track.track_id = 42
+        track.is_activated = True
+
+        # Vest with cls=5 (which is in legacy HELMET_COLOR_MAP as white)
+        # and yellow helmet with cls=6
+        detections = [
+            {"box": [115.0, 100.0, 185.0, 170.0], "cls": 6, "name": "yellow_helmet", "conf": 0.95},
+            {"box": [110.0, 180.0, 190.0, 320.0], "cls": 5, "name": "safety_vest", "conf": 0.93},
+        ]
+
+        reports, alerts = safety.evaluate_frame([track], detections, dummy_frame, is_helmet_only=False)
+        assert len(reports) == 1
+        rep = reports[0]
+        assert rep["status"] == "COMPLIANT"
+        assert rep["has_helmet"] is True
+        assert rep["helmet_color"] == "yellow"
+        assert rep["has_safety_vest"] is True
+        assert len(rep["violations"]) == 0
+        assert len(alerts) == 0
+
+    def test_person_in_raw_detections_never_becomes_helmet(self):
+        """
+        When raw_detections contains person detections with cls_id in (2, 3, 4, 5, 6),
+        SpatialSafetyEngine must ignore them in PPE partitioning and never treat them as helmets.
+        """
+        safety = SpatialSafetyEngine()
+        dummy_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+
+        # Person detection with cls=2 (which in legacy HELMET_COLOR_MAP is blue)
+        detections = [
+            {"box": [100.0, 100.0, 200.0, 400.0], "cls": 2, "name": "person", "conf": 0.90},
+            {"box": [120.0, 100.0, 180.0, 160.0], "cls": 0, "name": "blue", "conf": 0.95},
+        ]
+
+        # In helmet-only mode: only the blue helmet should be reported as a worker head
+        reports, alerts = safety.evaluate_frame([], detections, dummy_frame, is_helmet_only=True)
+        assert len(reports) == 1
+        assert reports[0]["helmet_color"] == "blue"
+        assert reports[0]["bbox"] == [120.0, 100.0, 180.0, 160.0]

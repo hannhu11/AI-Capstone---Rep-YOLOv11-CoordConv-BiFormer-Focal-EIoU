@@ -162,6 +162,10 @@ class SpatialSafetyEngine:
             box = d.get("box", [0, 0, 0, 0])
             conf = d.get("conf", 1.0)
 
+            # Skip person/worker body detections - tracked via ByteTrack, not PPE
+            if any(p in name for p in ("person", "worker", "human")):
+                continue
+
             # Check for explicit negative indicators first
             if is_negative_helmet(name):
                 negative_helmets.append({"box": box, "cls": cls_id, "name": name, "conf": conf})
@@ -171,12 +175,24 @@ class SpatialSafetyEngine:
                 negative_vests.append({"box": box, "cls": cls_id, "name": name, "conf": conf})
                 continue
 
-            # Check positive helmet
+            # Check positive safety vest first (Must NEVER classify helmet colors like 'white' as vest)
+            is_pos_vest = (
+                ("vest" in name and not any(neg in name for neg in ("no_", "no-", "without", "none")))
+                or (cls_id == 1 and (not name or name.isdigit()) and not any(hc in name for hc in ("white", "blue", "yellow", "red", "green", "helmet", "none")))
+            )
+            if is_pos_vest:
+                positive_vests.append({"box": box, "cls": cls_id, "name": name, "conf": conf})
+                continue
+
+            # Check positive helmet (Must NEVER capture vest or person)
             is_pos_helmet = (
-                cls_id in HELMET_COLOR_MAP
-                or name in HELMET_NAME_TO_COLOR
-                or any(c in name for c in ("blue", "green", "red", "white", "yellow"))
-                or ("helmet" in name and not any(neg in name for neg in ("no_", "no-", "without", "none")))
+                "vest" not in name
+                and (
+                    name in HELMET_NAME_TO_COLOR
+                    or any(c in name for c in ("blue", "green", "red", "white", "yellow", "helmet", "hat"))
+                    or (cls_id in HELMET_COLOR_MAP and (not name or name.isdigit()))
+                )
+                and not any(neg in name for neg in ("no_", "no-", "without", "none"))
             )
             if is_pos_helmet:
                 color = None
@@ -189,7 +205,7 @@ class SpatialSafetyEngine:
                             if c in name_clean:
                                 color = c
                                 break
-                # Fall back to numeric cls_id mapping only if name is missing or unknown
+                # Fall back to numeric cls_id mapping only if name is missing or purely digits
                 if not color or color == "unknown":
                     color = HELMET_COLOR_MAP.get(cls_id)
                 color = color or "unknown"
@@ -214,14 +230,6 @@ class SpatialSafetyEngine:
 
                 positive_helmets.append({"box": box, "cls": cls_id, "name": name, "color": color, "conf": conf})
                 continue
-
-            # Check positive safety vest (Must NEVER classify helmet colors like 'white' as vest)
-            is_pos_vest = (
-                ("vest" in name and not any(neg in name for neg in ("no_", "no-", "without", "none")))
-                or (cls_id == 1 and not any(hc in name for hc in ("white", "blue", "yellow", "red", "green", "helmet", "none")))
-            )
-            if is_pos_vest:
-                positive_vests.append({"box": box, "cls": cls_id, "name": name, "conf": conf})
 
         worker_reports: List[Dict[str, Any]] = []
         alert_events: List[Dict[str, Any]] = []
