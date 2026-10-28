@@ -58,7 +58,9 @@ def main():
     mock_detections = [
         {"box": [100.0, 100.0, 180.0, 180.0], "cls": 0, "name": "blue", "conf": 0.92},
         {"box": [250.0, 100.0, 330.0, 180.0], "cls": 1, "name": "white", "conf": 0.89},
-        {"box": [400.0, 100.0, 480.0, 180.0], "cls": 4, "name": "none", "conf": 0.85},
+        {"box": [400.0, 100.0, 480.0, 180.0], "cls": 2, "name": "yellow", "conf": 0.94},
+        {"box": [550.0, 100.0, 630.0, 180.0], "cls": 3, "name": "red", "conf": 0.91},
+        {"box": [700.0, 100.0, 780.0, 180.0], "cls": 4, "name": "none", "conf": 0.85},
     ]
 
     reports, alerts = safety.evaluate_frame(tracks, mock_detections, dummy, camera_id="TEST_CAM", is_helmet_only=True)
@@ -70,9 +72,17 @@ def main():
     for a in alerts:
         print(f"       - {a['alert_id']}: worker={a['worker_id']}, violations={a['violations']}, snapshot={a['snapshot_filename']}")
 
-    assert len(reports) == 3, f"Expected 3 reports, got {len(reports)}"
-    assert sum(1 for r in reports if r["status"] == "COMPLIANT") == 2, "Expected 2 compliant helmets"
+    assert len(reports) == 5, f"Expected 5 reports, got {len(reports)}"
+    assert sum(1 for r in reports if r["status"] == "COMPLIANT") == 4, "Expected 4 compliant helmets"
     assert sum(1 for r in reports if r["status"] == "VIOLATION") == 1, "Expected 1 violation"
+
+    # Specific color assertions verifying GDUT taxonomy fix
+    colors = {r['track_id']: r['helmet_color'] for r in reports if r['status'] == 'COMPLIANT'}
+    assert "yellow" in colors.values(), f"GDUT cls=2 ('yellow') must resolve to 'yellow', got colors: {colors}"
+    yellow_report = next(r for r in reports if r['bbox'] == [400.0, 100.0, 480.0, 180.0])
+    assert yellow_report['helmet_color'] == 'yellow', f"Expected yellow, got {yellow_report['helmet_color']}"
+    print("   [+] Verified: GDUT cls=2 ('yellow') successfully resolved to 'yellow' (NOT 'blue')!")
+
     assert len(alerts) == 1, f"Expected 1 alert event, got {len(alerts)}"
     assert alerts[0]["violations"] == ["MISSING_SAFETY_HELMET"], f"Unexpected violations: {alerts[0]['violations']}"
 

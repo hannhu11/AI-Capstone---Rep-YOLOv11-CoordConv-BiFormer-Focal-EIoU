@@ -24,7 +24,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from src.config import config, SNAPSHOTS_DIR
 from src.engine.bytetrack import STrack, TrackState
 
-# Helmet class mappings
+# Helmet class mappings (legacy dataset index fallback only)
 HELMET_COLOR_MAP = {
     2: "blue",
     3: "green",
@@ -33,18 +33,25 @@ HELMET_COLOR_MAP = {
     6: "yellow",
 }
 
-# In case classes are string names
+# Standard color name mapping across dataset taxonomies (GDUT, CHV, SHWD)
 HELMET_NAME_TO_COLOR = {
     "blue_helmet": "blue",
     "green_helmet": "green",
     "red_helmet": "red",
     "white_helmet": "white",
     "yellow_helmet": "yellow",
+    "blue-helmet": "blue",
+    "green-helmet": "green",
+    "red-helmet": "red",
+    "white-helmet": "white",
+    "yellow-helmet": "yellow",
     "blue": "blue",
     "green": "green",
     "red": "red",
     "white": "white",
     "yellow": "yellow",
+    "hat": "yellow",
+    "helmet": "yellow",
 }
 
 
@@ -172,12 +179,19 @@ class SpatialSafetyEngine:
                 or ("helmet" in name and not any(neg in name for neg in ("no_", "no-", "without", "none")))
             )
             if is_pos_helmet:
-                color = HELMET_COLOR_MAP.get(cls_id) or HELMET_NAME_TO_COLOR.get(name)
-                if not color:
-                    for c in ("blue", "green", "red", "white", "yellow"):
-                        if c in name:
-                            color = c
-                            break
+                color = None
+                # Prioritize explicit class name string returned directly by model taxonomy
+                if name:
+                    name_clean = str(name).lower().strip()
+                    color = HELMET_NAME_TO_COLOR.get(name_clean)
+                    if not color:
+                        for c in ("yellow", "blue", "green", "red", "white"):
+                            if c in name_clean:
+                                color = c
+                                break
+                # Fall back to numeric cls_id mapping only if name is missing or unknown
+                if not color or color == "unknown":
+                    color = HELMET_COLOR_MAP.get(cls_id)
                 color = color or "unknown"
 
                 # Luminance / Value Gating on blue_helmet candidates (Root Cause 2):
@@ -198,7 +212,7 @@ class SpatialSafetyEngine:
                         if mean_val < 95.0:
                             continue
 
-                positive_helmets.append({"box": box, "cls": cls_id, "name": name, "color": color, "conf": conf, "is_stationary_furniture": d.get("is_stationary_furniture", False)})
+                positive_helmets.append({"box": box, "cls": cls_id, "name": name, "color": color, "conf": conf})
                 continue
 
             # Check positive safety vest (Must NEVER classify helmet colors like 'white' as vest)
@@ -378,8 +392,6 @@ class SpatialSafetyEngine:
                 matched_helmet = None
                 if not has_explicit_no_helmet:
                     for h in positive_helmets:
-                        if h.get("is_stationary_furniture", False):
-                            continue
                         hb = h["box"]
                         hx1, hy1, hx2, hy2 = hb[:4]
                         hcx = (hx1 + hx2) / 2.0

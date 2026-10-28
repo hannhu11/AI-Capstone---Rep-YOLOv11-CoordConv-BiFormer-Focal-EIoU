@@ -228,10 +228,17 @@
         <!-- Action Bar: View All / Reset -->
         <div class="py-2.5 border-b border-surface-border flex items-center justify-between gap-2">
           <button onclick="setFocusWorker(null)" id="btnViewAllWorkers" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-cyan-500 text-slate-950 shadow-md flex items-center justify-center gap-1.5 transition">
-            <span>🎯 View All (Tất cả)</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            <span>View All (Tất cả)</span>
           </button>
-          <button onclick="resetWorkerRegistry()" title="Reset Tracker Registry" class="py-1.5 px-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition">
-            <span>🔄 Reset</span>
+          <button onclick="resetWorkerRegistry()" title="Reset Tracker Registry" class="py-1.5 px-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <span>Reset</span>
           </button>
         </div>
 
@@ -738,12 +745,15 @@
                   ${w.is_active ? 'Active' : 'Tạm khuất'}
                   <span class="text-[10px] text-slate-500 font-mono">(${w.total_frames_seen}f)</span>
                 </span>
-                <button onclick="event.stopPropagation(); setFocusWorker(${isFocused ? 'null' : w.track_id})" class="px-2 py-0.5 rounded text-[10px] font-semibold transition ${
+                <button onclick="event.stopPropagation(); setFocusWorker(${isFocused ? 'null' : w.track_id})" class="px-2 py-0.5 rounded text-[10px] font-semibold transition inline-flex items-center gap-1 ${
                   isFocused
                     ? 'bg-cyan-400 text-slate-950 hover:bg-cyan-300'
                     : 'bg-slate-800 hover:bg-cyan-600 text-cyan-300 hover:text-white'
                 }">
-                  ${isFocused ? '🎯 Locked' : '🎯 Solo'}
+                  ${isFocused 
+                    ? `<svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Locked`
+                    : `<svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M12 3v3m0 12v3M3 12h3m12 0h3"/></svg> Focus`
+                  }
                 </button>
               </div>
             </div>
