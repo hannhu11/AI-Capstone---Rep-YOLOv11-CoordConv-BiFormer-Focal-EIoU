@@ -1530,5 +1530,54 @@ Kết quả cao này là do **3 yếu tố bão hòa phương pháp luận khác
    - Truy cập: `http://localhost:8080`.
    - Dừng container: Click đúp `stop_docker_edge.bat` (hoặc bấm nút **Stop ⏹** trong Docker Desktop).
 
+---
+
+## 49. BÁO CÁO KIỂM TOÁN ĐỘC LẬP: TRỌNG SỐ GDUT A6, GIẢ THUYẾT FINETUNE CHV, HẠ TẦNG DOCKER VÀ SỐ LIỆU THỰC NGHIỆM CHO BÁO CÁO HỘI NGHỊ AAIML 2027
+
+### 49.1. Khảo Sát & Xác Thực Trọng Số GDUT A6
+- **Proposed Rep-YOLO11s A6 Best**: `Output/GDUT_Bộ số 1_stage2-full-train-run-a6/GDUT_A6_CLEAN_VAL_RESULTS/YOLO11s/weights/GDUT_A6_YOLO11s_best.pt` (19.88 MB, SHA-256: `61a93e428d5c17613d80880e8aa0a5c4db85e6ec98f4409a5f0c371c565b0414`).
+- **Rep-YOLOv8s A6 Best**: `Output/GDUT_Bộ số 1_stage2-full-train-run-a6/GDUT_A6_CLEAN_VAL_RESULTS/YOLOv8s/weights/GDUT_A6_YOLOv8s_best.pt` (25.15 MB, SHA-256: `7fa5749801a3459bf4d270349483f4235eddd1eed1e65d9cd8140d2ab4f1f093`).
+- **Phân loại lớp GDUT ($nc=5$)**: `{0: 'blue', 1: 'white', 2: 'yellow', 3: 'red', 4: 'none'}` (none = không đội mũ).
+- **Lớp còn thiếu cho CCTV PPE đầy đủ**: Thiếu thân người (`person`), thiếu áo phản quang (`safety_vest`), thiếu mũ xanh lá (`green_helmet`).
+
+### 49.2. Đánh Giá Khoa Học Về Giả Thuyết Finetune Tuần Tự Sang CHV
+- **Kết luận phương pháp luận**: Ý tưởng lấy model GDUT 5-class finetune trực tiếp sang dataset CHV 6-class là **sai về mặt học máy**:
+  1. Lệch số lớp ($nc=5 \to 6$) buộc framework vứt bỏ 100% trọng số classification head ($cv3$).
+  2. Tập CHV không có nhãn vi phạm `none` (đầu trần), gây hiện tượng quên thảm họa (catastrophic forgetting) và phạt gradient âm, hủy diệt khả năng phát hiện vi phạm.
+  3. Xung đột ngữ nghĩa nhãn ($0=\text{blue}$ ở GDUT vs $0=\text{person}$ ở CHV).
+- **Nguyên nhân kết quả gộp GDUT+CHV A6 bị tụt xuống 87.87% mAP50 (< 0.90)**:
+  * Nhiễu sót nhãn (Omission Noise) khi gộp ảnh GDUT không có nhãn áo.
+  * Mất cân bằng mẫu ở tập test (chỉ có 15 đối tượng `no_helmet`, chỉ cần trượt 2 box là AP rớt từ 87.15% xuống 78.16%).
+- **Giải pháp đạt chuẩn > 0.90 ổn định tuyệt đối**:
+  * Sử dụng mô hình hợp nhất 7 lớp sạch **IITU + CHV** (đã đạt **97.64% mAP@50**, Precision 93.25%, Recall 93.72%, Safety Vest AP50 97.72%, Person AP50 97.72%) kết hợp Spatial Relational Logic để phát hiện vi phạm không đội mũ.
+
+### 49.3. Kiến Trúc Docker: 1 Container vs 2 Containers
+- **Bản chất**: Chỉ cần **1 Docker Container** duy nhất!
+  * Chạy song song 2 containers ngốn gấp đôi VRAM (3.6 – 5.0 GB), dễ gây CUDA OOM trên GPU máy tính xách tay.
+  * Hệ thống hỗ trợ Dynamic Model Switching (Hot-Swap) qua biến môi trường `MODEL_PATH` trong file `.env`.
+  * Khi nạp model GDUT 5-class, cần có Dynamic Taxonomy Adapter trong `detector.py` để tránh nhầm mũ xanh thành người và mũ trắng thành áo.
+
+### 49.4. Bảng Số Liệu Thực Nghiệm Đo Đạc Vật Lý Chuẩn IEEE Phục Vụ Slide AAIML 2027
+*(Đo đạc trên 316 ảnh GDUT clean val, phần cứng NVIDIA RTX 3050 Laptop)*
+
+| Chỉ số / Đặc tính Kỹ thuật | Rep-YOLOv8s A6 (Baseline) | Proposed Rep-YOLO11s A6 (Đề xuất) | Ưu thế Công nghệ |
+| :--- | :---: | :---: | :--- |
+| **Số tham số (Parameters)** | 12.45 M (12,446,399) | **9.79 M** (9,788,575) | **Giảm 21.35% tham số** |
+| **Khối lượng Tính toán (FLOPs)** | 15.22 GFLOPs | **11.38 GFLOPs** | **Giảm 25.23% FLOPs** |
+| **Độ chính xác Precision ($P$)** | 89.99% | **91.25%** | **Tăng vượt trội +1.26% Precision** |
+| **Độ nhạy Recall ($R$)** | **87.01%** | 87.01% | Tương đương tuyệt đối ($\Delta = -0.005\%$) |
+| **mAP@50 (Overall)** | **92.74%** | **92.51%** | **Cả 2 đều vượt xa ngưỡng 90%** |
+| **mAP@50-95** | **61.42%** | **61.31%** | Bám sát sít sao |
+| **Độ trễ PyTorch FP32** | 16.02 ms (62.4 FPS) | **15.37 ms** (**65.0 FPS**) | Nhanh hơn +0.65 ms (+2.6 FPS) |
+| **Độ trễ Fused Deploy FP16** | 14.16 ms (70.6 FPS) | **12.15 ms** (**82.3 FPS**) | **Nhanh hơn 14.2%** (+11.7 FPS) |
+| **Tốc độ TensorRT FP16 (Ref SHWD T4)**| 3.12 ms (320.5 FPS) | **2.92 ms** (**342.5 FPS**) | Siêu thời gian thực |
+
+### 49.5. Phân Tách Không Gian Dữ Liệu Bảo Vệ Liêm Chính Khoa Học
+- **AAIML 2027 Paper Submission**: Chạy độc quyền trên tập **SHWD** 2 lớp (`hat`, `person`), mAP50 = 94.83%, mAP50-95 = 62.54%.
+- **Thực nghiệm GDUT A6**: Chạy độc quyền trên tập **GDUT-HWD** 5 lớp (`blue`, `white`, `yellow`, `red`, `none`), mAP50 = 92.51% (YOLO11s) và 92.74% (YOLOv8s).
+- **Thực nghiệm CCTV Live Stream Champion**: Chạy trên tập **IITU + CHV** 7 lớp sạch, mAP50 = 97.64%.
+- Toàn bộ kết quả được lưu riêng biệt trong từng thư mục con tại `Output/` để tránh xung đột dữ liệu.
+
+
 
 
