@@ -1988,19 +1988,29 @@ Thay thế các thẻ phồng neon bằng 6 khối số liệu công nghiệp g�
 
 ### 54.4. Đồng Bộ & Tinh Chỉnh Các Thành Phần Nghiệp Vụ
 1. **Dải Telemetry KPI 6 Card**:
-   - Card trắng viền ấm `#E7E3DC`, số liệu font `tabular-nums text-[#1C1917]`, tag phân loại màu mềm mại.
+   - Card trắng viền ấm `#E7E3DC`, hiệu ứng đổ bóng môi trường chuẩn mực `shadow-[0_1px_3px_rgba(40,30,20,0.05)]`.
+   - Toàn bộ số liệu KPI hiển thị đồng nhất màu than đậm `text-[#1C1917]` font `tabular-nums` đạt độ tương phản tối đa.
+   - Chấm định danh chuẩn: Thông lượng `#10B981`, Độ trễ `#2563EB`, Nhân sự Re-ID `#2563EB` (kèm pill `bg-blue-50 text-blue-800 border-blue-200`), Hợp quy `#10B981`, Vi phạm `#10B981` (khi 0 lỗi) hoặc `#EF4444` (khi có vi phạm), Chính sách `#F59E0B`.
 2. **Sổ Bộ Nhân Sự (Personnel Registry)**:
    - Nền card công nhân `#FAF8F5` viền `#E7E3DC`, khi chọn focus hiển thị viền xanh cobalt `border-blue-500 bg-blue-50/70`.
+   - Phân cấp 3 trạng thái công nhân trực quan: `ACTIVE` (chấm xanh `#10B981`, pill xanh lục), `COASTING` khi bị che khuất tạm thời (chấm vàng hổ phách `#F59E0B` nhấp nháy, pill hổ phách `bg-amber-50 text-amber-900 border-amber-200`), và `INACTIVE` trong lịch sử kiểm toán (chấm xám).
    - Chấm màu mũ thực tế sắc nét, hỗ trợ chống lóa viền cho mũ trắng (`bg-stone-300 border border-stone-400`).
-3. **Dòng Sự Kiện Vi Phậm (Incident Audit Stream)**:
+3. **Dòng Sự Kiện Vi Phạm (Incident Audit Stream)**:
    - Card vi phạm nền trắng thanh lịch có dải màu phân cấp nổi bật bên trái: `border-l-4 border-l-rose-500` cho lỗi nguy cấp (không mũ), `border-l-4 border-l-amber-500` cho cảnh báo (thiếu áo).
-   - Nút bấm `[ 📷 Evidence ]` mở cửa sổ Forensic Snapshot Lightbox tối để phân tích bằng chứng rõ nét nhất.
+   - Nút bấm `[ Evidence ]` trang bị class `group` đồng bộ màu biểu tượng máy ảnh chuyển trắng sắc nét khi hover.
+   - Bộ lọc kiểm tra an toàn (defensive null-check) chống crash giao diện khi trường `confidence` hoặc `violations` bị khuyết.
 4. **Biểu Đồ Trực Quan Hóa (Chart.js Modern Light)**:
    - Line chart: Đường cong xanh ngọc `#059669`, diện tích phủ `rgba(5, 150, 105, 0.08)`, lưới trục nhạt `#E7E3DC`, nhãn trục `#78716C`.
    - Doughnut chart: Viền trắng tinh khôi `#FFFFFF` sắc nét giữa các lát cắt 5 màu mũ.
 5. **Cửa Sổ Cấu Hình (Settings Modal)**:
-   - Nền trắng thanh lịch, các section bo tròn màu kem cát `#FAF8F5` viền `#E7E3DC`, input trắng viền `#D6D0C7`, chữ than đậm nét.
+   - Nền trắng thanh lịch, các khối sub-panel bo tròn màu `#F5F2EB` viền `#E7E3DC`.
+   - Toàn bộ ô nhập liệu `<select>` và `<input>` chuẩn hóa tone nền cát ấm `#FAF8F5` viền `#D6D0C7`, chữ đậm rõ nét `text-[#1C1917] font-semibold`.
+6. **Xử Lý Sự Kiện Bàn Phím & Viewport**:
+   - Khắc phục sự cố xung đột phím `Esc`: Ưu tiên đóng Modal (Settings hoặc Evidence Lightbox) trước; chỉ hủy target focus khi không có modal nào đang mở.
+   - Bổ sung class hiển thị `flex` cho overlay mất luồng video (`videoErrorOverlay`) để đảm bảo thông báo kết nối lại luôn căn giữa màn hình camera.
+   - Đồng bộ 100% đường nét vòm mũ bảo hộ và dải phản quang của SVG Favicon trong `<head>` với Logo thương hiệu chính.
 
 ### 54.5. Kết Quả Kiểm Thử & Liêm Chính Khoa Học
 - **Kiểm thử tự động toàn diện**: `pytest tests/ -v`: **103/103 tests PASS 100%**.
 - Tương thích 100% các API backend, phím tắt (`Esc`, `F`, `R`), và hệ thống Webhook Telegram/Zalo.
+- Đã kiểm tra tính hợp lệ cú pháp XML/SVG của Favicon Data URI và độ tương thích màu sắc trên các màn hình hiển thị.
